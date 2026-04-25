@@ -55,10 +55,23 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  audit-deps-npm:
+    name: audit-deps-npm
+    runs-on: ubuntu-latest
+    needs: install-clean
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm audit --audit-level=high
+
   build-next:
     name: build-next
     runs-on: ubuntu-latest
-    needs: [lint-eslint, typecheck-tsc, test-unit]
+    needs: [lint-eslint, typecheck-tsc, test-unit, audit-deps-npm]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
