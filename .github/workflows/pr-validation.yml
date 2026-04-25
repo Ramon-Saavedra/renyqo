@@ -1,0 +1,153 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  install-clean:
+    name: install-clean
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+  lint-eslint:
+    name: lint-eslint
+    runs-on: ubuntu-latest
+    needs: install-clean
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck-tsc:
+    name: typecheck-tsc
+    runs-on: ubuntu-latest
+    needs: install-clean
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck
+
+  test-unit:
+    name: test-unit
+    runs-on: ubuntu-latest
+    needs: install-clean
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test
+
+  build-next:
+    name: build-next
+    runs-on: ubuntu-latest
+    needs: [lint-eslint, typecheck-tsc, test-unit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: nextjs-${{ runner.os }}-
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: |
+            .next
+            !.next/cache
+          retention-days: 1
+
+  smoke-runtime:
+    name: smoke-runtime
+    runs-on: ubuntu-latest
+    needs: build-next
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next
+      - name: Start server
+        run: NODE_ENV=production npm start &
+      - name: Verify server
+        run: |
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:3000; then
+              echo "Server is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Server did not respond in time"
+          exit 1
+
+  docker-build-check:
+    name: docker-build-check
+    runs-on: ubuntu-latest
+    needs: smoke-runtime
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t renyqo:ci .
+      - name: Export Docker image
+        run: docker save renyqo:ci | gzip > renyqo-ci.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: renyqo-ci.tar.gz
+          retention-days: 1
+
+  docker-smoke-run:
+    name: docker-smoke-run
+    runs-on: ubuntu-latest
+    needs: docker-build-check
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+      - name: Load Docker image
+        run: docker load < renyqo-ci.tar.gz
+      - name: Run container
+        run: docker run -d -p 3000:3000 --name renyqo-ci renyqo:ci
+      - name: Verify container
+        run: |
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:3000; then
+              echo "Container is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Container did not respond in time"
+          exit 1
+      - name: Stop container
+        if: always()
+        run: docker stop renyqo-ci && docker rm renyqo-ci || true
