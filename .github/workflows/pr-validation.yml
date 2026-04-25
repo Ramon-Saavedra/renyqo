@@ -79,6 +79,7 @@ jobs:
             .next
             !.next/cache
           retention-days: 1
+          include-hidden-files: true
 
   smoke-runtime:
     name: smoke-runtime
