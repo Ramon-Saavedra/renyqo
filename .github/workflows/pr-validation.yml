@@ -165,3 +165,22 @@ jobs:
       - name: Stop container
         if: always()
         run: docker stop renyqo-ci && docker rm renyqo-ci || true
+
+  container-scan:
+    name: container-scan
+    runs-on: ubuntu-latest
+    needs: docker-build-check
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/docker-image
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          input: /tmp/docker-image/renyqo-ci.tar.gz
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          vuln-type: os,library
+          exit-code: '1'
