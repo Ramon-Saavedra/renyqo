@@ -3,7 +3,6 @@ import { type LucideIcon } from "lucide-react";
 export interface AppIconProps {
   icon: LucideIcon;
   size?: number;
-  color?: string;
   title?: string;
   disabled?: boolean;
   decorative?: boolean;
@@ -18,7 +17,6 @@ function joinClasses(...classes: Array<string | false | null | undefined>) {
 export function AppIcon({
   icon: Icon,
   size = 16,
-  color,
   title,
   disabled = false,
   decorative = false,
@@ -32,9 +30,10 @@ export function AppIcon({
       size={size}
       strokeWidth={strokeWidth}
       aria-hidden={isDecorative ? true : undefined}
+      aria-label={isDecorative ? undefined : title}
+      role={isDecorative ? undefined : "img"}
       className={joinClasses(
         "shrink-0",
-        color,
         disabled && "pointer-events-none opacity-50",
         className,
       )}

@@ -54,7 +54,7 @@ export default function ThemeToggle() {
         icon={isDark ? Moon : Sun}
         decorative
         size={16}
-        color="text-foreground"
+        className="text-foreground"
       />
     </button>
   );
