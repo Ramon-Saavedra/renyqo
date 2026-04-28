@@ -5,32 +5,35 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
+  --color-background-muted: var(--background-muted);
+
   --color-foreground: var(--foreground);
-
-
-  --color-bg-l: #FCFBF1;
-  --color-bg-d: #111111;
-
-  --color-border-l: #E0E0E0;
-  --color-border-d: #333333;
-
-
-  --color-primary: #566582;
-
-}
-
-:root {
-  --background: #FFFFFF;
-  --foreground: #222222;
 }
 
 .dark {
-  --background: #181818;
-  --foreground: #eaeaea;
+  --background: #111111;
+  --background-subtle: #161616;
+  --background-muted: #1C1C1C;
+
+  --foreground: #F5F4F1;
+  --foreground-secondary: #A8A6A2;
+  --foreground-tertiary: #6F6D6A;
+
+  --border: #333333;
+  --border-strong: #4A4A4A;
+
+  --primary: #8B9CBE;
+  --primary-hover: #A2B1CD;
+  --primary-soft: #1F2532;
+
+  --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--typeface-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
