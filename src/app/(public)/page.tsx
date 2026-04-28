@@ -1,5 +1,9 @@
 export default function Home() {
   return (
-    <h1 className="font-extrabold">Hola</h1>
+    <>
+      <main>
+        <h1 className="text-2xl font-bold border dark:border-border-d border-border-l rounded">Hello, world!</h1>
+      </main>
+    </>
   );
 }
