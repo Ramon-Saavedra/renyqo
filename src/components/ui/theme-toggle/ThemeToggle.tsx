@@ -1,6 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { Sun, Moon } from "lucide-react";
+import { AppIcon } from "../icon/AppIcon";
 
 type Theme = "light" | "dark";
 
@@ -28,7 +30,7 @@ function applyTheme(theme: Theme) {
   try {
     localStorage.setItem(STORAGE_KEY, theme);
   } catch {
-    // localStorage unavailable (private mode, quota); fall back silently.
+
   }
 }
 
@@ -46,11 +48,14 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}
-      className="rounded-full border border-border bg-background p-1 text-foreground transition-colors hover:bg-primary hover:text-background focus:outline-none focus:ring-2 focus:ring-primary"
+      className="rounded-full"
     >
-      <span aria-hidden="true" suppressHydrationWarning>
-        {isDark ? "🌙" : "☀️"}
-      </span>
+      <AppIcon
+        icon={isDark ? Moon : Sun}
+        decorative
+        size={16}
+        color="text-foreground"
+      />
     </button>
   );
 }

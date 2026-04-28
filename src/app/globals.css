@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -8,49 +9,6 @@
   --color-background-muted: var(--background-muted);
 
   --color-foreground: var(--foreground);
-  --color-foreground-secondary: var(--foreground-secondary);
-  --color-foreground-tertiary: var(--foreground-tertiary);
-
-  --color-border: var(--border);
-  --color-border-strong: var(--border-strong);
-
-  --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
-  --color-primary-soft: var(--primary-soft);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --radius-sm: 4px;
-  --radius-md: 6px;
-
-  --shadow-focus: var(--focus-ring);
-
-  --font-display: var(--typeface-display);
-  --font-sans: var(--typeface-sans);
-  --font-mono: var(--typeface-mono);
-}
-
-:root {
-  --background: #FCFBF1;
-  --background-subtle: #F5F4EA;
-  --background-muted: #EEEDE3;
-
-  --foreground: #0E0E0E;
-  --foreground-secondary: #555452;
-  --foreground-tertiary: #8C8A87;
-
-  --border: #E0E0E0;
-  --border-strong: #C8C8C8;
-
-  --primary: #566582;
-  --primary-hover: #455269;
-  --primary-soft: #E5E9F0;
-  --primary-foreground: #FFFFFF;
-
-  --focus-ring: 0 0 0 3px rgb(86 101 130 / 0.18);
-
-  --typeface-display: "Geist", "Inter", system-ui, -apple-system, sans-serif;
-  --typeface-sans: "Inter", "Geist", system-ui, -apple-system, sans-serif;
-  --typeface-mono: "Geist Mono", ui-monospace, "JetBrains Mono", monospace;
 }
 
 .dark {
