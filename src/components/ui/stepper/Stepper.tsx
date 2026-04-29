@@ -1,4 +1,6 @@
 import { Fragment } from "react";
+import { Check } from "lucide-react";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 
 interface StepperProps {
   steps: readonly string[];
@@ -23,10 +25,11 @@ export function Stepper({
     >
       {steps.map((step, index) => {
         const isActive = index === currentIndex;
+        const isDone = index < currentIndex;
         const isLast = index === steps.length - 1;
         return (
           <Fragment key={step}>
-            {isActive ? (
+            {isActive && (
               <span
                 aria-current="step"
                 className="inline-flex items-center gap-2 text-primary"
@@ -37,9 +40,19 @@ export function Stepper({
                 />
                 {step}
               </span>
-            ) : (
-              <span>{step}</span>
             )}
+            {isDone && (
+              <span className="inline-flex items-center gap-2 text-foreground-secondary">
+                <span
+                  aria-hidden="true"
+                  className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-foreground-secondary text-background"
+                >
+                  <AppIcon icon={Check} size={8} strokeWidth={3} decorative />
+                </span>
+                {step}
+              </span>
+            )}
+            {!isActive && !isDone && <span>{step}</span>}
             {!isLast && (
               <span aria-hidden="true" className="h-px w-8 bg-border" />
             )}

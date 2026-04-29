@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight, Building2, Search, type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { Button } from "@/components/ui/button/Button";
+import { buttonClass } from "@/components/ui/button/Button";
 import { RoleCard } from "./RoleCard";
 import { accountTypeCopy, type Role } from "../copy/account-type";
 
@@ -17,12 +16,7 @@ const ROLE_GLYPHS: Record<Role, LucideIcon> = {
 const ROLE_KEYS: readonly Role[] = ["applicant", "provider"];
 
 export function RoleSelector() {
-  const router = useRouter();
   const [role, setRole] = useState<Role>("applicant");
-
-  const handleSubmit = () => {
-    router.push(`/register?role=${role}`);
-  };
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -60,10 +54,13 @@ export function RoleSelector() {
             {accountTypeCopy.signIn}
           </Link>
         </span>
-        <Button variant="primary" onClick={handleSubmit}>
+        <Link
+          href={`/register/create-account?role=${role}`}
+          className={buttonClass("primary")}
+        >
           {accountTypeCopy.next}
           <AppIcon icon={ArrowRight} size={14} strokeWidth={1.8} decorative />
-        </Button>
+        </Link>
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 export const accountTypeCopy = {
   back: "Zurück",
-  steps: ["02 Kontotyp", "03 Daten", "04 Bestätigung"],
   title: "Wie möchtest du {brand} nutzen?",
   subtitle:
     "Wähle die Rolle, die zu dir passt. Du kannst dies später nicht ohne Weiteres ändern.",
