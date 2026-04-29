@@ -7,6 +7,7 @@ import { Logo } from "@/components/ui/logo/Logo";
 import { Stepper } from "@/components/ui/stepper/Stepper";
 import { RoleSelector } from "@/features/auth/components/RoleSelector";
 import { accountTypeCopy } from "@/features/auth/copy/account-type";
+import { REGISTER_STEPS } from "@/features/auth/copy/register-flow";
 
 export default function AccountTypePage() {
   return (
@@ -20,11 +21,7 @@ export default function AccountTypePage() {
           </Link>
         </div>
 
-        <Stepper
-          steps={accountTypeCopy.steps}
-          currentIndex={0}
-          className="mb-7"
-        />
+        <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
 
         <div className="mb-9 flex max-w-3xl flex-col gap-3">
           <h1 className="font-display text-display font-medium text-balance text-foreground">
