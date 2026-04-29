@@ -6,6 +6,7 @@
   --color-background: var(--background);
   --color-background-subtle: var(--background-subtle);
   --color-background-muted: var(--background-muted);
+  --color-card: var(--card);
 
   --color-foreground: var(--foreground);
   --color-foreground-secondary: var(--foreground-secondary);
@@ -23,16 +24,44 @@
   --radius-md: 6px;
 
   --shadow-focus: var(--focus-ring);
+  --shadow-card: var(--card-shadow);
 
   --font-display: var(--typeface-display);
   --font-sans: var(--typeface-sans);
   --font-mono: var(--typeface-mono);
+
+  --text-display: 42px;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.032em;
+
+  --text-lead: 14.5px;
+  --text-lead--line-height: 1.55;
+  --text-lead--letter-spacing: -0.005em;
+
+  --text-title: 21px;
+  --text-title--letter-spacing: -0.02em;
+
+  --text-body: 13.5px;
+  --text-body--line-height: 1.55;
+  --text-body--letter-spacing: -0.005em;
+
+  --text-caption: 13px;
+
+  --text-brand: 15px;
+  --text-brand--letter-spacing: -0.015em;
+
+  --text-meta: 11px;
+  --text-meta--letter-spacing: 0.16em;
+
+  --text-action: 14px;
+  --text-action--letter-spacing: -0.005em;
 }
 
 :root {
   --background: #FCFBF1;
   --background-subtle: #F5F4EA;
   --background-muted: #EEEDE3;
+  --card: #FDFCF5;
 
   --foreground: #0E0E0E;
   --foreground-secondary: #555452;
@@ -47,6 +76,7 @@
   --primary-foreground: #FFFFFF;
 
   --focus-ring: 0 0 0 3px rgb(86 101 130 / 0.18);
+  --card-shadow: 0 1px 2px rgb(14 14 14 / 0.04), 0 4px 12px rgb(14 14 14 / 0.05);
 
   --typeface-display: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
   --typeface-sans: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
@@ -57,6 +87,7 @@
   --background: #111111;
   --background-subtle: #161616;
   --background-muted: #1C1C1C;
+  --card: #181818;
 
   --foreground: #F5F4F1;
   --foreground-secondary: #A8A6A2;
@@ -70,6 +101,7 @@
   --primary-soft: #1F2532;
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
+  --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
 }
 
 body {
