@@ -153,6 +153,69 @@ Prefiere claridad, mantenimiento y previsibilidad.
 
 Usaremos Tailwind para estilos.
 
+Project styling rules:
+
+This project uses Tailwind CSS v4 with design tokens defined in the global CSS file through @theme inline.
+
+Do not use arbitrary Tailwind values as the default approach.
+
+Avoid patterns like:
+px-[var(--page-padding)]
+pt-[var(--space-8)]
+pb-[var(--space-12)]
+text-[42px]
+leading-[1.05]
+tracking-[-0.032em]
+
+Use existing Tailwind utilities generated from theme tokens instead.
+
+Correct examples:
+bg-primary
+bg-background
+text-foreground
+text-foreground-secondary
+border-border
+shadow-card
+rounded-md
+font-display
+px-page
+pt-space-8
+pb-space-12
+mb-space-6
+gap-space-4
+text-heading-xl
+leading-heading-xl
+tracking-heading-xl
+
+Do not write CSS utility classes like .heading-xl, .section, .card, etc. unless I explicitly ask for component-level CSS.
+
+Do not use inline var() inside JSX className when a Tailwind token utility exists.
+
+Do not invent random pixel values or arbitrary values to make the design look right.
+
+If a spacing, typography, color, radius, shadow, or layout token is missing, stop and tell me exactly which token is needed before continuing.
+
+Use the existing design system first. Extend the theme only when necessary and only after asking.
+
+All spacing should come from the Tailwind token scale:
+space, page, section, card, gap, margin, padding tokens.
+
+All typography should come from Tailwind text/font/leading/tracking tokens.
+
+All colors must come from Tailwind color tokens, never hardcoded hex values inside components.
+
+The JSX should stay clean, consistent, and easy to maintain.
+
+Preferred style:
+className="flex min-h-screen bg-background text-foreground"
+className="mx-auto flex w-full max-w-6xl flex-col px-page pt-space-8 pb-space-12"
+className="mb-space-6 text-heading-xl leading-heading-xl tracking-heading-xl"
+
+Wrong style:
+Avoid this pattern: className=" **px-[var(--page-padding)] **pt-[var(--space-8)] text-[42px] leading-[1.05]"
+
+Important: Do not bypass the Tailwind theme system. This project is token-based. Arbitrary values are only allowed in rare exceptional cases and must be explained before use.
+
 ## 12. Uso correcto de tokens y variables
 
 Debes usar las variables y tokens definidos en nuestro sistema global.
