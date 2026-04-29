@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 interface RotatingBenefitsProps {
   benefits: readonly string[];
@@ -10,29 +10,31 @@ interface RotatingBenefitsProps {
 const ROTATION_INTERVAL = 6000;
 const TICK_INTERVAL = 1000;
 
+const getServerSnapshot = () => 0;
+
 export function RotatingBenefits({
   benefits,
   delay = 0,
 }: RotatingBenefitsProps) {
-  const [index, setIndex] = useState(0);
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      if (benefits.length <= 1) return () => {};
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return () => {};
+      }
+      const id = window.setInterval(onStoreChange, TICK_INTERVAL);
+      return () => window.clearInterval(id);
+    },
+    [benefits.length],
+  );
 
-  useEffect(() => {
-    if (benefits.length <= 1) return;
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return;
-    }
-    const computeIndex = () =>
-      Math.floor((Date.now() + delay) / ROTATION_INTERVAL) % benefits.length;
-    setIndex(computeIndex());
-    const id = window.setInterval(() => {
-      const next = computeIndex();
-      setIndex((current) => (current === next ? current : next));
-    }, TICK_INTERVAL);
-    return () => window.clearInterval(id);
-  }, [benefits.length, delay]);
+  const getSnapshot = useCallback(
+    () =>
+      Math.floor((Date.now() + delay) / ROTATION_INTERVAL) % benefits.length,
+    [benefits.length, delay],
+  );
+
+  const index = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   return (
     <div className="border-t border-border pt-5">
