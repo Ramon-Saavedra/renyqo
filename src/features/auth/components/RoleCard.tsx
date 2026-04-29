@@ -1,11 +1,14 @@
 import { Check, type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { RotatingBenefits } from "./RotatingBenefits";
 
 interface RoleCardProps {
   kicker: string;
   title: string;
   description: string;
   points: readonly string[];
+  benefits: readonly string[];
+  benefitsDelay?: number;
   glyph: LucideIcon;
   active: boolean;
   onSelect: () => void;
@@ -16,6 +19,8 @@ export function RoleCard({
   title,
   description,
   points,
+  benefits,
+  benefitsDelay = 0,
   glyph,
   active,
   onSelect,
@@ -26,7 +31,7 @@ export function RoleCard({
       role="radio"
       aria-checked={active}
       onClick={onSelect}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-card p-7 pb-6 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus ${
+      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-card p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus ${
         active ? "border-primary" : "border-border hover:border-border-strong"
       }`}
     >
@@ -37,7 +42,7 @@ export function RoleCard({
         />
       )}
 
-      <div className="mb-5.5 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between">
         <span className="font-mono text-meta uppercase text-foreground-tertiary">
           {kicker}
         </span>
@@ -57,7 +62,7 @@ export function RoleCard({
 
       <span
         aria-hidden="true"
-        className={`mb-4.5 inline-flex h-10 w-10 items-center justify-center rounded-sm transition-colors ${
+        className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm transition-colors ${
           active
             ? "bg-primary text-primary-foreground"
             : "bg-background-muted text-foreground"
@@ -66,14 +71,14 @@ export function RoleCard({
         <AppIcon icon={glyph} size={16} strokeWidth={1.6} decorative />
       </span>
 
-      <h3 className="mb-2 font-display text-title font-medium text-foreground">
+      <h3 className="mb-6 font-display text-title font-medium text-foreground">
         {title}
       </h3>
-      <p className="mb-4.5 text-body text-foreground-secondary">
+      <p className="mb-8 text-body text-foreground-secondary">
         {description}
       </p>
 
-      <ul className="flex flex-col gap-2">
+      <ul className="mb-5 flex flex-col gap-2">
         {points.map((point) => (
           <li
             key={point}
@@ -86,6 +91,8 @@ export function RoleCard({
           </li>
         ))}
       </ul>
+
+      <RotatingBenefits benefits={benefits} delay={benefitsDelay} />
     </button>
   );
 }

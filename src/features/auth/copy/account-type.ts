@@ -18,6 +18,11 @@ export const accountTypeCopy = {
         "Passende Mietobjekte schneller erkennen",
         "Kontakt erst, wenn es wirklich passt",
       ],
+      benefits: [
+        "Keine wochenlange Funkstille mehr nach deiner Anfrage.",
+        "Du siehst vorab, ob ein Mietobjekt wirklich zu deinem Profil passt.",
+        "Dein Mietprofil ist vorbereitet, bevor es ernst wird.",
+      ],
     },
     provider: {
       kicker: "Für Eigentümer & Makler",
@@ -28,6 +33,11 @@ export const accountTypeCopy = {
         "Anforderungen klar definieren",
         "Bewerbungen automatisch vorsortieren",
         "Kandidaten-Dossiers auf einen Blick",
+      ],
+      benefits: [
+        "Weniger unpassende Anfragen. Mehr relevante Bewerbungen.",
+        "Du siehst schneller, welche Kandidaten wirklich zum Objekt passen.",
+        "Klare Anforderungen vorab, statt wochenlang Bewerbungen zu sortieren.",
       ],
     },
   },

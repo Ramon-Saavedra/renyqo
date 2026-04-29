@@ -29,9 +29,9 @@ export function RoleSelector() {
       <div
         role="radiogroup"
         aria-label={accountTypeCopy.title}
-        className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-2"
+        className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2"
       >
-        {ROLE_KEYS.map((key) => {
+        {ROLE_KEYS.map((key, position) => {
           const data = accountTypeCopy.roles[key];
           return (
             <RoleCard
@@ -40,6 +40,8 @@ export function RoleSelector() {
               title={data.title}
               description={data.description}
               points={data.points}
+              benefits={data.benefits}
+              benefitsDelay={position * 3000}
               glyph={ROLE_GLYPHS[key]}
               active={role === key}
               onSelect={() => setRole(key)}
