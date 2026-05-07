@@ -1,0 +1,4 @@
+# Normalize all text files to LF in repo and working copy.
+# Overrides per-developer core.autocrlf so Prettier's LF expectation
+# matches what's checked out on every OS.
+* text=auto eol=lf
