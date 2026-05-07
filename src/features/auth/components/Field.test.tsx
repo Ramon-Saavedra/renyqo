@@ -112,9 +112,7 @@ describe("Field", () => {
     });
 
     it("appends inputClassName to the input alongside the base input classes", () => {
-      render(
-        <Field id="email" label="E-Mail" inputClassName="pr-11" />,
-      );
+      render(<Field id="email" label="E-Mail" inputClassName="pr-11" />);
       const input = screen.getByLabelText("E-Mail");
 
       expect(input.className).toContain("h-11");

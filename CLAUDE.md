@@ -59,7 +59,6 @@ className="mb-space-6 text-heading-xl leading-heading-xl tracking-heading-xl"
 Wrong style:
 className="**px-[var(--page-padding)] **pt-[var(--space-8)] text-[42px] leading-[1.05]"
 
-
 Please refactor the role naming and route strategy consistently.
 
 Use English for technical routes, enums, types, file names, and internal code identifiers.
@@ -128,11 +127,11 @@ Do not leave mixed routes such as:
 /registrieren/kontoart in another place
 
 Use only the agreed English internal route structure:
- /register/account-type
- /register/profile
- /register/documents
- /login
- /dashboard
+/register/account-type
+/register/profile
+/register/documents
+/login
+/dashboard
 
 For the role query param, use only:
 role=applicant

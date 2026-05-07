@@ -3,11 +3,7 @@ import { Button } from "@/components/ui/button/Button";
 import { Field } from "./Field";
 import { PasswordField } from "./PasswordField";
 import { Checkbox } from "./Checkbox";
-import {
-  AppleIcon,
-  GoogleIcon,
-  SocialButton,
-} from "./SocialButton";
+import { AppleIcon, GoogleIcon, SocialButton } from "./SocialButton";
 import { createAccountCopy } from "../copy/create-account";
 
 interface CreateAccountFormProps {
@@ -26,7 +22,10 @@ export function CreateAccountForm({ idPrefix }: CreateAccountFormProps) {
       className="w-full max-w-md rounded-md border border-border bg-background px-8 pt-8 pb-7"
     >
       <div className="grid gap-2.5">
-        <SocialButton icon={<GoogleIcon />} aria-label={createAccountCopy.google}>
+        <SocialButton
+          icon={<GoogleIcon />}
+          aria-label={createAccountCopy.google}
+        >
           {createAccountCopy.google}
         </SocialButton>
         <SocialButton icon={<AppleIcon />} aria-label={createAccountCopy.apple}>
@@ -74,12 +73,7 @@ export function CreateAccountForm({ idPrefix }: CreateAccountFormProps) {
         hint={createAccountCopy.fields.password.hint}
       />
 
-      <Checkbox
-        id={consentId}
-        name="terms"
-        required
-        className="mt-1.5 mb-4.5"
-      >
+      <Checkbox id={consentId} name="terms" required className="mt-1.5 mb-4.5">
         {createAccountCopy.consent.prefix}
         <a
           href="#nutzungsbedingungen"

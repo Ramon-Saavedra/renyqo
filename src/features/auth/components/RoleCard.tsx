@@ -74,9 +74,7 @@ export function RoleCard({
       <h3 className="mb-6 font-display text-title font-medium text-foreground">
         {title}
       </h3>
-      <p className="mb-8 text-body text-foreground-secondary">
-        {description}
-      </p>
+      <p className="mb-8 text-body text-foreground-secondary">{description}</p>
 
       <ul className="mb-5 flex flex-col gap-2">
         {points.map((point) => (

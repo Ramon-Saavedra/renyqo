@@ -118,7 +118,8 @@ describe("AppIcon", () => {
 
     it("does not leave dangling whitespace in class when no extras are provided", () => {
       const { container } = render(<AppIcon icon={Home} />);
-      const className = container.querySelector("svg")?.getAttribute("class") ?? "";
+      const className =
+        container.querySelector("svg")?.getAttribute("class") ?? "";
 
       expect(className).toBe(className.trim());
       expect(className).not.toMatch(/\s\s/);

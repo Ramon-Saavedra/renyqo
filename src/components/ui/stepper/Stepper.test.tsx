@@ -16,9 +16,7 @@ describe("Stepper", () => {
     });
 
     it("honors a custom aria-label when provided", () => {
-      render(
-        <Stepper steps={STEPS} currentIndex={0} ariaLabel="Onboarding" />,
-      );
+      render(<Stepper steps={STEPS} currentIndex={0} ariaLabel="Onboarding" />);
 
       expect(
         screen.getByRole("navigation", { name: "Onboarding" }),
@@ -43,7 +41,9 @@ describe("Stepper", () => {
       expect(within(nav).getByText("03 Konto erstellen")).toBeInstanceOf(
         HTMLElement,
       );
-      expect(within(nav).getByText("04 Bestätigung")).toBeInstanceOf(HTMLElement);
+      expect(within(nav).getByText("04 Bestätigung")).toBeInstanceOf(
+        HTMLElement,
+      );
     });
   });
 
@@ -115,9 +115,9 @@ describe("Stepper", () => {
       const { container } = render(<Stepper steps={STEPS} currentIndex={0} />);
 
       expect(container.querySelectorAll("svg")).toHaveLength(0);
-      expect(
-        screen.getByText("02 Kontotyp").getAttribute("aria-current"),
-      ).toBe("step");
+      expect(screen.getByText("02 Kontotyp").getAttribute("aria-current")).toBe(
+        "step",
+      );
     });
 
     it("last step active: every earlier step renders a done indicator", () => {

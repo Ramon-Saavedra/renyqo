@@ -29,9 +29,7 @@ function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");
   try {
     localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-
-  }
+  } catch {}
 }
 
 export default function ThemeToggle() {
