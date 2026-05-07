@@ -7,9 +7,7 @@ import { Checkbox } from "./Checkbox";
 describe("Checkbox", () => {
   describe("structure", () => {
     it("renders a label wrapping a checkbox input", () => {
-      const { container } = render(
-        <Checkbox id="terms">Akzeptieren</Checkbox>,
-      );
+      const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
       const label = container.querySelector("label");
       const input = label?.querySelector("input");
 
@@ -45,9 +43,7 @@ describe("Checkbox", () => {
 
   describe("label wiring", () => {
     it("wires label htmlFor to the input id", () => {
-      const { container } = render(
-        <Checkbox id="terms">Akzeptieren</Checkbox>,
-      );
+      const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
 
       expect(container.querySelector("label")?.getAttribute("for")).toBe(
         "terms",
@@ -108,17 +104,15 @@ describe("Checkbox", () => {
     it("always renders type=checkbox even when the consumer cannot override it", () => {
       render(<Checkbox id="terms">Akzeptieren</Checkbox>);
 
-      expect(
-        screen.getByLabelText("Akzeptieren").getAttribute("type"),
-      ).toBe("checkbox");
+      expect(screen.getByLabelText("Akzeptieren").getAttribute("type")).toBe(
+        "checkbox",
+      );
     });
   });
 
   describe("decorative check icon", () => {
     it("renders a decorative check svg next to the input", () => {
-      const { container } = render(
-        <Checkbox id="terms">Akzeptieren</Checkbox>,
-      );
+      const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
       const svg = container.querySelector("svg");
 
       expect(svg).toBeInstanceOf(SVGElement);
@@ -126,12 +120,8 @@ describe("Checkbox", () => {
     });
 
     it("hides the check icon container by default and reveals it when checked (peer-checked)", () => {
-      const { container } = render(
-        <Checkbox id="terms">Akzeptieren</Checkbox>,
-      );
-      const iconWrapper = container.querySelector(
-        "span[aria-hidden='true']",
-      );
+      const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
+      const iconWrapper = container.querySelector("span[aria-hidden='true']");
 
       expect(iconWrapper).toBeInstanceOf(HTMLElement);
       expect(iconWrapper?.className).toContain("opacity-0");
@@ -141,9 +131,7 @@ describe("Checkbox", () => {
 
   describe("class composition", () => {
     it("includes base flex classes on the label", () => {
-      const { container } = render(
-        <Checkbox id="terms">Akzeptieren</Checkbox>,
-      );
+      const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
       const label = container.querySelector("label") as HTMLLabelElement;
 
       expect(label.className).toContain("flex");
@@ -167,9 +155,7 @@ describe("Checkbox", () => {
     });
 
     it("does not leave trailing whitespace on the label when className is omitted", () => {
-      const { container } = render(
-        <Checkbox id="terms">Akzeptieren</Checkbox>,
-      );
+      const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
       const label = container.querySelector("label") as HTMLLabelElement;
 
       expect(label.className).toBe(label.className.trim());

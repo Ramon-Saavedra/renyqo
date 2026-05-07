@@ -2,13 +2,20 @@ import type { InputHTMLAttributes, ReactNode } from "react";
 import { Check } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 
-interface CheckboxProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "children"> {
+interface CheckboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "type" | "children"
+> {
   id: string;
   children: ReactNode;
 }
 
-export function Checkbox({ id, children, className, ...inputProps }: CheckboxProps) {
+export function Checkbox({
+  id,
+  children,
+  className,
+  ...inputProps
+}: CheckboxProps) {
   return (
     <label
       htmlFor={id}

@@ -9,11 +9,15 @@ const applicantCopy = accountTypeCopy.roles.applicant;
 const providerCopy = accountTypeCopy.roles.provider;
 
 function getApplicantCard() {
-  return screen.getByRole("radio", { name: new RegExp(applicantCopy.title, "i") });
+  return screen.getByRole("radio", {
+    name: new RegExp(applicantCopy.title, "i"),
+  });
 }
 
 function getProviderCard() {
-  return screen.getByRole("radio", { name: new RegExp(providerCopy.title, "i") });
+  return screen.getByRole("radio", {
+    name: new RegExp(providerCopy.title, "i"),
+  });
 }
 
 function getWeiterCta() {

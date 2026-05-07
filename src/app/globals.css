@@ -58,47 +58,51 @@
 }
 
 :root {
-  --background: #FCFBF1;
-  --background-subtle: #F5F4EA;
-  --background-muted: #EEEDE3;
-  --card: #FDFCF5;
+  --background: #fcfbf1;
+  --background-subtle: #f5f4ea;
+  --background-muted: #eeede3;
+  --card: #fdfcf5;
 
-  --foreground: #0E0E0E;
+  --foreground: #0e0e0e;
   --foreground-secondary: #555452;
-  --foreground-tertiary: #8C8A87;
+  --foreground-tertiary: #8c8a87;
 
-  --border: #E0E0E0;
-  --border-strong: #C8C8C8;
+  --border: #e0e0e0;
+  --border-strong: #c8c8c8;
 
   --primary: #566582;
   --primary-hover: #455269;
-  --primary-soft: #E5E9F0;
-  --primary-foreground: #FFFFFF;
+  --primary-soft: #e5e9f0;
+  --primary-foreground: #ffffff;
 
   --focus-ring: 0 0 0 3px rgb(86 101 130 / 0.18);
-  --card-shadow: 0 1px 2px rgb(14 14 14 / 0.04), 0 4px 12px rgb(14 14 14 / 0.05);
+  --card-shadow:
+    0 1px 2px rgb(14 14 14 / 0.04), 0 4px 12px rgb(14 14 14 / 0.05);
 
-  --typeface-display: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
-  --typeface-sans: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
-  --typeface-mono: var(--font-geist-mono), ui-monospace, "JetBrains Mono", monospace;
+  --typeface-display:
+    var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
+  --typeface-sans:
+    var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
+  --typeface-mono:
+    var(--font-geist-mono), ui-monospace, "JetBrains Mono", monospace;
 }
 
 .dark {
   --background: #111111;
   --background-subtle: #161616;
-  --background-muted: #1C1C1C;
+  --background-muted: #1c1c1c;
   --card: #181818;
 
-  --foreground: #F5F4F1;
-  --foreground-secondary: #A8A6A2;
-  --foreground-tertiary: #6F6D6A;
+  --foreground: #f5f4f1;
+  --foreground-secondary: #a8a6a2;
+  --foreground-tertiary: #6f6d6a;
 
   --border: #333333;
-  --border-strong: #4A4A4A;
+  --border-strong: #4a4a4a;
 
-  --primary: #8B9CBE;
-  --primary-hover: #A2B1CD;
-  --primary-soft: #1F2532;
+  --primary: #8b9cbe;
+  --primary-hover: #a2b1cd;
+  --primary-soft: #1f2532;
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
   --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);

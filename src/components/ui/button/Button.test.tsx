@@ -17,7 +17,9 @@ describe("Button", () => {
     it('defaults the type attribute to "button"', () => {
       render(<Button>Default</Button>);
 
-      const button = screen.getByRole("button", { name: "Default" }) as HTMLButtonElement;
+      const button = screen.getByRole("button", {
+        name: "Default",
+      }) as HTMLButtonElement;
 
       expect(button.type).toBe("button");
     });
@@ -25,7 +27,9 @@ describe("Button", () => {
     it("honors an explicit type attribute", () => {
       render(<Button type="submit">Submit</Button>);
 
-      const button = screen.getByRole("button", { name: "Submit" }) as HTMLButtonElement;
+      const button = screen.getByRole("button", {
+        name: "Submit",
+      }) as HTMLButtonElement;
 
       expect(button.type).toBe("submit");
     });
@@ -69,7 +73,9 @@ describe("Button", () => {
           Disabled
         </Button>,
       );
-      const button = screen.getByRole("button", { name: "Disabled" }) as HTMLButtonElement;
+      const button = screen.getByRole("button", {
+        name: "Disabled",
+      }) as HTMLButtonElement;
 
       await user.click(button);
 

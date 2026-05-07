@@ -62,7 +62,9 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
 
             <div className="mt-9 grid max-w-sm gap-3.5 border-t border-border pt-7">
               <ReassureItem
-                icon={<PrimaryIcon size={14} strokeWidth={1.6} aria-hidden="true" />}
+                icon={
+                  <PrimaryIcon size={14} strokeWidth={1.6} aria-hidden="true" />
+                }
                 title={roleCopy.reassure[0].title}
                 description={roleCopy.reassure[0].description}
               />

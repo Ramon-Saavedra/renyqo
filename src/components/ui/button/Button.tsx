@@ -27,5 +27,7 @@ export function Button({
   className,
   ...rest
 }: ButtonProps) {
-  return <button type={type} className={buttonClass(variant, className)} {...rest} />;
+  return (
+    <button type={type} className={buttonClass(variant, className)} {...rest} />
+  );
 }

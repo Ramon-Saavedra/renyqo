@@ -45,22 +45,22 @@ Si creas un custom hook o una base reutilizable para iconos, debe ser **profesio
 
 Reglas:
 
-* no dejes comentarios
-* no uses `any`
-* no hagas hooks absurdos para devolver un valor fijo sin necesidad real
-* si la lógica no necesita estado ni efectos, evalúa si debe ser un hook o una utilidad/config tipada
-* usa interfaces o types claros
-* piensa en reutilización real en toda la app
+- no dejes comentarios
+- no uses `any`
+- no hagas hooks absurdos para devolver un valor fijo sin necesidad real
+- si la lógica no necesita estado ni efectos, evalúa si debe ser un hook o una utilidad/config tipada
+- usa interfaces o types claros
+- piensa en reutilización real en toda la app
 
 Para iconos, quiero una solución profesional que contemple como mínimo:
 
-* `size` opcional
-* `color` opcional
-* `title` opcional
-* `disabled` opcional
-* `className` opcional
-* posibilidad de definir valores por defecto limpios
-* consistencia con toda la app
+- `size` opcional
+- `color` opcional
+- `title` opcional
+- `disabled` opcional
+- `className` opcional
+- posibilidad de definir valores por defecto limpios
+- consistencia con toda la app
 
 Antes de implementarlo, dime:
 
@@ -70,7 +70,6 @@ Antes de implementarlo, dime:
 4. por qué esa solución es mejor que un hook pobre
 
 No implementes todavía. Primero explícame el plan y pregúntame si procedes.
-
 
 # Comportamiento general esperado
 

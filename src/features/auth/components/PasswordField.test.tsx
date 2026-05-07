@@ -21,9 +21,9 @@ describe("PasswordField", () => {
     it("renders the visibility toggle button alongside the input", () => {
       render(<PasswordField id="pw" label="Passwort" />);
 
-      expect(
-        screen.getByRole("button", { name: showLabel }),
-      ).toBeInstanceOf(HTMLButtonElement);
+      expect(screen.getByRole("button", { name: showLabel })).toBeInstanceOf(
+        HTMLButtonElement,
+      );
     });
 
     it("gives the input right padding so the toggle does not overlap the text", () => {
@@ -34,11 +34,7 @@ describe("PasswordField", () => {
 
     it("renders the hint when provided", () => {
       render(
-        <PasswordField
-          id="pw"
-          label="Passwort"
-          hint="Mindestens 8 Zeichen"
-        />,
+        <PasswordField id="pw" label="Passwort" hint="Mindestens 8 Zeichen" />,
       );
 
       expect(screen.getByText("Mindestens 8 Zeichen")).toBeInstanceOf(

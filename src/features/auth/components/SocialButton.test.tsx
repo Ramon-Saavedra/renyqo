@@ -19,9 +19,7 @@ describe("SocialButton", () => {
     });
 
     it("renders the children inside the button", () => {
-      render(
-        <SocialButton icon={<span />}>Weiter mit Google</SocialButton>,
-      );
+      render(<SocialButton icon={<span />}>Weiter mit Google</SocialButton>);
 
       expect(screen.getByText("Weiter mit Google")).toBeInstanceOf(HTMLElement);
     });
@@ -47,9 +45,7 @@ describe("SocialButton", () => {
     it("defaults the button type to 'button'", () => {
       render(<SocialButton icon={<span />}>Weiter</SocialButton>);
 
-      expect(
-        screen.getByRole("button").getAttribute("type"),
-      ).toBe("button");
+      expect(screen.getByRole("button").getAttribute("type")).toBe("button");
     });
 
     it("honors a custom type when provided", () => {
@@ -59,9 +55,7 @@ describe("SocialButton", () => {
         </SocialButton>,
       );
 
-      expect(
-        screen.getByRole("button").getAttribute("type"),
-      ).toBe("submit");
+      expect(screen.getByRole("button").getAttribute("type")).toBe("submit");
     });
   });
 
@@ -99,9 +93,9 @@ describe("SocialButton", () => {
         </SocialButton>,
       );
 
-      expect(
-        (screen.getByRole("button") as HTMLButtonElement).disabled,
-      ).toBe(true);
+      expect((screen.getByRole("button") as HTMLButtonElement).disabled).toBe(
+        true,
+      );
     });
   });
 
@@ -163,9 +157,9 @@ describe("GoogleIcon", () => {
   it("is hidden from assistive tech", () => {
     const { container } = render(<GoogleIcon />);
 
-    expect(
-      container.querySelector("svg")?.getAttribute("aria-hidden"),
-    ).toBe("true");
+    expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
+      "true",
+    );
   });
 
   it("renders the four colored paths of the Google glyph", () => {
@@ -196,9 +190,9 @@ describe("AppleIcon", () => {
   it("is hidden from assistive tech", () => {
     const { container } = render(<AppleIcon />);
 
-    expect(
-      container.querySelector("svg")?.getAttribute("aria-hidden"),
-    ).toBe("true");
+    expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
+      "true",
+    );
   });
 
   it("renders a single path for the Apple glyph", () => {
