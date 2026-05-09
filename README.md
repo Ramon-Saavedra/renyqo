@@ -32,18 +32,18 @@ The dev server starts on [http://localhost:3000](http://localhost:3000).
 
 ### Available scripts
 
-| Script                 | Purpose                              |
-| ---------------------- | ------------------------------------ |
-| `npm run dev`          | Start the Next.js dev server         |
-| `npm run build`        | Production build                     |
-| `npm run start`        | Run the production server            |
-| `npm run typecheck`    | `tsc --noEmit` strict typecheck      |
-| `npm run lint`         | ESLint over the workspace            |
-| `npm run lint:fix`     | ESLint with autofix                  |
-| `npm run format`       | Prettier write                       |
-| `npm run format:check` | Prettier check (CI-equivalent)       |
-| `npm run test`         | One-shot Vitest run                  |
-| `npm run test:watch`   | Vitest in watch mode                 |
+| Script                 | Purpose                         |
+| ---------------------- | ------------------------------- |
+| `npm run dev`          | Start the Next.js dev server    |
+| `npm run build`        | Production build                |
+| `npm run start`        | Run the production server       |
+| `npm run typecheck`    | `tsc --noEmit` strict typecheck |
+| `npm run lint`         | ESLint over the workspace       |
+| `npm run lint:fix`     | ESLint with autofix             |
+| `npm run format`       | Prettier write                  |
+| `npm run format:check` | Prettier check (CI-equivalent)  |
+| `npm run test`         | One-shot Vitest run             |
+| `npm run test:watch`   | Vitest in watch mode            |
 
 ## Project structure
 
