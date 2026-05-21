@@ -23,33 +23,31 @@ export default function ProviderGetStartedPage() {
         <Avatar initials={copy.user.initials} label={copy.user.name} />
       </AppTopbar>
 
-      <div className="relative overflow-hidden">
-        <Watermark text="renyqo" />
+      <Watermark text="renyqo" />
 
-        <section className="relative z-1 mx-auto mb-section grid w-content grid-cols-1 items-center gap-20 lg:grid-cols-2">
-          <EmptyStateHero
-            welcome={copy.hero.welcome}
-            title={copy.hero.title}
-            lead={copy.hero.lead}
-            ctaLabel={copy.hero.cta.label}
-            ctaHref={copy.hero.cta.href}
-            trust={copy.hero.trust}
-          />
-
-          <FlowStepsCard
-            kicker={copy.flow.kicker}
-            steps={copy.flow.steps}
-            currentIndex={copy.flow.currentIndex}
-          />
-        </section>
-
-        <BenefitsSection
-          title={copy.benefits.title}
-          description={copy.benefits.description}
-          items={copy.benefits.items}
-          className="mx-auto w-content"
+      <section className="mx-auto mb-section grid w-content grid-cols-1 items-center gap-20 lg:grid-cols-2">
+        <EmptyStateHero
+          welcome={copy.hero.welcome}
+          title={copy.hero.title}
+          lead={copy.hero.lead}
+          ctaLabel={copy.hero.cta.label}
+          ctaHref={copy.hero.cta.href}
+          trust={copy.hero.trust}
         />
-      </div>
+
+        <FlowStepsCard
+          kicker={copy.flow.kicker}
+          steps={copy.flow.steps}
+          currentIndex={copy.flow.currentIndex}
+        />
+      </section>
+
+      <BenefitsSection
+        title={copy.benefits.title}
+        description={copy.benefits.description}
+        items={copy.benefits.items}
+        className="mx-auto w-content"
+      />
     </PageShell>
   );
 }
