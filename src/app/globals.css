@@ -2,6 +2,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+html {
+  scrollbar-gutter: stable;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-background-subtle: var(--background-subtle);
@@ -21,12 +25,17 @@
   --color-primary-tint: var(--primary-tint);
   --color-primary-foreground: var(--primary-foreground);
 
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
   --radius-sm: 4px;
   --radius-md: 6px;
+  --radius-lg: 10px;
 
   --shadow-focus: var(--focus-ring);
   --shadow-card: var(--card-shadow);
   --shadow-tint-ring: 0 0 0 3px var(--primary-tint);
+  --shadow-cover-ring: inset 0 0 0 1.5px var(--primary);
 
   --font-display: var(--typeface-display);
   --font-sans: var(--typeface-sans);
@@ -67,7 +76,6 @@
   --text-action--letter-spacing: -0.005em;
 
   --spacing-page: min(80%, 1280px);
-  --spacing-content: 95%;
   --spacing-section: 4rem;
 }
 
@@ -89,6 +97,9 @@
   --primary-soft: #e5e9f0;
   --primary-tint: #eef1f6;
   --primary-foreground: #ffffff;
+
+  --success: #4f7a56;
+  --warning: #b07b3d;
 
   --watermark-opacity-peak: 0.35;
   --watermark-cycle-duration: 120s;
@@ -123,6 +134,9 @@
   --primary-soft: #1f2532;
   --primary-tint: #181d27;
 
+  --success: #8fb59a;
+  --warning: #d2a36a;
+
   --watermark-opacity-peak: 0.5;
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
@@ -135,6 +149,25 @@ body {
   font-family: var(--typeface-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.listing-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+@media (min-width: 1080px) {
+  .listing-grid {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 48px;
+  }
 }
 
 .watermark {
