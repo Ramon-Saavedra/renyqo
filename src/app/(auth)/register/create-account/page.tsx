@@ -41,7 +41,7 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
         </Link>
       </AppTopbar>
 
-      <div className="mx-auto flex w-content flex-1 flex-col">
+      <div className="flex flex-1 flex-col px-14">
         <Stepper steps={REGISTER_STEPS} currentIndex={1} className="mb-7" />
 
         <div className="grid flex-1 items-start gap-20 lg:grid-cols-2">

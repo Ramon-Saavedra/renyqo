@@ -22,29 +22,30 @@ export default function ProviderGetStartedPage() {
         <Avatar initials={copy.user.initials} label={copy.user.name} />
       </AppTopbar>
 
-      <section className="mx-auto mb-section grid w-content grid-cols-1 items-center gap-20 lg:grid-cols-2">
-        <EmptyStateHero
-          welcome={copy.hero.welcome}
-          title={copy.hero.title}
-          lead={copy.hero.lead}
-          ctaLabel={copy.hero.cta.label}
-          ctaHref={copy.hero.cta.href}
-          trust={copy.hero.trust}
-        />
+      <div className="px-14">
+        <section className="mb-section grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
+          <EmptyStateHero
+            welcome={copy.hero.welcome}
+            title={copy.hero.title}
+            lead={copy.hero.lead}
+            ctaLabel={copy.hero.cta.label}
+            ctaHref={copy.hero.cta.href}
+            trust={copy.hero.trust}
+          />
 
-        <FlowStepsCard
-          kicker={copy.flow.kicker}
-          steps={copy.flow.steps}
-          currentIndex={copy.flow.currentIndex}
-        />
-      </section>
+          <FlowStepsCard
+            kicker={copy.flow.kicker}
+            steps={copy.flow.steps}
+            currentIndex={copy.flow.currentIndex}
+          />
+        </section>
 
-      <BenefitsSection
-        title={copy.benefits.title}
-        description={copy.benefits.description}
-        items={copy.benefits.items}
-        className="mx-auto w-content"
-      />
+        <BenefitsSection
+          title={copy.benefits.title}
+          description={copy.benefits.description}
+          items={copy.benefits.items}
+        />
+      </div>
     </PageShell>
   );
 }
