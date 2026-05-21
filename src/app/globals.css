@@ -66,10 +66,6 @@
   --text-action: 14px;
   --text-action--letter-spacing: -0.005em;
 
-  --text-watermark: 320px;
-  --text-watermark--line-height: 1;
-  --text-watermark--letter-spacing: -0.06em;
-
   --spacing-page: min(80%, 1280px);
   --spacing-content: 95%;
   --spacing-section: 4rem;
@@ -94,9 +90,8 @@
   --primary-tint: #eef1f6;
   --primary-foreground: #ffffff;
 
-  --watermark-inset-right: -40px;
-  --watermark-inset-bottom: -100px;
-  --watermark-opacity: 0.025;
+  --watermark-opacity-peak: 0.35;
+  --watermark-cycle-duration: 120s;
 
   --focus-ring: 0 0 0 3px rgb(86 101 130 / 0.18);
   --card-shadow:
@@ -128,7 +123,7 @@
   --primary-soft: #1f2532;
   --primary-tint: #181d27;
 
-  --watermark-opacity: 0.04;
+  --watermark-opacity-peak: 0.5;
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
   --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
@@ -143,17 +138,34 @@ body {
 }
 
 .watermark {
-  position: absolute;
-  right: var(--watermark-inset-right);
-  bottom: var(--watermark-inset-bottom);
-  z-index: 0;
+  position: fixed;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
   font-family: var(--typeface-display);
-  font-size: var(--text-watermark);
-  line-height: var(--text-watermark--line-height);
-  letter-spacing: var(--text-watermark--letter-spacing);
-  font-weight: 600;
+  font-size: var(--text-caption);
+  font-weight: 500;
+  letter-spacing: -0.005em;
   color: var(--foreground);
-  opacity: var(--watermark-opacity);
+  opacity: var(--watermark-opacity-peak);
   pointer-events: none;
   user-select: none;
+  animation: watermark-breathe var(--watermark-cycle-duration)
+    cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes watermark-breathe {
+  0%,
+  100% {
+    opacity: var(--watermark-opacity-peak);
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .watermark {
+    animation: none;
+  }
 }
