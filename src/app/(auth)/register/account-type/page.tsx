@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { withBrand } from "@/components/ui/brand/BrandName";
 import { buttonClass } from "@/components/ui/button/Button";
-import { Logo } from "@/components/ui/logo/Logo";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { Stepper } from "@/components/ui/stepper/Stepper";
 import { RoleSelector } from "@/features/auth/components/RoleSelector";
 import { accountTypeCopy } from "@/features/auth/copy/account-type";
@@ -11,16 +12,15 @@ import { REGISTER_STEPS } from "@/features/auth/copy/register-flow";
 
 export default function AccountTypePage() {
   return (
-    <main className="flex min-h-screen flex-col bg-background">
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-14 pt-8 pb-12">
-        <div className="mb-12 flex items-center justify-between">
-          <Logo />
-          <Link href="/register" className={buttonClass("ghost")}>
-            <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
-            {accountTypeCopy.back}
-          </Link>
-        </div>
+    <PageShell>
+      <AppTopbar className="mb-section">
+        <Link href="/register" className={buttonClass("ghost")}>
+          <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
+          {accountTypeCopy.back}
+        </Link>
+      </AppTopbar>
 
+      <div className="mx-auto flex w-content flex-1 flex-col">
         <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
 
         <div className="mb-9 flex max-w-3xl flex-col gap-3">
@@ -34,6 +34,6 @@ export default function AccountTypePage() {
 
         <RoleSelector />
       </div>
-    </main>
+    </PageShell>
   );
 }

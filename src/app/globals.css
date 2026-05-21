@@ -18,6 +18,7 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-tint: var(--primary-tint);
   --color-primary-foreground: var(--primary-foreground);
 
   --radius-sm: 4px;
@@ -25,6 +26,7 @@
 
   --shadow-focus: var(--focus-ring);
   --shadow-card: var(--card-shadow);
+  --shadow-tint-ring: 0 0 0 3px var(--primary-tint);
 
   --font-display: var(--typeface-display);
   --font-sans: var(--typeface-sans);
@@ -33,6 +35,14 @@
   --text-display: 42px;
   --text-display--line-height: 1.05;
   --text-display--letter-spacing: -0.032em;
+
+  --text-heading-xl: 34px;
+  --text-heading-xl--line-height: 1.1;
+  --text-heading-xl--letter-spacing: -0.028em;
+
+  --text-heading-md: 18px;
+  --text-heading-md--line-height: 1.3;
+  --text-heading-md--letter-spacing: -0.018em;
 
   --text-lead: 14.5px;
   --text-lead--line-height: 1.55;
@@ -55,6 +65,14 @@
 
   --text-action: 14px;
   --text-action--letter-spacing: -0.005em;
+
+  --text-watermark: 320px;
+  --text-watermark--line-height: 1;
+  --text-watermark--letter-spacing: -0.06em;
+
+  --spacing-page: min(80%, 1280px);
+  --spacing-content: 95%;
+  --spacing-section: 4rem;
 }
 
 :root {
@@ -73,7 +91,12 @@
   --primary: #566582;
   --primary-hover: #455269;
   --primary-soft: #e5e9f0;
+  --primary-tint: #eef1f6;
   --primary-foreground: #ffffff;
+
+  --watermark-inset-right: -40px;
+  --watermark-inset-bottom: -100px;
+  --watermark-opacity: 0.025;
 
   --focus-ring: 0 0 0 3px rgb(86 101 130 / 0.18);
   --card-shadow:
@@ -103,6 +126,9 @@
   --primary: #8b9cbe;
   --primary-hover: #a2b1cd;
   --primary-soft: #1f2532;
+  --primary-tint: #181d27;
+
+  --watermark-opacity: 0.04;
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
   --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
@@ -114,4 +140,20 @@ body {
   font-family: var(--typeface-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.watermark {
+  position: absolute;
+  right: var(--watermark-inset-right);
+  bottom: var(--watermark-inset-bottom);
+  z-index: 0;
+  font-family: var(--typeface-display);
+  font-size: var(--text-watermark);
+  line-height: var(--text-watermark--line-height);
+  letter-spacing: var(--text-watermark--letter-spacing);
+  font-weight: 600;
+  color: var(--foreground);
+  opacity: var(--watermark-opacity);
+  pointer-events: none;
+  user-select: none;
 }

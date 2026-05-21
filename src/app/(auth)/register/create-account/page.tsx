@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, Building, Lock, Shield } from "lucide-react";
-import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { buttonClass } from "@/components/ui/button/Button";
-import { Logo } from "@/components/ui/logo/Logo";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { Stepper } from "@/components/ui/stepper/Stepper";
 import { CreateAccountForm } from "@/features/auth/components/CreateAccountForm";
 import { type Role } from "@/features/auth/copy/account-type";
@@ -32,19 +33,18 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
   const PrimaryIcon = ROLE_GLYPHS[role];
 
   return (
-    <main className="flex min-h-screen flex-col bg-background">
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-14 pt-8 pb-10">
-        <div className="flex items-center justify-between">
-          <Logo />
-          <Link href="/register/account-type" className={buttonClass("ghost")}>
-            <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
-            {createAccountCopy.back}
-          </Link>
-        </div>
+    <PageShell>
+      <AppTopbar className="mb-section">
+        <Link href="/register/account-type" className={buttonClass("ghost")}>
+          <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
+          {createAccountCopy.back}
+        </Link>
+      </AppTopbar>
 
-        <Stepper steps={REGISTER_STEPS} currentIndex={1} className="mt-10" />
+      <div className="mx-auto flex w-content flex-1 flex-col">
+        <Stepper steps={REGISTER_STEPS} currentIndex={1} className="mb-7" />
 
-        <div className="mt-8 grid flex-1 items-start gap-20 lg:grid-cols-2">
+        <div className="grid flex-1 items-start gap-20 lg:grid-cols-2">
           <div>
             <span className="mb-5 inline-flex items-center gap-2 rounded-sm border border-border bg-background-subtle px-2.5 py-1.5 font-mono text-meta uppercase text-foreground-tertiary">
               <span
@@ -53,14 +53,14 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
               />
               {roleCopy.tag}
             </span>
-            <h1 className="font-display text-display font-medium text-balance text-foreground">
+            <h1 className="mb-3.5 font-display text-display font-medium text-balance text-foreground">
               {roleCopy.title}
             </h1>
-            <p className="mt-3.5 max-w-md text-lead text-foreground-secondary">
+            <p className="mb-9 max-w-md text-lead text-foreground-secondary">
               {roleCopy.subtitle}
             </p>
 
-            <div className="mt-9 grid max-w-sm gap-3.5 border-t border-border pt-7">
+            <div className="grid max-w-sm gap-3.5 border-t border-border pt-7">
               <ReassureItem
                 icon={
                   <PrimaryIcon size={14} strokeWidth={1.6} aria-hidden="true" />
@@ -79,7 +79,7 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
           <CreateAccountForm idPrefix={role} />
         </div>
       </div>
-    </main>
+    </PageShell>
   );
 }
 
@@ -94,7 +94,7 @@ function ReassureItem({
 }) {
   return (
     <div className="flex items-start gap-3 text-caption text-foreground-secondary">
-      <span className="mt-0.5 shrink-0 text-primary">{icon}</span>
+      <span className="shrink-0 pt-0.5 text-primary">{icon}</span>
       <span>
         <strong className="block font-medium text-foreground">{title}</strong>
         {description}
