@@ -7,7 +7,6 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { BenefitsSection } from "@/features/provider/empty-state/components/BenefitsSection";
 import { EmptyStateHero } from "@/features/provider/empty-state/components/EmptyStateHero";
 import { FlowStepsCard } from "@/features/provider/empty-state/components/FlowStepsCard";
-import { Watermark } from "@/features/provider/empty-state/components/Watermark";
 import { providerEmptyStateCopy } from "@/features/provider/empty-state/copy/empty-state";
 
 export default function ProviderGetStartedPage() {
@@ -22,8 +21,6 @@ export default function ProviderGetStartedPage() {
         </button>
         <Avatar initials={copy.user.initials} label={copy.user.name} />
       </AppTopbar>
-
-      <Watermark text="renyqo" />
 
       <section className="mx-auto mb-section grid w-content grid-cols-1 items-center gap-20 lg:grid-cols-2">
         <EmptyStateHero

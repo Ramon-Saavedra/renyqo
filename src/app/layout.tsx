@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Watermark } from "@/components/layout/watermark/Watermark";
 import { siteConfig } from "@/config/site";
 import { designTokens } from "@/lib/design/tokens";
 import "./globals.css";
@@ -81,6 +82,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <Watermark />
       </body>
     </html>
   );
