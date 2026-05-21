@@ -48,9 +48,7 @@ export function FlowStep({
           {title}
         </div>
         {children && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {children}
-          </div>
+          <div className="flex flex-wrap items-center gap-1.5">{children}</div>
         )}
       </div>
     </div>

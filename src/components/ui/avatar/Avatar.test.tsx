@@ -13,9 +13,9 @@ describe("Avatar", () => {
   it("exposes the full name through an aria-label", () => {
     render(<Avatar initials="SK" label="Sabine Kessler" />);
 
-    expect(
-      screen.getByRole("img", { name: "Sabine Kessler" }),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("img", { name: "Sabine Kessler" })).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("appends a custom className to the base classes", () => {
