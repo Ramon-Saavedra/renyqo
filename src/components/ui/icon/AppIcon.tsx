@@ -1,4 +1,5 @@
 import { type LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 export interface AppIconProps {
   icon: LucideIcon;
@@ -8,10 +9,6 @@ export interface AppIconProps {
   decorative?: boolean;
   className?: string;
   strokeWidth?: number;
-}
-
-function joinClasses(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
 }
 
 export function AppIcon({
@@ -32,7 +29,7 @@ export function AppIcon({
       aria-hidden={isDecorative ? true : undefined}
       aria-label={isDecorative ? undefined : title}
       role={isDecorative ? undefined : "img"}
-      className={joinClasses(
+      className={cn(
         "shrink-0",
         disabled && "pointer-events-none opacity-50",
         className,

@@ -1,5 +1,6 @@
 import { type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 
 export type InfoPillVariant = "mono" | "body";
 
@@ -26,9 +27,8 @@ export function InfoPill({
   withPip = false,
   className,
 }: InfoPillProps) {
-  const composed = `${BASE_CLASS} ${VARIANT_CLASS[variant]}`;
   return (
-    <span className={className ? `${composed} ${className}` : composed}>
+    <span className={cn(BASE_CLASS, VARIANT_CLASS[variant], className)}>
       {withPip && (
         <span
           aria-hidden="true"

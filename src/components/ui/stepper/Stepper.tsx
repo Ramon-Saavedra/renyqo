@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { Check } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 
 interface StepperProps {
   steps: readonly string[];
@@ -21,7 +22,7 @@ export function Stepper({
   return (
     <nav
       aria-label={ariaLabel}
-      className={className ? `${BASE_CLASS} ${className}` : BASE_CLASS}
+      className={cn(BASE_CLASS, className)}
     >
       {steps.map((step, index) => {
         const isActive = index === currentIndex;
