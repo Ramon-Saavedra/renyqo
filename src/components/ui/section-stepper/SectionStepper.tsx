@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import { Check } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 
 export interface SectionStep {
@@ -36,28 +37,32 @@ export function SectionStepper({
   ariaLabel = "Fortschritt",
   className,
 }: SectionStepperProps) {
-  const navClass = className ? `${NAV_BASE} ${className}` : NAV_BASE;
+  const navClass = cn(NAV_BASE, className);
   return (
     <nav aria-label={ariaLabel} className={navClass}>
       {steps.map((step, index) => {
         const isActive = step.id === activeId;
         const isDone = completedIds.includes(step.id);
-        const stepClass = `${STEP_BASE} ${isActive ? STEP_ACTIVE : isDone ? STEP_DONE : ""}`;
-        const numClass = `${NUM_BASE} ${
-          isActive ? NUM_ACTIVE : isDone ? NUM_DONE : ""
-        }`;
+        const stepClass = cn(
+          STEP_BASE,
+          isActive ? STEP_ACTIVE : isDone ? STEP_DONE : "",
+        );
+        const numClass = cn(
+          NUM_BASE,
+          isActive ? NUM_ACTIVE : isDone ? NUM_DONE : "",
+        );
         const display = String(index + 1).padStart(2, "0");
         return (
           <Fragment key={step.id}>
-            <a href={`#${step.id}`} className={stepClass.trim()}>
-              <span aria-hidden="true" className={numClass.trim()}>
+            <a href={`#${step.id}`} className={stepClass}>
+              <span aria-hidden="true" className={numClass}>
                 {isDone ? (
                   <AppIcon icon={Check} size={11} strokeWidth={2} decorative />
                 ) : (
                   display
                 )}
               </span>
-              <span>{step.label}</span>
+              <span className="hidden sm:inline">{step.label}</span>
             </a>
             {index < steps.length - 1 && (
               <span aria-hidden="true" className={LINE_CLASS} />

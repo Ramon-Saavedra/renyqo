@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils/cn";
 import { Input } from "@/components/ui/form/Input";
 import { createListingCopy } from "../copy/create-listing";
 
@@ -39,18 +40,24 @@ export function AutoTitleField({
   const overrideTrimmed = override.trim();
   const hasOverride = overrideTrimmed.length > 0;
 
-  const autoClass = `${AUTO_BASE} ${hasOverride ? AUTO_OVERRIDDEN : ""}`.trim();
-  const pipClass = `${PIP_BASE} ${hasOverride ? "bg-foreground-tertiary" : "bg-primary"}`;
-  const genClass = [
+  const autoClass = cn(AUTO_BASE, hasOverride && AUTO_OVERRIDDEN);
+  const pipClass = cn(
+    PIP_BASE,
+    hasOverride ? "bg-foreground-tertiary" : "bg-primary",
+  );
+  const genClass = cn(
     GEN_BASE,
-    isAutoPlaceholder ? GEN_PLACEHOLDER : "",
-    hasOverride ? GEN_OVERRIDDEN : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const overrideClass = `${OVERRIDE_BASE} ${hasOverride ? OVERRIDE_ACTIVE : OVERRIDE_IDLE}`;
-  const overrideLabelClass = `${OVERRIDE_LABEL_BASE} ${hasOverride ? OVERRIDE_LABEL_ACTIVE : OVERRIDE_LABEL_IDLE}`;
+    isAutoPlaceholder && GEN_PLACEHOLDER,
+    hasOverride && GEN_OVERRIDDEN,
+  );
+  const overrideClass = cn(
+    OVERRIDE_BASE,
+    hasOverride ? OVERRIDE_ACTIVE : OVERRIDE_IDLE,
+  );
+  const overrideLabelClass = cn(
+    OVERRIDE_LABEL_BASE,
+    hasOverride ? OVERRIDE_LABEL_ACTIVE : OVERRIDE_LABEL_IDLE,
+  );
 
   return (
     <div className="flex flex-col gap-3">

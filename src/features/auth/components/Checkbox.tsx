@@ -1,6 +1,7 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { Check } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 
 interface CheckboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -19,7 +20,10 @@ export function Checkbox({
   return (
     <label
       htmlFor={id}
-      className={`flex cursor-pointer items-start gap-2.5 text-caption text-foreground-secondary${className ? ` ${className}` : ""}`}
+      className={cn(
+        "flex cursor-pointer items-start gap-2.5 text-caption text-foreground-secondary",
+        className,
+      )}
     >
       <span className="relative mt-0.5 inline-flex h-4 w-4 shrink-0">
         <input

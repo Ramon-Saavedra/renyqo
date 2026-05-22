@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 import { AppIcon } from "../icon/AppIcon";
+import { safeSetItem } from "@/lib/utils/storage";
 
 type Theme = "light" | "dark";
 
@@ -27,9 +28,7 @@ function getServerSnapshot(): Theme {
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");
-  try {
-    localStorage.setItem(STORAGE_KEY, theme);
-  } catch {}
+  safeSetItem(STORAGE_KEY, theme);
 }
 
 export default function ThemeToggle() {

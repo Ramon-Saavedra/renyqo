@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { cn } from "@/lib/utils/cn";
 
 interface SocialButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   icon: ReactNode;
@@ -16,11 +17,7 @@ export function SocialButton({
   ...rest
 }: SocialButtonProps) {
   return (
-    <button
-      type={type}
-      className={className ? `${BASE_CLASS} ${className}` : BASE_CLASS}
-      {...rest}
-    >
+    <button type={type} className={cn(BASE_CLASS, className)} {...rest}>
       <span aria-hidden="true" className="inline-flex shrink-0">
         {icon}
       </span>

@@ -79,7 +79,25 @@ html {
   --spacing-section: 4rem;
 }
 
+@media (min-width: 640px) {
+  :root {
+    --gutter: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 3.5rem;
+  }
+}
+
+@utility px-gutter {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
 :root {
+  --gutter: 1rem;
   --background: #fcfbf1;
   --background-subtle: #f5f4ea;
   --background-muted: #eeede3;

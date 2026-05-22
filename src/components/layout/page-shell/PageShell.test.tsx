@@ -22,7 +22,7 @@ describe("PageShell", () => {
     );
     const inner = container.querySelector("main > div");
 
-    expect(inner?.className).toContain("max-w-page");
+    expect(inner?.className).toContain("sm:max-w-page");
     expect(inner?.className).toContain("mx-auto");
     expect(inner?.className).toContain("pb-section");
   });

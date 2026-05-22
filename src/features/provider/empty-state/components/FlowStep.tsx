@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils/cn";
+
 interface FlowStepProps {
   index: number;
   title: string;
@@ -29,10 +31,12 @@ export function FlowStep({
   children,
 }: FlowStepProps) {
   const isLast = index === totalSteps;
-  const rowClass = `${ROW_BASE} ${isCurrent ? ROW_CURRENT : ROW_IDLE} ${
-    isLast ? "" : CONNECTOR
-  }`;
-  const numClass = `${NUM_BASE} ${isCurrent ? NUM_CURRENT : NUM_IDLE}`;
+  const rowClass = cn(
+    ROW_BASE,
+    isCurrent ? ROW_CURRENT : ROW_IDLE,
+    !isLast && CONNECTOR,
+  );
+  const numClass = cn(NUM_BASE, isCurrent ? NUM_CURRENT : NUM_IDLE);
 
   return (
     <div className={rowClass}>
@@ -41,9 +45,10 @@ export function FlowStep({
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className={`font-display text-body font-medium text-foreground${
-            children ? " mb-2" : ""
-          }`}
+          className={cn(
+            "font-display text-body font-medium text-foreground",
+            !!children && "mb-2",
+          )}
         >
           {title}
         </div>

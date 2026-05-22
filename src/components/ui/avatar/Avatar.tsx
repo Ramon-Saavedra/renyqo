@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils/cn";
+
 interface AvatarProps {
   initials: string;
   label: string;
@@ -9,11 +11,7 @@ const BASE_CLASS =
 
 export function Avatar({ initials, label, className }: AvatarProps) {
   return (
-    <span
-      role="img"
-      aria-label={label}
-      className={className ? `${BASE_CLASS} ${className}` : BASE_CLASS}
-    >
+    <span role="img" aria-label={label} className={cn(BASE_CLASS, className)}>
       {initials}
     </span>
   );

@@ -2,6 +2,7 @@
 
 import { Camera, X } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 import { createListingCopy } from "../copy/create-listing";
 import type { ListingPhoto } from "../hooks/useListingDraft";
 import { usePhotoGrid } from "../hooks/usePhotoGrid";
@@ -38,7 +39,7 @@ export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
       <div className="photo-grid">
         {photos.map((photo, index) => {
           const isCover = index === 0;
-          const tileClass = `${TILE_BASE} ${isCover ? TILE_COVER : TILE_IDLE}`;
+          const tileClass = cn(TILE_BASE, isCover ? TILE_COVER : TILE_IDLE);
           return (
             <div key={photo.id} className={tileClass}>
               <div

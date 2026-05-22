@@ -22,7 +22,7 @@ export default function ProviderGetStartedPage() {
         <Avatar initials={copy.user.initials} label={copy.user.name} />
       </AppTopbar>
 
-      <div className="px-14">
+      <div className="px-gutter">
         <section className="mb-section grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
           <EmptyStateHero
             welcome={copy.hero.welcome}

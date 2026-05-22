@@ -20,7 +20,7 @@ export default function AccountTypePage() {
         </Link>
       </AppTopbar>
 
-      <div className="flex flex-1 flex-col px-14">
+      <div className="flex flex-1 flex-col px-gutter">
         <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
 
         <div className="mb-9 flex max-w-3xl flex-col gap-3">

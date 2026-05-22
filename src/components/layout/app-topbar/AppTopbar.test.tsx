@@ -28,7 +28,7 @@ describe("AppTopbar", () => {
 
     expect(header?.className).toContain("border-b");
     expect(header?.className).toContain("border-border");
-    expect(header?.className).toContain("px-14");
+    expect(header?.className).toContain("px-gutter");
     expect(header?.className).toContain("py-5.5");
   });
 
