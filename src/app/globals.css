@@ -26,6 +26,7 @@ html {
   --color-primary-foreground: var(--primary-foreground);
 
   --color-success: var(--success);
+  --color-success-vivid: var(--success-vivid);
   --color-warning: var(--warning);
 
   --radius-sm: 4px;
@@ -117,6 +118,7 @@ html {
   --primary-foreground: #ffffff;
 
   --success: #4f7a56;
+  --success-vivid: #1c9434;
   --warning: #b07b3d;
 
   --watermark-opacity-peak: 0.35;
@@ -153,6 +155,7 @@ html {
   --primary-tint: #181d27;
 
   --success: #8fb59a;
+  --success-vivid: #3ecf62;
   --warning: #d2a36a;
 
   --watermark-opacity-peak: 0.5;

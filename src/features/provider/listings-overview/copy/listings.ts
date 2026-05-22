@@ -103,10 +103,12 @@ export const listingsCopy = {
     livingArea: "Fläche",
     rooms: "Zimmer",
     applications: "Bewerbungen",
-    applicationsAria: (filled: number, max: number) =>
-      `${filled} von ${max} aktiven Bewerbungen`,
+    applicationsAria: (active: number) => `${active} von 5 aktiven Bewerbungen`,
+    applicationsLabel: (visible: number, waiting: number) =>
+      waiting > 0
+        ? `${visible} sichtbar · ${waiting} wartend`
+        : `${visible} sichtbar`,
     activity: "Letzte Aktivität",
-    newBadge: (n: number) => `+${n} neu`,
     editLabel: "Bearbeiten",
     moreLabel: "Aktionen",
   },

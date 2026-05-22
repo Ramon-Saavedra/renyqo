@@ -14,10 +14,7 @@ const BASE: ListingOverviewItem = {
   coldRent: 1200,
   livingArea: 68,
   rooms: 2,
-  applicationsCount: 3,
-  activeApplicationsCount: 3,
-  newApplicationsCount: 2,
-  activeApplicationsLimit: 5,
+  applicationsTotal: 3,
   openQuestionsCount: 0,
   status: "published",
   needsAttention: false,
@@ -47,20 +44,22 @@ describe("ListingRow", () => {
     expect(screen.getByText("Aktiv")).toBeInstanceOf(HTMLElement);
   });
 
-  it("renders the new applications badge when newApplicationsCount > 0", () => {
+  it("renders the applications label '3 sichtbar' for applicationsTotal 3", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByText("+2 neu")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("3 sichtbar")).toBeInstanceOf(HTMLElement);
   });
 
-  it("does not render the new badge when newApplicationsCount is 0", () => {
+  it("renders '5 sichtbar · 12 wartend' when applicationsTotal is 17", () => {
     render(
       <ListingRow
-        listing={{ ...BASE, newApplicationsCount: 0 }}
+        listing={{ ...BASE, applicationsTotal: 17 }}
         onAction={vi.fn()}
         now={NOW}
       />,
     );
-    expect(screen.queryByText(/\+\d+ neu/)).toBeNull();
+    expect(screen.getByText("5 sichtbar · 12 wartend")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("renders the AttentionPill when needsAttention is true with a reason", () => {
