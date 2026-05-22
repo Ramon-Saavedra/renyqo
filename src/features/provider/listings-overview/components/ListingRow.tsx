@@ -5,7 +5,7 @@ import { listingsCopy } from "../copy/listings";
 import type { ListingOverviewItem, RowAction } from "../types";
 import { formatArea, formatEUR, formatRelative } from "../utils/format";
 import { AttentionPill } from "./AttentionPill";
-import { BewerbungenMeter } from "./BewerbungenMeter";
+import { ApplicationsMeter } from "./ApplicationsMeter";
 import { RowActionsMenu } from "./RowActionsMenu";
 import { StatusPill } from "./StatusPill";
 
@@ -112,7 +112,7 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
             {listingsCopy.row.applications}
           </span>
           <div className={BEW_CELL_CLASS}>
-            <BewerbungenMeter active={visibleCount} />
+            <ApplicationsMeter active={visibleCount} />
             <span className={STAT_VALUE_SOFT}>
               {listingsCopy.row.applicationsLabel(visibleCount, waitingCount)}
             </span>
