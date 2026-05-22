@@ -36,7 +36,7 @@ export function CreateListingForm() {
         <TopbarActions status={status} />
       </AppTopbar>
 
-      <div className="px-14">
+      <div className="px-gutter">
         <CreateListingHero />
 
         <SectionStepper

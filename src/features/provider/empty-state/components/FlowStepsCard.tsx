@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils/cn";
 import { FlowStep } from "./FlowStep";
 
 interface FlowStepsCardProps {
@@ -59,9 +60,7 @@ export function FlowStepsCard({
           {steps.map((step, position) => (
             <span
               key={step.index}
-              className={`h-0.75 w-3.5 rounded-full ${
-                position === currentIndex ? "bg-primary" : "bg-border-strong"
-              }`}
+              className={cn("h-0.75 w-3.5 rounded-full", position === currentIndex ? "bg-primary" : "bg-border-strong")}
             />
           ))}
         </span>

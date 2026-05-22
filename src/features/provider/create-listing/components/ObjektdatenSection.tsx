@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils/cn";
 import { Building2, DoorOpen, Home } from "lucide-react";
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { FormField } from "@/components/ui/form/FormField";
@@ -55,7 +56,7 @@ export function ObjektdatenSection({
 
   const charCount = draft.description.length;
   const isOverWarn = charCount > fields.description.warnAt;
-  const charClass = `font-mono text-meta tabular-nums${isOverWarn ? " text-warning" : " text-foreground-tertiary"}`;
+  const charClass = cn("font-mono text-meta tabular-nums", isOverWarn ? "text-warning" : "text-foreground-tertiary");
 
   return (
     <SectionCard

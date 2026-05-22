@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils/cn";
+
 interface SectionCardProps {
   id: string;
   num: string;
@@ -20,7 +22,7 @@ export function SectionCard({
   return (
     <section
       id={id}
-      className={className ? `${BASE_CLASS} ${className}` : BASE_CLASS}
+      className={cn(BASE_CLASS, className)}
     >
       <header className="mb-5.5">
         <div className="mb-2 font-mono text-meta uppercase text-foreground-tertiary">

@@ -1,5 +1,6 @@
 import { BenefitCard } from "./BenefitCard";
 import { type BenefitCopy } from "../copy/empty-state";
+import { cn } from "@/lib/utils/cn";
 
 interface BenefitsSectionProps {
   title: string;
@@ -8,15 +9,16 @@ interface BenefitsSectionProps {
   className?: string;
 }
 
+const BASE_CLASS = "relative z-1 border-t border-border pt-10";
+
 export function BenefitsSection({
   title,
   description,
   items,
   className,
 }: BenefitsSectionProps) {
-  const base = "relative z-1 border-t border-border pt-10";
   return (
-    <section className={className ? `${base} ${className}` : base}>
+    <section className={cn(BASE_CLASS, className)}>
       <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between md:gap-8">
         <h2 className="font-display text-heading-md font-medium text-foreground">
           {title}
