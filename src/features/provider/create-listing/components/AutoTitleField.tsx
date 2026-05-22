@@ -41,10 +41,23 @@ export function AutoTitleField({
   const hasOverride = overrideTrimmed.length > 0;
 
   const autoClass = cn(AUTO_BASE, hasOverride && AUTO_OVERRIDDEN);
-  const pipClass = cn(PIP_BASE, hasOverride ? "bg-foreground-tertiary" : "bg-primary");
-  const genClass = cn(GEN_BASE, isAutoPlaceholder && GEN_PLACEHOLDER, hasOverride && GEN_OVERRIDDEN);
-  const overrideClass = cn(OVERRIDE_BASE, hasOverride ? OVERRIDE_ACTIVE : OVERRIDE_IDLE);
-  const overrideLabelClass = cn(OVERRIDE_LABEL_BASE, hasOverride ? OVERRIDE_LABEL_ACTIVE : OVERRIDE_LABEL_IDLE);
+  const pipClass = cn(
+    PIP_BASE,
+    hasOverride ? "bg-foreground-tertiary" : "bg-primary",
+  );
+  const genClass = cn(
+    GEN_BASE,
+    isAutoPlaceholder && GEN_PLACEHOLDER,
+    hasOverride && GEN_OVERRIDDEN,
+  );
+  const overrideClass = cn(
+    OVERRIDE_BASE,
+    hasOverride ? OVERRIDE_ACTIVE : OVERRIDE_IDLE,
+  );
+  const overrideLabelClass = cn(
+    OVERRIDE_LABEL_BASE,
+    hasOverride ? OVERRIDE_LABEL_ACTIVE : OVERRIDE_LABEL_IDLE,
+  );
 
   return (
     <div className="flex flex-col gap-3">

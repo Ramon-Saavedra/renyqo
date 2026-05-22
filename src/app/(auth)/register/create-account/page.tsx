@@ -82,7 +82,12 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
               />
               <ReassureItem
                 icon={
-                  <AppIcon icon={Shield} size={14} strokeWidth={1.6} decorative />
+                  <AppIcon
+                    icon={Shield}
+                    size={14}
+                    strokeWidth={1.6}
+                    decorative
+                  />
                 }
                 title={roleCopy.reassure[1].title}
                 description={roleCopy.reassure[1].description}

@@ -56,7 +56,10 @@ export function ObjektdatenSection({
 
   const charCount = draft.description.length;
   const isOverWarn = charCount > fields.description.warnAt;
-  const charClass = cn("font-mono text-meta tabular-nums", isOverWarn ? "text-warning" : "text-foreground-tertiary");
+  const charClass = cn(
+    "font-mono text-meta tabular-nums",
+    isOverWarn ? "text-warning" : "text-foreground-tertiary",
+  );
 
   return (
     <SectionCard

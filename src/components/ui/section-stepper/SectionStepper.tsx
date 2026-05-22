@@ -43,8 +43,14 @@ export function SectionStepper({
       {steps.map((step, index) => {
         const isActive = step.id === activeId;
         const isDone = completedIds.includes(step.id);
-        const stepClass = cn(STEP_BASE, isActive ? STEP_ACTIVE : isDone ? STEP_DONE : "");
-        const numClass = cn(NUM_BASE, isActive ? NUM_ACTIVE : isDone ? NUM_DONE : "");
+        const stepClass = cn(
+          STEP_BASE,
+          isActive ? STEP_ACTIVE : isDone ? STEP_DONE : "",
+        );
+        const numClass = cn(
+          NUM_BASE,
+          isActive ? NUM_ACTIVE : isDone ? NUM_DONE : "",
+        );
         const display = String(index + 1).padStart(2, "0");
         return (
           <Fragment key={step.id}>

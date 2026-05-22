@@ -17,11 +17,7 @@ export function SocialButton({
   ...rest
 }: SocialButtonProps) {
   return (
-    <button
-      type={type}
-      className={cn(BASE_CLASS, className)}
-      {...rest}
-    >
+    <button type={type} className={cn(BASE_CLASS, className)} {...rest}>
       <span aria-hidden="true" className="inline-flex shrink-0">
         {icon}
       </span>

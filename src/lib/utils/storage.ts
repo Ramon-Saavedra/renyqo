@@ -1,8 +1,7 @@
 export function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
-  } catch {
-  }
+  } catch {}
 }
 
 export function safeGetItem(key: string): string | null {

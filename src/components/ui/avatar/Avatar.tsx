@@ -11,11 +11,7 @@ const BASE_CLASS =
 
 export function Avatar({ initials, label, className }: AvatarProps) {
   return (
-    <span
-      role="img"
-      aria-label={label}
-      className={cn(BASE_CLASS, className)}
-    >
+    <span role="img" aria-label={label} className={cn(BASE_CLASS, className)}>
       {initials}
     </span>
   );

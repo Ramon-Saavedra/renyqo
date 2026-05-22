@@ -31,7 +31,11 @@ export function FlowStep({
   children,
 }: FlowStepProps) {
   const isLast = index === totalSteps;
-  const rowClass = cn(ROW_BASE, isCurrent ? ROW_CURRENT : ROW_IDLE, !isLast && CONNECTOR);
+  const rowClass = cn(
+    ROW_BASE,
+    isCurrent ? ROW_CURRENT : ROW_IDLE,
+    !isLast && CONNECTOR,
+  );
   const numClass = cn(NUM_BASE, isCurrent ? NUM_CURRENT : NUM_IDLE);
 
   return (

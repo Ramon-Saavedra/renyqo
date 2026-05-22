@@ -20,10 +20,7 @@ export function Stepper({
   className,
 }: StepperProps) {
   return (
-    <nav
-      aria-label={ariaLabel}
-      className={cn(BASE_CLASS, className)}
-    >
+    <nav aria-label={ariaLabel} className={cn(BASE_CLASS, className)}>
       {steps.map((step, index) => {
         const isActive = index === currentIndex;
         const isDone = index < currentIndex;
