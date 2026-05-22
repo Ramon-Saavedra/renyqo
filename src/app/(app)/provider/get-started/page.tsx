@@ -19,7 +19,7 @@ export default function ProviderGetStartedPage() {
           <AppIcon icon={HelpCircle} size={14} strokeWidth={1.6} decorative />
           {copy.topbar.help}
         </button>
-        <Avatar initials={copy.user.initials} label={copy.user.name} />
+        <Avatar initials="?" label="Benutzer" />
       </AppTopbar>
 
       <div className="px-gutter">
@@ -36,7 +36,7 @@ export default function ProviderGetStartedPage() {
           <FlowStepsCard
             kicker={copy.flow.kicker}
             steps={copy.flow.steps}
-            currentIndex={copy.flow.currentIndex}
+            currentIndex={0}
           />
         </section>
 

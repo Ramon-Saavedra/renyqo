@@ -1,13 +1,14 @@
 import { cn } from "@/lib/utils/cn";
+import type { FlowStepCopy, StepPreview } from "../copy/empty-state";
 import { FlowStep } from "./FlowStep";
 
 interface FlowStepsCardProps {
   kicker: string;
-  steps: ReadonlyArray<{ index: number; title: string }>;
+  steps: ReadonlyArray<FlowStepCopy>;
   currentIndex: number;
 }
 
-function MiniChip({ children }: { children: React.ReactNode }) {
+function StepChip({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex h-4.5 items-center rounded-sm border border-border bg-background px-2 font-mono text-meta font-medium uppercase text-foreground-tertiary">
       {children}
@@ -15,7 +16,7 @@ function MiniChip({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MiniBar({ widthClass }: { widthClass: string }) {
+function StepBar({ widthClass }: { widthClass: string }) {
   return (
     <span
       aria-hidden="true"
@@ -24,7 +25,7 @@ function MiniBar({ widthClass }: { widthClass: string }) {
   );
 }
 
-function MiniDot() {
+function StepDot() {
   return (
     <span
       aria-hidden="true"
@@ -33,12 +34,45 @@ function MiniDot() {
   );
 }
 
-function FlexBar() {
+function StepFlexBar() {
   return (
     <span
       aria-hidden="true"
       className="h-1.5 min-w-12 flex-1 rounded-full bg-border"
     />
+  );
+}
+
+function StepPreviewContent({ preview }: { preview: StepPreview }) {
+  if (preview.kind === "property-chips") {
+    return (
+      <>
+        {preview.labels.map((label) => (
+          <StepChip key={label}>{label}</StepChip>
+        ))}
+        <StepFlexBar />
+      </>
+    );
+  }
+
+  if (preview.kind === "criteria-fields") {
+    return (
+      <>
+        <StepBar widthClass="w-16" />
+        <StepDot />
+        <StepBar widthClass="w-12" />
+        <StepDot />
+        <StepBar widthClass="w-20" />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <StepFlexBar />
+      <StepFlexBar />
+      <StepFlexBar />
+    </>
   );
 }
 
@@ -70,43 +104,17 @@ export function FlowStepsCard({
       </div>
 
       <div className="flex flex-col gap-3.5">
-        {steps.map((step, position) => {
-          const isCurrent = position === currentIndex;
-          return (
-            <FlowStep
-              key={step.index}
-              index={step.index}
-              title={step.title}
-              isCurrent={isCurrent}
-              totalSteps={steps.length}
-            >
-              {position === 0 && (
-                <>
-                  <MiniChip>Adresse</MiniChip>
-                  <MiniChip>Größe</MiniChip>
-                  <MiniChip>Miete</MiniChip>
-                  <FlexBar />
-                </>
-              )}
-              {position === 1 && (
-                <>
-                  <MiniBar widthClass="w-16" />
-                  <MiniDot />
-                  <MiniBar widthClass="w-12" />
-                  <MiniDot />
-                  <MiniBar widthClass="w-20" />
-                </>
-              )}
-              {position === 2 && (
-                <>
-                  <FlexBar />
-                  <FlexBar />
-                  <FlexBar />
-                </>
-              )}
-            </FlowStep>
-          );
-        })}
+        {steps.map((step, position) => (
+          <FlowStep
+            key={step.index}
+            index={step.index}
+            title={step.title}
+            isCurrent={position === currentIndex}
+            totalSteps={steps.length}
+          >
+            <StepPreviewContent preview={step.preview} />
+          </FlowStep>
+        ))}
       </div>
     </aside>
   );
