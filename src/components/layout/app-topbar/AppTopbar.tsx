@@ -1,4 +1,5 @@
 import { Logo } from "@/components/ui/logo/Logo";
+import { cn } from "@/lib/utils/cn";
 
 interface AppTopbarProps {
   children?: React.ReactNode;
@@ -6,11 +7,11 @@ interface AppTopbarProps {
 }
 
 const BASE_CLASS =
-  "flex items-center justify-between border-b border-border px-14 py-5.5";
+  "flex items-center justify-between border-b border-border px-gutter py-5.5";
 
 export function AppTopbar({ children, className }: AppTopbarProps) {
   return (
-    <header className={className ? `${BASE_CLASS} ${className}` : BASE_CLASS}>
+    <header className={cn(BASE_CLASS, className)}>
       <Logo />
       {children && <div className="flex items-center gap-3.5">{children}</div>}
     </header>
