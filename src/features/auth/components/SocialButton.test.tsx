@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { AppleIcon, GoogleIcon, SocialButton } from "./SocialButton";
+import { SocialButton } from "./SocialButton";
 
 describe("SocialButton", () => {
   describe("structure", () => {
@@ -141,63 +141,5 @@ describe("SocialButton", () => {
       expect(button.className).toBe(button.className.trim());
       expect(button.className).not.toMatch(/\s\s/);
     });
-  });
-});
-
-describe("GoogleIcon", () => {
-  it("renders a 16x16 svg", () => {
-    const { container } = render(<GoogleIcon />);
-    const svg = container.querySelector("svg");
-
-    expect(svg).toBeInstanceOf(SVGElement);
-    expect(svg?.getAttribute("width")).toBe("16");
-    expect(svg?.getAttribute("height")).toBe("16");
-  });
-
-  it("is hidden from assistive tech", () => {
-    const { container } = render(<GoogleIcon />);
-
-    expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
-      "true",
-    );
-  });
-
-  it("renders the four colored paths of the Google glyph", () => {
-    const { container } = render(<GoogleIcon />);
-
-    expect(container.querySelectorAll("svg path")).toHaveLength(4);
-  });
-});
-
-describe("AppleIcon", () => {
-  it("renders a 16x16 svg", () => {
-    const { container } = render(<AppleIcon />);
-    const svg = container.querySelector("svg");
-
-    expect(svg).toBeInstanceOf(SVGElement);
-    expect(svg?.getAttribute("width")).toBe("16");
-    expect(svg?.getAttribute("height")).toBe("16");
-  });
-
-  it("uses currentColor so it inherits text color", () => {
-    const { container } = render(<AppleIcon />);
-
-    expect(container.querySelector("svg")?.getAttribute("fill")).toBe(
-      "currentColor",
-    );
-  });
-
-  it("is hidden from assistive tech", () => {
-    const { container } = render(<AppleIcon />);
-
-    expect(container.querySelector("svg")?.getAttribute("aria-hidden")).toBe(
-      "true",
-    );
-  });
-
-  it("renders a single path for the Apple glyph", () => {
-    const { container } = render(<AppleIcon />);
-
-    expect(container.querySelectorAll("svg path")).toHaveLength(1);
   });
 });
