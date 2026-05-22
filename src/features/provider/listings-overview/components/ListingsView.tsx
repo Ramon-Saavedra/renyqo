@@ -69,7 +69,7 @@ const SORTERS: Record<
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   created: (a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  applications: (a, b) => b.applicationsCount - a.applicationsCount,
+  applications: (a, b) => b.applicationsTotal - a.applicationsTotal,
   status: (a, b) =>
     STATUS_SORT_ORDER.indexOf(a.status) - STATUS_SORT_ORDER.indexOf(b.status),
 };

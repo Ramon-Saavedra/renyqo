@@ -25,10 +25,7 @@ export interface ListingOverviewItem {
 
   readonly status: ListingStatus;
 
-  readonly applicationsCount: number;
-  readonly activeApplicationsCount: number;
-  readonly newApplicationsCount: number;
-  readonly activeApplicationsLimit: number;
+  readonly applicationsTotal: number;
 
   readonly needsAttention: boolean;
   readonly attentionReason: AttentionReason;
