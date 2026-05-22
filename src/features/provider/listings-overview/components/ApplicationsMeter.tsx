@@ -3,16 +3,15 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import { listingsCopy } from "../copy/listings";
 
-interface BewerbungenMeterProps {
+interface ApplicationsMeterProps {
   active: number;
 }
 
 const APPLICATIONS_MAX = 5;
+const ICON_ACTIVE = "text-success-vivid";
+const ICON_INACTIVE = "text-foreground-tertiary";
 
-const ICON_ON = "text-success-vivid";
-const ICON_OFF = "text-foreground-tertiary";
-
-export function BewerbungenMeter({ active }: BewerbungenMeterProps) {
+export function ApplicationsMeter({ active }: ApplicationsMeterProps) {
   const label = listingsCopy.row.applicationsAria(active);
   return (
     <span
@@ -28,7 +27,7 @@ export function BewerbungenMeter({ active }: BewerbungenMeterProps) {
           size={13}
           strokeWidth={1.5}
           decorative
-          className={cn(i < active ? ICON_ON : ICON_OFF)}
+          className={cn(i < active ? ICON_ACTIVE : ICON_INACTIVE)}
         />
       ))}
     </span>
