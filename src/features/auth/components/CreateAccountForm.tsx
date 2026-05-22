@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { SiApple } from "react-icons/si";
+import { FcGoogle } from "react-icons/fc";
 import { Button } from "@/components/ui/button/Button";
+import { BrandIcon } from "@/components/ui/icon/BrandIcon";
 import { Field } from "./Field";
 import { PasswordField } from "./PasswordField";
 import { Checkbox } from "./Checkbox";
-import { AppleIcon, GoogleIcon, SocialButton } from "./SocialButton";
+import { SocialButton } from "./SocialButton";
 import { createAccountCopy } from "../copy/create-account";
 
 interface CreateAccountFormProps {
@@ -23,12 +26,15 @@ export function CreateAccountForm({ idPrefix }: CreateAccountFormProps) {
     >
       <div className="grid gap-2.5">
         <SocialButton
-          icon={<GoogleIcon />}
+          icon={<BrandIcon icon={FcGoogle} size={16} decorative />}
           aria-label={createAccountCopy.google}
         >
           {createAccountCopy.google}
         </SocialButton>
-        <SocialButton icon={<AppleIcon />} aria-label={createAccountCopy.apple}>
+        <SocialButton
+          icon={<BrandIcon icon={SiApple} size={16} decorative />}
+          aria-label={createAccountCopy.apple}
+        >
           {createAccountCopy.apple}
         </SocialButton>
       </div>
