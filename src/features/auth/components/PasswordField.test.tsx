@@ -3,10 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { PasswordField } from "./PasswordField";
-import { createAccountCopy } from "../copy/create-account";
 
-const showLabel = createAccountCopy.fields.password.show;
-const hideLabel = createAccountCopy.fields.password.hide;
+const showLabel = "Passwort anzeigen";
+const hideLabel = "Passwort verbergen";
 
 describe("PasswordField", () => {
   describe("structure", () => {
