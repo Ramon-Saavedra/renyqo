@@ -15,10 +15,6 @@ export const providerEmptyStateCopy = {
   topbar: {
     help: "Hilfe",
   },
-  user: {
-    initials: "SK",
-    name: "Sabine Kessler",
-  },
   hero: {
     welcome: "Willkommen bei renyqo, Sabine",
     title: "Weniger sortieren. Klarer vermieten.",
@@ -36,7 +32,6 @@ export const providerEmptyStateCopy = {
       { index: 2, title: "Anforderungen festlegen" },
       { index: 3, title: "Passende Bewerbungen erhalten" },
     ] as const satisfies readonly FlowStepCopy[],
-    currentIndex: 0,
   },
   benefits: {
     title: "Warum sich der erste Schritt lohnt.",
