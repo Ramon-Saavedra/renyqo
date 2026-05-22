@@ -1,8 +1,14 @@
 import { Check, Clock, Eye, List, type LucideIcon } from "lucide-react";
 
+export type StepPreview =
+  | { readonly kind: "property-chips"; readonly labels: readonly string[] }
+  | { readonly kind: "criteria-fields" }
+  | { readonly kind: "result-bars" };
+
 export interface FlowStepCopy {
   readonly index: number;
   readonly title: string;
+  readonly preview: StepPreview;
 }
 
 export interface BenefitCopy {
@@ -28,9 +34,24 @@ export const providerEmptyStateCopy = {
   flow: {
     kicker: "In wenigen Schritten",
     steps: [
-      { index: 1, title: "Mietobjekt anlegen" },
-      { index: 2, title: "Anforderungen festlegen" },
-      { index: 3, title: "Passende Bewerbungen erhalten" },
+      {
+        index: 1,
+        title: "Mietobjekt anlegen",
+        preview: {
+          kind: "property-chips",
+          labels: ["Adresse", "Größe", "Miete"],
+        },
+      },
+      {
+        index: 2,
+        title: "Anforderungen festlegen",
+        preview: { kind: "criteria-fields" },
+      },
+      {
+        index: 3,
+        title: "Passende Bewerbungen erhalten",
+        preview: { kind: "result-bars" },
+      },
     ] as const satisfies readonly FlowStepCopy[],
   },
   benefits: {
