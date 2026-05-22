@@ -1,0 +1,206 @@
+"use client";
+
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { STATUS_SORT_ORDER } from "../copy/listings";
+import { MOCK_LISTINGS } from "../data/mock-listings";
+import type {
+  ListingOverviewItem,
+  RowAction,
+  SortKey,
+  StatusCounts,
+  StatusFilterKey,
+} from "../types";
+import { ListingRow } from "./ListingRow";
+import { ListingsEmptyState } from "./ListingsEmptyState";
+import { ListingsHero } from "./ListingsHero";
+import { ListingsToolbar } from "./ListingsToolbar";
+import { ListingsTopbarActions } from "./ListingsTopbarActions";
+import { ListingsTrustLine } from "./ListingsTrustLine";
+import { ListSummary } from "./ListSummary";
+import { StatusFilter } from "./StatusFilter";
+
+interface ListingsViewProps {
+  initialListings?: readonly ListingOverviewItem[];
+  now?: Date;
+}
+
+function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
+  return {
+    alle: listings.length,
+    published: listings.filter((l) => l.status === "published").length,
+    draft: listings.filter((l) => l.status === "draft").length,
+    paused: listings.filter((l) => l.status === "paused").length,
+    rented: listings.filter((l) => l.status === "rented").length,
+    archived: listings.filter((l) => l.status === "archived").length,
+    attention: listings.filter((l) => l.needsAttention).length,
+  };
+}
+
+function matchesStatus(
+  listing: ListingOverviewItem,
+  filter: StatusFilterKey,
+): boolean {
+  if (filter === "alle") return true;
+  if (filter === "attention") return listing.needsAttention;
+  return listing.status === filter;
+}
+
+function matchesSearch(listing: ListingOverviewItem, q: string): boolean {
+  if (!q) return true;
+  const needle = q.toLowerCase();
+  return (
+    listing.title.toLowerCase().includes(needle) ||
+    listing.displayAddress.toLowerCase().includes(needle)
+  );
+}
+
+const NO_SUBSCRIBE = (): (() => void) => {
+  return () => {};
+};
+const getClientSnapshot = (): boolean => true;
+const getServerSnapshot = (): boolean => false;
+
+const SORTERS: Record<
+  SortKey,
+  (a: ListingOverviewItem, b: ListingOverviewItem) => number
+> = {
+  updated: (a, b) =>
+    new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+  created: (a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  applications: (a, b) => b.applicationsCount - a.applicationsCount,
+  status: (a, b) =>
+    STATUS_SORT_ORDER.indexOf(a.status) - STATUS_SORT_ORDER.indexOf(b.status),
+};
+
+export function ListingsView({
+  initialListings = MOCK_LISTINGS,
+  now,
+}: ListingsViewProps) {
+  const [listings, setListings] =
+    useState<readonly ListingOverviewItem[]>(initialListings);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("alle");
+  const [sort, setSort] = useState<SortKey>("updated");
+  const isHydrated = useSyncExternalStore(
+    NO_SUBSCRIBE,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
+  const renderNow = useMemo<Date | null>(
+    () => now ?? (isHydrated ? new Date() : null),
+    [now, isHydrated],
+  );
+
+  const counts = useMemo(() => buildCounts(listings), [listings]);
+
+  const filtered = useMemo(() => {
+    const base = listings.filter(
+      (l) => matchesStatus(l, statusFilter) && matchesSearch(l, search),
+    );
+    return [...base].sort(SORTERS[sort]);
+  }, [listings, statusFilter, search, sort]);
+
+  const handleAction = useCallback<
+    (action: RowAction, listing: ListingOverviewItem) => void
+  >((action, listing) => {
+    if (action === "edit" || action === "preview") return;
+    setListings((current) =>
+      current.map((item) => {
+        if (item.id !== listing.id) return item;
+        const updatedAt = new Date().toISOString();
+        if (action === "pause") {
+          return { ...item, status: "paused", updatedAt };
+        }
+        if (action === "rented") {
+          return {
+            ...item,
+            status: "rented",
+            updatedAt,
+            needsAttention: false,
+            attentionReason: null,
+          };
+        }
+        if (action === "archive") {
+          return {
+            ...item,
+            status: "archived",
+            updatedAt,
+            needsAttention: false,
+            attentionReason: null,
+          };
+        }
+        return item;
+      }),
+    );
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setStatusFilter("alle");
+    setSearch("");
+  }, []);
+
+  const hasArchive = listings.some(
+    (l) => l.status === "rented" || l.status === "archived",
+  );
+
+  const emptyVariant: "fresh" | "archived-only" | "filtered" | null = (() => {
+    if (filtered.length > 0) return null;
+    if (listings.length === 0) return "fresh";
+    if (statusFilter !== "alle" && search.length === 0 && hasArchive) {
+      return "archived-only";
+    }
+    return "filtered";
+  })();
+
+  return (
+    <>
+      <AppTopbar className="mb-section">
+        <ListingsTopbarActions />
+      </AppTopbar>
+
+      <div className="px-gutter">
+        <ListingsHero />
+        <ListingsTrustLine />
+
+        <div className="mb-4 flex">
+          <ListingsToolbar value={search} onChange={setSearch} />
+        </div>
+
+        <StatusFilter
+          value={statusFilter}
+          onChange={setStatusFilter}
+          counts={counts}
+          className="mb-5"
+        />
+
+        <ListSummary
+          total={listings.length}
+          shown={filtered.length}
+          sort={sort}
+          onSortChange={setSort}
+        />
+
+        {emptyVariant ? (
+          <ListingsEmptyState
+            variant={emptyVariant}
+            onShowAll={() => setStatusFilter("alle")}
+            onResetFilters={resetFilters}
+          />
+        ) : (
+          <div className="flex flex-col gap-2">
+            {filtered.map((listing) => (
+              <ListingRow
+                key={listing.id}
+                listing={listing}
+                onAction={handleAction}
+                now={renderNow}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
