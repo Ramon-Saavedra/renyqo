@@ -1,6 +1,7 @@
 import { Check, type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { RotatingBenefits } from "./RotatingBenefits";
+import { cn } from "@/lib/utils/cn";
 
 interface RoleCardProps {
   kicker: string;
@@ -31,9 +32,10 @@ export function RoleCard({
       role="radio"
       aria-checked={active}
       onClick={onSelect}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-card p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus ${
-        active ? "border-primary" : "border-border hover:border-border-strong"
-      }`}
+      className={cn(
+        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-card p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus",
+        active ? "border-primary" : "border-border hover:border-border-strong",
+      )}
     >
       {active && (
         <span
@@ -48,25 +50,28 @@ export function RoleCard({
         </span>
         <span
           aria-hidden="true"
-          className={`inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border transition-colors ${
-            active ? "border-primary" : "border-border-strong"
-          }`}
+          className={cn(
+            "inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border transition-colors",
+            active ? "border-primary" : "border-border-strong",
+          )}
         >
           <span
-            className={`h-2 w-2 rounded-full bg-primary transition-opacity ${
-              active ? "opacity-100" : "opacity-0"
-            }`}
+            className={cn(
+              "h-2 w-2 rounded-full bg-primary transition-opacity",
+              active ? "opacity-100" : "opacity-0",
+            )}
           />
         </span>
       </div>
 
       <span
         aria-hidden="true"
-        className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm transition-colors ${
+        className={cn(
+          "mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm transition-colors",
           active
             ? "bg-primary text-primary-foreground"
-            : "bg-background-muted text-foreground"
-        }`}
+            : "bg-background-muted text-foreground",
+        )}
       >
         <AppIcon icon={glyph} size={16} strokeWidth={1.6} decorative />
       </span>

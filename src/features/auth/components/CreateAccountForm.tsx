@@ -19,7 +19,7 @@ export function CreateAccountForm({ idPrefix }: CreateAccountFormProps) {
   return (
     <form
       noValidate
-      className="w-full max-w-md rounded-md border border-border bg-background px-8 pt-8 pb-7"
+      className="mx-auto w-full max-w-md rounded-md border border-border bg-background px-8 pt-8 pb-7"
     >
       <div className="grid gap-2.5">
         <SocialButton

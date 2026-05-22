@@ -1,4 +1,5 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
+import { cn } from "@/lib/utils/cn";
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
@@ -20,8 +21,16 @@ export function Field({
   className,
   ...inputProps
 }: FieldProps) {
+  const input = (
+    <input
+      id={id}
+      className={cn(INPUT_CLASS, inputClassName)}
+      {...inputProps}
+    />
+  );
+
   return (
-    <div className={`grid gap-1.5${className ? ` ${className}` : ""}`}>
+    <div className={cn("grid gap-1.5", className)}>
       <label
         htmlFor={id}
         className="text-caption font-medium text-foreground-secondary"
@@ -30,19 +39,11 @@ export function Field({
       </label>
       {trailing ? (
         <div className="relative">
-          <input
-            id={id}
-            className={`${INPUT_CLASS}${inputClassName ? ` ${inputClassName}` : ""}`}
-            {...inputProps}
-          />
+          {input}
           {trailing}
         </div>
       ) : (
-        <input
-          id={id}
-          className={`${INPUT_CLASS}${inputClassName ? ` ${inputClassName}` : ""}`}
-          {...inputProps}
-        />
+        input
       )}
       {hint && (
         <span className="text-caption text-foreground-tertiary">{hint}</span>
