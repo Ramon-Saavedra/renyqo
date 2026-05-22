@@ -7,15 +7,16 @@ import { ListingsToolbar } from "./ListingsToolbar";
 describe("ListingsToolbar", () => {
   it("renders the search input with the correct aria-label", () => {
     render(<ListingsToolbar value="" onChange={vi.fn()} />);
-    expect(
-      screen.getByLabelText("Mietobjekte durchsuchen")
-    ).toBeInstanceOf(HTMLInputElement);
+    expect(screen.getByLabelText("Mietobjekte durchsuchen")).toBeInstanceOf(
+      HTMLInputElement,
+    );
   });
 
   it("reflects the value prop in the input", () => {
     render(<ListingsToolbar value="Berlin" onChange={vi.fn()} />);
     expect(
-      (screen.getByLabelText("Mietobjekte durchsuchen") as HTMLInputElement).value
+      (screen.getByLabelText("Mietobjekte durchsuchen") as HTMLInputElement)
+        .value,
     ).toBe("Berlin");
   });
 

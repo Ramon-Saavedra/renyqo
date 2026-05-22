@@ -43,7 +43,12 @@ const ICON_CLASS = "text-foreground-tertiary";
 
 function buildItems(status: ListingOverviewItem["status"]): MenuItem[] {
   return [
-    { id: "preview", label: listingsCopy.actions.preview, icon: Eye, visible: true },
+    {
+      id: "preview",
+      label: listingsCopy.actions.preview,
+      icon: Eye,
+      visible: true,
+    },
     {
       id: "edit",
       label: listingsCopy.actions.edit,
@@ -118,7 +123,10 @@ export function RowActionsMenu({ listing, onAction }: RowActionsMenuProps) {
               key={it.id}
               type="button"
               role="menuitem"
-              className={cn(ITEM_CLASS, it.tone === "danger" && ITEM_DANGER_CLASS)}
+              className={cn(
+                ITEM_CLASS,
+                it.tone === "danger" && ITEM_DANGER_CLASS,
+              )}
               onClick={() => {
                 setOpen(false);
                 onAction(it.id, listing);

@@ -104,9 +104,9 @@ describe("ListingsView", () => {
       name: "Statusfilter",
     });
 
-    expect(within(filterGroup).getByRole("radio", { name: /Alle/ }).textContent).toContain(
-      String(SAMPLE.length),
-    );
+    expect(
+      within(filterGroup).getByRole("radio", { name: /Alle/ }).textContent,
+    ).toContain(String(SAMPLE.length));
     expect(
       within(filterGroup).getByRole("radio", { name: /Aktiv/ }).textContent,
     ).toContain("2");
@@ -167,9 +167,9 @@ describe("ListingsView", () => {
 
     await user.type(input, "zzzz-no-match");
 
-    expect(
-      screen.getByText("Keine Objekte für diese Filter."),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Keine Objekte für diese Filter.")).toBeInstanceOf(
+      HTMLElement,
+    );
     expect(
       screen.getByRole("button", { name: "Filter zurücksetzen" }),
     ).toBeInstanceOf(HTMLElement);
@@ -193,9 +193,9 @@ describe("ListingsView", () => {
   it("shows a fresh empty state when there are no listings at all", () => {
     renderView([]);
 
-    expect(
-      screen.getByText("Noch keine Mietobjekte angelegt."),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Noch keine Mietobjekte angelegt.")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows the archived-only empty state when filter Aktiv yields zero but archive exists", async () => {
@@ -233,8 +233,8 @@ describe("ListingsView", () => {
 
     await user.click(screen.getByRole("menuitem", { name: /Pausieren/ }));
 
-    expect(
-      within(row as HTMLElement).getByText("Pausiert"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(within(row as HTMLElement).getByText("Pausiert")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 });

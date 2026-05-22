@@ -19,32 +19,48 @@ describe("StatusFilter", () => {
   it("renders a radiogroup with the correct aria-label", () => {
     render(<StatusFilter value="alle" onChange={vi.fn()} counts={COUNTS} />);
     expect(
-      screen.getByRole("radiogroup", { name: "Statusfilter" })
+      screen.getByRole("radiogroup", { name: "Statusfilter" }),
     ).toBeInstanceOf(HTMLElement);
   });
 
   it("renders all filter option buttons", () => {
     render(<StatusFilter value="alle" onChange={vi.fn()} counts={COUNTS} />);
-    expect(screen.getByRole("radio", { name: /Alle/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("radio", { name: /Aktiv/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("radio", { name: /Entwürfe/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("radio", { name: /Pausiert/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("radio", { name: /Vermietet/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("radio", { name: /Archiviert/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("radio", { name: /Klärung nötig/ })).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("radio", { name: /Alle/ })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("radio", { name: /Aktiv/ })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("radio", { name: /Entwürfe/ })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("radio", { name: /Pausiert/ })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("radio", { name: /Vermietet/ })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("radio", { name: /Archiviert/ })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("radio", { name: /Klärung nötig/ })).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("marks the active filter as aria-checked='true'", () => {
     render(<StatusFilter value="draft" onChange={vi.fn()} counts={COUNTS} />);
     expect(
-      screen.getByRole("radio", { name: /Entwürfe/ }).getAttribute("aria-checked")
+      screen
+        .getByRole("radio", { name: /Entwürfe/ })
+        .getAttribute("aria-checked"),
     ).toBe("true");
   });
 
   it("marks non-active filters as aria-checked='false'", () => {
     render(<StatusFilter value="draft" onChange={vi.fn()} counts={COUNTS} />);
     expect(
-      screen.getByRole("radio", { name: /Alle/ }).getAttribute("aria-checked")
+      screen.getByRole("radio", { name: /Alle/ }).getAttribute("aria-checked"),
     ).toBe("false");
   });
 

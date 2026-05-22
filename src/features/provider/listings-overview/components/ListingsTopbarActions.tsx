@@ -6,10 +6,7 @@ import { listingsCopy } from "../copy/listings";
 
 export function ListingsTopbarActions() {
   return (
-    <Link
-      href={listingsCopy.topbar.backHref}
-      className={buttonClass("ghost")}
-    >
+    <Link href={listingsCopy.topbar.backHref} className={buttonClass("ghost")}>
       <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
       {listingsCopy.topbar.back}
     </Link>

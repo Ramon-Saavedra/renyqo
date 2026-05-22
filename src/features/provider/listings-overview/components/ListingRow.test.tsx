@@ -30,13 +30,15 @@ const BASE: ListingOverviewItem = {
 describe("ListingRow", () => {
   it("renders the listing title", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByText("Helle Wohnung am Park")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Helle Wohnung am Park")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("renders the displayAddress", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
     expect(
-      screen.getByText("Parkstraße 12 · Berlin, Mitte · 10115")
+      screen.getByText("Parkstraße 12 · Berlin, Mitte · 10115"),
     ).toBeInstanceOf(HTMLElement);
   });
 
@@ -51,19 +53,31 @@ describe("ListingRow", () => {
   });
 
   it("does not render the new badge when newApplicationsCount is 0", () => {
-    render(<ListingRow listing={{ ...BASE, newApplicationsCount: 0 }} onAction={vi.fn()} now={NOW} />);
+    render(
+      <ListingRow
+        listing={{ ...BASE, newApplicationsCount: 0 }}
+        onAction={vi.fn()}
+        now={NOW}
+      />,
+    );
     expect(screen.queryByText(/\+\d+ neu/)).toBeNull();
   });
 
   it("renders the AttentionPill when needsAttention is true with a reason", () => {
     render(
       <ListingRow
-        listing={{ ...BASE, needsAttention: true, attentionReason: "open_questions" }}
+        listing={{
+          ...BASE,
+          needsAttention: true,
+          attentionReason: "open_questions",
+        }}
         onAction={vi.fn()}
         now={NOW}
-      />
+      />,
     );
-    expect(screen.getByRole("img", { name: "Rückfragen offen" })).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("img", { name: "Rückfragen offen" }),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("does not render the AttentionPill when needsAttention is false", () => {
@@ -81,20 +95,36 @@ describe("ListingRow", () => {
 
   it("applies the inactive style for 'rented' status", () => {
     const { container } = render(
-      <ListingRow listing={{ ...BASE, status: "rented" }} onAction={vi.fn()} now={NOW} />
+      <ListingRow
+        listing={{ ...BASE, status: "rented" }}
+        onAction={vi.fn()}
+        now={NOW}
+      />,
     );
-    expect(container.querySelector("article")?.className).toContain("bg-background-subtle");
+    expect(container.querySelector("article")?.className).toContain(
+      "bg-background-subtle",
+    );
   });
 
   it("applies the inactive style for 'archived' status", () => {
     const { container } = render(
-      <ListingRow listing={{ ...BASE, status: "archived" }} onAction={vi.fn()} now={NOW} />
+      <ListingRow
+        listing={{ ...BASE, status: "archived" }}
+        onAction={vi.fn()}
+        now={NOW}
+      />,
     );
-    expect(container.querySelector("article")?.className).toContain("bg-background-subtle");
+    expect(container.querySelector("article")?.className).toContain(
+      "bg-background-subtle",
+    );
   });
 
   it("does not apply the inactive style for 'published' status", () => {
-    const { container } = render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(container.querySelector("article")?.className).not.toContain("bg-background-subtle");
+    const { container } = render(
+      <ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />,
+    );
+    expect(container.querySelector("article")?.className).not.toContain(
+      "bg-background-subtle",
+    );
   });
 });

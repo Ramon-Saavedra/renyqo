@@ -7,7 +7,7 @@ describe("ListingsTopbarActions", () => {
   it("renders the back link", () => {
     render(<ListingsTopbarActions />);
     expect(
-      screen.getByRole("link", { name: /Zurück zum Dashboard/ })
+      screen.getByRole("link", { name: /Zurück zum Dashboard/ }),
     ).toBeInstanceOf(HTMLElement);
   });
 

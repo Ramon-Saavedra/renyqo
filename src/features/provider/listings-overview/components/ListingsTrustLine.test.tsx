@@ -11,7 +11,9 @@ describe("ListingsTrustLine", () => {
 
   it("renders the strong emphasis phrase", () => {
     render(<ListingsTrustLine />);
-    expect(screen.getByText("praktische Erwartungen")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("praktische Erwartungen")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("renders the tail text mentioning SCHUFA", () => {

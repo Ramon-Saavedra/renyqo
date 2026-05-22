@@ -79,9 +79,7 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
 
       <div className="listings-row-stats">
         <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>
-            {listingsCopy.row.coldRent}
-          </span>
+          <span className={STAT_KICKER_CLASS}>{listingsCopy.row.coldRent}</span>
           <span
             className={cn(STAT_VALUE_BASE, isInactive && STAT_VALUE_INACTIVE)}
           >
@@ -90,7 +88,9 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
         </div>
 
         <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>{listingsCopy.row.livingArea}</span>
+          <span className={STAT_KICKER_CLASS}>
+            {listingsCopy.row.livingArea}
+          </span>
           <span
             className={cn(STAT_VALUE_BASE, isInactive && STAT_VALUE_INACTIVE)}
           >
@@ -125,9 +125,7 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
         </div>
 
         <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>
-            {listingsCopy.row.activity}
-          </span>
+          <span className={STAT_KICKER_CLASS}>{listingsCopy.row.activity}</span>
           <span className={STAT_VALUE_SOFT}>
             {formatRelative(listing.updatedAt, now)}
           </span>

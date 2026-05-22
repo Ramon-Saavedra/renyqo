@@ -7,7 +7,9 @@ import { SortMenu } from "./SortMenu";
 describe("SortMenu", () => {
   it("renders the trigger button with the current sort label", () => {
     render(<SortMenu value="updated" onChange={vi.fn()} />);
-    expect(screen.getByText("Zuletzt aktualisiert")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Zuletzt aktualisiert")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("does not show the menu by default", () => {
@@ -26,10 +28,18 @@ describe("SortMenu", () => {
     const user = userEvent.setup();
     render(<SortMenu value="updated" onChange={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /Sortieren/ }));
-    expect(screen.getByRole("menuitemradio", { name: /Zuletzt aktualisiert/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("menuitemradio", { name: /Neueste zuerst/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("menuitemradio", { name: /Bewerbungen/ })).toBeInstanceOf(HTMLElement);
-    expect(screen.getByRole("menuitemradio", { name: /Status/ })).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("menuitemradio", { name: /Zuletzt aktualisiert/ }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("menuitemradio", { name: /Neueste zuerst/ }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("menuitemradio", { name: /Bewerbungen/ }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("menuitemradio", { name: /Status/ }),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("marks the active option as aria-checked='true'", async () => {
@@ -37,7 +47,9 @@ describe("SortMenu", () => {
     render(<SortMenu value="created" onChange={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /Sortieren/ }));
     expect(
-      screen.getByRole("menuitemradio", { name: /Neueste zuerst/ }).getAttribute("aria-checked")
+      screen
+        .getByRole("menuitemradio", { name: /Neueste zuerst/ })
+        .getAttribute("aria-checked"),
     ).toBe("true");
   });
 
@@ -46,7 +58,9 @@ describe("SortMenu", () => {
     const onChange = vi.fn();
     render(<SortMenu value="updated" onChange={onChange} />);
     await user.click(screen.getByRole("button", { name: /Sortieren/ }));
-    await user.click(screen.getByRole("menuitemradio", { name: /Bewerbungen/ }));
+    await user.click(
+      screen.getByRole("menuitemradio", { name: /Bewerbungen/ }),
+    );
     expect(onChange).toHaveBeenCalledWith("applications");
     expect(screen.queryByRole("menu")).toBeNull();
   });

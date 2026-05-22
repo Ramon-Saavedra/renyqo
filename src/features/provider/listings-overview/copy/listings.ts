@@ -1,8 +1,4 @@
-import type {
-  ListingStatus,
-  SortKey,
-  StatusFilterKey,
-} from "../types";
+import type { ListingStatus, SortKey, StatusFilterKey } from "../types";
 
 export interface StatusFilterEntry {
   readonly id: StatusFilterKey;

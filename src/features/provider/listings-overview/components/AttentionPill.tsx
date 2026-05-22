@@ -20,12 +20,7 @@ const WRAPPER_CLASS =
 export function AttentionPill({ reason }: AttentionPillProps) {
   const label = REASON_LABELS[reason];
   return (
-    <span
-      role="img"
-      aria-label={label}
-      title={label}
-      className={WRAPPER_CLASS}
-    >
+    <span role="img" aria-label={label} title={label} className={WRAPPER_CLASS}>
       <AppIcon icon={AlertCircle} size={12} strokeWidth={1.8} decorative />
     </span>
   );

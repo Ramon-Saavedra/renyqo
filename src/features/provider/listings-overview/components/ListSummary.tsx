@@ -24,7 +24,8 @@ export function ListSummary({
   sort,
   onSortChange,
 }: ListSummaryProps) {
-  const noun = shown === 1 ? listingsCopy.summary.singular : listingsCopy.summary.plural;
+  const noun =
+    shown === 1 ? listingsCopy.summary.singular : listingsCopy.summary.plural;
   const isFiltered = shown !== total;
   return (
     <div className={WRAPPER_CLASS}>

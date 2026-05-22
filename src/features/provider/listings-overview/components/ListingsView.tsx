@@ -25,9 +25,7 @@ interface ListingsViewProps {
   now?: Date;
 }
 
-function buildCounts(
-  listings: readonly ListingOverviewItem[],
-): StatusCounts {
+function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
   return {
     alle: listings.length,
     published: listings.filter((l) => l.status === "published").length,
@@ -80,9 +78,8 @@ export function ListingsView({
   initialListings = MOCK_LISTINGS,
   now,
 }: ListingsViewProps) {
-  const [listings, setListings] = useState<readonly ListingOverviewItem[]>(
-    initialListings,
-  );
+  const [listings, setListings] =
+    useState<readonly ListingOverviewItem[]>(initialListings);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("alle");
   const [sort, setSort] = useState<SortKey>("updated");

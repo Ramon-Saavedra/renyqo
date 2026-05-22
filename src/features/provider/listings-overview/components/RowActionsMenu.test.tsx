@@ -42,12 +42,19 @@ describe("RowActionsMenu", () => {
     const user = userEvent.setup();
     render(<RowActionsMenu listing={BASE} onAction={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: "Aktionen" }));
-    expect(screen.getByRole("menuitem", { name: "Pausieren" })).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("menuitem", { name: "Pausieren" })).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("does not show 'Pausieren' when status is paused", async () => {
     const user = userEvent.setup();
-    render(<RowActionsMenu listing={{ ...BASE, status: "paused" }} onAction={vi.fn()} />);
+    render(
+      <RowActionsMenu
+        listing={{ ...BASE, status: "paused" }}
+        onAction={vi.fn()}
+      />,
+    );
     await user.click(screen.getByRole("button", { name: "Aktionen" }));
     expect(screen.queryByRole("menuitem", { name: "Pausieren" })).toBeNull();
   });
@@ -57,13 +64,18 @@ describe("RowActionsMenu", () => {
     render(<RowActionsMenu listing={BASE} onAction={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: "Aktionen" }));
     expect(
-      screen.getByRole("menuitem", { name: "Als vermietet markieren" })
+      screen.getByRole("menuitem", { name: "Als vermietet markieren" }),
     ).toBeInstanceOf(HTMLElement);
   });
 
   it("does not show 'Archivieren' when status is archived", async () => {
     const user = userEvent.setup();
-    render(<RowActionsMenu listing={{ ...BASE, status: "archived" }} onAction={vi.fn()} />);
+    render(
+      <RowActionsMenu
+        listing={{ ...BASE, status: "archived" }}
+        onAction={vi.fn()}
+      />,
+    );
     await user.click(screen.getByRole("button", { name: "Aktionen" }));
     expect(screen.queryByRole("menuitem", { name: "Archivieren" })).toBeNull();
   });
