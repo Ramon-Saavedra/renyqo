@@ -13,7 +13,7 @@ const KICKER_CLASS =
   "mb-3 font-mono text-meta uppercase text-foreground-tertiary";
 
 const TITLE_CLASS =
-  "mb-2 font-display text-heading-xl font-medium text-foreground";
+  "mb-2 font-display text-heading-xl font-normal text-foreground-secondary";
 
 const LEAD_CLASS = "text-lead text-foreground-secondary";
 

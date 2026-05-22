@@ -15,10 +15,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     coldRent: 1480,
     livingArea: 84,
     rooms: 3,
-    applicationsCount: 2,
-    activeApplicationsCount: 2,
-    newApplicationsCount: 0,
-    activeApplicationsLimit: 5,
+    applicationsTotal: 2,
     openQuestionsCount: 0,
     status: "published",
     needsAttention: false,
@@ -34,10 +31,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     coldRent: 2150,
     livingArea: 112,
     rooms: 4,
-    applicationsCount: 4,
-    activeApplicationsCount: 4,
-    newApplicationsCount: 0,
-    activeApplicationsLimit: 5,
+    applicationsTotal: 4,
     openQuestionsCount: 1,
     status: "published",
     needsAttention: true,
@@ -53,10 +47,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     coldRent: 680,
     livingArea: 32,
     rooms: 1,
-    applicationsCount: 0,
-    activeApplicationsCount: 0,
-    newApplicationsCount: 0,
-    activeApplicationsLimit: 5,
+    applicationsTotal: 0,
     openQuestionsCount: 0,
     status: "draft",
     needsAttention: false,
@@ -72,10 +63,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     coldRent: 3450,
     livingArea: 168,
     rooms: 5,
-    applicationsCount: 5,
-    activeApplicationsCount: 0,
-    newApplicationsCount: 0,
-    activeApplicationsLimit: 5,
+    applicationsTotal: 5,
     openQuestionsCount: 0,
     status: "rented",
     needsAttention: false,
@@ -117,8 +105,7 @@ describe("ListingsView", () => {
       within(filterGroup).getByRole("radio", { name: /Vermietet/ }).textContent,
     ).toContain("1");
     expect(
-      within(filterGroup).getByRole("radio", { name: /Klärung nötig/ })
-        .textContent,
+      screen.getByRole("radio", { name: /Klärung nötig/ }).textContent,
     ).toContain("1");
   });
 

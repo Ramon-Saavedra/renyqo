@@ -5,7 +5,7 @@ import { listingsCopy } from "../copy/listings";
 import type { ListingOverviewItem, RowAction } from "../types";
 import { formatArea, formatEUR, formatRelative } from "../utils/format";
 import { AttentionPill } from "./AttentionPill";
-import { BewerbungenMeter } from "./BewerbungenMeter";
+import { ApplicationsMeter } from "./ApplicationsMeter";
 import { RowActionsMenu } from "./RowActionsMenu";
 import { StatusPill } from "./StatusPill";
 
@@ -16,7 +16,7 @@ interface ListingRowProps {
 }
 
 const ROW_BASE_CLASS =
-  "rounded-md border border-border bg-card px-5 py-4 transition-colors hover:border-border-strong";
+  "rounded-md border border-border/50 bg-card px-5 py-4 transition-colors hover:border-border";
 const ROW_INACTIVE_CLASS = "bg-background-subtle";
 
 const MAIN_CLASS = "mb-3.5 flex items-start justify-between gap-4";
@@ -42,9 +42,7 @@ const STAT_VALUE_INACTIVE = "text-foreground-secondary";
 const STAT_VALUE_SOFT =
   "truncate font-mono text-caption text-foreground-secondary tabular-nums";
 
-const BEW_INNER_CLASS = "flex flex-wrap items-center gap-2";
-const BADGE_NEW =
-  "inline-flex items-center rounded-full bg-primary-tint px-2 py-0.5 font-mono text-meta uppercase text-primary";
+const BEW_CELL_CLASS = "flex flex-wrap items-center gap-1.5";
 
 const ACTIONS_CELL_CLASS = "flex items-center gap-1.5";
 
@@ -54,6 +52,8 @@ const ICON_BUTTON_CLASS =
 export function ListingRow({ listing, onAction, now }: ListingRowProps) {
   const isInactive =
     listing.status === "rented" || listing.status === "archived";
+  const visibleCount = Math.min(listing.applicationsTotal, 5);
+  const waitingCount = Math.max(listing.applicationsTotal - 5, 0);
 
   return (
     <article
@@ -111,16 +111,11 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
           <span className={STAT_KICKER_CLASS}>
             {listingsCopy.row.applications}
           </span>
-          <div className={BEW_INNER_CLASS}>
-            <BewerbungenMeter
-              filled={listing.applicationsCount}
-              max={listing.activeApplicationsLimit}
-            />
-            {listing.newApplicationsCount > 0 && (
-              <span className={BADGE_NEW}>
-                {listingsCopy.row.newBadge(listing.newApplicationsCount)}
-              </span>
-            )}
+          <div className={BEW_CELL_CLASS}>
+            <ApplicationsMeter active={visibleCount} />
+            <span className={STAT_VALUE_SOFT}>
+              {listingsCopy.row.applicationsLabel(visibleCount, waitingCount)}
+            </span>
           </div>
         </div>
 
