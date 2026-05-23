@@ -113,6 +113,31 @@ describe("PasswordField", () => {
     });
   });
 
+  describe("custom toggle labels", () => {
+    it("uses the provided showLabel as the initial aria-label of the toggle", () => {
+      render(
+        <PasswordField id="pw" label="Passwort" showLabel="Anzeigen" hideLabel="Verbergen" />,
+      );
+
+      expect(
+        screen.getByRole("button", { name: "Anzeigen" }),
+      ).toBeInstanceOf(HTMLButtonElement);
+    });
+
+    it("swaps to the provided hideLabel after revealing the password", async () => {
+      const user = userEvent.setup();
+      render(
+        <PasswordField id="pw" label="Passwort" showLabel="Anzeigen" hideLabel="Verbergen" />,
+      );
+
+      await user.click(screen.getByRole("button", { name: "Anzeigen" }));
+
+      expect(
+        screen.getByRole("button", { name: "Verbergen" }),
+      ).toBeInstanceOf(HTMLButtonElement);
+    });
+  });
+
   describe("toggle icon", () => {
     it("renders a decorative eye icon inside the toggle button", () => {
       render(<PasswordField id="pw" label="Passwort" />);
