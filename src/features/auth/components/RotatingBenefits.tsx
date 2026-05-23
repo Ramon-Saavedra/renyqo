@@ -25,13 +25,13 @@ export function RotatingBenefits({
       const id = window.setInterval(onStoreChange, TICK_INTERVAL);
       return () => window.clearInterval(id);
     },
-    [benefits.length],
+    [benefits],
   );
 
   const getSnapshot = useCallback(
     () =>
       Math.floor((Date.now() + delay) / ROTATION_INTERVAL) % benefits.length,
-    [benefits.length, delay],
+    [benefits, delay],
   );
 
   const index = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
