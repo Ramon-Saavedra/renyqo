@@ -24,9 +24,17 @@ const STEPS: readonly FlowStepCopy[] = [
 
 describe("FlowStepsCard", () => {
   it("renders the kicker text", () => {
-    render(<FlowStepsCard kicker="In wenigen Schritten" steps={STEPS} currentIndex={0} />);
+    render(
+      <FlowStepsCard
+        kicker="In wenigen Schritten"
+        steps={STEPS}
+        currentIndex={0}
+      />,
+    );
 
-    expect(screen.getByText("In wenigen Schritten")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("In wenigen Schritten")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("renders one progress indicator per step", () => {
@@ -55,8 +63,12 @@ describe("FlowStepsCard", () => {
     render(<FlowStepsCard kicker="Schritte" steps={STEPS} currentIndex={0} />);
 
     expect(screen.getByText("Mietobjekt anlegen")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Anforderungen festlegen")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Bewerbungen erhalten")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Anforderungen festlegen")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByText("Bewerbungen erhalten")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("marks the current step as active", () => {

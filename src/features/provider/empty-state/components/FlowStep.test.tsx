@@ -5,13 +5,27 @@ import { FlowStep } from "./FlowStep";
 
 describe("FlowStep", () => {
   it("renders the step number", () => {
-    render(<FlowStep index={1} title="Mietobjekt anlegen" isCurrent={false} totalSteps={3} />);
+    render(
+      <FlowStep
+        index={1}
+        title="Mietobjekt anlegen"
+        isCurrent={false}
+        totalSteps={3}
+      />,
+    );
 
     expect(screen.getByText("1")).toBeInstanceOf(HTMLElement);
   });
 
   it("renders the step title", () => {
-    render(<FlowStep index={1} title="Mietobjekt anlegen" isCurrent={false} totalSteps={3} />);
+    render(
+      <FlowStep
+        index={1}
+        title="Mietobjekt anlegen"
+        isCurrent={false}
+        totalSteps={3}
+      />,
+    );
 
     expect(screen.getByText("Mietobjekt anlegen")).toBeInstanceOf(HTMLElement);
   });

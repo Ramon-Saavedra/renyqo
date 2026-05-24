@@ -7,7 +7,11 @@ import { BenefitCard } from "./BenefitCard";
 describe("BenefitCard", () => {
   it("renders the title", () => {
     render(
-      <BenefitCard icon={Home} title="Weniger E-Mails" description="Beschreibung" />,
+      <BenefitCard
+        icon={Home}
+        title="Weniger E-Mails"
+        description="Beschreibung"
+      />,
     );
 
     expect(screen.getByText("Weniger E-Mails")).toBeInstanceOf(HTMLElement);
@@ -15,10 +19,16 @@ describe("BenefitCard", () => {
 
   it("renders the description", () => {
     render(
-      <BenefitCard icon={Home} title="Titel" description="Kürzere Bearbeitungszeit" />,
+      <BenefitCard
+        icon={Home}
+        title="Titel"
+        description="Kürzere Bearbeitungszeit"
+      />,
     );
 
-    expect(screen.getByText("Kürzere Bearbeitungszeit")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Kürzere Bearbeitungszeit")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("renders the icon as an svg element", () => {

@@ -13,7 +13,11 @@ const ITEMS: readonly BenefitCopy[] = [
 describe("BenefitsSection", () => {
   it("renders the section title", () => {
     render(
-      <BenefitsSection title="Warum renyqo?" description="Kurze Erklärung" items={ITEMS} />,
+      <BenefitsSection
+        title="Warum renyqo?"
+        description="Kurze Erklärung"
+        items={ITEMS}
+      />,
     );
 
     expect(screen.getByText("Warum renyqo?")).toBeInstanceOf(HTMLElement);
@@ -21,7 +25,11 @@ describe("BenefitsSection", () => {
 
   it("renders the section description", () => {
     render(
-      <BenefitsSection title="Titel" description="Kurze Erklärung" items={ITEMS} />,
+      <BenefitsSection
+        title="Titel"
+        description="Kurze Erklärung"
+        items={ITEMS}
+      />,
     );
 
     expect(screen.getByText("Kurze Erklärung")).toBeInstanceOf(HTMLElement);
@@ -29,7 +37,11 @@ describe("BenefitsSection", () => {
 
   it("renders one BenefitCard per item", () => {
     render(
-      <BenefitsSection title="Titel" description="Beschreibung" items={ITEMS} />,
+      <BenefitsSection
+        title="Titel"
+        description="Beschreibung"
+        items={ITEMS}
+      />,
     );
 
     expect(screen.getByText("Vorteil A")).toBeInstanceOf(HTMLElement);
