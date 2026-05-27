@@ -20,8 +20,10 @@ describe("AnforderungenSection", () => {
     );
     expect(screen.getByText("SCHUFA-Auskunft")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Hinweis:")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("—")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("AUTO")).toBeInstanceOf(HTMLElement);
+    const totalField = screen.getByText("AUTO").closest("div");
+
+    expect(totalField).toBeInstanceOf(HTMLElement);
+    expect(totalField?.textContent).toContain("—");
   });
 
   it("sanitizes the income input and derives the total people label", () => {

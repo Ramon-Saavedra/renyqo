@@ -20,12 +20,14 @@ describe("ObjektdatenSection", () => {
         name: "Das Wichtigste zu deiner Immobilie",
       }),
     ).toBeInstanceOf(HTMLElement);
-    expect(screen.getByLabelText("Adresse")).toBeInstanceOf(HTMLInputElement);
+    expect(
+      screen.getByPlaceholderText("Straße, Hausnummer, PLZ, Stadt"),
+    ).toBeInstanceOf(HTMLInputElement);
     expect(screen.getByText("Objekttyp")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByLabelText("Wohnfläche")).toBeInstanceOf(
+    expect(document.getElementById("area")).toBeInstanceOf(HTMLInputElement);
+    expect(document.getElementById("available-from")).toBeInstanceOf(
       HTMLInputElement,
     );
-    expect(screen.getByLabelText("Frei ab")).toBeInstanceOf(HTMLInputElement);
     expect(screen.getByText("Fotos")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("0 / 600")).toBeInstanceOf(HTMLElement);
   });
@@ -41,15 +43,20 @@ describe("ObjektdatenSection", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Wohnfläche"), {
+    fireEvent.change(document.getElementById("area") as HTMLInputElement, {
       target: { value: "68qm" },
     });
-    fireEvent.change(screen.getByLabelText("Kaltmiete"), {
+    fireEvent.change(document.getElementById("price") as HTMLInputElement, {
       target: { value: "980 €" },
     });
-    fireEvent.change(screen.getByLabelText("Kurzbeschreibung"), {
-      target: { value: "a".repeat(805) },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText(
+        "Was macht dein Objekt besonders? Helle Räume, ruhige Lage, gute Verkehrsanbindung — beschreibe in 2–3 Sätzen, was Suchende wissen sollten.",
+      ),
+      {
+        target: { value: "a".repeat(805) },
+      },
+    );
 
     expect(setField).toHaveBeenCalledWith("area", "68");
     expect(setField).toHaveBeenCalledWith("price", "980");
