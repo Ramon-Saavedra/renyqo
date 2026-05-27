@@ -17,7 +17,9 @@ describe("ActionsBar", () => {
     expect(screen.getByText("Wohnfläche")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Kaltmiete")).toBeInstanceOf(HTMLElement);
 
-    const publishButton = screen.getByRole("button", { name: "Veröffentlichen" });
+    const publishButton = screen.getByRole("button", {
+      name: "Veröffentlichen",
+    });
 
     expect(publishButton).toBeInstanceOf(HTMLButtonElement);
     expect((publishButton as HTMLButtonElement).disabled).toBe(true);
@@ -37,11 +39,13 @@ describe("ActionsBar", () => {
     expect(screen.queryByText("Noch fehlt")).toBeNull();
     expect(container.querySelector("svg")).toBeInstanceOf(SVGElement);
 
-    const publishButton = screen.getByRole("button", { name: "Veröffentlichen" });
+    const publishButton = screen.getByRole("button", {
+      name: "Veröffentlichen",
+    });
 
     expect((publishButton as HTMLButtonElement).disabled).toBe(false);
-    expect(screen.getByRole("button", { name: "Als Entwurf speichern" })).toBeInstanceOf(
-      HTMLButtonElement,
-    );
+    expect(
+      screen.getByRole("button", { name: "Als Entwurf speichern" }),
+    ).toBeInstanceOf(HTMLButtonElement);
   });
 });

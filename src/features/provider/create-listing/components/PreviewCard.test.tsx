@@ -1,10 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import {
-  INITIAL_DRAFT,
-  type ListingDraft,
-} from "../hooks/useListingDraft";
+import { INITIAL_DRAFT, type ListingDraft } from "../hooks/useListingDraft";
 import { PreviewCard } from "./PreviewCard";
 
 const POPULATED_DRAFT: ListingDraft = {
@@ -23,9 +20,9 @@ describe("PreviewCard", () => {
   it("renders placeholders for an empty draft", () => {
     render(<PreviewCard draft={INITIAL_DRAFT} finalTitle="" />);
 
-    expect(screen.getByLabelText("So sehen Suchende dein Objekt")).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(
+      screen.getByLabelText("So sehen Suchende dein Objekt"),
+    ).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Titel wird generiert …")).toBeInstanceOf(
       HTMLElement,
     );

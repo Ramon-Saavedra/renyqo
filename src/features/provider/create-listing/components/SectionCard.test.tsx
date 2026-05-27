@@ -23,10 +23,14 @@ describe("SectionCard", () => {
       }),
     ).toBeInstanceOf(HTMLElement);
     expect(
-      screen.getByText("Diese Angaben helfen Suchenden, dein Objekt zu finden."),
+      screen.getByText(
+        "Diese Angaben helfen Suchenden, dein Objekt zu finden.",
+      ),
     ).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Feldinhalt")).toBeInstanceOf(HTMLElement);
-    expect(container.querySelector("section#sec-01")).toBeInstanceOf(HTMLElement);
+    expect(container.querySelector("section#sec-01")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("appends a custom className to the base section styles", () => {
