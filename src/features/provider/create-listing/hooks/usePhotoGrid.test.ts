@@ -67,7 +67,7 @@ describe("usePhotoGrid", () => {
 
     it("adds a photo with a deterministic id when canAdd is true", () => {
       const photos: ListingPhoto[] = [];
-      const setPhotos = vi.fn();
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
 
       const { result } = renderHook(() => usePhotoGrid({ photos, setPhotos }));
 
@@ -76,10 +76,12 @@ describe("usePhotoGrid", () => {
       });
 
       expect(setPhotos).toHaveBeenCalledOnce();
-      const newPhotos = setPhotos.mock.calls[0][0] as ListingPhoto[];
-      expect(newPhotos).toHaveLength(1);
-      expect(newPhotos[0].id).toBe("photo-1000-0");
-      expect(newPhotos[0].src).toContain("data:image/svg+xml");
+      expect(setPhotos).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: "photo-1000-0",
+          src: expect.stringContaining("data:image/svg+xml"),
+        }),
+      ]);
     });
 
     it("does nothing when photos count has reached the max", () => {
@@ -100,7 +102,7 @@ describe("usePhotoGrid", () => {
     it("appends to the existing photos array", () => {
       const existing = makePhoto("existing");
       const photos: ListingPhoto[] = [existing];
-      const setPhotos = vi.fn();
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
 
       const { result } = renderHook(() => usePhotoGrid({ photos, setPhotos }));
 
@@ -108,7 +110,8 @@ describe("usePhotoGrid", () => {
         result.current.addDemo();
       });
 
-      const newPhotos = setPhotos.mock.calls[0][0] as ListingPhoto[];
+      expect(setPhotos).toHaveBeenCalledOnce();
+      const newPhotos = setPhotos.mock.calls[0]![0];
       expect(newPhotos).toHaveLength(2);
       expect(newPhotos[0]).toBe(existing);
     });
@@ -119,7 +122,7 @@ describe("usePhotoGrid", () => {
       const a = makePhoto("a");
       const b = makePhoto("b");
       const photos: ListingPhoto[] = [a, b];
-      const setPhotos = vi.fn();
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
 
       const { result } = renderHook(() => usePhotoGrid({ photos, setPhotos }));
 
@@ -127,15 +130,16 @@ describe("usePhotoGrid", () => {
         result.current.remove("a");
       });
 
-      const newPhotos = setPhotos.mock.calls[0][0] as ListingPhoto[];
+      expect(setPhotos).toHaveBeenCalledOnce();
+      const newPhotos = setPhotos.mock.calls[0]![0];
       expect(newPhotos).toHaveLength(1);
-      expect(newPhotos[0]).toBe(b);
+      expect(newPhotos).toContain(b);
     });
 
     it("returns an unchanged array when the id does not exist", () => {
       const a = makePhoto("a");
       const photos: ListingPhoto[] = [a];
-      const setPhotos = vi.fn();
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
 
       const { result } = renderHook(() => usePhotoGrid({ photos, setPhotos }));
 
@@ -143,14 +147,15 @@ describe("usePhotoGrid", () => {
         result.current.remove("ghost");
       });
 
-      const newPhotos = setPhotos.mock.calls[0][0] as ListingPhoto[];
+      expect(setPhotos).toHaveBeenCalledOnce();
+      const newPhotos = setPhotos.mock.calls[0]![0];
       expect(newPhotos).toHaveLength(1);
-      expect(newPhotos[0]).toBe(a);
+      expect(newPhotos).toContain(a);
     });
 
     it("results in an empty array when the only photo is removed", () => {
       const a = makePhoto("a");
-      const setPhotos = vi.fn();
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
 
       const { result } = renderHook(() =>
         usePhotoGrid({ photos: [a], setPhotos }),
@@ -160,7 +165,8 @@ describe("usePhotoGrid", () => {
         result.current.remove("a");
       });
 
-      const newPhotos = setPhotos.mock.calls[0][0] as ListingPhoto[];
+      expect(setPhotos).toHaveBeenCalledOnce();
+      const newPhotos = setPhotos.mock.calls[0]![0];
       expect(newPhotos).toHaveLength(0);
     });
   });

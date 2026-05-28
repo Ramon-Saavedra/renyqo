@@ -27,24 +27,28 @@ function stubTop(el: HTMLElement, top: number): void {
 }
 
 describe("useActiveStepFromScroll", () => {
-  let elements: HTMLElement[];
+  let el0!: HTMLElement;
+  let el1!: HTMLElement;
+  let el2!: HTMLElement;
 
   beforeEach(() => {
-    elements = STEP_IDS.map(makeElement);
+    el0 = makeElement("step-a");
+    el1 = makeElement("step-b");
+    el2 = makeElement("step-c");
   });
 
   afterEach(() => {
-    for (const el of elements) {
-      el.remove();
-    }
+    el0.remove();
+    el1.remove();
+    el2.remove();
     vi.restoreAllMocks();
   });
 
   describe("initial state", () => {
     it("returns the first stepId before any scroll", () => {
-      stubTop(elements[0], 300);
-      stubTop(elements[1], 400);
-      stubTop(elements[2], 500);
+      stubTop(el0, 300);
+      stubTop(el1, 400);
+      stubTop(el2, 500);
 
       const { result } = renderHook(() => useActiveStepFromScroll(STEP_IDS));
 
@@ -54,9 +58,9 @@ describe("useActiveStepFromScroll", () => {
 
   describe("scroll detection", () => {
     it("activates a step when its top is strictly below 200", () => {
-      stubTop(elements[0], 100);
-      stubTop(elements[1], 300);
-      stubTop(elements[2], 400);
+      stubTop(el0, 100);
+      stubTop(el1, 300);
+      stubTop(el2, 400);
 
       const { result } = renderHook(() => useActiveStepFromScroll(STEP_IDS));
 
@@ -68,9 +72,9 @@ describe("useActiveStepFromScroll", () => {
     });
 
     it("does not activate a step when its top is exactly 200", () => {
-      stubTop(elements[0], 200);
-      stubTop(elements[1], 300);
-      stubTop(elements[2], 400);
+      stubTop(el0, 200);
+      stubTop(el1, 300);
+      stubTop(el2, 400);
 
       const { result } = renderHook(() => useActiveStepFromScroll(STEP_IDS));
 
@@ -82,9 +86,9 @@ describe("useActiveStepFromScroll", () => {
     });
 
     it("selects the last step that qualifies when multiple steps are below the threshold", () => {
-      stubTop(elements[0], 50);
-      stubTop(elements[1], 150);
-      stubTop(elements[2], 350);
+      stubTop(el0, 50);
+      stubTop(el1, 150);
+      stubTop(el2, 350);
 
       const { result } = renderHook(() => useActiveStepFromScroll(STEP_IDS));
 
@@ -96,9 +100,9 @@ describe("useActiveStepFromScroll", () => {
     });
 
     it("returns the first stepId when all steps are at or above the threshold", () => {
-      stubTop(elements[0], 200);
-      stubTop(elements[1], 300);
-      stubTop(elements[2], 400);
+      stubTop(el0, 200);
+      stubTop(el1, 300);
+      stubTop(el2, 400);
 
       const { result } = renderHook(() => useActiveStepFromScroll(STEP_IDS));
 
@@ -110,9 +114,9 @@ describe("useActiveStepFromScroll", () => {
     });
 
     it("updates the active step as scroll position changes", () => {
-      stubTop(elements[0], 100);
-      stubTop(elements[1], 300);
-      stubTop(elements[2], 400);
+      stubTop(el0, 100);
+      stubTop(el1, 300);
+      stubTop(el2, 400);
 
       const { result } = renderHook(() => useActiveStepFromScroll(STEP_IDS));
 
@@ -121,7 +125,7 @@ describe("useActiveStepFromScroll", () => {
       });
       expect(result.current).toBe("step-a");
 
-      stubTop(elements[1], 150);
+      stubTop(el1, 150);
 
       act(() => {
         window.dispatchEvent(new Event("scroll"));

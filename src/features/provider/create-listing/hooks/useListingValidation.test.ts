@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { INITIAL_DRAFT } from "./useListingDraft";
 import type { ListingDraft, ListingPhoto } from "./useListingDraft";
+import type { RoomOption } from "../copy/create-listing";
 import { useListingValidation } from "./useListingValidation";
 
 const PHOTO: ListingPhoto = { id: "p1", src: "data:image/svg+xml;test" };
@@ -75,7 +76,7 @@ describe("useListingValidation", () => {
     });
 
     it("includes Zimmer when rooms is empty", () => {
-      const draft = { ...VALID_DRAFT, rooms: "" };
+      const draft: ListingDraft = { ...VALID_DRAFT, rooms: "" as RoomOption };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("Zimmer");
