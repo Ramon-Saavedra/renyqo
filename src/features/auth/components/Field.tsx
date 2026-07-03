@@ -1,10 +1,12 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
+import { FieldError } from "@/components/ui/form/FieldError";
 
 interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string;
   label: string;
   hint?: string;
+  error?: string | undefined;
   trailing?: ReactNode;
   inputClassName?: string;
 }
@@ -16,6 +18,7 @@ export function Field({
   id,
   label,
   hint,
+  error,
   trailing,
   inputClassName,
   className,
@@ -45,7 +48,8 @@ export function Field({
       ) : (
         input
       )}
-      {hint && (
+      {error && <FieldError message={error} />}
+      {!error && hint && (
         <span className="text-caption text-foreground-tertiary">{hint}</span>
       )}
     </div>

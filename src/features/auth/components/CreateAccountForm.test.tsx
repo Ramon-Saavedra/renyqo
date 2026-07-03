@@ -1,13 +1,17 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { CreateAccountForm } from "./CreateAccountForm";
 import { createAccountCopy } from "../copy/create-account";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 const { fields, consent } = createAccountCopy;
 
 function renderForm(idPrefix = "test") {
-  return render(<CreateAccountForm idPrefix={idPrefix} />);
+  return render(<CreateAccountForm idPrefix={idPrefix} role="applicant" />);
 }
 
 describe("CreateAccountForm", () => {
@@ -99,12 +103,14 @@ describe("CreateAccountForm", () => {
       expect(input.required).toBe(true);
     });
 
-    it("renders the password hint", () => {
+    it("renders the suggest password button", () => {
       renderForm();
 
-      expect(screen.getByText(fields.password.hint)).toBeInstanceOf(
-        HTMLElement,
-      );
+      expect(
+        screen.getByRole("button", {
+          name: createAccountCopy.passwordStrength.suggest,
+        }),
+      ).toBeInstanceOf(HTMLElement);
     });
   });
 
