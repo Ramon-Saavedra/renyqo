@@ -18,9 +18,13 @@ describe("resolveRedirectPath", () => {
     expect(resolveRedirectPath("applicant_area_pending")).toBe("/dashboard");
   });
 
-  it("maps create_first_listing to /provider/listings/new", () => {
+  it("maps browse_listings to /listings", () => {
+    expect(resolveRedirectPath("browse_listings")).toBe("/listings");
+  });
+
+  it("maps create_first_listing to /provider/get-started", () => {
     expect(resolveRedirectPath("create_first_listing")).toBe(
-      "/provider/listings/new",
+      "/provider/get-started",
     );
   });
 
