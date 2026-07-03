@@ -49,7 +49,9 @@ describe("apiPost", () => {
   it("throws ApiError with the response status on a non-2xx response", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(makeMockResponse(401, { message: "Unauthorized" })),
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(401, { message: "Unauthorized" })),
     );
 
     await expect(apiPost("/test", {})).rejects.toMatchObject({
@@ -61,9 +63,11 @@ describe("apiPost", () => {
   it("uses the first element when the backend error message is an array", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        makeMockResponse(400, { message: ["first error", "second error"] }),
-      ),
+      vi
+        .fn()
+        .mockResolvedValue(
+          makeMockResponse(400, { message: ["first error", "second error"] }),
+        ),
     );
 
     await expect(apiPost("/test", {})).rejects.toMatchObject({
@@ -82,9 +86,7 @@ describe("apiPost", () => {
   });
 
   it("calls fetch with POST method, credentials include and JSON content-type", async () => {
-    const mockFetch = vi
-      .fn()
-      .mockResolvedValue(makeMockResponse(200, {}));
+    const mockFetch = vi.fn().mockResolvedValue(makeMockResponse(200, {}));
     vi.stubGlobal("fetch", mockFetch);
 
     await apiPost("/test", { key: "value" });
@@ -103,7 +105,9 @@ describe("apiPost", () => {
   it("the thrown error passes instanceof ApiError", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(makeMockResponse(500, { message: "Server error" })),
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(500, { message: "Server error" })),
     );
 
     let caught: unknown;
@@ -134,7 +138,9 @@ describe("apiGet", () => {
   it("throws ApiError with the response status on a non-2xx response", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(makeMockResponse(403, { message: "Forbidden" })),
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(403, { message: "Forbidden" })),
     );
 
     await expect(apiGet("/test")).rejects.toMatchObject({ status: 403 });
@@ -151,9 +157,7 @@ describe("apiGet", () => {
   });
 
   it("calls fetch with GET method and credentials include", async () => {
-    const mockFetch = vi
-      .fn()
-      .mockResolvedValue(makeMockResponse(200, {}));
+    const mockFetch = vi.fn().mockResolvedValue(makeMockResponse(200, {}));
     vi.stubGlobal("fetch", mockFetch);
 
     await apiGet("/test");

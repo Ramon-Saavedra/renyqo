@@ -118,9 +118,9 @@ describe("login", () => {
     };
     vi.mocked(apiPost).mockResolvedValue(user as never);
 
-    await expect(
-      login({ email: "t@t.de", password: "pass" }),
-    ).resolves.toEqual(user);
+    await expect(login({ email: "t@t.de", password: "pass" })).resolves.toEqual(
+      user,
+    );
   });
 });
 

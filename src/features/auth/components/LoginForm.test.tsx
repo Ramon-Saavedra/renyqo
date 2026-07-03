@@ -129,9 +129,9 @@ describe("LoginForm", () => {
       );
       await user.click(screen.getByRole("button", { name: loginCopy.submit }));
 
-      const btn = await screen.findByRole("button", {
+      const btn = (await screen.findByRole("button", {
         name: loginCopy.submitting,
-      }) as HTMLButtonElement;
+      })) as HTMLButtonElement;
 
       expect(btn.disabled).toBe(true);
     });

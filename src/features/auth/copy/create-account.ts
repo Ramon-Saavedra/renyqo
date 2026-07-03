@@ -39,7 +39,8 @@ export const createAccountCopy = {
     email: "Bitte gib eine gültige E-Mail-Adresse ein.",
     emailTaken: "Diese E-Mail wird bereits verwendet.",
     password: "Das Passwort muss mindestens 8 Zeichen lang sein.",
-    terms: "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
+    terms:
+      "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
   },
   passwordStrength: {
     schwach: "Schwach",

@@ -142,8 +142,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
     try {
       const { nextStep } = await getOnboardingState();
       path = resolveRedirectPath(nextStep);
-    } catch {
-    }
+    } catch {}
 
     setTimeout(() => router.push(path), 1500);
   }
@@ -187,7 +186,9 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         required
         disabled={loading}
         error={fieldErrors.name}
-        onChange={() => setFieldErrors((prev) => ({ ...prev, name: undefined }))}
+        onChange={() =>
+          setFieldErrors((prev) => ({ ...prev, name: undefined }))
+        }
         className="mb-3.5"
       />
 

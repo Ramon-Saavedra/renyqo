@@ -35,7 +35,10 @@ export function generateSecurePassword(): string {
 }
 
 function pick(charset: string, count: number): string[] {
-  return Array.from({ length: count }, () => charset[randomInt(charset.length)]!);
+  return Array.from(
+    { length: count },
+    () => charset[randomInt(charset.length)]!,
+  );
 }
 
 function shuffle<T>(arr: T[]): T[] {

@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  generateSecurePassword,
-  getPasswordStrength,
-} from "./password";
+import { generateSecurePassword, getPasswordStrength } from "./password";
 
 describe("getPasswordStrength", () => {
   it("returns null for an empty string", () => {
