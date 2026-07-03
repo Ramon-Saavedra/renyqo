@@ -30,8 +30,30 @@ export const createAccountCopy = {
     suffix: ".",
   },
   submit: "Konto erstellen",
+  submitting: "Bitte warten…",
+  success: "Konto erfolgreich erstellt. Du wirst weitergeleitet…",
   alreadyAccount: "Bereits ein Konto?",
   signIn: "Anmelden",
+  validation: {
+    name: "Bitte gib deinen Namen ein.",
+    email: "Bitte gib eine gültige E-Mail-Adresse ein.",
+    emailTaken: "Diese E-Mail wird bereits verwendet.",
+    password: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+    terms:
+      "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
+  },
+  passwordStrength: {
+    schwach: "Schwach",
+    mittel: "Mittel",
+    stark: "Stark",
+    suggest: "Sicheres Passwort vorschlagen",
+  },
+  globalErrors: {
+    unavailable:
+      "Der Server ist aktuell nicht erreichbar. Bitte versuche es später noch einmal.",
+    unknown:
+      "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
+  },
 } as const;
 
 interface ReassureItem {

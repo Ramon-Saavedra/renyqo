@@ -14,13 +14,18 @@ interface PasswordFieldProps {
   required?: boolean;
   minLength?: number;
   autoComplete?: string;
+  disabled?: boolean;
   showLabel?: string;
   hideLabel?: string;
+  value?: string;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  error?: string | undefined;
 }
 
 export function PasswordField({
   showLabel = "Passwort anzeigen",
   hideLabel = "Passwort verbergen",
+  disabled,
   ...props
 }: PasswordFieldProps) {
   const [visible, setVisible] = useState(false);
@@ -28,11 +33,13 @@ export function PasswordField({
   return (
     <Field
       {...props}
+      disabled={disabled}
       type={visible ? "text" : "password"}
       inputClassName="pr-11"
       trailing={
         <button
           type="button"
+          disabled={disabled}
           aria-label={visible ? hideLabel : showLabel}
           aria-pressed={visible}
           onClick={() => setVisible((current) => !current)}

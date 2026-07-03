@@ -95,7 +95,7 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          <CreateAccountForm idPrefix={role} />
+          <CreateAccountForm idPrefix={role} role={role} />
         </div>
       </div>
     </PageShell>
