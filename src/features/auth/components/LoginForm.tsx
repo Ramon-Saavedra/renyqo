@@ -120,7 +120,7 @@ export function LoginForm() {
       <div className="flex items-center justify-center gap-1.5 text-caption text-foreground-secondary">
         {loginCopy.noAccount}
         <Link
-          href="/register"
+          href="/register/account-type"
           className="font-medium text-primary hover:text-primary-hover"
         >
           {loginCopy.register}

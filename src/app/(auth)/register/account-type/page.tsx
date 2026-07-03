@@ -14,7 +14,7 @@ export default function AccountTypePage() {
   return (
     <PageShell>
       <AppTopbar className="mb-section">
-        <Link href="/register" className={buttonClass("ghost")}>
+        <Link href="/" className={buttonClass("ghost")}>
           <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
           {accountTypeCopy.back}
         </Link>
