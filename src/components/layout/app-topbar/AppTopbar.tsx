@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Logo } from "@/components/ui/logo/Logo";
 import { cn } from "@/lib/utils/cn";
 
@@ -12,7 +13,9 @@ const BASE_CLASS =
 export function AppTopbar({ children, className }: AppTopbarProps) {
   return (
     <header className={cn(BASE_CLASS, className)}>
-      <Logo />
+      <Link href="/">
+        <Logo />
+      </Link>
       {children && <div className="flex items-center gap-3.5">{children}</div>}
     </header>
   );
