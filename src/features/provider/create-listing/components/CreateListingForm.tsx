@@ -6,6 +6,7 @@ import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
 import { useActiveStepFromScroll } from "../hooks/useActiveStepFromScroll";
 import { useAutoSaveIndicator } from "../hooks/useAutoSaveIndicator";
 import { useAutoTitle } from "../hooks/useAutoTitle";
+import { useCreateListing } from "../hooks/useCreateListing";
 import { useListingDraft } from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
@@ -26,9 +27,11 @@ export function CreateListingForm() {
     address: draft.address,
   });
   const { missing, canPublish, completedSteps } = useListingValidation(draft);
+  const { submitStatus, error, saveDraft, publish } = useCreateListing();
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
+  const isLoading = submitStatus !== "idle";
 
   return (
     <>
@@ -56,7 +59,14 @@ export function CreateListingForm() {
             />
             <AnforderungenSection draft={draft} setField={setField} />
             <AbschlussSection draft={draft} setField={setField} />
-            <ActionsBar missing={missing} canPublish={canPublish} />
+            <ActionsBar
+              missing={missing}
+              canPublish={canPublish}
+              onSaveDraft={() => saveDraft(draft, finalTitle)}
+              onPublish={() => publish(draft, finalTitle)}
+              isLoading={isLoading}
+              error={error}
+            />
           </div>
           <PreviewCard draft={draft} finalTitle={finalTitle} />
         </div>

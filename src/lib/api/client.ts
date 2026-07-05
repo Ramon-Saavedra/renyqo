@@ -40,6 +40,26 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      ...(body !== undefined && { body: JSON.stringify(body) }),
+    });
+  } catch {
+    throw new ApiError(0, "Netzwerkfehler");
+  }
+  if (!res.ok) {
+    const message = await parseErrorMessage(res);
+    throw new ApiError(res.status, message);
+  }
+  const text = await res.text();
+  return text ? (JSON.parse(text) as T) : (undefined as T);
+}
+
 export async function apiGet<T>(path: string): Promise<T> {
   let res: Response;
   try {
