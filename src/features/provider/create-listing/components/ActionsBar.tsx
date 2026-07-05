@@ -17,8 +17,6 @@ const WRAPPER_CLASS =
   "mt-4.5 flex flex-col gap-4 rounded-md border border-border bg-background px-7 py-5.5";
 const ROW_CLASS = "flex flex-wrap items-center justify-between gap-4";
 const BTN_GROUP_CLASS = "flex flex-wrap gap-2.5";
-const PUBLISH_BTN_CLASS =
-  "disabled:cursor-not-allowed disabled:border-border disabled:bg-background-muted disabled:text-foreground-tertiary";
 
 const MISSING_LBL_CLASS =
   "mr-1.5 font-mono text-meta uppercase text-foreground-tertiary";
@@ -70,10 +68,9 @@ export function ActionsBar({
           </button>
           <button
             type="button"
-            disabled={!canPublish || isLoading}
-            title={canPublish ? undefined : copy.publishHelp}
+            disabled={isLoading}
             onClick={onPublish}
-            className={buttonClass("primary", PUBLISH_BTN_CLASS)}
+            className={buttonClass("primary")}
           >
             {copy.publish}
           </button>
