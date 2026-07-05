@@ -1,11 +1,16 @@
 import { CheckCircle2 } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
+import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { createListingCopy } from "../copy/create-listing";
 
 interface ActionsBarProps {
   missing: ReadonlyArray<string>;
   canPublish: boolean;
+  onSaveDraft?: () => void;
+  onPublish?: () => void;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 const WRAPPER_CLASS =
@@ -20,7 +25,14 @@ const MISSING_LBL_CLASS =
 const MISSING_CHIP_CLASS =
   "rounded-sm border border-border bg-background-subtle px-2 py-0.75 text-caption text-foreground";
 
-export function ActionsBar({ missing, canPublish }: ActionsBarProps) {
+export function ActionsBar({
+  missing,
+  canPublish,
+  onSaveDraft,
+  onPublish,
+  isLoading = false,
+  error,
+}: ActionsBarProps) {
   const copy = createListingCopy.abschluss.actions;
   return (
     <div className={WRAPPER_CLASS}>
@@ -48,19 +60,28 @@ export function ActionsBar({ missing, canPublish }: ActionsBarProps) {
           )}
         </div>
         <div className={BTN_GROUP_CLASS}>
-          <button type="button" className={buttonClass("ghost")}>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={onSaveDraft}
+            className={buttonClass("ghost")}
+          >
             {copy.saveDraft}
           </button>
           <button
             type="button"
-            disabled={!canPublish}
+            disabled={!canPublish || isLoading}
             title={canPublish ? undefined : copy.publishHelp}
+            onClick={onPublish}
             className={buttonClass("primary", PUBLISH_BTN_CLASS)}
           >
             {copy.publish}
           </button>
         </div>
       </div>
+      {error && (
+        <FormAlert variant="error" message={error} className="mt-3" />
+      )}
     </div>
   );
 }
