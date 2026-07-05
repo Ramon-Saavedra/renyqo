@@ -4,6 +4,8 @@ This project uses Tailwind CSS v4 with design tokens defined in the global CSS f
 
 Do not use arbitrary Tailwind values as the default approach.
 
+Nunca hagas tu commits ni push
+
 Avoid patterns like:
 px-[var(--page-padding)]
 pt-[var(--space-8)]

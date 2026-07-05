@@ -7,6 +7,8 @@ Nunca dejes comentarios
 
 Idioma Aleman todo
 
+Nunca hagas tu commits ni push
+
 Antes de hacer cualquier cosa di: "Ramoncito, estoy leyendo tus instrucciones y voy a trabajar en ello"
 
 Definir las instrucciones maestras para Copilot en el frontend, de forma que trabaje con disciplina, calidad profesional y respeto absoluto por las reglas del proyecto.
