@@ -24,7 +24,7 @@ export function CreateListingForm() {
   const { autoTitle } = useAutoTitle({
     objectType: draft.objectType,
     rooms: draft.rooms,
-    address: draft.address,
+    city: draft.city,
   });
   const { missing, canPublish, completedSteps } = useListingValidation(draft);
   const { submitStatus, error, fieldErrors, saveDraft, publish } =
