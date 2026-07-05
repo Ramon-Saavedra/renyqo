@@ -67,11 +67,11 @@ describe("LoginForm", () => {
       expect(btn.getAttribute("type")).toBe("submit");
     });
 
-    it("renders the register link pointing to /register", () => {
+    it("renders the register link pointing to /register/account-type", () => {
       renderForm();
       const link = screen.getByRole("link", { name: loginCopy.register });
 
-      expect(link.getAttribute("href")).toBe("/register");
+      expect(link.getAttribute("href")).toBe("/register/account-type");
     });
 
     it("does not show an error alert on initial render", () => {

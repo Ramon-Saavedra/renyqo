@@ -11,7 +11,7 @@ export default function LoginPage() {
   return (
     <PageShell>
       <AppTopbar className="mb-section">
-        <Link href="/register" className={buttonClass("ghost")}>
+        <Link href="/register/account-type" className={buttonClass("ghost")}>
           {loginCopy.register}
           <AppIcon icon={ArrowRight} size={14} strokeWidth={1.6} decorative />
         </Link>

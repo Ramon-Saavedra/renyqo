@@ -138,7 +138,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
       text: createAccountCopy.success,
     });
 
-    let path = "/provider/listings/new";
+    let path = "/provider/get-started";
     try {
       const { nextStep } = await getOnboardingState();
       path = resolveRedirectPath(nextStep);
