@@ -1,7 +1,8 @@
 import { Fragment, type ReactNode } from "react";
+import { siteConfig } from "@/config/site";
 
 export function BrandName() {
-  return <span className="font-bold text-primary">renyqo</span>;
+  return <span className="font-bold text-primary">{siteConfig.name}</span>;
 }
 
 export function withBrand(template: string): ReactNode {

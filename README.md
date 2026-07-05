@@ -1,4 +1,4 @@
-# renyqo
+# Renyqo
 
 A rental marketplace web app for the German-speaking market that connects **applicants** (people looking for a home) with **providers** (landlords, property owners and real-estate agents) offering rental objects.
 

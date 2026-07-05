@@ -8,7 +8,7 @@ describe("BrandName", () => {
     it("renders the literal brand text", () => {
       render(<BrandName />);
 
-      expect(screen.getByText("renyqo")).toBeInstanceOf(HTMLSpanElement);
+      expect(screen.getByText("Renyqo")).toBeInstanceOf(HTMLSpanElement);
     });
 
     it("uses a span element", () => {
@@ -21,14 +21,14 @@ describe("BrandName", () => {
   describe("styling", () => {
     it("applies the bold weight class", () => {
       render(<BrandName />);
-      const span = screen.getByText("renyqo");
+      const span = screen.getByText("Renyqo");
 
       expect(span.className).toContain("font-bold");
     });
 
     it("applies the primary color token class", () => {
       render(<BrandName />);
-      const span = screen.getByText("renyqo");
+      const span = screen.getByText("Renyqo");
 
       expect(span.className).toContain("text-primary");
     });
@@ -40,7 +40,7 @@ describe("withBrand", () => {
     it("replaces a single {brand} token with the BrandName component", () => {
       const { container } = render(<>{withBrand("Willkommen bei {brand}")}</>);
 
-      expect(container.textContent).toBe("Willkommen bei renyqo");
+      expect(container.textContent).toBe("Willkommen bei Renyqo");
       expect(container.querySelectorAll("span")).toHaveLength(1);
     });
 
@@ -50,7 +50,7 @@ describe("withBrand", () => {
       );
 
       expect(container.textContent).toBe(
-        "renyqo liebt dich, und du liebst renyqo",
+        "Renyqo liebt dich, und du liebst Renyqo",
       );
       expect(container.querySelectorAll("span")).toHaveLength(2);
     });
@@ -58,20 +58,20 @@ describe("withBrand", () => {
     it("renders BrandName at the very start when the template begins with {brand}", () => {
       const { container } = render(<>{withBrand("{brand} ist da")}</>);
 
-      expect(container.textContent).toBe("renyqo ist da");
+      expect(container.textContent).toBe("Renyqo ist da");
       expect(container.querySelectorAll("span")).toHaveLength(1);
     });
 
     it("renders BrandName at the very end when the template ends with {brand}", () => {
       const { container } = render(<>{withBrand("Willkommen bei {brand}")}</>);
 
-      expect(container.textContent?.endsWith("renyqo")).toBe(true);
+      expect(container.textContent?.endsWith("Renyqo")).toBe(true);
     });
 
     it("renders consecutive BrandNames when two tokens are adjacent", () => {
       const { container } = render(<>{withBrand("{brand}{brand}")}</>);
 
-      expect(container.textContent).toBe("renyqorenyqo");
+      expect(container.textContent).toBe("RenyqoRenyqo");
       expect(container.querySelectorAll("span")).toHaveLength(2);
     });
   });

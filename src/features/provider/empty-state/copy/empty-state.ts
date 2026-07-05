@@ -22,7 +22,7 @@ export const providerEmptyStateCopy = {
     help: "Hilfe",
   },
   hero: {
-    welcome: "Willkommen bei renyqo, Sabine",
+    welcome: "Willkommen bei Renyqo, Sabine",
     title: "Weniger sortieren. Klarer vermieten.",
     lead: "Lege dein Mietobjekt einmal sauber an und definiere direkt, welche Anforderungen wirklich wichtig sind. So erhältst du später weniger unpassende Anfragen und mehr Bewerbungen, die fachlich und finanziell zu deiner Immobilie passen.",
     cta: {
@@ -57,7 +57,7 @@ export const providerEmptyStateCopy = {
   benefits: {
     title: "Warum sich der erste Schritt lohnt.",
     description:
-      "renyqo strukturiert den Prozess von Anfang an — statt endloser E-Mails.",
+      "Renyqo strukturiert den Prozess von Anfang an — statt endloser E-Mails.",
     items: [
       {
         icon: List,
