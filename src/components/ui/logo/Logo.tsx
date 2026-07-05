@@ -15,7 +15,7 @@ export function Logo({ className }: LogoProps) {
       <span className="inline-flex h-6.5 w-6.5 items-center justify-center rounded-sm bg-primary text-primary-foreground">
         <AppIcon icon={Home} size={14} strokeWidth={2} decorative />
       </span>
-      renyqo
+      Renyqo
     </span>
   );
 }

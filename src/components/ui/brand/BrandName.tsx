@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 
 export function BrandName() {
-  return <span className="font-bold text-primary">renyqo</span>;
+  return <span className="font-bold text-primary">Renyqo</span>;
 }
 
 export function withBrand(template: string): ReactNode {

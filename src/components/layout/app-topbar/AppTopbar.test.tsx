@@ -7,7 +7,7 @@ describe("AppTopbar", () => {
   it("renders the brand logo", () => {
     render(<AppTopbar />);
 
-    expect(screen.getByText("renyqo")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Renyqo")).toBeInstanceOf(HTMLElement);
   });
 
   it("renders action children on the right", () => {

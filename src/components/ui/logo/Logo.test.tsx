@@ -8,7 +8,7 @@ describe("Logo", () => {
     it("renders the literal brand label", () => {
       render(<Logo />);
 
-      expect(screen.getByText("renyqo")).toBeInstanceOf(HTMLElement);
+      expect(screen.getByText("Renyqo")).toBeInstanceOf(HTMLElement);
     });
   });
 
@@ -45,7 +45,7 @@ describe("Logo", () => {
 
       expect(firstChild?.tagName).toBe("SPAN");
       expect(firstChild?.querySelector("svg")).toBeInstanceOf(SVGElement);
-      expect(root?.textContent).toContain("renyqo");
+      expect(root?.textContent).toContain("Renyqo");
     });
   });
 

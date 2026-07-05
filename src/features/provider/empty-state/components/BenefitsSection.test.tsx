@@ -14,13 +14,13 @@ describe("BenefitsSection", () => {
   it("renders the section title", () => {
     render(
       <BenefitsSection
-        title="Warum renyqo?"
+        title="Warum Renyqo?"
         description="Kurze Erklärung"
         items={ITEMS}
       />,
     );
 
-    expect(screen.getByText("Warum renyqo?")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Warum Renyqo?")).toBeInstanceOf(HTMLElement);
   });
 
   it("renders the section description", () => {

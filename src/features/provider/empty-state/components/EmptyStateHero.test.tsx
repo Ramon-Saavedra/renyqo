@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { EmptyStateHero } from "./EmptyStateHero";
 
 const DEFAULT_PROPS = {
-  welcome: "Willkommen bei renyqo",
+  welcome: "Willkommen bei Renyqo",
   title: "Weniger sortieren. Klarer vermieten.",
   lead: "Lege dein Mietobjekt einmal sauber an.",
   ctaLabel: "Erstes Mietobjekt anlegen",
@@ -16,7 +16,7 @@ describe("EmptyStateHero", () => {
   it("renders the welcome pill text", () => {
     render(<EmptyStateHero {...DEFAULT_PROPS} />);
 
-    expect(screen.getByText("Willkommen bei renyqo")).toBeInstanceOf(
+    expect(screen.getByText("Willkommen bei Renyqo")).toBeInstanceOf(
       HTMLElement,
     );
   });
