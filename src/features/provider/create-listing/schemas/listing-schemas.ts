@@ -4,11 +4,13 @@ import { createListingCopy } from "../copy/create-listing";
 const v = createListingCopy.validation;
 
 export const draftSaveSchema = z.object({
-  address: z.string().min(1, v.address),
+  city: z.string().min(1, v.city),
+  zip: z.string().min(1, v.zip),
 });
 
 export const publishSchema = z.object({
-  address: z.string().min(1, v.address),
+  city: z.string().min(1, v.city),
+  zip: z.string().min(1, v.zip),
   area: z.string().min(1, v.area),
   rooms: z.string().min(1, v.rooms),
   price: z.string().min(1, v.price),
