@@ -57,7 +57,7 @@ export function ObjektdatenSection({
   const { autoTitle, isAutoPlaceholder } = useAutoTitle({
     objectType: draft.objectType,
     rooms: draft.rooms,
-    address: draft.address,
+    city: draft.city,
   });
 
   const charCount = draft.description.length;
@@ -74,27 +74,52 @@ export function ObjektdatenSection({
       title={copy.title}
       description={copy.description}
     >
-      <FormField
-        label={fields.address.label}
-        htmlFor="address"
-        required
-        error={fieldErrors?.address}
-      >
+      <FormField label={fields.street.label} htmlFor="street">
         <Input
-          id="address"
-          value={draft.address}
-          placeholder={fields.address.placeholder}
-          onChange={(e) => setField("address", e.target.value)}
+          id="street"
+          value={draft.street}
+          placeholder={fields.street.placeholder}
+          onChange={(e) => setField("street", e.target.value)}
         />
-        <CardCheckbox
-          id="hide-address"
-          checked={draft.hideAddress}
-          onChange={(value) => setField("hideAddress", value)}
-          description={fields.hideAddress.sub}
-        >
-          {fields.hideAddress.label}
-        </CardCheckbox>
       </FormField>
+      <div className="flex gap-3">
+        <FormField
+          label={fields.zip.label}
+          htmlFor="zip"
+          required
+          error={fieldErrors?.zip}
+          className="w-32 shrink-0"
+        >
+          <Input
+            id="zip"
+            value={draft.zip}
+            placeholder={fields.zip.placeholder}
+            onChange={(e) => setField("zip", e.target.value)}
+          />
+        </FormField>
+        <FormField
+          label={fields.city.label}
+          htmlFor="city"
+          required
+          error={fieldErrors?.city}
+          className="min-w-0 flex-1"
+        >
+          <Input
+            id="city"
+            value={draft.city}
+            placeholder={fields.city.placeholder}
+            onChange={(e) => setField("city", e.target.value)}
+          />
+        </FormField>
+      </div>
+      <CardCheckbox
+        id="hide-address"
+        checked={draft.hideAddress}
+        onChange={(value) => setField("hideAddress", value)}
+        description={fields.hideAddress.sub}
+      >
+        {fields.hideAddress.label}
+      </CardCheckbox>
 
       <FormField label={fields.objectType.label} required>
         <Segmented<ObjectType>

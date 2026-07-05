@@ -4,7 +4,6 @@ import { Shield } from "lucide-react";
 import { Note } from "@/components/ui/form/Note";
 import { createListingCopy } from "../copy/create-listing";
 import type { ListingDraft } from "../hooks/useListingDraft";
-import { neighborhoodFrom } from "../hooks/useAutoTitle";
 
 interface PreviewCardProps {
   draft: ListingDraft;
@@ -43,12 +42,19 @@ function formatAvailable(value: string): string {
   });
 }
 
-function resolveAddress(address: string, hideAddress: boolean): string {
+function resolveAddress(
+  city: string,
+  zip: string,
+  street: string,
+  hideAddress: boolean,
+): string {
   const copy = createListingCopy.preview;
-  if (!address) return copy.addressPlaceholder;
-  if (!hideAddress) return address;
-  const hood = neighborhoodFrom(address);
-  return hood || copy.addressHidden;
+  if (!city && !zip) return copy.addressPlaceholder;
+  const full = [street, [zip, city].filter(Boolean).join(" ")]
+    .filter(Boolean)
+    .join(", ");
+  if (!hideAddress) return full;
+  return city || copy.addressHidden;
 }
 
 export function PreviewCard({ draft, finalTitle }: PreviewCardProps) {
@@ -87,7 +93,12 @@ export function PreviewCard({ draft, finalTitle }: PreviewCardProps) {
             {finalTitle || copy.titlePlaceholder}
           </h3>
           <p className="mb-3.5 text-caption text-foreground-secondary">
-            {resolveAddress(draft.address, draft.hideAddress)}
+            {resolveAddress(
+              draft.city,
+              draft.zip,
+              draft.street,
+              draft.hideAddress,
+            )}
           </p>
           <div className={STATS_GRID}>
             <PreviewStat

@@ -64,9 +64,17 @@ export const createListingCopy = {
     description:
       "Diese Angaben helfen Suchenden, dein Objekt zu finden. Ein Stern bedeutet: wird für die Veröffentlichung benötigt.",
     fields: {
-      address: {
-        label: "Adresse",
-        placeholder: "Straße, Hausnummer, PLZ, Stadt",
+      street: {
+        label: "Straße",
+        placeholder: "Musterstraße 12",
+      },
+      zip: {
+        label: "PLZ",
+        placeholder: "10115",
+      },
+      city: {
+        label: "Stadt",
+        placeholder: "Berlin",
       },
       hideAddress: {
         label: "Exakte Adresse nicht öffentlich anzeigen",
@@ -216,7 +224,8 @@ export const createListingCopy = {
     },
   },
   missingLabels: {
-    address: "Adresse",
+    city: "Stadt",
+    zip: "PLZ",
     area: "Wohnfläche",
     rooms: "Zimmer",
     price: "Kaltmiete",
@@ -225,7 +234,8 @@ export const createListingCopy = {
     legal: "Bestätigung",
   },
   validation: {
-    address: "Bitte gib eine Adresse ein",
+    city: "Bitte gib eine Stadt an",
+    zip: "Bitte gib die Postleitzahl an",
     area: "Bitte gib die Wohnfläche an",
     rooms: "Bitte wähle die Zimmeranzahl",
     price: "Bitte gib die Kaltmiete an",

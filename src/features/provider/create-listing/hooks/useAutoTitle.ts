@@ -23,7 +23,7 @@ function neighborhoodFrom(address: string): string {
 interface UseAutoTitleArgs {
   readonly objectType: ObjectType;
   readonly rooms: RoomOption;
-  readonly address: string;
+  readonly city: string;
 }
 
 interface UseAutoTitleResult {
@@ -35,16 +35,15 @@ interface UseAutoTitleResult {
 export function useAutoTitle({
   objectType,
   rooms,
-  address,
+  city,
 }: UseAutoTitleArgs): UseAutoTitleResult {
   const typeLabel = OBJECT_TYPE_LABELS[objectType];
 
   const autoTitle = useMemo(() => {
     const r = rooms ? `${rooms}-Zimmer-` : "";
-    const hood = neighborhoodFrom(address);
-    const where = hood ? ` in ${hood}` : "";
+    const where = city ? ` in ${city}` : "";
     return `${r}${typeLabel}${where}`.trim().replace(/^[- ]+/, "");
-  }, [rooms, typeLabel, address]);
+  }, [rooms, typeLabel, city]);
 
   const isAutoPlaceholder = !autoTitle || autoTitle.trim() === typeLabel;
 

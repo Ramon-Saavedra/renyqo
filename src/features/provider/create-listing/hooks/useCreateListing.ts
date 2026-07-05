@@ -69,7 +69,9 @@ function mapDraftToCreateListingDto(
   title: string,
 ): CreateListingPayload {
   return {
-    address: draft.address.trim(),
+    city: draft.city.trim(),
+    zip: draft.zip.trim(),
+    street: draft.street.trim() || undefined,
     showExactAddress: !draft.hideAddress,
     objectType: toObjectType(draft.objectType),
     livingArea: toPositiveNumber(draft.area),
@@ -95,7 +97,8 @@ type ZodFlatErrors = Record<string, string[] | undefined>;
 function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
   const errors: ListingDraftErrors = {};
   const keys = [
-    "address",
+    "city",
+    "zip",
     "area",
     "rooms",
     "price",
@@ -112,7 +115,8 @@ function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
 
 function mapBackendMessage(message: string): ListingDraftErrors {
   const errors: ListingDraftErrors = {};
-  if (/address/i.test(message)) errors.address = message;
+  if (/\bcity\b/i.test(message)) errors.city = message;
+  if (/\bzip\b/i.test(message)) errors.zip = message;
   if (/livingArea|area/i.test(message)) errors.area = message;
   if (/coldRent|rent/i.test(message)) errors.price = message;
   if (/\brooms\b/i.test(message)) errors.rooms = message;

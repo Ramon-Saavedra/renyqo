@@ -37,7 +37,7 @@ describe("useAutoTitle", () => {
   describe("typeLabel", () => {
     it("returns Wohnung for objectType wohnung", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "wohnung", rooms: "", address: "" }),
+        useAutoTitle({ objectType: "wohnung", rooms: "", city: "" }),
       );
 
       expect(result.current.typeLabel).toBe("Wohnung");
@@ -45,7 +45,7 @@ describe("useAutoTitle", () => {
 
     it("returns Haus for objectType haus", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "haus", rooms: "", address: "" }),
+        useAutoTitle({ objectType: "haus", rooms: "", city: "" }),
       );
 
       expect(result.current.typeLabel).toBe("Haus");
@@ -53,7 +53,7 @@ describe("useAutoTitle", () => {
 
     it("returns Zimmer for objectType zimmer", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "zimmer", rooms: "", address: "" }),
+        useAutoTitle({ objectType: "zimmer", rooms: "", city: "" }),
       );
 
       expect(result.current.typeLabel).toBe("Zimmer");
@@ -63,7 +63,7 @@ describe("useAutoTitle", () => {
   describe("autoTitle", () => {
     it("equals the typeLabel when rooms and address are both empty", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "wohnung", rooms: "", address: "" }),
+        useAutoTitle({ objectType: "wohnung", rooms: "", city: "" }),
       );
 
       expect(result.current.autoTitle).toBe("Wohnung");
@@ -71,7 +71,7 @@ describe("useAutoTitle", () => {
 
     it("prepends the room count when rooms is set and address is empty", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "wohnung", rooms: "3", address: "" }),
+        useAutoTitle({ objectType: "wohnung", rooms: "3", city: "" }),
       );
 
       expect(result.current.autoTitle).toBe("3-Zimmer-Wohnung");
@@ -82,7 +82,7 @@ describe("useAutoTitle", () => {
         useAutoTitle({
           objectType: "wohnung",
           rooms: "",
-          address: "Hauptstraße 1, Berlin",
+          city: "Berlin",
         }),
       );
 
@@ -94,7 +94,7 @@ describe("useAutoTitle", () => {
         useAutoTitle({
           objectType: "wohnung",
           rooms: "2",
-          address: "Hauptstraße 1, 10115 Mitte",
+          city: "Mitte",
         }),
       );
 
@@ -106,19 +106,19 @@ describe("useAutoTitle", () => {
         useAutoTitle({
           objectType: "haus",
           rooms: "5",
-          address: "Gartenweg 3, Hamburg",
+          city: "Hamburg",
         }),
       );
 
       expect(result.current.autoTitle).toBe("5-Zimmer-Haus in Hamburg");
     });
 
-    it("returns only typeLabel when address has a single part (no neighborhood)", () => {
+    it("returns only typeLabel when city is empty", () => {
       const { result } = renderHook(() =>
         useAutoTitle({
           objectType: "wohnung",
           rooms: "",
-          address: "Berlin",
+          city: "",
         }),
       );
 
@@ -129,7 +129,7 @@ describe("useAutoTitle", () => {
   describe("isAutoPlaceholder", () => {
     it("is true when autoTitle equals the typeLabel", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "wohnung", rooms: "", address: "" }),
+        useAutoTitle({ objectType: "wohnung", rooms: "", city: "" }),
       );
 
       expect(result.current.isAutoPlaceholder).toBe(true);
@@ -137,7 +137,7 @@ describe("useAutoTitle", () => {
 
     it("is false when rooms are set", () => {
       const { result } = renderHook(() =>
-        useAutoTitle({ objectType: "wohnung", rooms: "3", address: "" }),
+        useAutoTitle({ objectType: "wohnung", rooms: "3", city: "" }),
       );
 
       expect(result.current.isAutoPlaceholder).toBe(false);
@@ -148,7 +148,7 @@ describe("useAutoTitle", () => {
         useAutoTitle({
           objectType: "wohnung",
           rooms: "",
-          address: "Hauptstraße 1, Berlin",
+          city: "Berlin",
         }),
       );
 

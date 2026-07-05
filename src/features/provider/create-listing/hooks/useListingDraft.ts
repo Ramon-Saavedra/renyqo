@@ -10,7 +10,8 @@ import type {
 } from "../copy/create-listing";
 
 export interface ListingDraftErrors {
-  address?: string;
+  city?: string;
+  zip?: string;
   area?: string;
   rooms?: string;
   price?: string;
@@ -25,7 +26,9 @@ export interface ListingPhoto {
 }
 
 export interface ListingDraft {
-  address: string;
+  city: string;
+  zip: string;
+  street: string;
   hideAddress: boolean;
   objectType: ObjectType;
   area: string;
@@ -47,7 +50,9 @@ export interface ListingDraft {
 }
 
 export const INITIAL_DRAFT: ListingDraft = {
-  address: "",
+  city: "",
+  zip: "",
+  street: "",
   hideAddress: true,
   objectType: "wohnung",
   area: "",

@@ -14,7 +14,8 @@ export function useListingValidation(
   return useMemo(() => {
     const labels = createListingCopy.missingLabels;
     const missing: string[] = [];
-    if (!draft.address.trim()) missing.push(labels.address);
+    if (!draft.city.trim()) missing.push(labels.city);
+    if (!draft.zip.trim()) missing.push(labels.zip);
     if (!draft.area) missing.push(labels.area);
     if (!draft.rooms) missing.push(labels.rooms);
     if (!draft.price) missing.push(labels.price);
@@ -25,7 +26,8 @@ export function useListingValidation(
     const canPublish = missing.length === 0;
     const completedSteps: string[] = [];
     if (
-      draft.address &&
+      draft.city &&
+      draft.zip &&
       draft.area &&
       draft.rooms &&
       draft.price &&

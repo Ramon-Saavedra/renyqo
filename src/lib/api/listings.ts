@@ -5,7 +5,9 @@ export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
 export type SmokingPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT";
 
 export interface CreateListingPayload {
-  readonly address: string;
+  readonly city: string;
+  readonly zip: string;
+  readonly street?: string | undefined;
   readonly showExactAddress: boolean;
   readonly objectType: ObjectTypeBackend;
   readonly livingArea: number;
