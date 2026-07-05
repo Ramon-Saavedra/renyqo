@@ -57,7 +57,7 @@ export function ObjektdatenSection({
   const { autoTitle, isAutoPlaceholder } = useAutoTitle({
     objectType: draft.objectType,
     rooms: draft.rooms,
-    address: draft.address,
+    city: draft.city,
   });
 
   const charCount = draft.description.length;

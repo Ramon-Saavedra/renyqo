@@ -4,7 +4,6 @@ import { Shield } from "lucide-react";
 import { Note } from "@/components/ui/form/Note";
 import { createListingCopy } from "../copy/create-listing";
 import type { ListingDraft } from "../hooks/useListingDraft";
-import { neighborhoodFrom } from "../hooks/useAutoTitle";
 
 interface PreviewCardProps {
   draft: ListingDraft;
