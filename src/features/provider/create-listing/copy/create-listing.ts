@@ -224,4 +224,13 @@ export const createListingCopy = {
     photo: "Mindestens 1 Foto",
     legal: "Bestätigung",
   },
+  validation: {
+    address: "Bitte gib eine Adresse ein",
+    area: "Bitte gib die Wohnfläche an",
+    rooms: "Bitte wähle die Zimmeranzahl",
+    price: "Bitte gib die Kaltmiete an",
+    availableFrom: "Bitte wähle ein Datum",
+    photos: "Mindestens 1 Foto ist erforderlich",
+    legalAccepted: "Bitte bestätige die Berechtigung zur Inserierung",
+  },
 } as const;

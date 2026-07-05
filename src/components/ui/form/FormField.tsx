@@ -1,8 +1,11 @@
+import { FieldError } from "@/components/ui/form/FieldError";
+
 interface FormFieldProps {
   label: string;
   htmlFor?: string;
   required?: boolean;
   hint?: string;
+  error?: string | undefined;
   labelTrailing?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
@@ -15,6 +18,7 @@ export function FormField({
   htmlFor,
   required = false,
   hint,
+  error,
   labelTrailing,
   className,
   children,
@@ -47,6 +51,7 @@ export function FormField({
         <div className={labelClass}>{labelInner}</div>
       )}
       {children}
+      {error && <FieldError message={error} />}
       {hint && (
         <p className="text-caption leading-normal text-foreground-tertiary">
           {hint}

@@ -9,6 +9,16 @@ import type {
   SmokingOption,
 } from "../copy/create-listing";
 
+export interface ListingDraftErrors {
+  address?: string;
+  area?: string;
+  rooms?: string;
+  price?: string;
+  availableFrom?: string;
+  photos?: string;
+  legalAccepted?: string;
+}
+
 export interface ListingPhoto {
   readonly id: string;
   readonly src: string;

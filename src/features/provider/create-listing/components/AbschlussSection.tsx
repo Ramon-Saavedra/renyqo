@@ -2,7 +2,11 @@
 
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { createListingCopy } from "../copy/create-listing";
-import type { ListingDraft } from "../hooks/useListingDraft";
+import { FieldError } from "@/components/ui/form/FieldError";
+import type {
+  ListingDraft,
+  ListingDraftErrors,
+} from "../hooks/useListingDraft";
 import { SectionCard } from "./SectionCard";
 
 interface AbschlussSectionProps {
@@ -11,6 +15,7 @@ interface AbschlussSectionProps {
     field: K,
     value: ListingDraft[K],
   ) => void;
+  fieldErrors?: ListingDraftErrors;
 }
 
 const PILL_CLASS =
@@ -18,7 +23,11 @@ const PILL_CLASS =
 
 const PIP_CLASS = "h-1.25 w-1.25 rounded-full bg-current";
 
-export function AbschlussSection({ draft, setField }: AbschlussSectionProps) {
+export function AbschlussSection({
+  draft,
+  setField,
+  fieldErrors,
+}: AbschlussSectionProps) {
   const copy = createListingCopy.abschluss;
   return (
     <SectionCard
@@ -45,6 +54,9 @@ export function AbschlussSection({ draft, setField }: AbschlussSectionProps) {
       >
         {copy.legal.label}
       </CardCheckbox>
+      {fieldErrors?.legalAccepted && (
+        <FieldError message={fieldErrors.legalAccepted} />
+      )}
     </SectionCard>
   );
 }

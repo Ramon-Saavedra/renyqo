@@ -27,7 +27,8 @@ export function CreateListingForm() {
     address: draft.address,
   });
   const { missing, canPublish, completedSteps } = useListingValidation(draft);
-  const { submitStatus, error, saveDraft, publish } = useCreateListing();
+  const { submitStatus, error, fieldErrors, saveDraft, publish } =
+    useCreateListing();
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
@@ -56,9 +57,14 @@ export function CreateListingForm() {
               draft={draft}
               setField={setField}
               setPhotos={setPhotos}
+              fieldErrors={fieldErrors}
             />
             <AnforderungenSection draft={draft} setField={setField} />
-            <AbschlussSection draft={draft} setField={setField} />
+            <AbschlussSection
+              draft={draft}
+              setField={setField}
+              fieldErrors={fieldErrors}
+            />
             <ActionsBar
               missing={missing}
               canPublish={canPublish}

@@ -7,14 +7,19 @@ import {
   createListingDraft,
   publishListing,
   type CreateListingPayload,
+  type ObjectTypeBackend,
+  type PetPolicyBackend,
+  type SmokingPolicyBackend,
 } from "@/lib/api/listings";
-import type { ListingDraft } from "./useListingDraft";
+import { draftSaveSchema, publishSchema } from "../schemas/listing-schemas";
+import type { ListingDraft, ListingDraftErrors } from "./useListingDraft";
 
 export type SubmitStatus = "idle" | "saving" | "publishing";
 
 export interface UseCreateListingResult {
   readonly submitStatus: SubmitStatus;
   readonly error: string | null;
+  readonly fieldErrors: ListingDraftErrors;
   readonly saveDraft: (draft: ListingDraft, title: string) => Promise<void>;
   readonly publish: (draft: ListingDraft, title: string) => Promise<void>;
 }
@@ -24,34 +29,51 @@ function toPositiveNumber(value: string): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-function mapDraftToPayload(
+function toObjectType(value: string): ObjectTypeBackend {
+  if (value === "wohnung") return "APARTMENT";
+  if (value === "haus") return "HOUSE";
+  if (value === "zimmer") return "ROOM";
+  return "APARTMENT";
+}
+
+function toPetsPolicy(value: string): PetPolicyBackend {
+  if (value === "erlaubt") return "ALLOWED";
+  if (value === "keine") return "PREFER_NOT";
+  return "BY_ARRANGEMENT";
+}
+
+function toSmokingPolicy(value: string): SmokingPolicyBackend {
+  if (value === "erlaubt") return "ALLOWED";
+  return "BY_ARRANGEMENT";
+}
+
+function toRequirement(value: string): boolean {
+  return value === "erforderlich";
+}
+
+function toRooms(value: string): number {
+  if (value === "6+") return 6;
+  return toPositiveNumber(value);
+}
+
+function toSuitableForPeopleCount(
+  adults: number | null,
+  kids: number | null,
+): number | null {
+  const total = (adults ?? 0) + (kids ?? 0);
+  return total > 0 ? total : null;
+}
+
+function mapDraftToCreateListingDto(
   draft: ListingDraft,
   title: string,
 ): CreateListingPayload {
-  const objectTypeMap: Record<string, CreateListingPayload["objectType"]> = {
-    wohnung: "APARTMENT",
-    haus: "HOUSE",
-    zimmer: "ROOM",
-  };
-  const petMap: Record<string, CreateListingPayload["petsPolicy"]> = {
-    erlaubt: "ALLOWED",
-    absprache: "BY_ARRANGEMENT",
-    keine: "PREFER_NOT",
-  };
-  const smokingMap: Record<string, CreateListingPayload["smokingPolicy"]> = {
-    erlaubt: "ALLOWED",
-    absprache: "BY_ARRANGEMENT",
-  };
-
-  const rooms = draft.rooms === "6+" ? 6 : toPositiveNumber(draft.rooms);
-  const total = (draft.adults ?? 0) + (draft.kids ?? 0);
-
   return {
     address: draft.address.trim(),
     showExactAddress: !draft.hideAddress,
-    objectType: objectTypeMap[draft.objectType] ?? "APARTMENT",
+    objectType: toObjectType(draft.objectType),
     livingArea: toPositiveNumber(draft.area),
-    rooms,
+    rooms: toRooms(draft.rooms),
     bedrooms: draft.bedrooms,
     coldRent: toPositiveNumber(draft.price),
     availableFrom: draft.availableFrom,
@@ -60,33 +82,83 @@ function mapDraftToPayload(
     minimumHouseholdNetIncome: draft.minIncome
       ? toPositiveNumber(draft.minIncome)
       : null,
-    schufaRequired: draft.schufa === "erforderlich",
-    incomeProofRequired: draft.income === "erforderlich",
-    suitableForPeopleCount: total > 0 ? total : null,
-    petsPolicy: petMap[draft.pets] ?? "BY_ARRANGEMENT",
-    smokingPolicy: smokingMap[draft.smoking] ?? "BY_ARRANGEMENT",
+    schufaRequired: toRequirement(draft.schufa),
+    incomeProofRequired: toRequirement(draft.income),
+    suitableForPeopleCount: toSuitableForPeopleCount(draft.adults, draft.kids),
+    petsPolicy: toPetsPolicy(draft.pets),
+    smokingPolicy: toSmokingPolicy(draft.smoking),
   };
+}
+
+type ZodFlatErrors = Record<string, string[] | undefined>;
+
+function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
+  const errors: ListingDraftErrors = {};
+  const keys = [
+    "address",
+    "area",
+    "rooms",
+    "price",
+    "availableFrom",
+    "photos",
+    "legalAccepted",
+  ] as const;
+  for (const key of keys) {
+    const first = flat[key]?.[0];
+    if (first) errors[key] = first;
+  }
+  return errors;
+}
+
+function mapBackendMessage(message: string): ListingDraftErrors {
+  const errors: ListingDraftErrors = {};
+  if (/address/i.test(message)) errors.address = message;
+  if (/livingArea|area/i.test(message)) errors.area = message;
+  if (/coldRent|rent/i.test(message)) errors.price = message;
+  if (/\brooms\b/i.test(message)) errors.rooms = message;
+  if (/availableFrom/i.test(message)) errors.availableFrom = message;
+  return errors;
+}
+
+function hasErrors(errors: ListingDraftErrors): boolean {
+  return Object.values(errors).some(Boolean);
 }
 
 export function useCreateListing(): UseCreateListingResult {
   const router = useRouter();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<ListingDraftErrors>({});
   const draftIdRef = useRef<string | null>(null);
 
   const saveDraft = useCallback(async (draft: ListingDraft, title: string) => {
     if (draftIdRef.current) return;
     setError(null);
+    const result = draftSaveSchema.safeParse(draft);
+    if (!result.success) {
+      setFieldErrors(mapZodErrors(result.error.flatten().fieldErrors));
+      return;
+    }
+    setFieldErrors({});
     setSubmitStatus("saving");
     try {
-      const result = await createListingDraft(mapDraftToPayload(draft, title));
-      draftIdRef.current = result.id;
-    } catch (err) {
-      setError(
-        err instanceof ApiError && err.message
-          ? err.message
-          : "Fehler beim Speichern",
+      const created = await createListingDraft(
+        mapDraftToCreateListingDto(draft, title),
       );
+      draftIdRef.current = created.id;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        const mapped = mapBackendMessage(err.message);
+        if (hasErrors(mapped)) {
+          setFieldErrors(mapped);
+        } else {
+          setError("Bitte prüfe deine Eingaben");
+        }
+      } else if (err instanceof ApiError && err.status === 0) {
+        setError("Netzwerkfehler — bitte versuche es erneut");
+      } else {
+        setError("Fehler beim Speichern");
+      }
     } finally {
       setSubmitStatus("idle");
     }
@@ -95,29 +167,44 @@ export function useCreateListing(): UseCreateListingResult {
   const publish = useCallback(
     async (draft: ListingDraft, title: string) => {
       setError(null);
+      const result = publishSchema.safeParse(draft);
+      if (!result.success) {
+        setFieldErrors(mapZodErrors(result.error.flatten().fieldErrors));
+        return;
+      }
+      setFieldErrors({});
       setSubmitStatus("publishing");
       try {
         let id = draftIdRef.current;
         if (!id) {
-          const result = await createListingDraft(
-            mapDraftToPayload(draft, title),
+          const created = await createListingDraft(
+            mapDraftToCreateListingDto(draft, title),
           );
-          id = result.id;
+          id = created.id;
           draftIdRef.current = id;
         }
         await publishListing(id);
         router.push("/provider/listings");
       } catch (err) {
-        setError(
-          err instanceof ApiError && err.message
-            ? err.message
-            : "Fehler beim Veröffentlichen",
-        );
+        if (err instanceof ApiError && err.status === 400) {
+          const mapped = mapBackendMessage(err.message);
+          if (hasErrors(mapped)) {
+            setFieldErrors(mapped);
+          } else {
+            setError("Bitte prüfe deine Eingaben");
+          }
+        } else if (err instanceof ApiError && err.status === 401) {
+          setError("Nicht autorisiert — bitte melde dich erneut an");
+        } else if (err instanceof ApiError && err.status === 0) {
+          setError("Netzwerkfehler — bitte versuche es erneut");
+        } else {
+          setError("Fehler beim Veröffentlichen");
+        }
         setSubmitStatus("idle");
       }
     },
     [router],
   );
 
-  return { submitStatus, error, saveDraft, publish };
+  return { submitStatus, error, fieldErrors, saveDraft, publish };
 }
