@@ -16,7 +16,11 @@ import {
   type RoomOption,
   ROOM_OPTIONS,
 } from "../copy/create-listing";
-import type { ListingDraft, ListingPhoto } from "../hooks/useListingDraft";
+import type {
+  ListingDraft,
+  ListingDraftErrors,
+  ListingPhoto,
+} from "../hooks/useListingDraft";
 import { useAutoTitle } from "../hooks/useAutoTitle";
 import { AutoTitleField } from "./AutoTitleField";
 import { PhotoGrid } from "./PhotoGrid";
@@ -29,6 +33,7 @@ interface ObjektdatenSectionProps {
     value: ListingDraft[K],
   ) => void;
   setPhotos: (photos: ReadonlyArray<ListingPhoto>) => void;
+  fieldErrors?: ListingDraftErrors;
 }
 
 const OBJECT_TYPE_ICONS = {
@@ -45,6 +50,7 @@ export function ObjektdatenSection({
   draft,
   setField,
   setPhotos,
+  fieldErrors,
 }: ObjektdatenSectionProps) {
   const copy = createListingCopy.objektdaten;
   const fields = copy.fields;
@@ -68,7 +74,12 @@ export function ObjektdatenSection({
       title={copy.title}
       description={copy.description}
     >
-      <FormField label={fields.address.label} htmlFor="address" required>
+      <FormField
+        label={fields.address.label}
+        htmlFor="address"
+        required
+        error={fieldErrors?.address}
+      >
         <Input
           id="address"
           value={draft.address}
@@ -98,7 +109,12 @@ export function ObjektdatenSection({
       </FormField>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <FormField label={fields.area.label} htmlFor="area" required>
+        <FormField
+          label={fields.area.label}
+          htmlFor="area"
+          required
+          error={fieldErrors?.area}
+        >
           <InputAffix suffix={fields.area.suffix}>
             <Input
               id="area"
@@ -111,7 +127,12 @@ export function ObjektdatenSection({
           </InputAffix>
         </FormField>
 
-        <FormField label={fields.rooms.label} htmlFor="rooms" required>
+        <FormField
+          label={fields.rooms.label}
+          htmlFor="rooms"
+          required
+          error={fieldErrors?.rooms}
+        >
           <Select
             id="rooms"
             value={draft.rooms}
@@ -139,7 +160,12 @@ export function ObjektdatenSection({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label={fields.price.label} htmlFor="price" required>
+        <FormField
+          label={fields.price.label}
+          htmlFor="price"
+          required
+          error={fieldErrors?.price}
+        >
           <InputAffix suffix={fields.price.suffix}>
             <Input
               id="price"
@@ -155,6 +181,7 @@ export function ObjektdatenSection({
           label={fields.availableFrom.label}
           htmlFor="available-from"
           required
+          error={fieldErrors?.availableFrom}
         >
           <Input
             id="available-from"
@@ -196,7 +223,7 @@ export function ObjektdatenSection({
         />
       </FormField>
 
-      <FormField label={fields.photos.label}>
+      <FormField label={fields.photos.label} error={fieldErrors?.photos}>
         <PhotoGrid photos={draft.photos} setPhotos={setPhotos} />
       </FormField>
     </SectionCard>
