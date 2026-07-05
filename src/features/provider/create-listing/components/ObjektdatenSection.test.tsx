@@ -20,9 +20,9 @@ describe("ObjektdatenSection", () => {
         name: "Das Wichtigste zu deiner Immobilie",
       }),
     ).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.getByPlaceholderText("Straße, Hausnummer, PLZ, Stadt"),
-    ).toBeInstanceOf(HTMLInputElement);
+    expect(screen.getByPlaceholderText("Berlin")).toBeInstanceOf(
+      HTMLInputElement,
+    );
     expect(screen.getByText("Objekttyp")).toBeInstanceOf(HTMLElement);
     expect(document.getElementById("area")).toBeInstanceOf(HTMLInputElement);
     expect(document.getElementById("available-from")).toBeInstanceOf(

@@ -6,7 +6,9 @@ import { PreviewCard } from "./PreviewCard";
 
 const POPULATED_DRAFT: ListingDraft = {
   ...INITIAL_DRAFT,
-  address: "Kantstraße 10, 10623 Berlin",
+  city: "Berlin",
+  zip: "10623",
+  street: "Kantstraße 10",
   hideAddress: false,
   area: "68",
   rooms: "2.5",

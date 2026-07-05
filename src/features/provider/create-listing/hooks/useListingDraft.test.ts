@@ -15,13 +15,10 @@ describe("useListingDraft", () => {
     });
 
     it("initializes with a custom initial draft when provided", () => {
-      const custom: ListingDraft = {
-        ...INITIAL_DRAFT,
-        address: "Musterstraße 1",
-      };
+      const custom: ListingDraft = { ...INITIAL_DRAFT, city: "Berlin" };
       const { result } = renderHook(() => useListingDraft(custom));
 
-      expect(result.current.draft.address).toBe("Musterstraße 1");
+      expect(result.current.draft.city).toBe("Berlin");
     });
   });
 
@@ -30,10 +27,10 @@ describe("useListingDraft", () => {
       const { result } = renderHook(() => useListingDraft());
 
       act(() => {
-        result.current.setField("address", "Berliner Allee 42");
+        result.current.setField("city", "Berlin");
       });
 
-      expect(result.current.draft.address).toBe("Berliner Allee 42");
+      expect(result.current.draft.city).toBe("Berlin");
       expect(result.current.draft.hideAddress).toBe(INITIAL_DRAFT.hideAddress);
       expect(result.current.draft.objectType).toBe(INITIAL_DRAFT.objectType);
     });
@@ -66,18 +63,18 @@ describe("useListingDraft", () => {
       });
 
       expect(result.current.draft.legalAccepted).toBe(true);
-      expect(result.current.draft.address).toBe(INITIAL_DRAFT.address);
+      expect(result.current.draft.city).toBe(INITIAL_DRAFT.city);
     });
 
     it("accumulates multiple setField calls correctly", () => {
       const { result } = renderHook(() => useListingDraft());
 
       act(() => {
-        result.current.setField("address", "Hauptstraße 1, Berlin");
+        result.current.setField("city", "Berlin");
         result.current.setField("price", "1200");
       });
 
-      expect(result.current.draft.address).toBe("Hauptstraße 1, Berlin");
+      expect(result.current.draft.city).toBe("Berlin");
       expect(result.current.draft.price).toBe("1200");
     });
   });
@@ -108,11 +105,11 @@ describe("useListingDraft", () => {
       const { result } = renderHook(() => useListingDraft());
 
       act(() => {
-        result.current.setField("address", "Teststraße 5");
+        result.current.setField("city", "Berlin");
         result.current.setPhotos([PHOTO]);
       });
 
-      expect(result.current.draft.address).toBe("Teststraße 5");
+      expect(result.current.draft.city).toBe("Berlin");
       expect(result.current.draft.photos).toEqual([PHOTO]);
     });
   });
