@@ -1,11 +1,17 @@
+import Link from "next/link";
+import { buttonClass } from "@/components/ui/button/Button";
+
 export default function Home() {
   return (
-    <>
-      <main>
-        <h1 className="text-2xl font-bold border border-border rounded-md">
-          Hello, world!!
-        </h1>
-      </main>
-    </>
+    <main>
+      <div className="flex gap-space-3">
+        <Link href="/register/account-type" className={buttonClass("primary")}>
+          Registrieren
+        </Link>
+        <Link href="/login" className={buttonClass("ghost")}>
+          Anmelden
+        </Link>
+      </div>
+    </main>
   );
 }
