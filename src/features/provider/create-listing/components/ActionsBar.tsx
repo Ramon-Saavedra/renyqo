@@ -79,9 +79,7 @@ export function ActionsBar({
           </button>
         </div>
       </div>
-      {error && (
-        <FormAlert variant="error" message={error} className="mt-3" />
-      )}
+      {error && <FormAlert variant="error" message={error} className="mt-3" />}
     </div>
   );
 }

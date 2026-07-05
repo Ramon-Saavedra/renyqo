@@ -57,7 +57,7 @@ export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
     throw new ApiError(res.status, message);
   }
   const text = await res.text();
-  return (text ? (JSON.parse(text) as T) : (undefined as T));
+  return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
 export async function apiGet<T>(path: string): Promise<T> {

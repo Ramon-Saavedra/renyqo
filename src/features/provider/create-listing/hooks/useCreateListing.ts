@@ -74,26 +74,23 @@ export function useCreateListing(): UseCreateListingResult {
   const [error, setError] = useState<string | null>(null);
   const draftIdRef = useRef<string | null>(null);
 
-  const saveDraft = useCallback(
-    async (draft: ListingDraft, title: string) => {
-      if (draftIdRef.current) return;
-      setError(null);
-      setSubmitStatus("saving");
-      try {
-        const result = await createListingDraft(mapDraftToPayload(draft, title));
-        draftIdRef.current = result.id;
-      } catch (err) {
-        setError(
-          err instanceof ApiError && err.message
-            ? err.message
-            : "Fehler beim Speichern",
-        );
-      } finally {
-        setSubmitStatus("idle");
-      }
-    },
-    [],
-  );
+  const saveDraft = useCallback(async (draft: ListingDraft, title: string) => {
+    if (draftIdRef.current) return;
+    setError(null);
+    setSubmitStatus("saving");
+    try {
+      const result = await createListingDraft(mapDraftToPayload(draft, title));
+      draftIdRef.current = result.id;
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.message
+          ? err.message
+          : "Fehler beim Speichern",
+      );
+    } finally {
+      setSubmitStatus("idle");
+    }
+  }, []);
 
   const publish = useCallback(
     async (draft: ListingDraft, title: string) => {
