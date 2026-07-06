@@ -17,6 +17,18 @@ describe("Segmented", () => {
     expect(screen.getAllByRole("radio")).toHaveLength(3);
   });
 
+  it("applies active visual classes to the selected option only", () => {
+    render(<Segmented value="b" onChange={() => {}} options={OPTIONS} />);
+
+    const beta = screen.getByRole("radio", { name: "Beta" });
+    const alpha = screen.getByRole("radio", { name: "Alpha" });
+
+    expect(beta.className).toContain("bg-primary");
+    expect(beta.className).toContain("underline");
+    expect(alpha.className).not.toContain("bg-primary");
+    expect(alpha.className).not.toContain("underline");
+  });
+
   it("marks the active option with aria-checked", () => {
     render(<Segmented value="b" onChange={() => {}} options={OPTIONS} />);
 
