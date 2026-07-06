@@ -90,7 +90,8 @@ describe("ObjektdatenSection", () => {
 
     expect(setPhotos).toHaveBeenCalledTimes(1);
 
-    const nextPhotos = setPhotos.mock.calls[0]?.[0] as ReadonlyArray<ListingPhoto>;
+    const nextPhotos = setPhotos.mock
+      .calls[0]?.[0] as ReadonlyArray<ListingPhoto>;
 
     expect(nextPhotos).toHaveLength(1);
     expect(nextPhotos[0]?.id).toMatch(/^photo-/);
