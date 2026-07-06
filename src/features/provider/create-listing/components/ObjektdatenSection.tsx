@@ -74,7 +74,7 @@ export function ObjektdatenSection({
       title={copy.title}
       description={copy.description}
     >
-      <FormField label={fields.street.label} htmlFor="street">
+      <FormField label={fields.street.label} htmlFor="street" required error={fieldErrors?.street}>
         <Input
           id="street"
           value={draft.street}
@@ -172,7 +172,7 @@ export function ObjektdatenSection({
           </Select>
         </FormField>
 
-        <FormField label={fields.bedrooms.label}>
+        <FormField label={fields.bedrooms.label} required error={fieldErrors?.bedrooms}>
           <NumberStepper
             value={draft.bedrooms}
             onChange={(value) => setField("bedrooms", value)}

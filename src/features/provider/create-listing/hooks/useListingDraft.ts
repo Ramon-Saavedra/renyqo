@@ -12,8 +12,10 @@ import type {
 export interface ListingDraftErrors {
   city?: string;
   zip?: string;
+  street?: string;
   area?: string;
   rooms?: string;
+  bedrooms?: string;
   price?: string;
   availableFrom?: string;
   photos?: string;

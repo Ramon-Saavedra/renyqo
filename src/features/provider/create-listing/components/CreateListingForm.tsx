@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
 import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
@@ -8,6 +9,7 @@ import { useAutoSaveIndicator } from "../hooks/useAutoSaveIndicator";
 import { useAutoTitle } from "../hooks/useAutoTitle";
 import { useCreateListing } from "../hooks/useCreateListing";
 import { useListingDraft } from "../hooks/useListingDraft";
+import type { ListingDraft, ListingDraftErrors, ListingPhoto } from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
 import { ActionsBar } from "./ActionsBar";
@@ -27,8 +29,21 @@ export function CreateListingForm() {
     city: draft.city,
   });
   const { missing, canPublish, completedSteps } = useListingValidation(draft);
-  const { submitStatus, error, fieldErrors, saveDraft, publish } =
+  const { submitStatus, error, fieldErrors, saveDraft, publish, clearFieldError } =
     useCreateListing();
+
+  const handleSetField = <K extends keyof ListingDraft>(field: K, value: ListingDraft[K]) => {
+    setField(field, value);
+    clearFieldError(field as keyof ListingDraftErrors);
+  };
+
+  const handleSetPhotos = useCallback(
+    (photos: ReadonlyArray<ListingPhoto>) => {
+      setPhotos(photos);
+      clearFieldError("photos");
+    },
+    [setPhotos, clearFieldError],
+  );
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
@@ -55,14 +70,14 @@ export function CreateListingForm() {
           <div className="flex flex-col gap-4.5">
             <ObjektdatenSection
               draft={draft}
-              setField={setField}
-              setPhotos={setPhotos}
+              setField={handleSetField}
+              setPhotos={handleSetPhotos}
               fieldErrors={fieldErrors}
             />
-            <AnforderungenSection draft={draft} setField={setField} />
+            <AnforderungenSection draft={draft} setField={handleSetField} />
             <AbschlussSection
               draft={draft}
-              setField={setField}
+              setField={handleSetField}
               fieldErrors={fieldErrors}
             />
             <ActionsBar

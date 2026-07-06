@@ -16,8 +16,10 @@ export function useListingValidation(
     const missing: string[] = [];
     if (!draft.city.trim()) missing.push(labels.city);
     if (!draft.zip.trim()) missing.push(labels.zip);
+    if (!draft.street.trim()) missing.push(labels.street);
     if (!draft.area) missing.push(labels.area);
     if (!draft.rooms) missing.push(labels.rooms);
+    if (draft.bedrooms === null) missing.push(labels.bedrooms);
     if (!draft.price) missing.push(labels.price);
     if (!draft.availableFrom) missing.push(labels.availableFrom);
     if (draft.photos.length < 1) missing.push(labels.photo);
@@ -28,8 +30,10 @@ export function useListingValidation(
     if (
       draft.city &&
       draft.zip &&
+      draft.street &&
       draft.area &&
       draft.rooms &&
+      draft.bedrooms !== null &&
       draft.price &&
       draft.availableFrom
     ) {

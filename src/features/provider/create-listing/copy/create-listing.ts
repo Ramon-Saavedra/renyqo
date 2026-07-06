@@ -77,8 +77,8 @@ export const createListingCopy = {
         placeholder: "Berlin",
       },
       hideAddress: {
-        label: "Exakte Adresse nicht öffentlich anzeigen",
-        sub: "Suchende sehen nur Stadtteil und ungefähre Lage, bis du einen Kontakt freigibst.",
+        label: "Adresse vorerst nicht öffentlich anzeigen",
+        sub: "Suchende sehen zunächst nur die Stadt und ungefähre Lage. Die genaue Adresse gibst du erst frei, wenn du Kontakt aufnehmen möchtest.",
       },
       objectType: {
         label: "Objekttyp",
@@ -121,7 +121,7 @@ export const createListingCopy = {
         label: "Fotos",
         addLabel: "Foto hinzufügen",
         cover: "Titelbild",
-        hint: "Mindestens 3 Fotos werden empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
+        hint: "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
         remove: "Entfernen",
         max: 12,
       },
@@ -163,7 +163,7 @@ export const createListingCopy = {
         options: [
           { value: "erlaubt", label: "Erlaubt" },
           { value: "absprache", label: "Nach Absprache" },
-          { value: "keine", label: "Lieber nicht" },
+          { value: "keine", label: "Nein" },
         ],
       },
       smoking: {
@@ -226,8 +226,10 @@ export const createListingCopy = {
   missingLabels: {
     city: "Stadt",
     zip: "PLZ",
+    street: "Straße",
     area: "Wohnfläche",
     rooms: "Zimmer",
+    bedrooms: "Schlafzimmer",
     price: "Kaltmiete",
     availableFrom: "Frei ab",
     photo: "Mindestens 1 Foto",
@@ -236,8 +238,10 @@ export const createListingCopy = {
   validation: {
     city: "Bitte gib eine Stadt an",
     zip: "Bitte gib die Postleitzahl an",
+    street: "Bitte gib die Straße an",
     area: "Bitte gib die Wohnfläche an",
     rooms: "Bitte wähle die Zimmeranzahl",
+    bedrooms: "Bitte gib die Anzahl der Schlafzimmer an",
     price: "Bitte gib die Kaltmiete an",
     availableFrom: "Bitte wähle ein Datum",
     photos: "Mindestens 1 Foto ist erforderlich",

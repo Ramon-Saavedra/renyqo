@@ -15,6 +15,7 @@ const VALID_DRAFT: ListingDraft = {
   street: "Musterstraße 1",
   area: "65",
   rooms: "3",
+  bedrooms: 1,
   price: "1100",
   availableFrom: "2026-07-01",
   photos: [PHOTO],
@@ -37,18 +38,20 @@ describe("useListingValidation", () => {
   });
 
   describe("missing", () => {
-    it("contains all 7 required labels with INITIAL_DRAFT", () => {
+    it("contains all required labels with INITIAL_DRAFT", () => {
       const { result } = renderHook(() => useListingValidation(INITIAL_DRAFT));
 
       expect(result.current.missing).toContain("Stadt");
       expect(result.current.missing).toContain("PLZ");
+      expect(result.current.missing).toContain("Straße");
       expect(result.current.missing).toContain("Wohnfläche");
       expect(result.current.missing).toContain("Zimmer");
+      expect(result.current.missing).toContain("Schlafzimmer");
       expect(result.current.missing).toContain("Kaltmiete");
       expect(result.current.missing).toContain("Frei ab");
       expect(result.current.missing).toContain("Mindestens 1 Foto");
       expect(result.current.missing).toContain("Bestätigung");
-      expect(result.current.missing).toHaveLength(8);
+      expect(result.current.missing).toHaveLength(10);
     });
 
     it("is empty when all required fields are filled", () => {
@@ -64,11 +67,24 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("Stadt");
     });
 
-    it("includes PLZ when zip is empty", () => {
-      const draft = { ...VALID_DRAFT, zip: "" };
+    it("includes PLZ when zip is empty", () => {      const draft = { ...VALID_DRAFT, zip: "" };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("PLZ");
+    });
+
+    it("includes Straße when street is empty", () => {
+      const draft = { ...VALID_DRAFT, street: "" };
+      const { result } = renderHook(() => useListingValidation(draft));
+
+      expect(result.current.missing).toContain("Straße");
+    });
+
+    it("includes Schlafzimmer when bedrooms is null", () => {
+      const draft = { ...VALID_DRAFT, bedrooms: null };
+      const { result } = renderHook(() => useListingValidation(draft));
+
+      expect(result.current.missing).toContain("Schlafzimmer");
     });
 
     it("includes Wohnfläche when area is empty", () => {
@@ -132,8 +148,10 @@ describe("useListingValidation", () => {
         ...INITIAL_DRAFT,
         city: "Berlin",
         zip: "10115",
+        street: "Musterstraße 1",
         area: "60",
         rooms: "2" as const,
+        bedrooms: 1,
         price: "900",
         availableFrom: "2026-08-01",
       };
@@ -160,8 +178,10 @@ describe("useListingValidation", () => {
         ...INITIAL_DRAFT,
         city: "   ",
         zip: "   ",
+        street: "Musterstraße 1",
         area: "60",
         rooms: "2" as const,
+        bedrooms: 1,
         price: "900",
         availableFrom: "2026-08-01",
       };
