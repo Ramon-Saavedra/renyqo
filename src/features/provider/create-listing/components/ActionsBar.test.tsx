@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ActionsBar } from "./ActionsBar";
 
 describe("ActionsBar", () => {
-  it("renders the missing-field state and disables publishing", () => {
+  it("renders the missing-field state with chips and publish button enabled", () => {
     render(
       <ActionsBar
         missing={["Adresse", "Wohnfläche", "Kaltmiete"]}
@@ -22,13 +22,10 @@ describe("ActionsBar", () => {
     });
 
     expect(publishButton).toBeInstanceOf(HTMLButtonElement);
-    expect((publishButton as HTMLButtonElement).disabled).toBe(true);
-    expect(publishButton.getAttribute("title")).toBe(
-      "Bitte zuerst alle Pflichtfelder ausfüllen",
-    );
+    expect((publishButton as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("renders the success state and enables publishing when complete", () => {
+  it("renders the success state when all fields are complete", () => {
     const { container } = render(<ActionsBar missing={[]} canPublish />);
 
     expect(
