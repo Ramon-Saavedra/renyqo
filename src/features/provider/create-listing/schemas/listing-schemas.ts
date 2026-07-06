@@ -20,6 +20,18 @@ export const publishSchema = z.object({
     .nullable()
     .refine((val): val is number => val !== null, { message: v.bedrooms }),
   price: z.string().min(1, v.price),
+  additionalCosts: z
+    .string()
+    .refine(
+      (val) => val === "" || (Number.isFinite(Number(val)) && Number(val) >= 0),
+      { message: v.additionalCosts },
+    ),
+  deposit: z
+    .string()
+    .refine(
+      (val) => val === "" || (Number.isFinite(Number(val)) && Number(val) >= 0),
+      { message: v.deposit },
+    ),
   availableFrom: z.string().min(1, v.availableFrom),
   photos: z
     .array(z.object({ id: z.string(), src: z.string() }))

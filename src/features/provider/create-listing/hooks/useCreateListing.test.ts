@@ -257,7 +257,8 @@ describe("useCreateListing", () => {
       expect(createListingDraft).not.toHaveBeenCalled();
     });
 
-    it("sets fieldErrors.legalAccepted when not accepted", async () => {      const { result } = renderHook(() => useCreateListing());
+    it("sets fieldErrors.legalAccepted when not accepted", async () => {
+      const { result } = renderHook(() => useCreateListing());
 
       await act(async () => {
         await result.current.publish(

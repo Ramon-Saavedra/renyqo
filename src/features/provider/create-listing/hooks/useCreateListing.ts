@@ -45,6 +45,7 @@ function toPetsPolicy(value: string): PetPolicyBackend {
 
 function toSmokingPolicy(value: string): SmokingPolicyBackend {
   if (value === "erlaubt") return "ALLOWED";
+  if (value === "keine") return "PREFER_NOT";
   return "BY_ARRANGEMENT";
 }
 
@@ -79,6 +80,12 @@ function mapDraftToCreateListingDto(
     rooms: toRooms(draft.rooms),
     bedrooms: draft.bedrooms,
     coldRent: toPositiveNumber(draft.price),
+    additionalCosts:
+      draft.additionalCosts.length > 0
+        ? toPositiveNumber(draft.additionalCosts)
+        : undefined,
+    deposit:
+      draft.deposit.length > 0 ? toPositiveNumber(draft.deposit) : undefined,
     availableFrom: draft.availableFrom,
     title: title.trim(),
     shortDescription: draft.description.trim(),
@@ -105,6 +112,8 @@ function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
     "rooms",
     "bedrooms",
     "price",
+    "additionalCosts",
+    "deposit",
     "availableFrom",
     "photos",
     "legalAccepted",
@@ -121,11 +130,15 @@ function mapBackendMessage(message: string): ListingDraftErrors {
   if (/\bcity\b/i.test(message)) errors.city = "Bitte gib eine Stadt an";
   if (/\bzip\b/i.test(message)) errors.zip = "Bitte gib die Postleitzahl an";
   if (/\bstreet\b/i.test(message)) errors.street = "Bitte gib die Straße an";
-  if (/livingArea|area/i.test(message)) errors.area = "Bitte gib die Wohnfläche an";
-  if (/coldRent|rent/i.test(message)) errors.price = "Bitte gib die Kaltmiete an";
+  if (/livingArea|area/i.test(message))
+    errors.area = "Bitte gib die Wohnfläche an";
+  if (/coldRent|rent/i.test(message))
+    errors.price = "Bitte gib die Kaltmiete an";
   if (/\brooms\b/i.test(message)) errors.rooms = "Bitte wähle die Zimmeranzahl";
-  if (/\bbedrooms\b/i.test(message)) errors.bedrooms = "Bitte gib die Anzahl der Schlafzimmer an";
-  if (/availableFrom/i.test(message)) errors.availableFrom = "Bitte wähle ein gültiges Datum";
+  if (/\bbedrooms\b/i.test(message))
+    errors.bedrooms = "Bitte gib die Anzahl der Schlafzimmer an";
+  if (/availableFrom/i.test(message))
+    errors.availableFrom = "Bitte wähle ein gültiges Datum";
   return errors;
 }
 
@@ -224,5 +237,12 @@ export function useCreateListing(): UseCreateListingResult {
     [router],
   );
 
-  return { submitStatus, error, fieldErrors, saveDraft, publish, clearFieldError };
+  return {
+    submitStatus,
+    error,
+    fieldErrors,
+    saveDraft,
+    publish,
+    clearFieldError,
+  };
 }

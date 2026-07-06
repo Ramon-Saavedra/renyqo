@@ -67,7 +67,8 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("Stadt");
     });
 
-    it("includes PLZ when zip is empty", () => {      const draft = { ...VALID_DRAFT, zip: "" };
+    it("includes PLZ when zip is empty", () => {
+      const draft = { ...VALID_DRAFT, zip: "" };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("PLZ");

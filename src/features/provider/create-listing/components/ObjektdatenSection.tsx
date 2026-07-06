@@ -74,7 +74,12 @@ export function ObjektdatenSection({
       title={copy.title}
       description={copy.description}
     >
-      <FormField label={fields.street.label} htmlFor="street" required error={fieldErrors?.street}>
+      <FormField
+        label={fields.street.label}
+        htmlFor="street"
+        required
+        error={fieldErrors?.street}
+      >
         <Input
           id="street"
           value={draft.street}
@@ -172,7 +177,11 @@ export function ObjektdatenSection({
           </Select>
         </FormField>
 
-        <FormField label={fields.bedrooms.label} required error={fieldErrors?.bedrooms}>
+        <FormField
+          label={fields.bedrooms.label}
+          required
+          error={fieldErrors?.bedrooms}
+        >
           <NumberStepper
             value={draft.bedrooms}
             onChange={(value) => setField("bedrooms", value)}
@@ -214,6 +223,43 @@ export function ObjektdatenSection({
             value={draft.availableFrom}
             onChange={(e) => setField("availableFrom", e.target.value)}
           />
+        </FormField>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField
+          label={fields.additionalCosts.label}
+          htmlFor="additional-costs"
+          error={fieldErrors?.additionalCosts}
+        >
+          <InputAffix suffix={fields.additionalCosts.suffix}>
+            <Input
+              id="additional-costs"
+              inputMode="numeric"
+              value={draft.additionalCosts}
+              placeholder={fields.additionalCosts.placeholder}
+              onChange={(e) =>
+                setField("additionalCosts", digitsOnly(e.target.value))
+              }
+              className="pr-22"
+            />
+          </InputAffix>
+        </FormField>
+        <FormField
+          label={fields.deposit.label}
+          htmlFor="deposit"
+          error={fieldErrors?.deposit}
+        >
+          <InputAffix suffix={fields.deposit.suffix}>
+            <Input
+              id="deposit"
+              inputMode="numeric"
+              value={draft.deposit}
+              placeholder={fields.deposit.placeholder}
+              onChange={(e) => setField("deposit", digitsOnly(e.target.value))}
+              className="pr-13"
+            />
+          </InputAffix>
         </FormField>
       </div>
 

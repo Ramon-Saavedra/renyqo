@@ -9,7 +9,11 @@ import { useAutoSaveIndicator } from "../hooks/useAutoSaveIndicator";
 import { useAutoTitle } from "../hooks/useAutoTitle";
 import { useCreateListing } from "../hooks/useCreateListing";
 import { useListingDraft } from "../hooks/useListingDraft";
-import type { ListingDraft, ListingDraftErrors, ListingPhoto } from "../hooks/useListingDraft";
+import type {
+  ListingDraft,
+  ListingDraftErrors,
+  ListingPhoto,
+} from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
 import { ActionsBar } from "./ActionsBar";
@@ -29,10 +33,19 @@ export function CreateListingForm() {
     city: draft.city,
   });
   const { missing, canPublish, completedSteps } = useListingValidation(draft);
-  const { submitStatus, error, fieldErrors, saveDraft, publish, clearFieldError } =
-    useCreateListing();
+  const {
+    submitStatus,
+    error,
+    fieldErrors,
+    saveDraft,
+    publish,
+    clearFieldError,
+  } = useCreateListing();
 
-  const handleSetField = <K extends keyof ListingDraft>(field: K, value: ListingDraft[K]) => {
+  const handleSetField = <K extends keyof ListingDraft>(
+    field: K,
+    value: ListingDraft[K],
+  ) => {
     setField(field, value);
     clearFieldError(field as keyof ListingDraftErrors);
   };

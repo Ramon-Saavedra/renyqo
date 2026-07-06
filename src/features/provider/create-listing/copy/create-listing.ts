@@ -11,7 +11,7 @@ export type RequirementOption = (typeof REQUIREMENT_OPTIONS)[number];
 export const PET_OPTIONS = ["erlaubt", "absprache", "keine"] as const;
 export type PetOption = (typeof PET_OPTIONS)[number];
 
-export const SMOKING_OPTIONS = ["erlaubt", "absprache"] as const;
+export const SMOKING_OPTIONS = ["erlaubt", "keine", "absprache"] as const;
 export type SmokingOption = (typeof SMOKING_OPTIONS)[number];
 
 export const ROOM_OPTIONS = [
@@ -96,6 +96,16 @@ export const createListingCopy = {
         placeholder: "z. B. 980",
         suffix: "€ / Monat",
       },
+      additionalCosts: {
+        label: "Nebenkosten",
+        placeholder: "z. B. 200",
+        suffix: "€ / Monat",
+      },
+      deposit: {
+        label: "Kaution",
+        placeholder: "z. B. 1500",
+        suffix: "€",
+      },
       availableFrom: { label: "Frei ab" },
       title: {
         label: "Objekttitel",
@@ -162,15 +172,16 @@ export const createListingCopy = {
         label: "Haustiere",
         options: [
           { value: "erlaubt", label: "Erlaubt" },
-          { value: "absprache", label: "Nach Absprache" },
-          { value: "keine", label: "Nein" },
+          { value: "keine", label: "Nicht erlaubt" },
+          { value: "absprache", label: "Auf Anfrage" },
         ],
       },
       smoking: {
-        label: "Raucher",
+        label: "Rauchen",
         options: [
           { value: "erlaubt", label: "Erlaubt" },
-          { value: "absprache", label: "Nach Absprache" },
+          { value: "keine", label: "Nicht erlaubt" },
+          { value: "absprache", label: "Auf Anfrage" },
         ],
       },
     },
@@ -243,6 +254,8 @@ export const createListingCopy = {
     rooms: "Bitte wähle die Zimmeranzahl",
     bedrooms: "Bitte gib die Anzahl der Schlafzimmer an",
     price: "Bitte gib die Kaltmiete an",
+    additionalCosts: "Bitte gib einen gültigen Betrag an",
+    deposit: "Bitte gib einen gültigen Betrag an",
     availableFrom: "Bitte wähle ein Datum",
     photos: "Mindestens 1 Foto ist erforderlich",
     legalAccepted: "Bitte bestätige die Berechtigung zur Inserierung",
