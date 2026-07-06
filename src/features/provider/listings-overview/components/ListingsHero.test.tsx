@@ -29,7 +29,9 @@ describe("ListingsHero", () => {
 
   it("renders a link with the correct href for new listing creation", () => {
     render(<ListingsHero />);
-    const link = screen.getByRole("link", { name: /Neues Mietobjekt/ });
+    const link = screen.getByRole("link", {
+      name: "Weiteres Mietobjekt anlegen",
+    });
     expect(link.getAttribute("href")).toBe("/provider/listings/new");
   });
 });
