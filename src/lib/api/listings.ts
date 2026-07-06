@@ -14,8 +14,8 @@ export interface CreateListingPayload {
   readonly rooms: number;
   readonly bedrooms: number | null;
   readonly coldRent: number;
-  readonly additionalCosts?: number;
-  readonly deposit?: number;
+  readonly additionalCosts?: number | undefined;
+  readonly deposit?: number | undefined;
   readonly availableFrom: string;
   readonly title: string;
   readonly shortDescription: string;
