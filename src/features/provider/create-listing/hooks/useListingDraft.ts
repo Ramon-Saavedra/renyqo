@@ -20,7 +20,6 @@ export interface ListingDraftErrors {
   additionalCosts?: string;
   deposit?: string;
   availableFrom?: string;
-  photos?: string;
   legalAccepted?: string;
 }
 

@@ -115,7 +115,6 @@ function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
     "additionalCosts",
     "deposit",
     "availableFrom",
-    "photos",
     "legalAccepted",
   ] as const;
   for (const key of keys) {

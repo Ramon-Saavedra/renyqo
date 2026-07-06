@@ -33,9 +33,6 @@ export const publishSchema = z.object({
       { message: v.deposit },
     ),
   availableFrom: z.string().min(1, v.availableFrom),
-  photos: z
-    .array(z.object({ id: z.string(), src: z.string() }))
-    .min(1, v.photos),
   legalAccepted: z.literal(true, v.legalAccepted),
 });
 

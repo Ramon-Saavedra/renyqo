@@ -22,7 +22,6 @@ export function useListingValidation(
     if (draft.bedrooms === null) missing.push(labels.bedrooms);
     if (!draft.price) missing.push(labels.price);
     if (!draft.availableFrom) missing.push(labels.availableFrom);
-    if (draft.photos.length < 1) missing.push(labels.photo);
     if (!draft.legalAccepted) missing.push(labels.legal);
 
     const canPublish = missing.length === 0;

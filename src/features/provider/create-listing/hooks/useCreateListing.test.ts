@@ -271,17 +271,6 @@ describe("useCreateListing", () => {
       expect(createListingDraft).not.toHaveBeenCalled();
     });
 
-    it("sets fieldErrors.photos when photos array is empty", async () => {
-      const { result } = renderHook(() => useCreateListing());
-
-      await act(async () => {
-        await result.current.publish({ ...VALID_DRAFT, photos: [] }, "Titel");
-      });
-
-      expect(result.current.fieldErrors.photos).toBeTruthy();
-      expect(createListingDraft).not.toHaveBeenCalled();
-    });
-
     it("calls API when all required fields are valid", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       vi.mocked(publishListing).mockResolvedValue(undefined);

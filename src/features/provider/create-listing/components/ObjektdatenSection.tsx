@@ -294,7 +294,7 @@ export function ObjektdatenSection({
         />
       </FormField>
 
-      <FormField label={fields.photos.label} error={fieldErrors?.photos}>
+      <FormField label={fields.photos.label}>
         <PhotoGrid photos={draft.photos} setPhotos={setPhotos} />
       </FormField>
     </SectionCard>

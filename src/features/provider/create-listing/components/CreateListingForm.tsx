@@ -53,9 +53,8 @@ export function CreateListingForm() {
   const handleSetPhotos = useCallback(
     (photos: ReadonlyArray<ListingPhoto>) => {
       setPhotos(photos);
-      clearFieldError("photos");
     },
-    [setPhotos, clearFieldError],
+    [setPhotos],
   );
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
