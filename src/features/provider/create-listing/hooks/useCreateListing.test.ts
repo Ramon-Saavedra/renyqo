@@ -34,6 +34,7 @@ const VALID_DRAFT: ListingDraft = {
   street: "Musterstraße 1",
   area: "65",
   rooms: "3",
+  bedrooms: 1,
   price: "1100",
   availableFrom: "2026-07-01",
   photos: [PHOTO],
@@ -52,6 +53,25 @@ describe("useCreateListing", () => {
       expect(result.current.submitStatus).toBe("idle");
       expect(result.current.error).toBeNull();
       expect(result.current.fieldErrors).toEqual({});
+    });
+  });
+
+  describe("clearFieldError", () => {
+    it("removes a specific field error without affecting others", async () => {
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(INITIAL_DRAFT, "Titel");
+      });
+
+      expect(result.current.fieldErrors.city).toBeTruthy();
+
+      act(() => {
+        result.current.clearFieldError("city");
+      });
+
+      expect(result.current.fieldErrors.city).toBeUndefined();
+      expect(result.current.fieldErrors.zip).toBeTruthy();
     });
   });
 
@@ -212,6 +232,31 @@ describe("useCreateListing", () => {
   });
 
   describe("publish — zod validation", () => {
+    it("sets fieldErrors.street when street is empty on publish", async () => {
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.publish({ ...VALID_DRAFT, street: "" }, "Titel");
+      });
+
+      expect(result.current.fieldErrors.street).toBeTruthy();
+      expect(createListingDraft).not.toHaveBeenCalled();
+    });
+
+    it("sets fieldErrors.bedrooms when bedrooms is null on publish", async () => {
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.publish(
+          { ...VALID_DRAFT, bedrooms: null },
+          "Titel",
+        );
+      });
+
+      expect(result.current.fieldErrors.bedrooms).toBeTruthy();
+      expect(createListingDraft).not.toHaveBeenCalled();
+    });
+
     it("sets fieldErrors.legalAccepted when not accepted", async () => {
       const { result } = renderHook(() => useCreateListing());
 

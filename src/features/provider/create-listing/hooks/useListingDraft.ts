@@ -12,9 +12,13 @@ import type {
 export interface ListingDraftErrors {
   city?: string;
   zip?: string;
+  street?: string;
   area?: string;
   rooms?: string;
+  bedrooms?: string;
   price?: string;
+  additionalCosts?: string;
+  deposit?: string;
   availableFrom?: string;
   photos?: string;
   legalAccepted?: string;
@@ -35,6 +39,8 @@ export interface ListingDraft {
   rooms: RoomOption;
   bedrooms: number | null;
   price: string;
+  additionalCosts: string;
+  deposit: string;
   availableFrom: string;
   titleOverride: string;
   description: string;
@@ -59,6 +65,8 @@ export const INITIAL_DRAFT: ListingDraft = {
   rooms: "",
   bedrooms: null,
   price: "",
+  additionalCosts: "",
+  deposit: "",
   availableFrom: "",
   titleOverride: "",
   description: "",

@@ -22,6 +22,7 @@ export interface UseCreateListingResult {
   readonly fieldErrors: ListingDraftErrors;
   readonly saveDraft: (draft: ListingDraft, title: string) => Promise<void>;
   readonly publish: (draft: ListingDraft, title: string) => Promise<void>;
+  readonly clearFieldError: (key: keyof ListingDraftErrors) => void;
 }
 
 function toPositiveNumber(value: string): number {
@@ -44,6 +45,7 @@ function toPetsPolicy(value: string): PetPolicyBackend {
 
 function toSmokingPolicy(value: string): SmokingPolicyBackend {
   if (value === "erlaubt") return "ALLOWED";
+  if (value === "keine") return "PREFER_NOT";
   return "BY_ARRANGEMENT";
 }
 
@@ -78,6 +80,12 @@ function mapDraftToCreateListingDto(
     rooms: toRooms(draft.rooms),
     bedrooms: draft.bedrooms,
     coldRent: toPositiveNumber(draft.price),
+    additionalCosts:
+      draft.additionalCosts.length > 0
+        ? toPositiveNumber(draft.additionalCosts)
+        : undefined,
+    deposit:
+      draft.deposit.length > 0 ? toPositiveNumber(draft.deposit) : undefined,
     availableFrom: draft.availableFrom,
     title: title.trim(),
     shortDescription: draft.description.trim(),
@@ -99,9 +107,13 @@ function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
   const keys = [
     "city",
     "zip",
+    "street",
     "area",
     "rooms",
+    "bedrooms",
     "price",
+    "additionalCosts",
+    "deposit",
     "availableFrom",
     "photos",
     "legalAccepted",
@@ -115,12 +127,18 @@ function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
 
 function mapBackendMessage(message: string): ListingDraftErrors {
   const errors: ListingDraftErrors = {};
-  if (/\bcity\b/i.test(message)) errors.city = message;
-  if (/\bzip\b/i.test(message)) errors.zip = message;
-  if (/livingArea|area/i.test(message)) errors.area = message;
-  if (/coldRent|rent/i.test(message)) errors.price = message;
-  if (/\brooms\b/i.test(message)) errors.rooms = message;
-  if (/availableFrom/i.test(message)) errors.availableFrom = message;
+  if (/\bcity\b/i.test(message)) errors.city = "Bitte gib eine Stadt an";
+  if (/\bzip\b/i.test(message)) errors.zip = "Bitte gib die Postleitzahl an";
+  if (/\bstreet\b/i.test(message)) errors.street = "Bitte gib die Straße an";
+  if (/livingArea|area/i.test(message))
+    errors.area = "Bitte gib die Wohnfläche an";
+  if (/coldRent|rent/i.test(message))
+    errors.price = "Bitte gib die Kaltmiete an";
+  if (/\brooms\b/i.test(message)) errors.rooms = "Bitte wähle die Zimmeranzahl";
+  if (/\bbedrooms\b/i.test(message))
+    errors.bedrooms = "Bitte gib die Anzahl der Schlafzimmer an";
+  if (/availableFrom/i.test(message))
+    errors.availableFrom = "Bitte wähle ein gültiges Datum";
   return errors;
 }
 
@@ -134,6 +152,15 @@ export function useCreateListing(): UseCreateListingResult {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<ListingDraftErrors>({});
   const draftIdRef = useRef<string | null>(null);
+
+  const clearFieldError = useCallback((key: keyof ListingDraftErrors) => {
+    setFieldErrors((prev) => {
+      if (!(key in prev)) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
 
   const saveDraft = useCallback(async (draft: ListingDraft, title: string) => {
     if (draftIdRef.current) return;
@@ -210,5 +237,12 @@ export function useCreateListing(): UseCreateListingResult {
     [router],
   );
 
-  return { submitStatus, error, fieldErrors, saveDraft, publish };
+  return {
+    submitStatus,
+    error,
+    fieldErrors,
+    saveDraft,
+    publish,
+    clearFieldError,
+  };
 }

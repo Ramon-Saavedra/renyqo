@@ -8,6 +8,12 @@ function makePhoto(id: string): ListingPhoto {
   return { id, src: `https://example.com/${id}.jpg` };
 }
 
+function makeFileList(files: File[]): FileList {
+  return Object.assign(files, {
+    item: (i: number) => files[i] ?? null,
+  }) as unknown as FileList;
+}
+
 describe("usePhotoGrid", () => {
   describe("canAdd", () => {
     it("is true when photos count is below the default max of 12", () => {
@@ -56,64 +62,85 @@ describe("usePhotoGrid", () => {
     });
   });
 
-  describe("addDemo", () => {
+  describe("addFromFiles", () => {
     beforeEach(() => {
-      vi.spyOn(Date, "now").mockReturnValue(1000);
+      vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock-url");
     });
 
     afterEach(() => {
       vi.restoreAllMocks();
     });
 
-    it("adds a photo with a deterministic id when canAdd is true", () => {
+    it("adds a photo from a FileList when canAdd is true", () => {
       const photos: ListingPhoto[] = [];
       const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
-
       const { result } = renderHook(() => usePhotoGrid({ photos, setPhotos }));
 
+      const file = new File(["content"], "photo.jpg", { type: "image/jpeg" });
+
       act(() => {
-        result.current.addDemo();
+        result.current.addFromFiles(makeFileList([file]));
       });
 
+      expect(URL.createObjectURL).toHaveBeenCalledWith(file);
       expect(setPhotos).toHaveBeenCalledOnce();
-      expect(setPhotos).toHaveBeenCalledWith([
-        expect.objectContaining({
-          id: "photo-1000-0",
-          src: expect.stringContaining("data:image/svg+xml"),
-        }),
-      ]);
+      const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
+      expect(added).toHaveLength(1);
+      expect(added[0]!.src).toBe("blob:mock-url");
     });
 
     it("does nothing when photos count has reached the max", () => {
       const photos = Array.from({ length: 2 }, (_, i) => makePhoto(`p${i}`));
       const setPhotos = vi.fn();
-
       const { result } = renderHook(() =>
         usePhotoGrid({ photos, setPhotos, max: 2 }),
       );
 
       act(() => {
-        result.current.addDemo();
+        result.current.addFromFiles(
+          makeFileList([new File([""], "x.jpg", { type: "image/jpeg" })]),
+        );
       });
 
       expect(setPhotos).not.toHaveBeenCalled();
+    });
+
+    it("only adds up to the remaining slots when multiple files exceed the max", () => {
+      const existing = makePhoto("existing");
+      const photos: ListingPhoto[] = [existing];
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
+      const { result } = renderHook(() =>
+        usePhotoGrid({ photos, setPhotos, max: 2 }),
+      );
+
+      const fileA = new File(["a"], "a.jpg", { type: "image/jpeg" });
+      const fileB = new File(["b"], "b.jpg", { type: "image/jpeg" });
+
+      act(() => {
+        result.current.addFromFiles(makeFileList([fileA, fileB]));
+      });
+
+      const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
+      expect(added).toHaveLength(2);
+      expect(added[0]).toBe(existing);
+      expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
     });
 
     it("appends to the existing photos array", () => {
       const existing = makePhoto("existing");
       const photos: ListingPhoto[] = [existing];
       const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
-
       const { result } = renderHook(() => usePhotoGrid({ photos, setPhotos }));
 
       act(() => {
-        result.current.addDemo();
+        result.current.addFromFiles(
+          makeFileList([new File(["c"], "c.jpg", { type: "image/jpeg" })]),
+        );
       });
 
-      expect(setPhotos).toHaveBeenCalledOnce();
-      const newPhotos = setPhotos.mock.calls[0]![0];
-      expect(newPhotos).toHaveLength(2);
-      expect(newPhotos[0]).toBe(existing);
+      const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
+      expect(added).toHaveLength(2);
+      expect(added[0]).toBe(existing);
     });
   });
 

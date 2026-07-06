@@ -72,7 +72,7 @@ export const listingsCopy = {
     kicker: "/ provider / listings",
     title: "Meine Objekte",
     lead: "Verwalte deine Mietobjekte, Entwürfe und archivierten Einträge an einem Ort.",
-    newLabel: "Neues Mietobjekt",
+    newLabel: "Weiteres Mietobjekt anlegen",
     newHref: "/provider/listings/new",
   },
   trust: {
@@ -126,7 +126,7 @@ export const listingsCopy = {
     titleArchived: "Du hast aktuell keine aktiven Mietobjekte.",
     leadArchived:
       "Lege ein neues Mietobjekt an, oder sieh dir deine bereits vermieteten und archivierten Einträge an.",
-    ctaNew: "Neues Mietobjekt anlegen",
+    ctaNew: "Mietobjekt anlegen",
     ctaShowAll: "Alle Objekte anzeigen",
     filteredTitle: "Keine Objekte für diese Filter.",
     filteredLead:

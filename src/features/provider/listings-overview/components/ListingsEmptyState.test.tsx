@@ -23,7 +23,7 @@ describe("ListingsEmptyState", () => {
     it("renders a link to create a new listing", () => {
       render(<ListingsEmptyState variant="fresh" />);
       expect(
-        screen.getByRole("link", { name: /Neues Mietobjekt anlegen/ }),
+        screen.getByRole("link", { name: "Mietobjekt anlegen" }),
       ).toBeInstanceOf(HTMLElement);
     });
 
@@ -109,7 +109,7 @@ describe("ListingsEmptyState", () => {
         <ListingsEmptyState variant="filtered" onResetFilters={vi.fn()} />,
       );
       expect(
-        screen.queryByRole("link", { name: /Neues Mietobjekt/ }),
+        screen.queryByRole("link", { name: "Mietobjekt anlegen" }),
       ).toBeNull();
     });
   });

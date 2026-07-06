@@ -11,7 +11,7 @@ export type RequirementOption = (typeof REQUIREMENT_OPTIONS)[number];
 export const PET_OPTIONS = ["erlaubt", "absprache", "keine"] as const;
 export type PetOption = (typeof PET_OPTIONS)[number];
 
-export const SMOKING_OPTIONS = ["erlaubt", "absprache"] as const;
+export const SMOKING_OPTIONS = ["erlaubt", "keine", "absprache"] as const;
 export type SmokingOption = (typeof SMOKING_OPTIONS)[number];
 
 export const ROOM_OPTIONS = [
@@ -77,8 +77,8 @@ export const createListingCopy = {
         placeholder: "Berlin",
       },
       hideAddress: {
-        label: "Exakte Adresse nicht öffentlich anzeigen",
-        sub: "Suchende sehen nur Stadtteil und ungefähre Lage, bis du einen Kontakt freigibst.",
+        label: "Adresse vorerst nicht öffentlich anzeigen",
+        sub: "Suchende sehen zunächst nur die Stadt und ungefähre Lage. Die genaue Adresse gibst du erst frei, wenn du Kontakt aufnehmen möchtest.",
       },
       objectType: {
         label: "Objekttyp",
@@ -95,6 +95,16 @@ export const createListingCopy = {
         label: "Kaltmiete",
         placeholder: "z. B. 980",
         suffix: "€ / Monat",
+      },
+      additionalCosts: {
+        label: "Nebenkosten",
+        placeholder: "z. B. 200",
+        suffix: "€ / Monat",
+      },
+      deposit: {
+        label: "Kaution",
+        placeholder: "z. B. 1500",
+        suffix: "€",
       },
       availableFrom: { label: "Frei ab" },
       title: {
@@ -121,7 +131,7 @@ export const createListingCopy = {
         label: "Fotos",
         addLabel: "Foto hinzufügen",
         cover: "Titelbild",
-        hint: "Mindestens 3 Fotos werden empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
+        hint: "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
         remove: "Entfernen",
         max: 12,
       },
@@ -162,15 +172,16 @@ export const createListingCopy = {
         label: "Haustiere",
         options: [
           { value: "erlaubt", label: "Erlaubt" },
-          { value: "absprache", label: "Nach Absprache" },
-          { value: "keine", label: "Lieber nicht" },
+          { value: "keine", label: "Nicht erlaubt" },
+          { value: "absprache", label: "Auf Anfrage" },
         ],
       },
       smoking: {
-        label: "Raucher",
+        label: "Rauchen",
         options: [
           { value: "erlaubt", label: "Erlaubt" },
-          { value: "absprache", label: "Nach Absprache" },
+          { value: "keine", label: "Nicht erlaubt" },
+          { value: "absprache", label: "Auf Anfrage" },
         ],
       },
     },
@@ -226,8 +237,10 @@ export const createListingCopy = {
   missingLabels: {
     city: "Stadt",
     zip: "PLZ",
+    street: "Straße",
     area: "Wohnfläche",
     rooms: "Zimmer",
+    bedrooms: "Schlafzimmer",
     price: "Kaltmiete",
     availableFrom: "Frei ab",
     photo: "Mindestens 1 Foto",
@@ -236,9 +249,13 @@ export const createListingCopy = {
   validation: {
     city: "Bitte gib eine Stadt an",
     zip: "Bitte gib die Postleitzahl an",
+    street: "Bitte gib die Straße an",
     area: "Bitte gib die Wohnfläche an",
     rooms: "Bitte wähle die Zimmeranzahl",
+    bedrooms: "Bitte gib die Anzahl der Schlafzimmer an",
     price: "Bitte gib die Kaltmiete an",
+    additionalCosts: "Bitte gib einen gültigen Betrag an",
+    deposit: "Bitte gib einen gültigen Betrag an",
     availableFrom: "Bitte wähle ein Datum",
     photos: "Mindestens 1 Foto ist erforderlich",
     legalAccepted: "Bitte bestätige die Berechtigung zur Inserierung",

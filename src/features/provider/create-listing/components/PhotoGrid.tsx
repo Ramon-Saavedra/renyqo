@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Camera, X } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
@@ -28,7 +29,8 @@ const ADD_BTN_CLASS =
 
 export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
   const copy = createListingCopy.objektdaten.fields.photos;
-  const { canAdd, addDemo, remove } = usePhotoGrid({
+  const inputRef = useRef<HTMLInputElement>(null);
+  const { canAdd, addFromFiles, remove } = usePhotoGrid({
     photos,
     setPhotos,
     max: copy.max,
@@ -36,6 +38,17 @@ export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
 
   return (
     <div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="sr-only"
+        onChange={(e) => {
+          if (e.target.files) addFromFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
       <div className="photo-grid">
         {photos.map((photo, index) => {
           const isCover = index === 0;
@@ -59,7 +72,11 @@ export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
           );
         })}
         {canAdd && (
-          <button type="button" onClick={addDemo} className={ADD_BTN_CLASS}>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className={ADD_BTN_CLASS}
+          >
             <AppIcon icon={Camera} size={20} strokeWidth={1.2} decorative />
             <span>{copy.addLabel}</span>
           </button>

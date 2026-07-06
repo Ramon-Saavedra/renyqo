@@ -1,10 +1,15 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { INITIAL_DRAFT, type ListingPhoto } from "../hooks/useListingDraft";
 import { ObjektdatenSection } from "./ObjektdatenSection";
 
 describe("ObjektdatenSection", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders the section heading, key fields and helper copy", () => {
     render(
       <ObjektdatenSection
@@ -63,8 +68,10 @@ describe("ObjektdatenSection", () => {
     expect(setField).toHaveBeenCalledWith("description", "a".repeat(800));
   });
 
-  it("forwards photo updates through the photo grid", () => {
+  it("forwards photo updates through the photo grid", async () => {
+    const user = userEvent.setup();
     const setPhotos = vi.fn();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
 
     render(
       <ObjektdatenSection
@@ -74,7 +81,12 @@ describe("ObjektdatenSection", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Foto hinzufügen" }));
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    const file = new File(["content"], "photo.jpg", { type: "image/jpeg" });
+
+    await user.upload(input, file);
 
     expect(setPhotos).toHaveBeenCalledTimes(1);
 
@@ -83,8 +95,6 @@ describe("ObjektdatenSection", () => {
 
     expect(nextPhotos).toHaveLength(1);
     expect(nextPhotos[0]?.id).toMatch(/^photo-/);
-    expect(nextPhotos[0]?.src.startsWith("data:image/svg+xml;utf8,")).toBe(
-      true,
-    );
+    expect(nextPhotos[0]?.src).toBe("blob:test-url");
   });
 });
