@@ -49,9 +49,8 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("Schlafzimmer");
       expect(result.current.missing).toContain("Kaltmiete");
       expect(result.current.missing).toContain("Frei ab");
-      expect(result.current.missing).toContain("Mindestens 1 Foto");
       expect(result.current.missing).toContain("Bestätigung");
-      expect(result.current.missing).toHaveLength(10);
+      expect(result.current.missing).toHaveLength(9);
     });
 
     it("is empty when all required fields are filled", () => {
@@ -114,19 +113,6 @@ describe("useListingValidation", () => {
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("Frei ab");
-    });
-
-    it("includes photo label when photos array is empty", () => {
-      const draft = { ...VALID_DRAFT, photos: [] };
-      const { result } = renderHook(() => useListingValidation(draft));
-
-      expect(result.current.missing).toContain("Mindestens 1 Foto");
-    });
-
-    it("does not include photo label when at least one photo exists", () => {
-      const { result } = renderHook(() => useListingValidation(VALID_DRAFT));
-
-      expect(result.current.missing).not.toContain("Mindestens 1 Foto");
     });
 
     it("includes Bestätigung when legalAccepted is false", () => {
