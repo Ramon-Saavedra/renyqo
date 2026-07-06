@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ListingPhoto } from "../hooks/useListingDraft";
 import { PhotoGrid } from "./PhotoGrid";
@@ -11,6 +11,10 @@ const PHOTO: ListingPhoto = {
 };
 
 describe("PhotoGrid", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders the add action and helper text when the grid is empty", () => {
     render(<PhotoGrid photos={[]} setPhotos={vi.fn()} />);
 
@@ -19,27 +23,40 @@ describe("PhotoGrid", () => {
     ).toBeInstanceOf(HTMLButtonElement);
     expect(
       screen.getByText(
-        "Mindestens 3 Fotos werden empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
+        "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
       ),
     ).toBeInstanceOf(HTMLElement);
   });
 
-  it("adds a demo photo when the add action is clicked", async () => {
+  it("renders a hidden file input accepting images", () => {
+    render(<PhotoGrid photos={[]} setPhotos={vi.fn()} />);
+
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    expect(input).toBeInstanceOf(HTMLInputElement);
+    expect(input.accept).toBe("image/*");
+    expect(input.multiple).toBe(true);
+  });
+
+  it("adds a photo when a file is selected via the input", async () => {
     const user = userEvent.setup();
     const setPhotos = vi.fn();
-
-    vi.spyOn(Date, "now").mockReturnValue(123456789);
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
 
     render(<PhotoGrid photos={[]} setPhotos={setPhotos} />);
 
-    await user.click(screen.getByRole("button", { name: "Foto hinzufügen" }));
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    const file = new File(["content"], "photo.jpg", { type: "image/jpeg" });
+
+    await user.upload(input, file);
 
     expect(setPhotos).toHaveBeenCalledTimes(1);
-    expect(setPhotos).toHaveBeenCalledWith([
-      expect.objectContaining({
-        id: "photo-123456789-0",
-      }),
-    ]);
+    const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
+    expect(added).toHaveLength(1);
+    expect(added[0]!.src).toBe("blob:test-url");
   });
 
   it("renders the cover tag and removes a photo when requested", async () => {
