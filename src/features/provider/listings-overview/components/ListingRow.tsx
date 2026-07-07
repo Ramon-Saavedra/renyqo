@@ -1,4 +1,5 @@
-import { Pencil } from "lucide-react";
+import Image from "next/image";
+import { Home, Pencil } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import { listingsCopy } from "../copy/listings";
@@ -18,6 +19,15 @@ interface ListingRowProps {
 const ROW_BASE_CLASS =
   "rounded-md border border-border/50 bg-card px-5 py-4 transition-colors hover:border-border";
 const ROW_INACTIVE_CLASS = "bg-background-subtle";
+
+const ROW_CONTENT_CLASS = "flex gap-4";
+
+const THUMBNAIL_CLASS = "h-24 w-24 shrink-0 rounded object-cover";
+
+const THUMBNAIL_FALLBACK_CLASS =
+  "flex h-24 w-24 shrink-0 items-center justify-center rounded-md bg-background-subtle text-primary";
+
+const DETAILS_CLASS = "min-w-0 flex-1";
 
 const MAIN_CLASS = "mb-3.5 flex items-start justify-between gap-4";
 
@@ -60,83 +70,123 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
       className={cn(ROW_BASE_CLASS, isInactive && ROW_INACTIVE_CLASS)}
       data-status={listing.status}
     >
-      <div className={MAIN_CLASS}>
-        <div className={TITLE_BLOCK_CLASS}>
-          <h3 className={cn(TITLE_BASE, isInactive && TITLE_INACTIVE)}>
-            {listing.title}
-          </h3>
-          <div className={ADDRESS_CLASS}>
-            <span className={ADDRESS_TEXT_CLASS}>{listing.displayAddress}</span>
+      <div className={ROW_CONTENT_CLASS}>
+        {listing.coverImageUrl ? (
+          <Image
+            src={listing.coverImageUrl}
+            alt=""
+            aria-hidden="true"
+            width={192}
+            height={192}
+            quality={90}
+            className={THUMBNAIL_CLASS}
+          />
+        ) : (
+          <div aria-hidden="true" className={THUMBNAIL_FALLBACK_CLASS}>
+            <AppIcon icon={Home} size={22} strokeWidth={1.8} decorative />
           </div>
-        </div>
-        <div className={STATUS_CLUSTER_CLASS}>
-          <StatusPill status={listing.status} />
-          {listing.needsAttention && listing.attentionReason && (
-            <AttentionPill reason={listing.attentionReason} />
-          )}
-        </div>
-      </div>
+        )}
 
-      <div className="listings-row-stats">
-        <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>{listingsCopy.row.coldRent}</span>
-          <span
-            className={cn(STAT_VALUE_BASE, isInactive && STAT_VALUE_INACTIVE)}
-          >
-            {formatEUR(listing.coldRent)}
-          </span>
-        </div>
-
-        <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>
-            {listingsCopy.row.livingArea}
-          </span>
-          <span
-            className={cn(STAT_VALUE_BASE, isInactive && STAT_VALUE_INACTIVE)}
-          >
-            {formatArea(listing.livingArea)}
-          </span>
-        </div>
-
-        <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>{listingsCopy.row.rooms}</span>
-          <span
-            className={cn(STAT_VALUE_BASE, isInactive && STAT_VALUE_INACTIVE)}
-          >
-            {listing.rooms}
-          </span>
-        </div>
-
-        <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>
-            {listingsCopy.row.applications}
-          </span>
-          <div className={BEW_CELL_CLASS}>
-            <ApplicationsMeter active={visibleCount} />
-            <span className={STAT_VALUE_SOFT}>
-              {listingsCopy.row.applicationsLabel(visibleCount, waitingCount)}
-            </span>
+        <div className={DETAILS_CLASS}>
+          <div className={MAIN_CLASS}>
+            <div className={TITLE_BLOCK_CLASS}>
+              <h3 className={cn(TITLE_BASE, isInactive && TITLE_INACTIVE)}>
+                {listing.title}
+              </h3>
+              <div className={ADDRESS_CLASS}>
+                <span className={ADDRESS_TEXT_CLASS}>
+                  {listing.displayAddress}
+                </span>
+              </div>
+            </div>
+            <div className={STATUS_CLUSTER_CLASS}>
+              <StatusPill status={listing.status} />
+              {listing.needsAttention && listing.attentionReason && (
+                <AttentionPill reason={listing.attentionReason} />
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className={STAT_CELL_CLASS}>
-          <span className={STAT_KICKER_CLASS}>{listingsCopy.row.activity}</span>
-          <span className={STAT_VALUE_SOFT}>
-            {formatRelative(listing.updatedAt, now)}
-          </span>
-        </div>
+          <div className="listings-row-stats">
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.coldRent}
+              </span>
+              <span
+                className={cn(
+                  STAT_VALUE_BASE,
+                  isInactive && STAT_VALUE_INACTIVE,
+                )}
+              >
+                {formatEUR(listing.coldRent)}
+              </span>
+            </div>
 
-        <div className={ACTIONS_CELL_CLASS}>
-          <button
-            type="button"
-            className={ICON_BUTTON_CLASS}
-            aria-label={listingsCopy.row.editLabel}
-            title={listingsCopy.row.editLabel}
-            onClick={() => onAction("edit", listing)}
-          >
-            <AppIcon icon={Pencil} size={14} strokeWidth={1.6} decorative />
-          </button>
-          <RowActionsMenu listing={listing} onAction={onAction} />
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.livingArea}
+              </span>
+              <span
+                className={cn(
+                  STAT_VALUE_BASE,
+                  isInactive && STAT_VALUE_INACTIVE,
+                )}
+              >
+                {formatArea(listing.livingArea)}
+              </span>
+            </div>
+
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.rooms}
+              </span>
+              <span
+                className={cn(
+                  STAT_VALUE_BASE,
+                  isInactive && STAT_VALUE_INACTIVE,
+                )}
+              >
+                {listing.rooms}
+              </span>
+            </div>
+
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.applications}
+              </span>
+              <div className={BEW_CELL_CLASS}>
+                <ApplicationsMeter active={visibleCount} />
+                <span className={STAT_VALUE_SOFT}>
+                  {listingsCopy.row.applicationsLabel(
+                    visibleCount,
+                    waitingCount,
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.activity}
+              </span>
+              <span className={STAT_VALUE_SOFT}>
+                {formatRelative(listing.updatedAt, now)}
+              </span>
+            </div>
+
+            <div className={ACTIONS_CELL_CLASS}>
+              <button
+                type="button"
+                className={ICON_BUTTON_CLASS}
+                aria-label={listingsCopy.row.editLabel}
+                title={listingsCopy.row.editLabel}
+                onClick={() => onAction("edit", listing)}
+              >
+                <AppIcon icon={Pencil} size={14} strokeWidth={1.6} decorative />
+              </button>
+              <RowActionsMenu listing={listing} onAction={onAction} />
+            </div>
+          </div>
         </div>
       </div>
     </article>
