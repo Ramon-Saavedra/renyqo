@@ -26,6 +26,7 @@ export interface ListingDraftErrors {
 export interface ListingPhoto {
   readonly id: string;
   readonly src: string;
+  readonly file: File;
 }
 
 export interface ListingDraft {

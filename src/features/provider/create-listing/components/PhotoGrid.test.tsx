@@ -8,6 +8,7 @@ import { PhotoGrid } from "./PhotoGrid";
 const PHOTO: ListingPhoto = {
   id: "photo-1",
   src: "https://example.com/photo.jpg",
+  file: new File(["photo"], "photo.jpg", { type: "image/jpeg" }),
 };
 
 describe("PhotoGrid", () => {
@@ -57,6 +58,7 @@ describe("PhotoGrid", () => {
     const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
     expect(added).toHaveLength(1);
     expect(added[0]!.src).toBe("blob:test-url");
+    expect(added[0]!.file).toBe(file);
   });
 
   it("renders the cover tag and removes a photo when requested", async () => {
@@ -76,6 +78,7 @@ describe("PhotoGrid", () => {
     const photos = Array.from({ length: 12 }, (_, index) => ({
       id: `photo-${index}`,
       src: `https://example.com/${index}.jpg`,
+      file: new File([String(index)], `${index}.jpg`, { type: "image/jpeg" }),
     }));
 
     render(<PhotoGrid photos={photos} setPhotos={vi.fn()} />);

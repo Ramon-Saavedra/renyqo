@@ -1,0 +1,75 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { apiPost, apiPostFormData } from "./client";
+import { createListingDraft, type CreateListingPayload } from "./listings";
+
+vi.mock("./client", () => ({
+  apiPatch: vi.fn(),
+  apiPost: vi.fn(),
+  apiPostFormData: vi.fn(),
+}));
+
+const PAYLOAD: CreateListingPayload = {
+  city: "Berlin",
+  zip: "10115",
+  street: undefined,
+  showExactAddress: false,
+  objectType: "APARTMENT",
+  livingArea: 65,
+  rooms: 3,
+  bedrooms: null,
+  coldRent: 1100,
+  additionalCosts: undefined,
+  deposit: 2200,
+  availableFrom: "2026-07-01",
+  title: "Wohnung in Berlin",
+  shortDescription: "Helle Wohnung",
+  minimumHouseholdNetIncome: null,
+  schufaRequired: false,
+  incomeProofRequired: true,
+  suitableForPeopleCount: null,
+  petsPolicy: "BY_ARRANGEMENT",
+  smokingPolicy: "PREFER_NOT",
+};
+
+describe("createListingDraft", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("uses JSON when no file is provided", async () => {
+    vi.mocked(apiPost).mockResolvedValue({ id: "listing-1" } as never);
+
+    await expect(createListingDraft(PAYLOAD)).resolves.toEqual({
+      id: "listing-1",
+    });
+
+    expect(apiPost).toHaveBeenCalledWith("/api/v1/provider/listings", PAYLOAD);
+    expect(apiPostFormData).not.toHaveBeenCalled();
+  });
+
+  it("uses FormData with the first image under the file field when a file is provided", async () => {
+    vi.mocked(apiPostFormData).mockResolvedValue({ id: "listing-1" } as never);
+    const file = new File(["image"], "cover.jpg", { type: "image/jpeg" });
+
+    await createListingDraft(PAYLOAD, file);
+
+    expect(apiPost).not.toHaveBeenCalled();
+    expect(apiPostFormData).toHaveBeenCalledWith(
+      "/api/v1/provider/listings",
+      expect.any(FormData),
+    );
+
+    const formData = vi.mocked(apiPostFormData).mock.calls[0]?.[1] as FormData;
+    expect(formData.get("file")).toBe(file);
+    expect(formData.get("city")).toBe("Berlin");
+    expect(formData.get("showExactAddress")).toBe("false");
+    expect(formData.get("livingArea")).toBe("65");
+    expect(formData.get("incomeProofRequired")).toBe("true");
+    expect(formData.has("street")).toBe(false);
+    expect(formData.has("bedrooms")).toBe(false);
+    expect(formData.has("additionalCosts")).toBe(false);
+    expect(formData.has("minimumHouseholdNetIncome")).toBe(false);
+    expect(formData.has("suitableForPeopleCount")).toBe(false);
+  });
+});

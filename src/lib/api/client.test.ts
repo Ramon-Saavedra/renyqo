@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, apiGet, apiPost } from "./client";
+import { ApiError, apiGet, apiPost, apiPostFormData } from "./client";
 
 function makeMockResponse(status: number, body: unknown): Response {
   return {
@@ -118,6 +118,58 @@ describe("apiPost", () => {
     }
 
     expect(caught).toBeInstanceOf(ApiError);
+  });
+});
+
+describe("apiPostFormData", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("throws ApiError with status 0 on a network failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
+    );
+
+    await expect(
+      apiPostFormData("/test", new FormData()),
+    ).rejects.toMatchObject({ status: 0 });
+  });
+
+  it("throws ApiError with the response status on a non-2xx response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(400, { message: "Bad Request" })),
+    );
+
+    await expect(
+      apiPostFormData("/test", new FormData()),
+    ).rejects.toMatchObject({
+      status: 400,
+      message: "Bad Request",
+    });
+  });
+
+  it("posts FormData without setting Content-Type manually", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(makeMockResponse(200, {}));
+    const formData = new FormData();
+    formData.append("file", new File(["image"], "cover.jpg"));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await apiPostFormData("/test", formData);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/test"),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }),
+    );
+    expect(mockFetch.mock.calls[0]?.[1]).not.toHaveProperty("headers");
   });
 });
 

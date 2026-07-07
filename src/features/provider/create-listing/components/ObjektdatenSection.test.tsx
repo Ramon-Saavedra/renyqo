@@ -96,5 +96,6 @@ describe("ObjektdatenSection", () => {
     expect(nextPhotos).toHaveLength(1);
     expect(nextPhotos[0]?.id).toMatch(/^photo-/);
     expect(nextPhotos[0]?.src).toBe("blob:test-url");
+    expect(nextPhotos[0]?.file).toBe(file);
   });
 });

@@ -15,7 +15,13 @@ const POPULATED_DRAFT: ListingDraft = {
   bedrooms: 1,
   price: "1250",
   availableFrom: "2026-06-15",
-  photos: [{ id: "cover-1", src: "https://example.com/cover.jpg" }],
+  photos: [
+    {
+      id: "cover-1",
+      src: "https://example.com/cover.jpg",
+      file: new File(["cover"], "cover.jpg", { type: "image/jpeg" }),
+    },
+  ],
 };
 
 describe("PreviewCard", () => {

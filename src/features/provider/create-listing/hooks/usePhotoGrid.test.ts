@@ -5,7 +5,11 @@ import { usePhotoGrid } from "./usePhotoGrid";
 import type { ListingPhoto } from "./useListingDraft";
 
 function makePhoto(id: string): ListingPhoto {
-  return { id, src: `https://example.com/${id}.jpg` };
+  return {
+    id,
+    src: `https://example.com/${id}.jpg`,
+    file: new File([id], `${id}.jpg`, { type: "image/jpeg" }),
+  };
 }
 
 function makeFileList(files: File[]): FileList {
@@ -87,6 +91,7 @@ describe("usePhotoGrid", () => {
       const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
       expect(added).toHaveLength(1);
       expect(added[0]!.src).toBe("blob:mock-url");
+      expect(added[0]!.file).toBe(file);
     });
 
     it("does nothing when photos count has reached the max", () => {
