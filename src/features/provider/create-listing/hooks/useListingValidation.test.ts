@@ -6,7 +6,12 @@ import type { ListingDraft, ListingPhoto } from "./useListingDraft";
 import type { RoomOption } from "../copy/create-listing";
 import { useListingValidation } from "./useListingValidation";
 
-const PHOTO: ListingPhoto = { id: "p1", src: "data:image/svg+xml;test" };
+const PHOTO_FILE = new File(["photo"], "photo.jpg", { type: "image/jpeg" });
+const PHOTO: ListingPhoto = {
+  id: "p1",
+  src: "data:image/svg+xml;test",
+  file: PHOTO_FILE,
+};
 
 const VALID_DRAFT: ListingDraft = {
   ...INITIAL_DRAFT,

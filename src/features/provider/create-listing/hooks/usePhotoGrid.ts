@@ -30,6 +30,7 @@ export function usePhotoGrid({
       const newPhotos: ListingPhoto[] = toAdd.map((file) => ({
         id: `photo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         src: URL.createObjectURL(file),
+        file,
       }));
       setPhotos([...photos, ...newPhotos]);
     },

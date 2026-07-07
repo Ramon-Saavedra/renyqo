@@ -4,7 +4,12 @@ import { describe, expect, it } from "vitest";
 import { INITIAL_DRAFT, useListingDraft } from "./useListingDraft";
 import type { ListingDraft, ListingPhoto } from "./useListingDraft";
 
-const PHOTO: ListingPhoto = { id: "p1", src: "data:image/svg+xml;test" };
+const PHOTO_FILE = new File(["photo"], "photo.jpg", { type: "image/jpeg" });
+const PHOTO: ListingPhoto = {
+  id: "p1",
+  src: "data:image/svg+xml;test",
+  file: PHOTO_FILE,
+};
 
 describe("useListingDraft", () => {
   describe("initialization", () => {

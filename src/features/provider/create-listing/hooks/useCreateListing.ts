@@ -100,6 +100,15 @@ function mapDraftToCreateListingDto(
   };
 }
 
+function createDraftFromListingDraft(
+  draft: ListingDraft,
+  title: string,
+): Promise<{ readonly id: string }> {
+  const payload = mapDraftToCreateListingDto(draft, title);
+  const file = draft.photos[0]?.file;
+  return file ? createListingDraft(payload, file) : createListingDraft(payload);
+}
+
 type ZodFlatErrors = Record<string, string[] | undefined>;
 
 function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
@@ -172,9 +181,7 @@ export function useCreateListing(): UseCreateListingResult {
     setFieldErrors({});
     setSubmitStatus("saving");
     try {
-      const created = await createListingDraft(
-        mapDraftToCreateListingDto(draft, title),
-      );
+      const created = await createDraftFromListingDraft(draft, title);
       draftIdRef.current = created.id;
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
@@ -207,9 +214,7 @@ export function useCreateListing(): UseCreateListingResult {
       try {
         let id = draftIdRef.current;
         if (!id) {
-          const created = await createListingDraft(
-            mapDraftToCreateListingDto(draft, title),
-          );
+          const created = await createDraftFromListingDraft(draft, title);
           id = created.id;
           draftIdRef.current = id;
         }

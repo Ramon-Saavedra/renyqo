@@ -19,7 +19,12 @@ vi.mock("@/lib/api/listings", () => ({
 
 import { createListingDraft, publishListing } from "@/lib/api/listings";
 
-const PHOTO: ListingPhoto = { id: "p1", src: "data:image/svg+xml;test" };
+const PHOTO_FILE = new File(["photo"], "photo.jpg", { type: "image/jpeg" });
+const PHOTO: ListingPhoto = {
+  id: "p1",
+  src: "data:image/svg+xml;test",
+  file: PHOTO_FILE,
+};
 
 const DRAFT_SAVE_VALID: ListingDraft = {
   ...INITIAL_DRAFT,
@@ -134,6 +139,30 @@ describe("useCreateListing", () => {
           incomeProofRequired: false,
           title: "Mein Titel",
         }),
+        PHOTO_FILE,
+      );
+    });
+
+    it("passes only the first photo file to createListingDraft", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const secondFile = new File(["second"], "second.jpg", {
+        type: "image/jpeg",
+      });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          {
+            ...VALID_DRAFT,
+            photos: [PHOTO, { id: "p2", src: "blob:second", file: secondFile }],
+          },
+          "Mein Titel",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.any(Object),
+        PHOTO_FILE,
       );
     });
 
