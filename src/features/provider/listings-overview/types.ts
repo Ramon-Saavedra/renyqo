@@ -18,6 +18,7 @@ export interface ListingOverviewItem {
   readonly id: string;
   readonly title: string;
   readonly displayAddress: string;
+  readonly coverImageUrl?: string | null;
 
   readonly coldRent: number;
   readonly livingArea: number;

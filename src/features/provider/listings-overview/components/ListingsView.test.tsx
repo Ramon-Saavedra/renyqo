@@ -1,9 +1,15 @@
 ﻿import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "@/lib/api/client";
+import { getProviderListings } from "../api/provider-listings";
 import type { ListingOverviewItem } from "../types";
 import { ListingsView } from "./ListingsView";
+
+vi.mock("../api/provider-listings", () => ({
+  getProviderListings: vi.fn(),
+}));
 
 const NOW = new Date("2026-05-22T15:00:00");
 
@@ -78,12 +84,64 @@ function renderView(listings: readonly ListingOverviewItem[] = SAMPLE) {
   return render(<ListingsView initialListings={listings} now={NOW} />);
 }
 
+function renderRemoteView() {
+  return render(<ListingsView now={NOW} />);
+}
+
 describe("ListingsView", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders all initial listings", () => {
     renderView();
     for (const item of SAMPLE) {
       expect(screen.getByText(item.title)).toBeInstanceOf(HTMLElement);
     }
+    expect(getProviderListings).not.toHaveBeenCalled();
+  });
+
+  it("shows a loading state while fetching backend listings", () => {
+    vi.mocked(getProviderListings).mockResolvedValue(SAMPLE);
+
+    renderRemoteView();
+
+    expect(screen.getByText("Mietobjekte werden geladen …")).toBeInstanceOf(
+      HTMLElement,
+    );
+  });
+
+  it("renders listings loaded from the backend", async () => {
+    vi.mocked(getProviderListings).mockResolvedValue([SAMPLE[0]!]);
+
+    renderRemoteView();
+
+    expect(await screen.findByText(SAMPLE[0]!.title)).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(getProviderListings).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows a fresh empty state when the backend returns no listings", async () => {
+    vi.mocked(getProviderListings).mockResolvedValue([]);
+
+    renderRemoteView();
+
+    expect(
+      await screen.findByText("Noch keine Mietobjekte angelegt."),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
+  it("shows an error state when backend loading fails", async () => {
+    vi.mocked(getProviderListings).mockRejectedValue(
+      new ApiError(500, "server error"),
+    );
+
+    renderRemoteView();
+
+    expect(
+      await screen.findByText("Mietobjekte konnten nicht geladen werden"),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("shows the count per status in the filter", () => {

@@ -39,6 +39,23 @@ describe("ListingRow", () => {
     ).toBeInstanceOf(HTMLElement);
   });
 
+  it("renders the cover image when the listing has one", () => {
+    const { container } = render(
+      <ListingRow
+        listing={{
+          ...BASE,
+          coverImageUrl: "https://example.com/cover.jpg",
+        }}
+        onAction={vi.fn()}
+        now={NOW}
+      />,
+    );
+
+    const image = container.querySelector('img[src*="cover.jpg"]');
+    expect(image).toBeInstanceOf(HTMLImageElement);
+    expect(image?.className).toContain("rounded");
+  });
+
   it("renders the status pill", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
     expect(screen.getByText("Aktiv")).toBeInstanceOf(HTMLElement);

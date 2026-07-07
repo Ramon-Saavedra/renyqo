@@ -1,9 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { ApiError } from "@/lib/api/client";
+import { getProviderListings } from "../api/provider-listings";
 import { STATUS_SORT_ORDER } from "../copy/listings";
-import { MOCK_LISTINGS } from "../data/mock-listings";
 import type {
   ListingOverviewItem,
   RowAction,
@@ -24,6 +31,8 @@ interface ListingsViewProps {
   initialListings?: readonly ListingOverviewItem[];
   now?: Date;
 }
+
+type FetchStatus = "idle" | "loading" | "error";
 
 function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
   return {
@@ -74,12 +83,14 @@ const SORTERS: Record<
     STATUS_SORT_ORDER.indexOf(a.status) - STATUS_SORT_ORDER.indexOf(b.status),
 };
 
-export function ListingsView({
-  initialListings = MOCK_LISTINGS,
-  now,
-}: ListingsViewProps) {
-  const [listings, setListings] =
-    useState<readonly ListingOverviewItem[]>(initialListings);
+export function ListingsView({ initialListings, now }: ListingsViewProps) {
+  const [listings, setListings] = useState<readonly ListingOverviewItem[]>(
+    initialListings ?? [],
+  );
+  const [fetchStatus, setFetchStatus] = useState<FetchStatus>(
+    initialListings ? "idle" : "loading",
+  );
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("alle");
   const [sort, setSort] = useState<SortKey>("updated");
@@ -92,6 +103,37 @@ export function ListingsView({
     () => now ?? (isHydrated ? new Date() : null),
     [now, isHydrated],
   );
+
+  useEffect(() => {
+    if (initialListings) return;
+
+    let active = true;
+
+    async function loadListings() {
+      setFetchStatus("loading");
+      setFetchError(null);
+      try {
+        const data = await getProviderListings();
+        if (!active) return;
+        setListings(data);
+        setFetchStatus("idle");
+      } catch (err) {
+        if (!active) return;
+        setFetchError(
+          err instanceof ApiError && err.status === 0
+            ? "Netzwerkfehler — bitte versuche es erneut"
+            : "Mietobjekte konnten nicht geladen werden",
+        );
+        setFetchStatus("error");
+      }
+    }
+
+    void loadListings();
+
+    return () => {
+      active = false;
+    };
+  }, [initialListings]);
 
   const counts = useMemo(() => buildCounts(listings), [listings]);
 
@@ -182,7 +224,15 @@ export function ListingsView({
           onSortChange={setSort}
         />
 
-        {emptyVariant ? (
+        {fetchStatus === "loading" ? (
+          <div className="rounded-md border border-border bg-background px-6 py-10 text-caption text-foreground-secondary">
+            Mietobjekte werden geladen …
+          </div>
+        ) : fetchStatus === "error" ? (
+          <div className="rounded-md border border-border bg-background px-6 py-10 text-caption text-foreground-secondary">
+            {fetchError}
+          </div>
+        ) : emptyVariant ? (
           <ListingsEmptyState
             variant={emptyVariant}
             onShowAll={() => setStatusFilter("alle")}
