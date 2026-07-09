@@ -7,6 +7,7 @@ import { SiApple } from "react-icons/si";
 import { FcGoogle } from "react-icons/fc";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button/Button";
+import { Select } from "@/components/ui/form/Select";
 import { BrandIcon } from "@/components/ui/icon/BrandIcon";
 import { FieldError } from "@/components/ui/form/FieldError";
 import { FormAlert } from "@/components/ui/form/FormAlert";
@@ -15,6 +16,7 @@ import {
   register,
   getOnboardingState,
   resolveRedirectPath,
+  type ProviderType,
   type UserRole,
 } from "@/lib/api/auth";
 import {
@@ -37,6 +39,7 @@ interface FormErrors {
   name?: string | undefined;
   email?: string | undefined;
   password?: string | undefined;
+  companyName?: string | undefined;
   terms?: string | undefined;
 }
 
@@ -47,6 +50,17 @@ const STRENGTH_LEVELS: Record<PasswordStrength, number> = {
   mittel: 2,
   stark: 3,
 };
+
+const PROVIDER_TYPE_OPTIONS = [
+  {
+    value: "private",
+    label: createAccountCopy.providerIdentity.options.private,
+  },
+  {
+    value: "company",
+    label: createAccountCopy.providerIdentity.options.company,
+  },
+] satisfies ReadonlyArray<{ value: ProviderType; label: string }>;
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -71,6 +85,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
+  const [providerType, setProviderType] = useState<ProviderType>("private");
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
   const [globalMessage, setGlobalMessage] = useState<GlobalMessage | null>(
     null,
@@ -79,6 +94,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
   const nameId = `${idPrefix}-name`;
   const emailId = `${idPrefix}-email`;
   const passwordId = `${idPrefix}-password`;
+  const companyNameId = `${idPrefix}-company-name`;
   const consentId = `${idPrefix}-terms`;
 
   const strength = getPasswordStrength(password);
@@ -95,9 +111,16 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
     const data = new FormData(e.currentTarget);
     const name = (data.get("name") as string).trim();
     const email = (data.get("email") as string).trim();
+    const companyName =
+      role === "provider" && providerType === "company"
+        ? ((data.get("companyName") as string | null) ?? "").trim()
+        : "";
     const termsChecked = data.get("terms") === "on";
 
     const errors = validateForm(name, email, password, termsChecked);
+    if (role === "provider" && providerType === "company" && !companyName) {
+      errors.companyName = createAccountCopy.validation.companyName;
+    }
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -112,6 +135,9 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         email,
         password,
         role,
+        ...(role === "provider" && { providerType }),
+        ...(role === "provider" &&
+          providerType === "company" && { companyName }),
         acceptedTerms: true,
         acceptedPrivacy: true,
       });
@@ -175,6 +201,58 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         {createAccountCopy.divider}
         <span aria-hidden="true" className="h-px flex-1 bg-border" />
       </div>
+
+      {role === "provider" && (
+        <div className="mb-3.5 grid gap-3">
+          <div className="grid gap-1.5">
+            <label
+              htmlFor={`${idPrefix}-provider-type`}
+              className="text-caption font-medium text-foreground-secondary"
+            >
+              {createAccountCopy.providerIdentity.label}
+            </label>
+            <Select
+              id={`${idPrefix}-provider-type`}
+              value={providerType}
+              disabled={loading}
+              aria-label={createAccountCopy.providerIdentity.ariaLabel}
+              onChange={(event) => {
+                setProviderType(event.target.value as ProviderType);
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  companyName: undefined,
+                }));
+              }}
+            >
+              {PROVIDER_TYPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </div>
+
+          {providerType === "company" && (
+            <Field
+              id={companyNameId}
+              name="companyName"
+              type="text"
+              autoComplete="organization"
+              label={createAccountCopy.fields.companyName.label}
+              placeholder={createAccountCopy.fields.companyName.placeholder}
+              required
+              disabled={loading}
+              error={fieldErrors.companyName}
+              onChange={() =>
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  companyName: undefined,
+                }))
+              }
+            />
+          )}
+        </div>
+      )}
 
       <Field
         id={nameId}

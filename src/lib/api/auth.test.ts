@@ -63,6 +63,32 @@ describe("register", () => {
     });
   });
 
+  it("passes provider identity fields for provider registration", async () => {
+    vi.mocked(apiPost).mockResolvedValue({} as never);
+
+    await register({
+      name: "Provider User",
+      email: "provider@test.de",
+      password: "Secure1!pass",
+      role: "provider",
+      providerType: "company",
+      companyName: "Renyqo Immobilien",
+      acceptedTerms: true,
+      acceptedPrivacy: true,
+    });
+
+    expect(apiPost).toHaveBeenCalledWith("/api/v1/auth/register", {
+      name: "Provider User",
+      email: "provider@test.de",
+      password: "Secure1!pass",
+      role: "provider",
+      providerType: "company",
+      companyName: "Renyqo Immobilien",
+      acceptedTerms: true,
+      acceptedPrivacy: true,
+    });
+  });
+
   it("returns the SafeUser resolved by apiPost", async () => {
     const user = {
       id: "abc",

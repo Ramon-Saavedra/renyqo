@@ -1,20 +1,55 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CreateAccountForm } from "./CreateAccountForm";
 import { createAccountCopy } from "../copy/create-account";
+import { getOnboardingState, register } from "@/lib/api/auth";
+import type { UserRole } from "@/lib/api/auth";
+
+const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push }),
+}));
+
+vi.mock("@/lib/api/auth", () => ({
+  register: vi.fn(),
+  getOnboardingState: vi.fn(),
+  resolveRedirectPath: vi.fn(() => "/provider/dashboard"),
 }));
 
 const { fields, consent } = createAccountCopy;
 
-function renderForm(idPrefix = "test") {
-  return render(<CreateAccountForm idPrefix={idPrefix} role="applicant" />);
+function renderForm(idPrefix = "test", role: UserRole = "applicant") {
+  return render(<CreateAccountForm idPrefix={idPrefix} role={role} />);
+}
+
+async function fillRequiredAccountFields() {
+  const user = userEvent.setup();
+
+  await user.type(screen.getByLabelText(fields.name.label), "Ramon Saavedra");
+  await user.type(screen.getByLabelText(fields.email.label), "ramon@test.de");
+  await user.type(screen.getByLabelText(fields.password.label), "Secure123");
+  await user.click(document.getElementById("test-terms") as HTMLInputElement);
+
+  return user;
 }
 
 describe("CreateAccountForm", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(register).mockResolvedValue({
+      id: "user-1",
+      name: "Ramon Saavedra",
+      email: "ramon@test.de",
+      role: "provider",
+      providerType: "private",
+      companyName: null,
+    });
+    vi.mocked(getOnboardingState).mockResolvedValue({ nextStep: "dashboard" });
+  });
+
   describe("structure", () => {
     it("renders a form element with noValidate", () => {
       const { container } = renderForm();
@@ -111,6 +146,126 @@ describe("CreateAccountForm", () => {
           name: createAccountCopy.passwordStrength.suggest,
         }),
       ).toBeInstanceOf(HTMLElement);
+    });
+  });
+
+  describe("provider identity", () => {
+    it("does not render provider identity controls for applicants", () => {
+      renderForm("test", "applicant");
+
+      expect(
+        screen.queryByRole("combobox", {
+          name: createAccountCopy.providerIdentity.ariaLabel,
+        }),
+      ).toBeNull();
+      expect(screen.queryByLabelText(fields.companyName.label)).toBeNull();
+    });
+
+    it("renders provider identity controls only for providers", () => {
+      renderForm("test", "provider");
+
+      expect(
+        screen.getByRole("combobox", {
+          name: createAccountCopy.providerIdentity.ariaLabel,
+        }),
+      ).toBeInstanceOf(HTMLElement);
+      expect(
+        (
+          screen.getByRole("combobox", {
+            name: createAccountCopy.providerIdentity.ariaLabel,
+          }) as HTMLSelectElement
+        ).value,
+      ).toBe("private");
+      expect(screen.queryByLabelText(fields.companyName.label)).toBeNull();
+    });
+
+    it("shows company name field when company provider type is selected", async () => {
+      const user = userEvent.setup();
+      renderForm("test", "provider");
+
+      await user.selectOptions(
+        screen.getByRole("combobox", {
+          name: createAccountCopy.providerIdentity.ariaLabel,
+        }),
+        "company",
+      );
+
+      const companyName = screen.getByLabelText(
+        fields.companyName.label,
+      ) as HTMLInputElement;
+
+      expect(companyName.getAttribute("autocomplete")).toBe("organization");
+      expect(companyName.required).toBe(true);
+    });
+
+    it("submits private provider identity without company name", async () => {
+      renderForm("test", "provider");
+      const user = await fillRequiredAccountFields();
+
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      await waitFor(() => {
+        expect(register).toHaveBeenCalledWith(
+          expect.objectContaining({
+            role: "provider",
+            providerType: "private",
+          }),
+        );
+      });
+      expect(vi.mocked(register).mock.calls[0]?.[0]).not.toHaveProperty(
+        "companyName",
+      );
+    });
+
+    it("requires company name for company providers", async () => {
+      renderForm("test", "provider");
+      const user = await fillRequiredAccountFields();
+
+      await user.selectOptions(
+        screen.getByRole("combobox", {
+          name: createAccountCopy.providerIdentity.ariaLabel,
+        }),
+        "company",
+      );
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      expect(
+        await screen.findByText(createAccountCopy.validation.companyName),
+      ).toBeInstanceOf(HTMLElement);
+      expect(register).not.toHaveBeenCalled();
+    });
+
+    it("submits company provider identity with trimmed company name", async () => {
+      renderForm("test", "provider");
+      const user = await fillRequiredAccountFields();
+
+      await user.selectOptions(
+        screen.getByRole("combobox", {
+          name: createAccountCopy.providerIdentity.ariaLabel,
+        }),
+        "company",
+      );
+      await user.type(
+        screen.getByLabelText(fields.companyName.label),
+        "  Renyqo Immobilien  ",
+      );
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      await waitFor(() => {
+        expect(register).toHaveBeenCalledWith(
+          expect.objectContaining({
+            role: "provider",
+            providerType: "company",
+            companyName: "Renyqo Immobilien",
+          }),
+        );
+      });
     });
   });
 

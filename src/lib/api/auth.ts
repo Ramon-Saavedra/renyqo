@@ -27,6 +27,8 @@ interface RegisterPayload {
   readonly email: string;
   readonly password: string;
   readonly role: UserRole;
+  readonly providerType?: ProviderType;
+  readonly companyName?: string;
   readonly acceptedTerms: true;
   readonly acceptedPrivacy: true;
 }
