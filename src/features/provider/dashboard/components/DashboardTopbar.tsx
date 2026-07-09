@@ -45,6 +45,15 @@ function getInitials(name: string): string {
   return `${first}${second}`.toUpperCase() || "U";
 }
 
+function toTitleCase(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 export function DashboardTopbar({
   accent,
   onAccentChange,
@@ -68,7 +77,7 @@ export function DashboardTopbar({
     };
   }, []);
 
-  const profileName = user?.name ?? profile.name;
+  const profileName = toTitleCase(user?.name ?? profile.name);
   const profileEmail = user?.email ?? null;
   const profileCompany = user?.companyName ?? null;
   const profileInitials = useMemo(

@@ -21,6 +21,18 @@ export const createAccountCopy = {
       show: "Passwort anzeigen",
       hide: "Passwort verbergen",
     },
+    companyName: {
+      label: "Unternehmensname",
+      placeholder: "z. B. Kessler Immobilien",
+    },
+  },
+  providerIdentity: {
+    label: "Anbietertyp",
+    ariaLabel: "Anbietertyp wählen",
+    options: {
+      private: "Privatperson",
+      company: "Unternehmen / Makler",
+    },
   },
   consent: {
     prefix: "Ich akzeptiere die ",
@@ -39,6 +51,7 @@ export const createAccountCopy = {
     email: "Bitte gib eine gültige E-Mail-Adresse ein.",
     emailTaken: "Diese E-Mail wird bereits verwendet.",
     password: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+    companyName: "Bitte gib den Unternehmensnamen ein.",
     terms:
       "Bitte akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
   },
@@ -89,12 +102,12 @@ export const createAccountRoleCopy: Record<Role, RoleCopy> = {
     tag: "Anbieter",
     title: "Anbieter-Konto erstellen",
     subtitle:
-      "Lege dein Konto an. Ob Eigentümer oder Makler, kannst du danach festlegen.",
+      "Lege dein Konto an und sag uns kurz, ob du privat oder als Unternehmen vermietest.",
     reassure: [
       {
-        title: "Erst das Konto, dann die Details",
+        title: "Privat oder gewerblich",
         description:
-          "Objekte und Anbietertyp legst du später im Anbieter-Bereich fest.",
+          "Der Anbietertyp hilft uns, dein Profil im Dashboard korrekt darzustellen.",
       },
       {
         title: "DSGVO-konform & sicher",
