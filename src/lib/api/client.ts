@@ -40,6 +40,22 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export async function apiPostVoid(path: string): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch {
+    throw new ApiError(0, "Netzwerkfehler");
+  }
+  if (!res.ok) {
+    const message = await parseErrorMessage(res);
+    throw new ApiError(res.status, message);
+  }
+}
+
 export async function apiPostFormData<T>(
   path: string,
   body: FormData,

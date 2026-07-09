@@ -1,12 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError, apiGet, apiPost, apiPostFormData } from "./client";
+import {
+  ApiError,
+  apiGet,
+  apiPatch,
+  apiPost,
+  apiPostFormData,
+  apiPostVoid,
+} from "./client";
 
 function makeMockResponse(status: number, body: unknown): Response {
   return {
     ok: status >= 200 && status < 300,
     status,
     json: () => Promise.resolve(body),
+  } as Response;
+}
+
+function makeTextResponse(status: number, body: string): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: () => Promise.resolve(JSON.parse(body)),
+    text: () => Promise.resolve(body),
   } as Response;
 }
 
@@ -170,6 +186,77 @@ describe("apiPostFormData", () => {
       }),
     );
     expect(mockFetch.mock.calls[0]?.[1]).not.toHaveProperty("headers");
+  });
+});
+
+describe("apiPostVoid", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("posts without a JSON body and returns void", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(makeMockResponse(204, {}));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPostVoid("/logout")).resolves.toBeUndefined();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/logout"),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+      }),
+    );
+  });
+
+  it("throws ApiError with response message on failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(401, { message: "Unauthorized" })),
+    );
+
+    await expect(apiPostVoid("/logout")).rejects.toMatchObject({
+      status: 401,
+      message: "Unauthorized",
+    });
+  });
+});
+
+describe("apiPatch", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends JSON patch bodies when provided", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(makeTextResponse(200, JSON.stringify({ ok: true })));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPatch("/profile", { name: "Ramon" })).resolves.toEqual({
+      ok: true,
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/profile"),
+      expect.objectContaining({
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Ramon" }),
+      }),
+    );
+  });
+
+  it("returns undefined when the response body is empty", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(makeTextResponse(204, "")),
+    );
+
+    await expect(apiPatch("/profile")).resolves.toBeUndefined();
   });
 });
 
