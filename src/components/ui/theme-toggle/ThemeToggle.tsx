@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
 import { AppIcon } from "../icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 import { safeSetItem } from "@/lib/utils/storage";
 
 type Theme = "light" | "dark";
@@ -31,9 +32,20 @@ function applyTheme(theme: Theme) {
   safeSetItem(STORAGE_KEY, theme);
 }
 
-export default function ThemeToggle() {
+interface ThemeToggleProps {
+  className?: string;
+  iconSize?: number;
+  showLabel?: boolean;
+}
+
+export default function ThemeToggle({
+  className,
+  iconSize = 16,
+  showLabel = false,
+}: ThemeToggleProps) {
   const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const isDark = theme === "dark";
+  const label = isDark ? "Hellmodus" : "Dunkelmodus";
 
   const toggle = () => {
     applyTheme(isDark ? "light" : "dark");
@@ -45,14 +57,15 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}
-      className="rounded-full"
+      className={cn("cursor-pointer rounded-full", className)}
     >
       <AppIcon
         icon={isDark ? Moon : Sun}
         decorative
-        size={16}
+        size={iconSize}
         className="text-foreground"
       />
+      {showLabel && <span>{label}</span>}
     </button>
   );
 }
