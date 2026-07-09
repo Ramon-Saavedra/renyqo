@@ -30,6 +30,7 @@ html {
   --color-success: var(--success);
   --color-success-vivid: var(--success-vivid);
   --color-warning: var(--warning);
+  --color-danger: var(--danger);
 
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -99,6 +100,11 @@ html {
   padding-right: var(--gutter);
 }
 
+@utility scrollbar-slim {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
 :root {
   --gutter: 1rem;
   --background: #fcfbf1;
@@ -122,6 +128,7 @@ html {
   --success: #4f7a56;
   --success-vivid: #1c9434;
   --warning: #b07b3d;
+  --danger: #dc2626;
 
   --watermark-opacity-peak: 0.35;
   --watermark-cycle-duration: 120s;
@@ -159,11 +166,73 @@ html {
   --success: #8fb59a;
   --success-vivid: #3ecf62;
   --warning: #d2a36a;
+  --danger: #f87171;
 
   --watermark-opacity-peak: 0.5;
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
   --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
+}
+
+[data-accent="schiefer"] {
+  --primary: #536783;
+  --primary-hover: #40536f;
+  --primary-tint: rgb(83 103 131 / 0.13);
+  --primary-soft: rgb(83 103 131 / 0.22);
+}
+[data-accent="pastellblau"] {
+  --primary: #6f91b6;
+  --primary-hover: #5d7fa5;
+  --primary-tint: rgb(111 145 182 / 0.13);
+  --primary-soft: rgb(111 145 182 / 0.22);
+}
+[data-accent="salbei"] {
+  --primary: #7fa276;
+  --primary-hover: #6c9063;
+  --primary-tint: rgb(127 162 118 / 0.13);
+  --primary-soft: rgb(127 162 118 / 0.22);
+}
+[data-accent="sand"] {
+  --primary: #c2a256;
+  --primary-hover: #ad8d42;
+  --primary-tint: rgb(194 162 86 / 0.13);
+  --primary-soft: rgb(194 162 86 / 0.22);
+}
+[data-accent="apricot"] {
+  --primary: #d4896f;
+  --primary-hover: #bf755c;
+  --primary-tint: rgb(212 137 111 / 0.13);
+  --primary-soft: rgb(212 137 111 / 0.22);
+}
+[data-accent="altrosa"] {
+  --primary: #c17d8a;
+  --primary-hover: #ad6976;
+  --primary-tint: rgb(193 125 138 / 0.13);
+  --primary-soft: rgb(193 125 138 / 0.22);
+}
+[data-accent="flieder"] {
+  --primary: #9b7bb0;
+  --primary-hover: #87679d;
+  --primary-tint: rgb(155 123 176 / 0.13);
+  --primary-soft: rgb(155 123 176 / 0.22);
+}
+[data-accent="eisblau"] {
+  --primary: #6f9aa6;
+  --primary-hover: #5b8692;
+  --primary-tint: rgb(111 154 166 / 0.13);
+  --primary-soft: rgb(111 154 166 / 0.22);
+}
+[data-accent="stein"] {
+  --primary: #8d8878;
+  --primary-hover: #777265;
+  --primary-tint: rgb(141 136 120 / 0.13);
+  --primary-soft: rgb(141 136 120 / 0.22);
+}
+[data-accent="eukalyptus"] {
+  --primary: #6f9488;
+  --primary-hover: #5c8074;
+  --primary-tint: rgb(111 148 136 / 0.13);
+  --primary-soft: rgb(111 148 136 / 0.22);
 }
 
 body {

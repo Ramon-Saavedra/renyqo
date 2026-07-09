@@ -1,15 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiGet, apiPost } from "./client";
+import { apiGet, apiPost, apiPostVoid } from "./client";
 import {
+  getCurrentUser,
   getOnboardingState,
   login,
+  logout,
   register,
   resolveRedirectPath,
 } from "./auth";
 
 vi.mock("./client", () => ({
   apiPost: vi.fn(),
+  apiPostVoid: vi.fn(),
   apiGet: vi.fn(),
 }));
 
@@ -66,6 +69,8 @@ describe("register", () => {
       name: "Test User",
       email: "test@test.de",
       role: "applicant" as const,
+      providerType: null,
+      companyName: null,
     };
     vi.mocked(apiPost).mockResolvedValue(user as never);
 
@@ -119,6 +124,8 @@ describe("login", () => {
       name: "Test",
       email: "t@t.de",
       role: "provider" as const,
+      providerType: "private" as const,
+      companyName: null,
     };
     vi.mocked(apiPost).mockResolvedValue(user as never);
 
@@ -149,5 +156,53 @@ describe("getOnboardingState", () => {
     await expect(getOnboardingState()).resolves.toEqual({
       nextStep: "create_first_listing",
     });
+  });
+});
+
+describe("getCurrentUser", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls apiGet with the current user endpoint", async () => {
+    vi.mocked(apiGet).mockResolvedValue({} as never);
+
+    await getCurrentUser();
+
+    expect(apiGet).toHaveBeenCalledWith("/api/v1/auth/me");
+  });
+
+  it("returns the SafeUser resolved by apiGet", async () => {
+    const user = {
+      id: "provider-1",
+      name: "Ramon Saavedra",
+      email: "ramon@example.com",
+      role: "provider" as const,
+      providerType: "company" as const,
+      companyName: "Renyqo Immobilien",
+    };
+    vi.mocked(apiGet).mockResolvedValue(user as never);
+
+    await expect(getCurrentUser()).resolves.toEqual(user);
+  });
+});
+
+describe("logout", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls apiPostVoid with the logout endpoint", async () => {
+    vi.mocked(apiPostVoid).mockResolvedValue(undefined);
+
+    await logout();
+
+    expect(apiPostVoid).toHaveBeenCalledWith("/api/v1/auth/logout");
+  });
+
+  it("propagates errors thrown by apiPostVoid", async () => {
+    vi.mocked(apiPostVoid).mockRejectedValue(new Error("logout failed"));
+
+    await expect(logout()).rejects.toThrow("logout failed");
   });
 });

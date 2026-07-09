@@ -1,6 +1,7 @@
-import { apiGet, apiPost } from "./client";
+import { apiGet, apiPost, apiPostVoid } from "./client";
 
 export type UserRole = "applicant" | "provider";
+export type ProviderType = "private" | "company";
 
 export type OnboardingNextStep =
   | "applicant_area_pending"
@@ -13,6 +14,8 @@ export interface SafeUser {
   readonly name: string;
   readonly email: string;
   readonly role: UserRole;
+  readonly providerType: ProviderType | null;
+  readonly companyName: string | null;
 }
 
 export interface OnboardingState {
@@ -56,4 +59,12 @@ export async function login(payload: LoginPayload): Promise<SafeUser> {
 
 export async function getOnboardingState(): Promise<OnboardingState> {
   return apiGet<OnboardingState>("/api/v1/me/onboarding-state");
+}
+
+export async function getCurrentUser(): Promise<SafeUser> {
+  return apiGet<SafeUser>("/api/v1/auth/me");
+}
+
+export async function logout(): Promise<void> {
+  return apiPostVoid("/api/v1/auth/logout");
 }
