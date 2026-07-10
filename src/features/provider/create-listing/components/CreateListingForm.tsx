@@ -15,9 +15,10 @@ import type {
 } from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
-import { ActionsBar } from "./ActionsBar";
+import { ActionsBar, MissingChecklist } from "./ActionsBar";
 import { AnforderungenSection } from "./AnforderungenSection";
 import { CreateListingHero } from "./CreateListingHero";
+import { HeaderNavLinks } from "./HeaderNavLinks";
 import { ObjektdatenSection } from "./ObjektdatenSection";
 import { PreviewCard } from "./PreviewCard";
 import { type ListingSaveStatus, TopbarActions } from "./TopbarActions";
@@ -141,7 +142,8 @@ export function CreateListingForm() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const key = event.key.toLowerCase();
+      const key = event.key?.toLowerCase();
+      if (!key) return;
       const commandPressed = event.ctrlKey || event.metaKey;
       const isUndo = commandPressed && !event.shiftKey && key === "z";
       const isRedoByY = commandPressed && !event.shiftKey && key === "y";
@@ -178,6 +180,8 @@ export function CreateListingForm() {
       <div className="px-gutter">
         <CreateListingHero />
 
+        <HeaderNavLinks hasUnsavedChanges={hasUnsavedChanges} />
+
         <SectionStepper
           steps={stepperSteps}
           activeId={activeStepId}
@@ -187,6 +191,11 @@ export function CreateListingForm() {
         />
 
         <div className="listing-grid">
+          <MissingChecklist
+            missing={missing}
+            canPublish={canPublish}
+            variant="rail"
+          />
           <div className="flex flex-col gap-4.5">
             <ObjektdatenSection
               draft={draft}
