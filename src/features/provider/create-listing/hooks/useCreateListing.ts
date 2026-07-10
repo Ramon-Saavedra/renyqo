@@ -20,7 +20,7 @@ export interface UseCreateListingResult {
   readonly submitStatus: SubmitStatus;
   readonly error: string | null;
   readonly fieldErrors: ListingDraftErrors;
-  readonly saveDraft: (draft: ListingDraft, title: string) => Promise<void>;
+  readonly saveDraft: (draft: ListingDraft, title: string) => Promise<boolean>;
   readonly publish: (draft: ListingDraft, title: string) => Promise<void>;
   readonly clearFieldError: (key: keyof ListingDraftErrors) => void;
 }
@@ -172,12 +172,12 @@ export function useCreateListing(): UseCreateListingResult {
 
   const saveDraft = useCallback(
     async (draft: ListingDraft, title: string) => {
-      if (draftIdRef.current) return;
+      if (draftIdRef.current) return true;
       setError(null);
       const result = draftSaveSchema.safeParse(draft);
       if (!result.success) {
         setFieldErrors(mapZodErrors(result.error.flatten().fieldErrors));
-        return;
+        return false;
       }
       setFieldErrors({});
       setSubmitStatus("saving");
@@ -185,6 +185,7 @@ export function useCreateListing(): UseCreateListingResult {
         const created = await createDraftFromListingDraft(draft, title);
         draftIdRef.current = created.id;
         router.push("/provider/listings");
+        return true;
       } catch (err) {
         if (err instanceof ApiError && err.status === 400) {
           const mapped = mapBackendMessage(err.message);
@@ -198,6 +199,7 @@ export function useCreateListing(): UseCreateListingResult {
         } else {
           setError("Fehler beim Speichern");
         }
+        return false;
       } finally {
         setSubmitStatus("idle");
       }

@@ -39,8 +39,11 @@ export const OBJECT_TYPE_LABELS: Record<ObjectType, string> = {
 export const createListingCopy = {
   topbar: {
     draft: "Entwurf · Nicht öffentlich",
-    autoSaved: "Automatisch gespeichert",
-    saving: "Wird gespeichert",
+    unsavedChanges: "Ungespeicherte Änderungen",
+    saved: "Gespeichert",
+    saveError: "Speichern fehlgeschlagen",
+    undo: "Rückgängig",
+    redo: "Wiederholen",
     back: "Zurück",
     backHref: "/provider/get-started",
   },
