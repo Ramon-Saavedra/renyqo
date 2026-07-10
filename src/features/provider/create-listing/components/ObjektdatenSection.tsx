@@ -182,14 +182,16 @@ export function ObjektdatenSection({
           required
           error={fieldErrors?.bedrooms}
         >
-          <NumberStepper
-            value={draft.bedrooms}
-            onChange={(value) => setField("bedrooms", value)}
-            min={0}
-            max={10}
-            allowNull
-            ariaLabel={fields.bedrooms.label}
-          />
+          <div id="bedrooms">
+            <NumberStepper
+              value={draft.bedrooms}
+              onChange={(value) => setField("bedrooms", value)}
+              min={0}
+              max={10}
+              allowNull
+              ariaLabel={fields.bedrooms.label}
+            />
+          </div>
         </FormField>
       </div>
 
