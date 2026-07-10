@@ -90,6 +90,7 @@ describe("useCreateListing", () => {
 
       expect(result.current.fieldErrors.city).toBeTruthy();
       expect(createListingDraft).not.toHaveBeenCalled();
+      expect(mockPush).not.toHaveBeenCalled();
     });
 
     it("sets fieldErrors.zip and skips API when zip is empty", async () => {
@@ -114,6 +115,7 @@ describe("useCreateListing", () => {
 
       expect(result.current.fieldErrors).toEqual({});
       expect(createListingDraft).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith("/provider/listings");
     });
   });
 
@@ -141,6 +143,7 @@ describe("useCreateListing", () => {
         }),
         PHOTO_FILE,
       );
+      expect(mockPush).toHaveBeenCalledWith("/provider/listings");
     });
 
     it("passes only the first photo file to createListingDraft", async () => {

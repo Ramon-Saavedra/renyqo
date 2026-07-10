@@ -183,6 +183,7 @@ export function useCreateListing(): UseCreateListingResult {
     try {
       const created = await createDraftFromListingDraft(draft, title);
       draftIdRef.current = created.id;
+      router.push("/provider/listings");
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
         const mapped = mapBackendMessage(err.message);
@@ -199,7 +200,7 @@ export function useCreateListing(): UseCreateListingResult {
     } finally {
       setSubmitStatus("idle");
     }
-  }, []);
+  }, [router]);
 
   const publish = useCallback(
     async (draft: ListingDraft, title: string) => {
