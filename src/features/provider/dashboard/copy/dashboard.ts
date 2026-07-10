@@ -46,6 +46,7 @@ export const CANDIDATE_BADGE_META: Record<CandidateBadge, CandidateBadgeMeta> =
   };
 
 export const dashboardCopy = {
+  loading: "Dashboard wird vorbereitet …",
   profile: {
     name: "Sabine Kessler",
     company: "Kessler Immobilien GbR",
