@@ -61,7 +61,7 @@ export function ActionsBar({
         </div>
         <div className={BTN_GROUP_CLASS}>
           <LoadingButton
-            variant="ghost"
+            variant="secondary"
             disabled={isBusy}
             loading={submitStatus === "saving"}
             loadingLabel={copy.savingDraft}

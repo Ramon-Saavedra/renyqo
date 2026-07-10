@@ -26,6 +26,7 @@ const CELL_CLASS = "col-start-1 row-start-1 flex items-center justify-center";
 
 const SUCCESS_CLASS: Record<ButtonVariant, string> = {
   primary: "border-success bg-success text-primary-foreground",
+  secondary: "border-success bg-success text-primary-foreground",
   ghost: "border border-success text-success",
 };
 
