@@ -5,26 +5,26 @@ export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
 export type SmokingPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
 
 export interface CreateListingPayload {
-  readonly city: string;
-  readonly zip: string;
+  readonly city?: string | undefined;
+  readonly zip?: string | undefined;
   readonly street?: string | undefined;
-  readonly showExactAddress: boolean;
-  readonly objectType: ObjectTypeBackend;
-  readonly livingArea: number;
-  readonly rooms: number;
-  readonly bedrooms: number | null;
-  readonly coldRent: number;
+  readonly showExactAddress?: boolean | undefined;
+  readonly objectType?: ObjectTypeBackend | undefined;
+  readonly livingArea?: number | undefined;
+  readonly rooms?: number | undefined;
+  readonly bedrooms?: number | null | undefined;
+  readonly coldRent?: number | undefined;
   readonly additionalCosts?: number | undefined;
   readonly deposit?: number | undefined;
-  readonly availableFrom: string;
-  readonly title: string;
-  readonly shortDescription: string;
-  readonly minimumHouseholdNetIncome: number | null;
-  readonly schufaRequired: boolean;
-  readonly incomeProofRequired: boolean;
-  readonly suitableForPeopleCount: number | null;
-  readonly petsPolicy: PetPolicyBackend;
-  readonly smokingPolicy: SmokingPolicyBackend;
+  readonly availableFrom?: string | undefined;
+  readonly title?: string | undefined;
+  readonly shortDescription?: string | undefined;
+  readonly minimumHouseholdNetIncome?: number | null | undefined;
+  readonly schufaRequired?: boolean | undefined;
+  readonly incomeProofRequired?: boolean | undefined;
+  readonly suitableForPeopleCount?: number | null | undefined;
+  readonly petsPolicy?: PetPolicyBackend | undefined;
+  readonly smokingPolicy?: SmokingPolicyBackend | undefined;
 }
 
 export interface CreatedListing {

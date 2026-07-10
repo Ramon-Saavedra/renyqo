@@ -83,7 +83,7 @@ html {
   --spacing-section: 4rem;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   :root {
     --gutter: 2.5rem;
   }

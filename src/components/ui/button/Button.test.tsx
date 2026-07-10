@@ -52,6 +52,15 @@ describe("Button", () => {
       expect(button.className).toContain("text-foreground-secondary");
       expect(button.className).not.toContain("bg-primary");
     });
+
+    it("applies the secondary variant when requested", () => {
+      render(<Button variant="secondary">Secondary</Button>);
+      const button = screen.getByRole("button", { name: "Secondary" });
+
+      expect(button.className).toContain("bg-primary-tint");
+      expect(button.className).toContain("border-primary-soft");
+      expect(button.className).toContain("text-primary");
+    });
   });
 
   describe("interaction", () => {

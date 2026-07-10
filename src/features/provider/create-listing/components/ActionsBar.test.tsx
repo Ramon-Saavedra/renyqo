@@ -41,8 +41,12 @@ describe("ActionsBar", () => {
     });
 
     expect((publishButton as HTMLButtonElement).disabled).toBe(false);
-    expect(
-      screen.getByRole("button", { name: "Als Entwurf speichern" }),
-    ).toBeInstanceOf(HTMLButtonElement);
+    const draftButton = screen.getByRole("button", {
+      name: "Als Entwurf speichern",
+    });
+
+    expect(draftButton).toBeInstanceOf(HTMLButtonElement);
+    expect(draftButton.className).toContain("bg-primary-tint");
+    expect(draftButton.className).toContain("border-primary-soft");
   });
 });
