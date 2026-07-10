@@ -20,6 +20,7 @@ import type {
 } from "../types";
 import { ListingRow } from "./ListingRow";
 import { ListingsEmptyState } from "./ListingsEmptyState";
+import { ListingsLoadingSkeleton } from "./ListingsLoadingSkeleton";
 import { ListingsHero } from "./ListingsHero";
 import { ListingsToolbar } from "./ListingsToolbar";
 import { ListingsTopbarActions } from "./ListingsTopbarActions";
@@ -225,9 +226,7 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
         />
 
         {fetchStatus === "loading" ? (
-          <div className="rounded-md border border-border bg-background px-6 py-10 text-caption text-foreground-secondary">
-            Mietobjekte werden geladen …
-          </div>
+          <ListingsLoadingSkeleton />
         ) : fetchStatus === "error" ? (
           <div className="rounded-md border border-border bg-background px-6 py-10 text-caption text-foreground-secondary">
             {fetchError}

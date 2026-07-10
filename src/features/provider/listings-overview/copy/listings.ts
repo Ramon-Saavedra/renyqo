@@ -64,6 +64,7 @@ export const SORT_OPTIONS: readonly SortOption[] = [
 ];
 
 export const listingsCopy = {
+  loading: "Mietobjekte werden geladen …",
   topbar: {
     back: "Zurück zum Dashboard",
     backHref: "/provider/dashboard",
