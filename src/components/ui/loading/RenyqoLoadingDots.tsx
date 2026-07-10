@@ -10,7 +10,10 @@ export interface RenyqoLoadingDotsProps {
  * The "alignment dots" motif — three dots that settle into place while data is
  * being sorted or processed. Replaces spinners across the Renyqo loading system.
  */
-export function RenyqoLoadingDots({ label, className }: RenyqoLoadingDotsProps) {
+export function RenyqoLoadingDots({
+  label,
+  className,
+}: RenyqoLoadingDotsProps) {
   return (
     <span
       className={cn(

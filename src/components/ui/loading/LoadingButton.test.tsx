@@ -31,9 +31,9 @@ describe("LoadingButton", () => {
       </LoadingButton>,
     );
 
-    expect(
-      screen.getByRole("button", { name: "Gespeichert" }),
-    ).toBeInstanceOf(HTMLButtonElement);
+    expect(screen.getByRole("button", { name: "Gespeichert" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
   });
 
   it("adds the ghost hook for the ghost variant", () => {
@@ -42,8 +42,8 @@ describe("LoadingButton", () => {
         Entwurf
       </LoadingButton>,
     );
-    expect(
-      screen.getByRole("button").classList.contains("is-ghost"),
-    ).toBe(true);
+    expect(screen.getByRole("button").classList.contains("is-ghost")).toBe(
+      true,
+    );
   });
 });

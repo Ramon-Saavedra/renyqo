@@ -4,8 +4,10 @@ import { buttonClass, type ButtonVariant } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 
-interface LoadingButtonProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> {
+interface LoadingButtonProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "children"
+> {
   variant?: ButtonVariant;
   /** Show the processing state (label swap + alignment dots + glint). */
   loading?: boolean;
@@ -92,7 +94,11 @@ export function LoadingButton({
           </span>
         </span>
         <span
-          className={cn(CELL_CLASS, "gap-2", state !== "success" && "invisible")}
+          className={cn(
+            CELL_CLASS,
+            "gap-2",
+            state !== "success" && "invisible",
+          )}
           aria-hidden={state !== "success"}
         >
           <AppIcon
