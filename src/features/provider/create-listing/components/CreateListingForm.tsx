@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
 import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
 import { useActiveStepFromScroll } from "../hooks/useActiveStepFromScroll";
-import { useAutoSaveIndicator } from "../hooks/useAutoSaveIndicator";
 import { useAutoTitle } from "../hooks/useAutoTitle";
 import { useCreateListing } from "../hooks/useCreateListing";
-import { useListingDraft } from "../hooks/useListingDraft";
+import { INITIAL_DRAFT, useListingDraft } from "../hooks/useListingDraft";
 import type {
   ListingDraft,
   ListingDraftErrors,
@@ -21,11 +20,60 @@ import { AnforderungenSection } from "./AnforderungenSection";
 import { CreateListingHero } from "./CreateListingHero";
 import { ObjektdatenSection } from "./ObjektdatenSection";
 import { PreviewCard } from "./PreviewCard";
-import { TopbarActions } from "./TopbarActions";
+import { type ListingSaveStatus, TopbarActions } from "./TopbarActions";
+
+function arePhotosEqual(
+  left: ReadonlyArray<ListingPhoto>,
+  right: ReadonlyArray<ListingPhoto>,
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every((photo, index) => {
+      const other = right[index];
+      return (
+        other !== undefined &&
+        photo.id === other.id &&
+        photo.src === other.src &&
+        photo.file === other.file
+      );
+    })
+  );
+}
+
+function areDraftsEqual(left: ListingDraft, right: ListingDraft): boolean {
+  return (
+    left.city === right.city &&
+    left.zip === right.zip &&
+    left.street === right.street &&
+    left.hideAddress === right.hideAddress &&
+    left.objectType === right.objectType &&
+    left.area === right.area &&
+    left.rooms === right.rooms &&
+    left.bedrooms === right.bedrooms &&
+    left.price === right.price &&
+    left.additionalCosts === right.additionalCosts &&
+    left.deposit === right.deposit &&
+    left.availableFrom === right.availableFrom &&
+    left.titleOverride === right.titleOverride &&
+    left.description === right.description &&
+    arePhotosEqual(left.photos, right.photos) &&
+    left.minIncome === right.minIncome &&
+    left.schufa === right.schufa &&
+    left.income === right.income &&
+    left.adults === right.adults &&
+    left.kids === right.kids &&
+    left.pets === right.pets &&
+    left.smoking === right.smoking &&
+    left.legalAccepted === right.legalAccepted
+  );
+}
 
 export function CreateListingForm() {
-  const { draft, setField, setPhotos } = useListingDraft();
-  const { status } = useAutoSaveIndicator([draft]);
+  const [cleanDraft, setCleanDraft] = useState<ListingDraft>(INITIAL_DRAFT);
+  const [cleanStatus, setCleanStatus] = useState<ListingSaveStatus>("idle");
+  const [hasSaveError, setHasSaveError] = useState(false);
+  const { draft, canUndo, canRedo, setField, setPhotos, undo, redo } =
+    useListingDraft();
   const activeStepId = useActiveStepFromScroll(SECTION_IDS);
   const { autoTitle } = useAutoTitle({
     objectType: draft.objectType,
@@ -47,23 +95,82 @@ export function CreateListingForm() {
     value: ListingDraft[K],
   ) => {
     setField(field, value);
+    setHasSaveError(false);
     clearFieldError(field as keyof ListingDraftErrors);
   };
 
   const handleSetPhotos = useCallback(
     (photos: ReadonlyArray<ListingPhoto>) => {
       setPhotos(photos);
+      setHasSaveError(false);
     },
     [setPhotos],
   );
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
+  const hasUnsavedChanges = !areDraftsEqual(draft, cleanDraft);
+  const saveStatus: ListingSaveStatus = hasSaveError
+    ? "error"
+    : hasUnsavedChanges
+      ? "dirty"
+      : cleanStatus;
+
+  const handleSaveDraft = useCallback(async () => {
+    const saved = await saveDraft(draft, finalTitle);
+    if (saved) {
+      setCleanDraft(draft);
+      setCleanStatus("saved");
+      setHasSaveError(false);
+    } else {
+      setHasSaveError(true);
+    }
+  }, [draft, finalTitle, saveDraft]);
+
+  const handleUndo = useCallback(() => {
+    undo();
+    setHasSaveError(false);
+  }, [undo]);
+
+  const handleRedo = useCallback(() => {
+    redo();
+    setHasSaveError(false);
+  }, [redo]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      const commandPressed = event.ctrlKey || event.metaKey;
+      const isUndo = commandPressed && !event.shiftKey && key === "z";
+      const isRedoByY = commandPressed && !event.shiftKey && key === "y";
+      const isRedoByShiftZ = event.metaKey && event.shiftKey && key === "z";
+
+      if (isUndo && canUndo) {
+        event.preventDefault();
+        handleUndo();
+        return;
+      }
+
+      if ((isRedoByY || isRedoByShiftZ) && canRedo) {
+        event.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [canRedo, canUndo, handleRedo, handleUndo]);
 
   return (
     <>
-      <AppTopbar className="mb-section">
-        <TopbarActions status={status} />
+      <AppTopbar className="sticky top-0 z-30 mb-section bg-background">
+        <TopbarActions
+          status={saveStatus}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+        />
       </AppTopbar>
 
       <div className="px-gutter">
@@ -94,7 +201,7 @@ export function CreateListingForm() {
             <ActionsBar
               missing={missing}
               canPublish={canPublish}
-              onSaveDraft={() => saveDraft(draft, finalTitle)}
+              onSaveDraft={handleSaveDraft}
               onPublish={() => publish(draft, finalTitle)}
               submitStatus={submitStatus}
               error={error}

@@ -83,11 +83,13 @@ describe("useCreateListing", () => {
   describe("saveDraft — zod validation", () => {
     it("sets fieldErrors.city and skips API when city is empty", async () => {
       const { result } = renderHook(() => useCreateListing());
+      let saved: boolean | undefined;
 
       await act(async () => {
-        await result.current.saveDraft(INITIAL_DRAFT, "Titel");
+        saved = await result.current.saveDraft(INITIAL_DRAFT, "Titel");
       });
 
+      expect(saved).toBe(false);
       expect(result.current.fieldErrors.city).toBeTruthy();
       expect(createListingDraft).not.toHaveBeenCalled();
       expect(mockPush).not.toHaveBeenCalled();
@@ -108,11 +110,13 @@ describe("useCreateListing", () => {
     it("clears fieldErrors and calls API when city and zip are present", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const { result } = renderHook(() => useCreateListing());
+      let saved: boolean | undefined;
 
       await act(async () => {
-        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+        saved = await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
       });
 
+      expect(saved).toBe(true);
       expect(result.current.fieldErrors).toEqual({});
       expect(createListingDraft).toHaveBeenCalledTimes(1);
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
@@ -215,11 +219,13 @@ describe("useCreateListing", () => {
     it("sets network error message on status 0", async () => {
       vi.mocked(createListingDraft).mockRejectedValue(new ApiError(0, ""));
       const { result } = renderHook(() => useCreateListing());
+      let saved: boolean | undefined;
 
       await act(async () => {
-        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+        saved = await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
       });
 
+      expect(saved).toBe(false);
       expect(result.current.error).toMatch(/Netzwerkfehler/);
     });
 
