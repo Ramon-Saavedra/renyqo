@@ -71,9 +71,7 @@ export function TopbarActions({
             strokeWidth={1.8}
             decorative
           />
-          <span className="sr-only lg:not-sr-only">
-            {STATUS_LABEL[status]}
-          </span>
+          <span className="sr-only lg:not-sr-only">{STATUS_LABEL[status]}</span>
         </span>
       )}
       <div className="flex items-center gap-1.5">
