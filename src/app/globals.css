@@ -364,3 +364,290 @@ body {
     animation: none;
   }
 }
+
+/* =====================================================================
+   Renyqo loading system (Claude Design · "Lade- & Verarbeitungszustände")
+   Signature motif: calm skeleton veil + single light sweep + alignment
+   dots. No spinners. Animations live here once; components stay page-free.
+   Colors derive from existing tokens only — primary alpha variants use
+   color-mix (there is no --primary-rgb token in this project).
+   ===================================================================== */
+
+/* Reveal wrapper: real content sits beneath a skeleton veil */
+.reveal-wrap {
+  position: relative;
+  border-radius: var(--radius-md);
+}
+.reveal-wrap:not(.is-loaded) {
+  animation: rq-ring-pulse 4.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation-delay: var(--rq-stagger, 0s);
+}
+.reveal-wrap.is-loaded {
+  animation: none !important;
+}
+
+.real {
+  position: relative;
+  z-index: 1;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: inherit;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 620ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 620ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.is-loaded .veil {
+  opacity: 0;
+  transform: translateY(-3px) scale(0.994);
+  pointer-events: none;
+}
+
+/* Standalone loader: the veil sits in normal flow and sizes itself, so no
+   underlying content is needed while data is still loading. */
+.veil.veil-static {
+  position: relative;
+  inset: auto;
+}
+
+/* Content appearing after a standalone loader resolves */
+.rq-fade-in {
+  animation: rq-fade-in 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes rq-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Horizontal light sweep (default) */
+.veil::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 42%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 32%,
+    color-mix(in srgb, var(--primary) 8%, transparent) 46%,
+    color-mix(in srgb, var(--primary) 15%, transparent) 50%,
+    color-mix(in srgb, var(--primary) 8%, transparent) 54%,
+    transparent 68%,
+    transparent 100%
+  );
+  animation: rq-sweep-h 4.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation-delay: var(--rq-stagger, 0s);
+}
+
+/* Vertical light sweep (for tall / full-page veils) */
+.veil.veil-v::before {
+  top: -45%;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 32%,
+    color-mix(in srgb, var(--primary) 7%, transparent) 46%,
+    color-mix(in srgb, var(--primary) 12%, transparent) 50%,
+    color-mix(in srgb, var(--primary) 7%, transparent) 54%,
+    transparent 68%,
+    transparent 100%
+  );
+  animation: rq-sweep-v 5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  animation-delay: var(--rq-stagger, 0s);
+}
+
+@keyframes rq-sweep-h {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  46% {
+    transform: translateX(330%);
+    opacity: 1;
+  }
+  56% {
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(330%);
+    opacity: 0;
+  }
+}
+@keyframes rq-sweep-v {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  46% {
+    transform: translateY(230%);
+    opacity: 1;
+  }
+  56% {
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(230%);
+    opacity: 0;
+  }
+}
+@keyframes rq-ring-pulse {
+  0%,
+  40% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+  47% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+  56%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 0%, transparent);
+  }
+}
+
+/* Alignment dots — the "sorting into place" motif */
+.align-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 10px;
+}
+.align-dots i {
+  display: block;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.5;
+  animation: rq-align-dot 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.align-dots i:nth-child(1) {
+  animation-delay: 0s;
+}
+.align-dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.align-dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+/* On a filled button the dots follow the label colour, not the accent */
+.align-dots-current i {
+  background: currentColor;
+}
+@keyframes rq-align-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  35% {
+    transform: translateY(-3px);
+    opacity: 0.95;
+  }
+  65% {
+    transform: translateY(1px);
+    opacity: 0.95;
+  }
+  85% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+}
+
+/* Skeleton primitives that live inside a veil */
+.sk {
+  background: var(--background-muted);
+  border-radius: var(--radius-sm);
+}
+.sk-circle {
+  background: var(--background-muted);
+  border-radius: 50%;
+}
+.sk-pill {
+  background: var(--background-muted);
+  border-radius: 999px;
+}
+
+/* Button processing state: label swaps, a faint glint sweeps once */
+.loading-btn {
+  position: relative;
+  overflow: hidden;
+}
+.loading-btn.is-loading {
+  cursor: progress;
+}
+.loading-btn.is-loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: -60%;
+  width: 45%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    color-mix(in srgb, var(--primary-foreground) 14%, transparent),
+    transparent
+  );
+  animation: rq-sweep-h 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.loading-btn.is-loading.is-ghost::after {
+  background: linear-gradient(
+    100deg,
+    transparent,
+    color-mix(in srgb, var(--primary) 10%, transparent),
+    transparent
+  );
+}
+.rq-check {
+  animation: rq-check-in 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes rq-check-in {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-wrap,
+  .align-dots i,
+  .loading-btn.is-loading::after,
+  .rq-check,
+  .rq-fade-in {
+    animation: none !important;
+  }
+  .veil::before {
+    display: none;
+  }
+  .veil {
+    transition: opacity 120ms linear;
+  }
+}
