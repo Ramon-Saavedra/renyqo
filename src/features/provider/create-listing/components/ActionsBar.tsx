@@ -1,15 +1,16 @@
 import { CheckCircle2 } from "lucide-react";
-import { buttonClass } from "@/components/ui/button/Button";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { LoadingButton } from "@/components/ui/loading/LoadingButton";
 import { createListingCopy } from "../copy/create-listing";
+import type { SubmitStatus } from "../hooks/useCreateListing";
 
 interface ActionsBarProps {
   missing: ReadonlyArray<string>;
   canPublish: boolean;
   onSaveDraft?: () => void;
   onPublish?: () => void;
-  isLoading?: boolean;
+  submitStatus?: SubmitStatus;
   error?: string | null;
 }
 
@@ -28,10 +29,11 @@ export function ActionsBar({
   canPublish,
   onSaveDraft,
   onPublish,
-  isLoading = false,
+  submitStatus = "idle",
   error,
 }: ActionsBarProps) {
   const copy = createListingCopy.abschluss.actions;
+  const isBusy = submitStatus !== "idle";
   return (
     <div className={WRAPPER_CLASS}>
       <div className={ROW_CLASS}>
@@ -58,22 +60,24 @@ export function ActionsBar({
           )}
         </div>
         <div className={BTN_GROUP_CLASS}>
-          <button
-            type="button"
-            disabled={isLoading}
+          <LoadingButton
+            variant="ghost"
+            disabled={isBusy}
+            loading={submitStatus === "saving"}
+            loadingLabel={copy.savingDraft}
             onClick={onSaveDraft}
-            className={buttonClass("ghost")}
           >
             {copy.saveDraft}
-          </button>
-          <button
-            type="button"
-            disabled={isLoading}
+          </LoadingButton>
+          <LoadingButton
+            variant="primary"
+            disabled={isBusy}
+            loading={submitStatus === "publishing"}
+            loadingLabel={copy.publishing}
             onClick={onPublish}
-            className={buttonClass("primary")}
           >
             {copy.publish}
-          </button>
+          </LoadingButton>
         </div>
       </div>
       {error && <FormAlert variant="error" message={error} className="mt-3" />}
