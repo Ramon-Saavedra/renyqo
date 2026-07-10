@@ -170,36 +170,40 @@ export function useCreateListing(): UseCreateListingResult {
     });
   }, []);
 
-  const saveDraft = useCallback(async (draft: ListingDraft, title: string) => {
-    if (draftIdRef.current) return;
-    setError(null);
-    const result = draftSaveSchema.safeParse(draft);
-    if (!result.success) {
-      setFieldErrors(mapZodErrors(result.error.flatten().fieldErrors));
-      return;
-    }
-    setFieldErrors({});
-    setSubmitStatus("saving");
-    try {
-      const created = await createDraftFromListingDraft(draft, title);
-      draftIdRef.current = created.id;
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 400) {
-        const mapped = mapBackendMessage(err.message);
-        if (hasErrors(mapped)) {
-          setFieldErrors(mapped);
-        } else {
-          setError("Bitte prüfe deine Eingaben");
-        }
-      } else if (err instanceof ApiError && err.status === 0) {
-        setError("Netzwerkfehler — bitte versuche es erneut");
-      } else {
-        setError("Fehler beim Speichern");
+  const saveDraft = useCallback(
+    async (draft: ListingDraft, title: string) => {
+      if (draftIdRef.current) return;
+      setError(null);
+      const result = draftSaveSchema.safeParse(draft);
+      if (!result.success) {
+        setFieldErrors(mapZodErrors(result.error.flatten().fieldErrors));
+        return;
       }
-    } finally {
-      setSubmitStatus("idle");
-    }
-  }, []);
+      setFieldErrors({});
+      setSubmitStatus("saving");
+      try {
+        const created = await createDraftFromListingDraft(draft, title);
+        draftIdRef.current = created.id;
+        router.push("/provider/listings");
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 400) {
+          const mapped = mapBackendMessage(err.message);
+          if (hasErrors(mapped)) {
+            setFieldErrors(mapped);
+          } else {
+            setError("Bitte prüfe deine Eingaben");
+          }
+        } else if (err instanceof ApiError && err.status === 0) {
+          setError("Netzwerkfehler — bitte versuche es erneut");
+        } else {
+          setError("Fehler beim Speichern");
+        }
+      } finally {
+        setSubmitStatus("idle");
+      }
+    },
+    [router],
+  );
 
   const publish = useCallback(
     async (draft: ListingDraft, title: string) => {
