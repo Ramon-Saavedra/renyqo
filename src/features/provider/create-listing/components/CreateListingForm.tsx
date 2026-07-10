@@ -117,13 +117,15 @@ export function CreateListingForm() {
       : cleanStatus;
 
   const handleSaveDraft = useCallback(async () => {
-    const saved = await saveDraft(draft, finalTitle);
-    if (saved) {
+    const saveResult = await saveDraft(draft, finalTitle);
+    if (saveResult === "saved") {
       setCleanDraft(draft);
       setCleanStatus("saved");
       setHasSaveError(false);
-    } else {
+    } else if (saveResult === "error") {
       setHasSaveError(true);
+    } else {
+      setHasSaveError(false);
     }
   }, [draft, finalTitle, saveDraft]);
 

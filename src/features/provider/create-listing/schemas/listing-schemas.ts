@@ -1,13 +1,7 @@
 import { z } from "zod";
-import { createListingCopy, OBJECT_TYPES } from "../copy/create-listing";
+import { createListingCopy } from "../copy/create-listing";
 
 const v = createListingCopy.validation;
-
-export const draftSaveSchema = z.object({
-  objectType: z.enum(OBJECT_TYPES),
-  city: z.string().min(1, v.city),
-  zip: z.string().min(1, v.zip),
-});
 
 export const publishSchema = z.object({
   city: z.string().min(1, v.city),
@@ -36,5 +30,4 @@ export const publishSchema = z.object({
   legalAccepted: z.literal(true, v.legalAccepted),
 });
 
-export type DraftSaveInput = z.input<typeof draftSaveSchema>;
 export type PublishInput = z.input<typeof publishSchema>;

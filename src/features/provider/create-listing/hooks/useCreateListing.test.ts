@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { INITIAL_DRAFT } from "./useListingDraft";
 import type { ListingDraft, ListingPhoto } from "./useListingDraft";
-import { useCreateListing } from "./useCreateListing";
+import { useCreateListing, type DraftSaveResult } from "./useCreateListing";
 
 const mockPush = vi.hoisted(() => vi.fn());
 
@@ -66,7 +66,10 @@ describe("useCreateListing", () => {
       const { result } = renderHook(() => useCreateListing());
 
       await act(async () => {
-        await result.current.saveDraft(INITIAL_DRAFT, "Titel");
+        await result.current.publish(
+          { ...VALID_DRAFT, city: "", zip: "" },
+          "Titel",
+        );
       });
 
       expect(result.current.fieldErrors.city).toBeTruthy();
@@ -80,46 +83,105 @@ describe("useCreateListing", () => {
     });
   });
 
-  describe("saveDraft — zod validation", () => {
-    it("sets fieldErrors.city and skips API when city is empty", async () => {
+  describe("saveDraft — partial content", () => {
+    it("returns empty and skips API when no meaningful content exists", async () => {
       const { result } = renderHook(() => useCreateListing());
-      let saved: boolean | undefined;
+      let saved: DraftSaveResult | undefined;
 
       await act(async () => {
         saved = await result.current.saveDraft(INITIAL_DRAFT, "Titel");
       });
 
-      expect(saved).toBe(false);
-      expect(result.current.fieldErrors.city).toBeTruthy();
+      expect(saved).toBe("empty");
+      expect(result.current.error).toBe("Es gibt noch nichts zu speichern.");
+      expect(result.current.fieldErrors).toEqual({});
       expect(createListingDraft).not.toHaveBeenCalled();
       expect(mockPush).not.toHaveBeenCalled();
     });
 
-    it("sets fieldErrors.zip and skips API when zip is empty", async () => {
+    it("does not count default objectType alone as meaningful content", async () => {
       const { result } = renderHook(() => useCreateListing());
-      const draft = { ...INITIAL_DRAFT, city: "Berlin", zip: "" };
+      let saved: DraftSaveResult | undefined;
 
       await act(async () => {
-        await result.current.saveDraft(draft, "Titel");
+        saved = await result.current.saveDraft(
+          { ...INITIAL_DRAFT, objectType: "wohnung" },
+          "Wohnung",
+        );
       });
 
-      expect(result.current.fieldErrors.zip).toBeTruthy();
+      expect(saved).toBe("empty");
+      expect(result.current.error).toBe("Es gibt noch nichts zu speichern.");
       expect(createListingDraft).not.toHaveBeenCalled();
     });
 
-    it("clears fieldErrors and calls API when city and zip are present", async () => {
+    it("allows draft save when only city is present", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const { result } = renderHook(() => useCreateListing());
-      let saved: boolean | undefined;
+      let saved: DraftSaveResult | undefined;
 
       await act(async () => {
-        saved = await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+        saved = await result.current.saveDraft(
+          { ...INITIAL_DRAFT, city: "Berlin" },
+          "Wohnung in Berlin",
+        );
       });
 
-      expect(saved).toBe(true);
+      expect(saved).toBe("saved");
       expect(result.current.fieldErrors).toEqual({});
       expect(createListingDraft).toHaveBeenCalledTimes(1);
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          city: "Berlin",
+          title: "Wohnung in Berlin",
+        }),
+      );
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
+    });
+
+    it("omits empty and invalid optional fields from draft payload", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          {
+            ...INITIAL_DRAFT,
+            city: "Berlin",
+            street: "   ",
+            additionalCosts: "abc",
+            deposit: "",
+            availableFrom: "2026-02-31",
+            minIncome: "abc",
+          },
+          "Wohnung in Berlin",
+        );
+      });
+
+      const payload = vi.mocked(createListingDraft).mock.calls[0]?.[0];
+      expect(payload?.street).toBeUndefined();
+      expect(payload?.additionalCosts).toBeUndefined();
+      expect(payload?.deposit).toBeUndefined();
+      expect(payload?.availableFrom).toBeUndefined();
+      expect(payload?.minimumHouseholdNetIncome).toBeUndefined();
+    });
+
+    it("converts valid availableFrom to ISO 8601 for draft save", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...INITIAL_DRAFT, city: "Berlin", availableFrom: "2026-07-01" },
+          "Wohnung in Berlin",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          availableFrom: "2026-07-01T00:00:00.000Z",
+        }),
+      );
     });
   });
 
@@ -141,8 +203,6 @@ describe("useCreateListing", () => {
           livingArea: 65,
           rooms: 3,
           coldRent: 1100,
-          schufaRequired: false,
-          incomeProofRequired: false,
           title: "Mein Titel",
         }),
         PHOTO_FILE,
@@ -219,13 +279,13 @@ describe("useCreateListing", () => {
     it("sets network error message on status 0", async () => {
       vi.mocked(createListingDraft).mockRejectedValue(new ApiError(0, ""));
       const { result } = renderHook(() => useCreateListing());
-      let saved: boolean | undefined;
+      let saved: DraftSaveResult | undefined;
 
       await act(async () => {
         saved = await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
       });
 
-      expect(saved).toBe(false);
+      expect(saved).toBe("error");
       expect(result.current.error).toMatch(/Netzwerkfehler/);
     });
 
@@ -467,7 +527,6 @@ describe("useCreateListing", () => {
     it.each([
       ["erlaubt", "ALLOWED"],
       ["keine", "PREFER_NOT"],
-      ["absprache", "BY_ARRANGEMENT"],
     ] as const)(
       "maps pets '%s' to petsPolicy '%s'",
       async (input, expected) => {
@@ -489,7 +548,7 @@ describe("useCreateListing", () => {
 
     it.each([
       ["erlaubt", "ALLOWED"],
-      ["absprache", "BY_ARRANGEMENT"],
+      ["keine", "PREFER_NOT"],
     ] as const)(
       "maps smoking '%s' to smokingPolicy '%s'",
       async (input, expected) => {
@@ -525,7 +584,7 @@ describe("useCreateListing", () => {
       );
     });
 
-    it("sets suitableForPeopleCount to null when adults and kids are both null", async () => {
+    it("omits suitableForPeopleCount when adults and kids are both null", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
       const { result } = renderHook(() => useCreateListing());
 
@@ -536,9 +595,8 @@ describe("useCreateListing", () => {
         );
       });
 
-      expect(createListingDraft).toHaveBeenCalledWith(
-        expect.objectContaining({ suitableForPeopleCount: null }),
-      );
+      const payload = vi.mocked(createListingDraft).mock.calls[0]?.[0];
+      expect(payload?.suitableForPeopleCount).toBeUndefined();
     });
   });
 });

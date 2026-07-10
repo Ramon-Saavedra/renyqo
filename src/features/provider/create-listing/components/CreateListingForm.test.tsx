@@ -132,6 +132,22 @@ describe("CreateListingForm", () => {
     expect(mockCreateListingDraft).toHaveBeenCalledTimes(1);
   });
 
+  it("shows an empty draft message without calling the backend", async () => {
+    const user = userEvent.setup();
+
+    render(<CreateListingForm />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Als Entwurf speichern" }),
+    );
+
+    expect(
+      await screen.findByText("Es gibt noch nichts zu speichern."),
+    ).toBeInstanceOf(HTMLElement);
+    expect(mockCreateListingDraft).not.toHaveBeenCalled();
+    expect(screen.queryByText("Speichern fehlgeschlagen")).toBeNull();
+  });
+
   it("shows an error state after a failed manual draft save", async () => {
     const user = userEvent.setup();
     mockCreateListingDraft.mockRejectedValue(new Error("server down"));
