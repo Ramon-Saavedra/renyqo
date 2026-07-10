@@ -53,6 +53,14 @@ export const createListingCopy = {
     title: "Erstes Mietobjekt anlegen",
     lead: "Erfasse die wichtigsten Daten deiner Immobilie. Du kannst jederzeit als Entwurf speichern und später weiterarbeiten — nichts wird veröffentlicht, bevor du es selbst freigibst.",
   },
+  headerNav: {
+    myListings: "Meine Objekte",
+    myListingsHref: "/provider/listings",
+    dashboard: "Dashboard",
+    dashboardHref: "/provider/dashboard",
+    leaveConfirm:
+      "Du hast ungespeicherte Änderungen. Möchtest du die Seite wirklich verlassen?",
+  },
   stepper: {
     ariaLabel: "Fortschritt",
     steps: [

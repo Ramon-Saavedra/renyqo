@@ -11,7 +11,7 @@ interface PreviewCardProps {
 }
 
 const KICKER_CLASS =
-  "flex items-center justify-between font-mono text-meta uppercase text-foreground-tertiary";
+  "flex items-start justify-between gap-2 font-mono text-meta uppercase text-foreground-tertiary";
 
 const CARD_CLASS =
   "overflow-hidden rounded-md border border-border bg-background";
@@ -69,8 +69,8 @@ export function PreviewCard({ draft, finalTitle }: PreviewCardProps) {
       className="sticky top-21 flex flex-col gap-3.5"
     >
       <div className={KICKER_CLASS}>
-        <span>{copy.kicker}</span>
-        <span>{copy.kickerTag}</span>
+        <span className="min-w-0">{copy.kicker}</span>
+        <span className="shrink-0 text-primary">{copy.kickerTag}</span>
       </div>
 
       <div className={CARD_CLASS}>
