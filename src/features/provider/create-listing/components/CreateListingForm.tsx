@@ -59,7 +59,6 @@ export function CreateListingForm() {
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
-  const isLoading = submitStatus !== "idle";
 
   return (
     <>
@@ -97,7 +96,7 @@ export function CreateListingForm() {
               canPublish={canPublish}
               onSaveDraft={() => saveDraft(draft, finalTitle)}
               onPublish={() => publish(draft, finalTitle)}
-              isLoading={isLoading}
+              submitStatus={submitStatus}
               error={error}
             />
           </div>
