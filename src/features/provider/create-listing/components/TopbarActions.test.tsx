@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { createListingCopy } from "../copy/create-listing";
 import { TopbarActions } from "./TopbarActions";
 
 function renderTopbarActions(
@@ -21,13 +22,19 @@ describe("TopbarActions", () => {
   it("renders the draft badge and back link without autosave copy", () => {
     renderTopbarActions();
 
-    expect(screen.getByText("Entwurf · Nicht öffentlich")).toBeInstanceOf(
-      HTMLElement,
-    );
+    const draftLabel = screen.getByText(createListingCopy.topbar.draft);
+
+    expect(draftLabel).toBeInstanceOf(HTMLElement);
+    expect(draftLabel.className).toContain("sr-only");
+    expect(draftLabel.className).toContain("lg:not-sr-only");
+    expect(draftLabel.parentElement?.className).toContain("normal-case");
+    expect(draftLabel.parentElement?.className).toContain("tracking-normal");
     expect(screen.queryByText("Automatisch gespeichert")).toBeNull();
     expect(screen.queryByText("Wird gespeichert")).toBeNull();
 
-    const link = screen.getByRole("link", { name: /Zurück/ });
+    const link = screen.getByRole("link", {
+      name: createListingCopy.topbar.back,
+    });
 
     expect(link.getAttribute("href")).toBe("/provider/get-started");
   });
@@ -35,19 +42,26 @@ describe("TopbarActions", () => {
   it("renders unsaved changes as a polite warning state", () => {
     renderTopbarActions({ status: "dirty" });
 
-    const liveRegion = screen
-      .getByText("Ungespeicherte Änderungen")
-      .closest("span");
+    const statusLabel = screen.getByText(
+      createListingCopy.topbar.unsavedChanges,
+    );
+    const liveRegion = statusLabel.closest("[aria-live='polite']");
 
+    expect(statusLabel.className).toContain("sr-only");
+    expect(statusLabel.className).toContain("lg:not-sr-only");
     expect(liveRegion).toBeInstanceOf(HTMLElement);
     expect(liveRegion?.getAttribute("aria-live")).toBe("polite");
     expect(liveRegion?.className).toContain("text-warning");
+    expect(liveRegion?.className).toContain("normal-case");
+    expect(liveRegion?.className).toContain("tracking-normal");
   });
 
   it("renders saved as a success state", () => {
     renderTopbarActions({ status: "saved" });
 
-    const liveRegion = screen.getByText("Gespeichert").closest("span");
+    const liveRegion = screen
+      .getByText(createListingCopy.topbar.saved)
+      .closest("[aria-live='polite']");
 
     expect(liveRegion).toBeInstanceOf(HTMLElement);
     expect(liveRegion?.className).toContain("text-success");
@@ -57,8 +71,8 @@ describe("TopbarActions", () => {
     renderTopbarActions({ status: "error" });
 
     const liveRegion = screen
-      .getByText("Speichern fehlgeschlagen")
-      .closest("span");
+      .getByText(createListingCopy.topbar.saveError)
+      .closest("[aria-live='polite']");
 
     expect(liveRegion).toBeInstanceOf(HTMLElement);
     expect(liveRegion?.className).toContain("text-danger");
@@ -67,13 +81,23 @@ describe("TopbarActions", () => {
   it("renders undo and redo controls with disabled states", () => {
     renderTopbarActions({ canUndo: false, canRedo: true });
 
-    const undo = screen.getByRole("button", { name: "Rückgängig" });
-    const redo = screen.getByRole("button", { name: "Wiederholen" });
+    const undoLabel = screen.getByText(createListingCopy.topbar.undo);
+    const redoLabel = screen.getByText(createListingCopy.topbar.redo);
+    const undo = screen.getByRole("button", {
+      name: createListingCopy.topbar.undo,
+    });
+    const redo = screen.getByRole("button", {
+      name: createListingCopy.topbar.redo,
+    });
 
     expect(undo).toBeInstanceOf(HTMLButtonElement);
     expect(redo).toBeInstanceOf(HTMLButtonElement);
     expect((undo as HTMLButtonElement).disabled).toBe(true);
     expect((redo as HTMLButtonElement).disabled).toBe(false);
+    expect(undoLabel.className).toContain("sr-only");
+    expect(redoLabel.className).toContain("sr-only");
+    expect(undoLabel.className).toContain("lg:not-sr-only");
+    expect(redoLabel.className).toContain("lg:not-sr-only");
   });
 
   it("calls undo and redo handlers when enabled", () => {
@@ -82,8 +106,12 @@ describe("TopbarActions", () => {
 
     renderTopbarActions({ canUndo: true, canRedo: true, onUndo, onRedo });
 
-    fireEvent.click(screen.getByRole("button", { name: "Rückgängig" }));
-    fireEvent.click(screen.getByRole("button", { name: "Wiederholen" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: createListingCopy.topbar.undo }),
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: createListingCopy.topbar.redo }),
+    );
 
     expect(onUndo).toHaveBeenCalledTimes(1);
     expect(onRedo).toHaveBeenCalledTimes(1);
