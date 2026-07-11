@@ -10,8 +10,11 @@ export interface DashboardObject {
   readonly livingArea: number;
   readonly rooms: string;
   readonly availableFrom: string | null;
+  readonly publishedAt: string | null;
+  readonly updatedAt: string | null;
   readonly status: DashboardObjectStatus;
   readonly activeApplications: number;
+  readonly coverImageUrl?: string | null;
 }
 
 export type CandidateBadge = "match" | "askback";

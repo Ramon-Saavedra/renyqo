@@ -47,6 +47,8 @@ export const CANDIDATE_BADGE_META: Record<CandidateBadge, CandidateBadgeMeta> =
 
 export const dashboardCopy = {
   loading: "Dashboard wird vorbereitet …",
+  error:
+    "Dashboard konnte nicht geladen werden. Bitte versuche es gleich erneut.",
   profile: {
     name: "Sabine Kessler",
     company: "Kessler Immobilien GbR",
@@ -100,6 +102,8 @@ export const dashboardCopy = {
     emptyAddress: "Lege ein Mietobjekt an, um Details zu sehen.",
     edit: "Bearbeiten",
     preview: "Vorschau",
+    publishedCaption: "Veröffentlicht am",
+    updatedCaption: "Zuletzt bearbeitet am",
     livingArea: "Wohnfläche",
     rooms: "Zimmer",
     coldRent: "Kaltmiete",

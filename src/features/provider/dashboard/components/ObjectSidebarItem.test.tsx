@@ -17,6 +17,8 @@ const publishedObject: DashboardObject = {
   livingArea: 60,
   rooms: "2",
   availableFrom: "01.08.2026",
+  publishedAt: "02.07.2026, 13:00",
+  updatedAt: "02.07.2026, 12:00",
   status: "published",
   activeApplications: 3,
 };

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Eye, Home, MapPin, Pencil, Share2 } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
+import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import {
   formatArea,
@@ -22,6 +24,8 @@ const HEAD_CLASS =
 const HEAD_LEFT_CLASS = "flex min-w-0 gap-5";
 const THUMB_CLASS =
   "hidden h-23 w-23 shrink-0 items-center justify-center rounded-md bg-background-muted text-foreground-tertiary sm:flex";
+const THUMB_IMAGE_CLASS =
+  "hidden h-23 w-23 shrink-0 rounded-md object-cover sm:block";
 const KICKER_CLASS =
   "inline-flex items-center gap-2 font-mono text-meta uppercase text-primary";
 const KICKER_PIP_CLASS = "h-1.5 w-1.5 rounded-full bg-primary";
@@ -34,8 +38,12 @@ const OBJ_TITLE_CLASS =
   "mt-2 mb-1 font-display text-heading-md font-medium text-foreground xl:text-title";
 const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-foreground-secondary";
-const ACTIONS_CLASS = "flex shrink-0 items-center gap-2";
-const ACTION_CLASS = `${buttonClass("ghost")} h-9 rounded-md border border-border-strong px-3.5`;
+const ACTIONS_CLASS = "flex shrink-0 items-start gap-2";
+const ACTION_CLASS = `${buttonClass("ghost")} h-8 w-8 justify-center rounded-md border border-border-strong px-0`;
+const ACTION_ICON_SIZE = 15;
+const ACTION_ICON_STROKE = 1.7;
+const TIMESTAMP_WRAP_CLASS = "flex flex-col items-start gap-1";
+const TIMESTAMP_CAPTION_CLASS = "text-xs leading-tight text-warning-vivid";
 
 const GRID_CLASS =
   "grid grid-cols-2 gap-x-4 gap-y-3 px-6 py-4 sm:grid-cols-3 xl:grid-cols-6";
@@ -51,6 +59,11 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   const { object: copy } = dashboardCopy;
   const isDraft = object.status === "draft";
   const shareUrl = `${siteConfig.url}/objekt/${object.id}`;
+
+  const timestampValue = isDraft ? object.updatedAt : object.publishedAt;
+  const timestampCaption = isDraft
+    ? copy.updatedCaption
+    : copy.publishedCaption;
 
   const stats = [
     { id: "area", dt: copy.livingArea, dd: formatArea(object.livingArea) },
@@ -72,9 +85,21 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
     <section className={CARD_CLASS}>
       <div className={HEAD_CLASS}>
         <div className={HEAD_LEFT_CLASS}>
-          <div aria-hidden="true" className={THUMB_CLASS}>
-            <AppIcon icon={Home} size={28} strokeWidth={1.4} decorative />
-          </div>
+          {object.coverImageUrl ? (
+            <Image
+              src={object.coverImageUrl}
+              alt=""
+              aria-hidden="true"
+              width={184}
+              height={184}
+              quality={90}
+              className={THUMB_IMAGE_CLASS}
+            />
+          ) : (
+            <div aria-hidden="true" className={THUMB_CLASS}>
+              <AppIcon icon={Home} size={28} strokeWidth={1.4} decorative />
+            </div>
+          )}
           <div className="min-w-0">
             <div className={KICKER_ROW_CLASS}>
               <span className={KICKER_CLASS}>
@@ -119,13 +144,40 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
         </div>
 
         <div className={ACTIONS_CLASS}>
-          <Link href="/provider/listings/new" className={ACTION_CLASS}>
-            <AppIcon icon={Pencil} size={13} strokeWidth={1.6} decorative />
-            {copy.edit}
+          {timestampValue && (
+            <span className={TIMESTAMP_WRAP_CLASS}>
+              <DateTimeBadge
+                value={timestampValue}
+                title={`${timestampCaption} ${timestampValue}`}
+              />
+              <span className={TIMESTAMP_CAPTION_CLASS}>
+                {timestampCaption}
+              </span>
+            </span>
+          )}
+          <Link
+            href="/provider/listings/new"
+            className={ACTION_CLASS}
+            aria-label={copy.edit}
+          >
+            <AppIcon
+              icon={Pencil}
+              size={ACTION_ICON_SIZE}
+              strokeWidth={ACTION_ICON_STROKE}
+              decorative
+            />
           </Link>
-          <Link href="/provider/listings" className={ACTION_CLASS}>
-            <AppIcon icon={Eye} size={13} strokeWidth={1.6} decorative />
-            {copy.preview}
+          <Link
+            href="/provider/listings"
+            className={ACTION_CLASS}
+            aria-label={copy.preview}
+          >
+            <AppIcon
+              icon={Eye}
+              size={ACTION_ICON_SIZE}
+              strokeWidth={ACTION_ICON_STROKE}
+              decorative
+            />
           </Link>
         </div>
       </div>
