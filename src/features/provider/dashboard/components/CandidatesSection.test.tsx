@@ -60,4 +60,14 @@ describe("CandidatesSection", () => {
     ).not.toBeNull();
     expect(screen.queryByText("Anna Lehmann")).toBeNull();
   });
+
+  it("renders five empty slots when no object is selected", () => {
+    render(<CandidatesSection object={null} candidates={candidates} />);
+
+    expect(screen.getByText("Passende Kandidaten")).not.toBeNull();
+    expect(screen.queryByText("Anna Lehmann")).toBeNull();
+    expect(
+      screen.getAllByText("Platz frei für passende Bewerbung"),
+    ).toHaveLength(5);
+  });
 });

@@ -96,6 +96,8 @@ export const dashboardCopy = {
   },
   object: {
     kicker: "Aktuell ausgewählt",
+    emptyTitle: "Noch keine Mietobjekte",
+    emptyAddress: "Lege ein Mietobjekt an, um Details zu sehen.",
     edit: "Bearbeiten",
     preview: "Vorschau",
     livingArea: "Wohnfläche",

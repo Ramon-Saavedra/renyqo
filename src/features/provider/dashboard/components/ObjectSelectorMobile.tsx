@@ -1,3 +1,5 @@
+import { Home } from "lucide-react";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { formatEUR } from "@/features/provider/listings-overview/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { dashboardCopy, OBJECT_STATUS_LABEL } from "../copy/dashboard";
@@ -14,8 +16,6 @@ const WRAP_CLASS = "mt-4 lg:hidden";
 const HEAD_CLASS =
   "mb-2 font-mono text-meta uppercase text-foreground-tertiary";
 const SCROLLER_CLASS = "scrollbar-slim flex gap-2 overflow-x-auto pb-1";
-const EMPTY_CLASS =
-  "rounded-md border border-border bg-background-subtle px-3.5 py-4 text-caption text-foreground-secondary";
 
 const CARD_BASE =
   "w-56 shrink-0 cursor-pointer rounded-md border px-3.5 py-3 text-left transition-colors focus-visible:outline-none focus-visible:shadow-focus";
@@ -38,6 +38,11 @@ const META_ACTIVE = "text-primary-foreground/80";
 
 const CAND_BASE = "mt-1.5 text-caption text-foreground-secondary";
 const CAND_ACTIVE = "text-primary-foreground/90";
+const SLOT_CLASS =
+  "flex h-26 w-56 shrink-0 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background-subtle px-3 text-center text-caption text-foreground-secondary";
+const SLOT_LOGO_CLASS =
+  "inline-flex h-6.5 w-6.5 items-center justify-center rounded-sm bg-primary-soft text-primary";
+const MOBILE_OBJECT_SLOTS = 5;
 
 export function ObjectSelectorMobile({
   objects,
@@ -46,65 +51,70 @@ export function ObjectSelectorMobile({
   onSelect,
 }: ObjectSelectorMobileProps) {
   const { sidebar } = dashboardCopy;
+  const visibleObjects = objects.slice(0, MOBILE_OBJECT_SLOTS);
+  const emptySlots = Math.max(0, MOBILE_OBJECT_SLOTS - visibleObjects.length);
 
   return (
     <div className={WRAP_CLASS}>
       <h2 className={HEAD_CLASS}>
         {sidebar.heading} · {totalCount}
       </h2>
-      {objects.length === 0 ? (
-        <p className={EMPTY_CLASS}>{sidebar.empty}</p>
-      ) : (
-        <div className={SCROLLER_CLASS}>
-          {objects.map((object) => {
-            const selected = object.id === selectedId;
-            const isDraft = object.status === "draft";
-            return (
-              <button
-                key={object.id}
-                type="button"
-                onClick={() => onSelect(object.id)}
-                aria-pressed={selected}
-                className={cn(
-                  CARD_BASE,
-                  selected ? CARD_ACTIVE : CARD_INACTIVE,
-                )}
-              >
-                <span className="flex items-start justify-between gap-2">
-                  <span className={cn(TITLE_BASE, selected && TITLE_ACTIVE)}>
-                    {object.title}
-                  </span>
-                  <span
-                    className={cn(
-                      STATUS_BASE,
-                      selected
-                        ? STATUS_ON_ACTIVE
-                        : object.status === "published"
-                          ? STATUS_PUBLISHED
-                          : STATUS_DRAFT,
-                    )}
-                  >
-                    {OBJECT_STATUS_LABEL[object.status]}
-                  </span>
+      <div className={SCROLLER_CLASS}>
+        {visibleObjects.map((object) => {
+          const selected = object.id === selectedId;
+          const isDraft = object.status === "draft";
+          return (
+            <button
+              key={object.id}
+              type="button"
+              onClick={() => onSelect(object.id)}
+              aria-pressed={selected}
+              className={cn(CARD_BASE, selected ? CARD_ACTIVE : CARD_INACTIVE)}
+            >
+              <span className="flex items-start justify-between gap-2">
+                <span className={cn(TITLE_BASE, selected && TITLE_ACTIVE)}>
+                  {object.title}
                 </span>
                 <span
-                  className={cn(META_BASE, selected && META_ACTIVE, "block")}
+                  className={cn(
+                    STATUS_BASE,
+                    selected
+                      ? STATUS_ON_ACTIVE
+                      : object.status === "published"
+                        ? STATUS_PUBLISHED
+                        : STATUS_DRAFT,
+                  )}
                 >
-                  {object.district} · {formatEUR(object.coldRent)}{" "}
-                  {sidebar.rentSuffix}
+                  {OBJECT_STATUS_LABEL[object.status]}
                 </span>
-                <span
-                  className={cn(CAND_BASE, selected && CAND_ACTIVE, "block")}
-                >
-                  {isDraft
-                    ? sidebar.draftNotice
-                    : sidebar.applicationsLabel(object.activeApplications)}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+              </span>
+              <span className={cn(META_BASE, selected && META_ACTIVE, "block")}>
+                {object.district} · {formatEUR(object.coldRent)}{" "}
+                {sidebar.rentSuffix}
+              </span>
+              <span className={cn(CAND_BASE, selected && CAND_ACTIVE, "block")}>
+                {isDraft
+                  ? sidebar.draftNotice
+                  : sidebar.applicationsLabel(object.activeApplications)}
+              </span>
+            </button>
+          );
+        })}
+        {Array.from({ length: emptySlots }).map((_, index) => (
+          <div
+            key={`empty-slot-${index}`}
+            aria-hidden={objects.length > 0 || index > 0}
+            className={SLOT_CLASS}
+          >
+            <span className={SLOT_LOGO_CLASS}>
+              <AppIcon icon={Home} size={14} strokeWidth={2} decorative />
+            </span>
+            {objects.length === 0 && index === 0 ? (
+              <span>{sidebar.empty}</span>
+            ) : null}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

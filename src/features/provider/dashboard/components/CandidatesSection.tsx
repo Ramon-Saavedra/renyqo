@@ -6,7 +6,7 @@ import type { Candidate, DashboardObject } from "../types";
 import { CandidateCard } from "./CandidateCard";
 
 interface CandidatesSectionProps {
-  object: DashboardObject;
+  object: DashboardObject | null;
   candidates: readonly Candidate[];
 }
 
@@ -26,13 +26,28 @@ const EMPTY_CLASS =
 const DRAFT_CLASS =
   "rounded-md border border-dashed border-border-strong bg-background-subtle px-6 py-12 text-center text-caption text-foreground-secondary";
 
+function renderEmptySlots(count: number) {
+  return Array.from({ length: count }).map((_, index) => (
+    <div key={`empty-${index}`} className={EMPTY_CLASS}>
+      <AppIcon
+        icon={Plus}
+        size={20}
+        strokeWidth={1.4}
+        decorative
+        className="text-foreground-tertiary"
+      />
+      <span>{dashboardCopy.candidates.emptySlot}</span>
+    </div>
+  ));
+}
+
 export function CandidatesSection({
   object,
   candidates,
 }: CandidatesSectionProps) {
   const { candidates: copy } = dashboardCopy;
 
-  if (object.status === "draft") {
+  if (object?.status === "draft") {
     return (
       <section id="bewerbungen">
         <div className={HEAD_CLASS}>
@@ -46,7 +61,7 @@ export function CandidatesSection({
     );
   }
 
-  const shown = candidates.slice(0, MAX_ACTIVE_APPLICATIONS);
+  const shown = object ? candidates.slice(0, MAX_ACTIVE_APPLICATIONS) : [];
   const emptySlots = Math.max(0, MAX_ACTIVE_APPLICATIONS - shown.length);
 
   return (
@@ -66,18 +81,7 @@ export function CandidatesSection({
         {shown.map((candidate) => (
           <CandidateCard key={candidate.id} candidate={candidate} />
         ))}
-        {Array.from({ length: emptySlots }).map((_, index) => (
-          <div key={`empty-${index}`} className={EMPTY_CLASS}>
-            <AppIcon
-              icon={Plus}
-              size={20}
-              strokeWidth={1.4}
-              decorative
-              className="text-foreground-tertiary"
-            />
-            <span>{copy.emptySlot}</span>
-          </div>
-        ))}
+        {renderEmptySlots(emptySlots)}
       </div>
     </section>
   );

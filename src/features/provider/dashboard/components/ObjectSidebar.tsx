@@ -32,10 +32,8 @@ const SEARCH_WRAP_CLASS = "px-4 pt-3.5 pb-1";
 
 const LIST_CLASS =
   "flex flex-1 flex-col gap-2 overflow-hidden px-3 pt-3 pb-4 lg:min-h-0";
-const EMPTY_CLASS =
-  "rounded-md border border-border bg-background-subtle px-3.5 py-6 text-center text-caption text-foreground-secondary";
 const SLOT_CLASS =
-  "flex min-h-0 flex-1 items-center justify-center rounded-md border border-dashed border-border bg-background-subtle";
+  "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background-subtle px-3 text-center text-caption text-foreground-secondary";
 const SLOT_LOGO_CLASS =
   "inline-flex h-6.5 w-6.5 items-center justify-center rounded-sm bg-primary-soft text-primary";
 const SIDEBAR_OBJECT_SLOTS = 5;
@@ -77,32 +75,29 @@ export function ObjectSidebar({
       </div>
 
       <ul className={LIST_CLASS}>
-        {objects.length === 0 ? (
-          <li className={EMPTY_CLASS}>{sidebar.empty}</li>
-        ) : (
-          <>
-            {visibleObjects.map((object) => (
-              <ObjectSidebarItem
-                key={object.id}
-                object={object}
-                selected={object.id === selectedId}
-                shareUrl={`${siteConfig.url}/objekt/${object.id}`}
-                onSelect={onSelect}
-              />
-            ))}
-            {Array.from({ length: emptySlots }).map((_, index) => (
-              <li
-                key={`empty-slot-${index}`}
-                aria-hidden="true"
-                className={SLOT_CLASS}
-              >
-                <span className={SLOT_LOGO_CLASS}>
-                  <AppIcon icon={Home} size={14} strokeWidth={2} decorative />
-                </span>
-              </li>
-            ))}
-          </>
-        )}
+        {visibleObjects.map((object) => (
+          <ObjectSidebarItem
+            key={object.id}
+            object={object}
+            selected={object.id === selectedId}
+            shareUrl={`${siteConfig.url}/objekt/${object.id}`}
+            onSelect={onSelect}
+          />
+        ))}
+        {Array.from({ length: emptySlots }).map((_, index) => (
+          <li
+            key={`empty-slot-${index}`}
+            aria-hidden={objects.length > 0 || index > 0}
+            className={SLOT_CLASS}
+          >
+            <span className={SLOT_LOGO_CLASS}>
+              <AppIcon icon={Home} size={14} strokeWidth={2} decorative />
+            </span>
+            {objects.length === 0 && index === 0 ? (
+              <span>{sidebar.empty}</span>
+            ) : null}
+          </li>
+        ))}
       </ul>
     </aside>
   );

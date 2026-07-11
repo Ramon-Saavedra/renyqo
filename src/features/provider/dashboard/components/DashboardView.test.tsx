@@ -140,6 +140,24 @@ describe("DashboardView", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("keeps the dashboard layout when there is no backend data", async () => {
+    render(<DashboardView />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(screen.getAllByText("Meine Mietobjekte · 0").length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
+    expect(screen.getByText("Passende Kandidaten")).not.toBeNull();
+    expect(
+      screen.getAllByText("Platz frei für passende Bewerbung"),
+    ).toHaveLength(5);
+    expect(
+      screen.getAllByText("Keine Objekte gefunden.").length,
+    ).toBeGreaterThan(0);
+    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+  });
+
   it("collapses and reopens the desktop sidebar", async () => {
     const user = userEvent.setup();
     render(<DashboardView objects={objects} candidates={candidates} />);
