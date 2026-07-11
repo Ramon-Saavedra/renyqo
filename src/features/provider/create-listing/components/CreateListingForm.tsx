@@ -6,7 +6,10 @@ import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
 import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
 import { useActiveStepFromScroll } from "../hooks/useActiveStepFromScroll";
 import { useAutoTitle } from "../hooks/useAutoTitle";
-import { useCreateListing } from "../hooks/useCreateListing";
+import {
+  hasMeaningfulDraftContent,
+  useCreateListing,
+} from "../hooks/useCreateListing";
 import { INITIAL_DRAFT, useListingDraft } from "../hooks/useListingDraft";
 import type {
   ListingDraft,
@@ -111,6 +114,7 @@ export function CreateListingForm() {
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
   const hasUnsavedChanges = !areDraftsEqual(draft, cleanDraft);
+  const canSaveBeforeLeave = hasMeaningfulDraftContent(draft);
   const saveStatus: ListingSaveStatus = hasSaveError
     ? "error"
     : hasUnsavedChanges
@@ -129,6 +133,27 @@ export function CreateListingForm() {
       setHasSaveError(false);
     }
   }, [draft, finalTitle, saveDraft]);
+
+  const handleSaveDraftAndLeave = useCallback(
+    async (href: string) => {
+      const saveResult = await saveDraft(draft, finalTitle, {
+        redirectTo: href,
+      });
+      if (saveResult === "saved") {
+        setCleanDraft(draft);
+        setCleanStatus("saved");
+        setHasSaveError(false);
+        return true;
+      }
+      if (saveResult === "error") {
+        setHasSaveError(true);
+      } else {
+        setHasSaveError(false);
+      }
+      return false;
+    },
+    [draft, finalTitle, saveDraft],
+  );
 
   const handleUndo = useCallback(() => {
     undo();
@@ -180,7 +205,13 @@ export function CreateListingForm() {
       <div className="px-gutter">
         <CreateListingHero />
 
-        <HeaderNavLinks hasUnsavedChanges={hasUnsavedChanges} />
+        <HeaderNavLinks
+          hasUnsavedChanges={hasUnsavedChanges}
+          canSaveBeforeLeave={canSaveBeforeLeave}
+          isSavingBeforeLeave={submitStatus === "saving"}
+          saveBeforeLeaveError={error}
+          onSaveBeforeLeave={handleSaveDraftAndLeave}
+        />
 
         <SectionStepper
           steps={stepperSteps}

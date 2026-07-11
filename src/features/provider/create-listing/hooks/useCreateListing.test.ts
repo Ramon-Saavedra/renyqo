@@ -259,6 +259,19 @@ describe("useCreateListing", () => {
       expect(result.current.error).toBeNull();
     });
 
+    it("redirects to a custom destination when provided", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel", {
+          redirectTo: "/provider/dashboard",
+        });
+      });
+
+      expect(mockPush).toHaveBeenCalledWith("/provider/dashboard");
+    });
+
     it("maps street to undefined when empty", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const { result } = renderHook(() => useCreateListing());
