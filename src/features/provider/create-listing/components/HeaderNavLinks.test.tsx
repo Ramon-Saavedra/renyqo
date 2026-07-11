@@ -57,7 +57,12 @@ describe("HeaderNavLinks", () => {
     renderHeaderNavLinks();
 
     await user.click(screen.getByRole("link", { name: /Meine Objekte/i }));
-    await user.click(screen.getByRole("button", { name: "Weiter bearbeiten" }));
+    const [, keepEditingButton] = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    });
+
+    expect(keepEditingButton).toBeInstanceOf(HTMLButtonElement);
+    await user.click(keepEditingButton as HTMLButtonElement);
 
     expect(
       screen.queryByRole("dialog", { name: "Änderungen verwerfen?" }),
