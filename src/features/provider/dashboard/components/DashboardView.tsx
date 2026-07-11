@@ -1,13 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
+import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { dashboardCopy } from "../copy/dashboard";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { Candidate, DashboardObject } from "../types";
 import { CandidatesSection } from "./CandidatesSection";
+import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
 import { DashboardSearch } from "./DashboardSearch";
 import { DashboardTopbar } from "./DashboardTopbar";
 import { ObjectSelectorMobile } from "./ObjectSelectorMobile";
@@ -31,15 +34,47 @@ const REOPEN_CLASS =
   "sticky top-0 z-10 hidden items-center gap-2 self-start border-r border-b border-border bg-background px-3.5 py-2 font-mono text-meta uppercase text-foreground-secondary transition-colors hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
 
 export function DashboardView({
-  objects = [],
+  objects: initialObjects,
   candidates = [],
 }: DashboardViewProps) {
+  const shouldLoadObjects = initialObjects === undefined;
+  const [loadedObjects, setLoadedObjects] = useState<
+    readonly DashboardObject[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(shouldLoadObjects);
+  const [loadError, setLoadError] = useState(false);
+  const objects = initialObjects ?? loadedObjects;
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(
     objects[0]?.id ?? null,
   );
   const [collapsed, setCollapsed] = useState(false);
   const accent = useAccent();
+
+  useEffect(() => {
+    if (!shouldLoadObjects) return;
+
+    let active = true;
+
+    getProviderDashboardObjects()
+      .then((nextObjects) => {
+        if (!active) return;
+        setLoadedObjects(nextObjects);
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoadedObjects([]);
+        setLoadError(true);
+      })
+      .finally(() => {
+        if (!active) return;
+        setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [shouldLoadObjects]);
 
   const filteredObjects = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -68,7 +103,14 @@ export function DashboardView({
     (o) => o.status === "published",
   ).length;
   const draftObjects = objects.filter((o) => o.status === "draft").length;
-  const newApplications = candidates.length;
+  const newApplications =
+    candidates.length > 0
+      ? candidates.length
+      : objects.reduce((total, object) => total + object.activeApplications, 0);
+
+  if (isLoading) {
+    return <DashboardLoadingSkeleton />;
+  }
 
   return (
     <PageShell className="lg:pb-0">
@@ -128,6 +170,14 @@ export function DashboardView({
                 newApplications={newApplications}
               />
             </div>
+
+            {loadError ? (
+              <FormAlert
+                variant="error"
+                message={dashboardCopy.error}
+                className="mb-6"
+              />
+            ) : null}
 
             {selected ? (
               <SelectedObjectCard object={selected} />

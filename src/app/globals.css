@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @source inline("text-success-vivid");
+@source inline("text-warning-vivid");
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -30,6 +31,7 @@ html {
   --color-success: var(--success);
   --color-success-vivid: var(--success-vivid);
   --color-warning: var(--warning);
+  --color-warning-vivid: var(--warning-vivid);
   --color-danger: var(--danger);
 
   --radius-sm: 4px;
@@ -128,6 +130,7 @@ html {
   --success: #4f7a56;
   --success-vivid: #1c9434;
   --warning: #b07b3d;
+  --warning-vivid: #fa8714;
   --danger: #dc2626;
 
   --watermark-opacity-peak: 0.35;
@@ -166,6 +169,7 @@ html {
   --success: #8fb59a;
   --success-vivid: #3ecf62;
   --warning: #d2a36a;
+  --warning-vivid: #f59527;
   --danger: #f87171;
 
   --watermark-opacity-peak: 0.5;

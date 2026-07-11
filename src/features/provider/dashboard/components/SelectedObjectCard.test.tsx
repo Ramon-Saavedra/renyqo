@@ -30,6 +30,8 @@ const publishedObject: DashboardObject = {
   livingArea: 60,
   rooms: "2",
   availableFrom: "01.08.2026",
+  publishedAt: "02.07.2026, 13:00",
+  updatedAt: "01.07.2026, 09:15",
   status: "published",
   activeApplications: 3,
 };
@@ -46,6 +48,25 @@ describe("SelectedObjectCard", () => {
     expect(screen.getByText("3 / 5 aktiv")).not.toBeNull();
     expect(screen.getByRole("link", { name: /Bearbeiten/i })).not.toBeNull();
     expect(screen.getByRole("link", { name: /Vorschau/i })).not.toBeNull();
+    expect(screen.getByText("02.07.2026, 13:00")).not.toBeNull();
+    expect(screen.getByText("Veröffentlicht am")).not.toBeNull();
+  });
+
+  it("shows the last edited timestamp for drafts", () => {
+    render(
+      <SelectedObjectCard
+        object={{
+          ...publishedObject,
+          status: "draft",
+          publishedAt: null,
+          updatedAt: "05.07.2026, 14:30",
+        }}
+      />,
+    );
+
+    expect(screen.queryByText("02.07.2026, 13:00")).toBeNull();
+    expect(screen.getByText("05.07.2026, 14:30")).not.toBeNull();
+    expect(screen.getByText("Zuletzt bearbeitet am")).not.toBeNull();
   });
 
   it("renders draft status and an empty availability label", () => {

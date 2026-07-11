@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getCurrentUser } from "@/lib/api/auth";
+import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { DashboardView } from "./DashboardView";
 import type { Candidate, DashboardObject } from "../types";
 
@@ -33,6 +34,10 @@ vi.mock("@/lib/api/auth", () => ({
   logout: vi.fn(),
 }));
 
+vi.mock("../api/provider-dashboard", () => ({
+  getProviderDashboardObjects: vi.fn(),
+}));
+
 const objects: readonly DashboardObject[] = [
   {
     id: "first-object",
@@ -44,6 +49,8 @@ const objects: readonly DashboardObject[] = [
     livingArea: 60,
     rooms: "2",
     availableFrom: "01.08.2026",
+    publishedAt: "02.07.2026, 13:00",
+    updatedAt: "02.07.2026, 12:00",
     status: "published",
     activeApplications: 1,
   },
@@ -57,6 +64,8 @@ const objects: readonly DashboardObject[] = [
     livingArea: 75,
     rooms: "3",
     availableFrom: null,
+    publishedAt: null,
+    updatedAt: "10.07.2026, 09:00",
     status: "draft",
     activeApplications: 0,
   },
@@ -87,6 +96,7 @@ describe("DashboardView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    vi.mocked(getProviderDashboardObjects).mockResolvedValue([]);
     vi.mocked(getCurrentUser).mockResolvedValue({
       id: "provider-1",
       name: "Ramon Saavedra",
@@ -144,6 +154,7 @@ describe("DashboardView", () => {
     render(<DashboardView />);
 
     expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(getProviderDashboardObjects).toHaveBeenCalledTimes(1);
     expect(screen.getAllByText("Meine Mietobjekte · 0").length).toBeGreaterThan(
       0,
     );
@@ -156,6 +167,32 @@ describe("DashboardView", () => {
       screen.getAllByText("Keine Objekte gefunden.").length,
     ).toBeGreaterThan(0);
     expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+  });
+
+  it("renders listings loaded from the provider dashboard endpoint", async () => {
+    vi.mocked(getProviderDashboardObjects).mockResolvedValue([objects[0]!]);
+
+    render(<DashboardView />);
+
+    expect(await screen.findByText("Erste Wohnung in Berlin")).not.toBeNull();
+    expect(screen.getAllByText("Meine Mietobjekte · 1").length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it("shows a server error state when dashboard listings fail to load", async () => {
+    vi.mocked(getProviderDashboardObjects).mockRejectedValue(
+      new Error("server error"),
+    );
+
+    render(<DashboardView />);
+
+    expect(
+      await screen.findByText(
+        "Dashboard konnte nicht geladen werden. Bitte versuche es gleich erneut.",
+      ),
+    ).not.toBeNull();
+    expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
   });
 
   it("collapses and reopens the desktop sidebar", async () => {
