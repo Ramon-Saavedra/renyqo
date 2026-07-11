@@ -5,7 +5,6 @@ import { ChevronRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { dashboardCopy } from "../copy/dashboard";
-import { MOCK_CANDIDATES, MOCK_OBJECTS } from "../data/mock";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { Candidate, DashboardObject } from "../types";
 import { CandidatesSection } from "./CandidatesSection";
@@ -13,6 +12,7 @@ import { DashboardSearch } from "./DashboardSearch";
 import { DashboardTopbar } from "./DashboardTopbar";
 import { ObjectSelectorMobile } from "./ObjectSelectorMobile";
 import { ObjectSidebar } from "./ObjectSidebar";
+import { SelectedObjectEmptyCard } from "./SelectedObjectEmptyCard";
 import { SelectedObjectCard } from "./SelectedObjectCard";
 import { StatCards } from "./StatCards";
 
@@ -31,8 +31,8 @@ const REOPEN_CLASS =
   "sticky top-0 z-10 hidden items-center gap-2 self-start border-r border-b border-border bg-background px-3.5 py-2 font-mono text-meta uppercase text-foreground-secondary transition-colors hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
 
 export function DashboardView({
-  objects = MOCK_OBJECTS,
-  candidates = MOCK_CANDIDATES,
+  objects = [],
+  candidates = [],
 }: DashboardViewProps) {
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -68,6 +68,7 @@ export function DashboardView({
     (o) => o.status === "published",
   ).length;
   const draftObjects = objects.filter((o) => o.status === "draft").length;
+  const newApplications = candidates.length;
 
   return (
     <PageShell className="lg:pb-0">
@@ -124,19 +125,19 @@ export function DashboardView({
                 totalObjects={objects.length}
                 publishedObjects={publishedObjects}
                 draftObjects={draftObjects}
-                newApplications={3}
+                newApplications={newApplications}
               />
             </div>
 
-            {selected && (
-              <>
-                <SelectedObjectCard object={selected} />
-                <CandidatesSection
-                  object={selected}
-                  candidates={selectedCandidates}
-                />
-              </>
+            {selected ? (
+              <SelectedObjectCard object={selected} />
+            ) : (
+              <SelectedObjectEmptyCard />
             )}
+            <CandidatesSection
+              object={selected}
+              candidates={selectedCandidates}
+            />
           </div>
         </div>
       </div>
