@@ -58,8 +58,16 @@ export const createListingCopy = {
     myListingsHref: "/provider/listings",
     dashboard: "Dashboard",
     dashboardHref: "/provider/dashboard",
-    leaveConfirm:
-      "Du hast ungespeicherte Änderungen. Möchtest du die Seite wirklich verlassen?",
+    unsavedChangesModal: {
+      title: "Änderungen verwerfen?",
+      text: "Du hast ungespeicherte Änderungen. Wenn du die Seite verlässt, gehen diese Änderungen verloren.",
+      primary: "Weiter bearbeiten",
+      secondary: "Ohne Speichern verlassen",
+      tertiary: "Als Entwurf speichern & verlassen",
+      tertiaryPending: "Entwurf wird gespeichert",
+      saveError:
+        "Der Entwurf konnte nicht gespeichert werden. Bitte versuche es erneut.",
+    },
   },
   stepper: {
     ariaLabel: "Fortschritt",

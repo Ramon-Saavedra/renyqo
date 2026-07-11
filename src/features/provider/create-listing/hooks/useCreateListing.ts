@@ -18,6 +18,10 @@ import { INITIAL_DRAFT } from "./useListingDraft";
 export type SubmitStatus = "idle" | "saving" | "publishing";
 export type DraftSaveResult = "saved" | "empty" | "error";
 
+export interface SaveDraftOptions {
+  readonly redirectTo?: string | false;
+}
+
 export interface UseCreateListingResult {
   readonly submitStatus: SubmitStatus;
   readonly error: string | null;
@@ -25,6 +29,7 @@ export interface UseCreateListingResult {
   readonly saveDraft: (
     draft: ListingDraft,
     title: string,
+    options?: SaveDraftOptions,
   ) => Promise<DraftSaveResult>;
   readonly publish: (draft: ListingDraft, title: string) => Promise<void>;
   readonly clearFieldError: (key: keyof ListingDraftErrors) => void;
@@ -112,7 +117,7 @@ function hasText(value: string): boolean {
   return value.trim().length > 0;
 }
 
-function hasMeaningfulDraftContent(draft: ListingDraft): boolean {
+export function hasMeaningfulDraftContent(draft: ListingDraft): boolean {
   return (
     hasText(draft.city) ||
     hasText(draft.zip) ||
@@ -319,8 +324,12 @@ export function useCreateListing(): UseCreateListingResult {
   }, []);
 
   const saveDraft = useCallback(
-    async (draft: ListingDraft, title: string) => {
-      if (draftIdRef.current) return "saved";
+    async (draft: ListingDraft, title: string, options?: SaveDraftOptions) => {
+      const redirectTo = options?.redirectTo ?? "/provider/listings";
+      if (draftIdRef.current) {
+        if (redirectTo) router.push(redirectTo);
+        return "saved";
+      }
       setError(null);
       if (!hasMeaningfulDraftContent(draft)) {
         setFieldErrors({});
@@ -332,7 +341,7 @@ export function useCreateListing(): UseCreateListingResult {
       try {
         const created = await savePartialDraftFromListingDraft(draft, title);
         draftIdRef.current = created.id;
-        router.push("/provider/listings");
+        if (redirectTo) router.push(redirectTo);
         return "saved";
       } catch (err) {
         if (err instanceof ApiError && err.status === 400) {
