@@ -35,6 +35,7 @@ export interface ListingOverviewItem {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly publishedAt: string | null;
+  readonly availableFrom?: string | null;
 }
 
 export const SORT_KEYS = [

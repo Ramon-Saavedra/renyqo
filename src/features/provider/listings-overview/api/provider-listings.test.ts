@@ -38,6 +38,7 @@ describe("getProviderListings", () => {
         createdAt: "2026-07-01T10:00:00.000Z",
         updatedAt: "2026-07-02T10:00:00.000Z",
         publishedAt: "2026-07-02T11:00:00.000Z",
+        availableFrom: "2026-08-01",
       },
     ]);
 
@@ -58,6 +59,7 @@ describe("getProviderListings", () => {
         createdAt: "2026-07-01T10:00:00.000Z",
         updatedAt: "2026-07-02T10:00:00.000Z",
         publishedAt: "2026-07-02T11:00:00.000Z",
+        availableFrom: "2026-08-01",
       },
     ]);
   });
@@ -91,6 +93,7 @@ describe("getProviderListings", () => {
         createdAt: "1970-01-01T00:00:00.000Z",
         updatedAt: "1970-01-01T00:00:00.000Z",
         publishedAt: null,
+        availableFrom: null,
       },
     ]);
   });

@@ -187,6 +187,12 @@ function mapProviderListing(value: unknown): ListingOverviewItem | null {
     createdAt: readString(value, ["createdAt"]) ?? FALLBACK_DATE,
     updatedAt: readString(value, ["updatedAt"]) ?? FALLBACK_DATE,
     publishedAt: readNullableString(value, ["publishedAt"]),
+    availableFrom: readNullableString(value, [
+      "availableFrom",
+      "available_from",
+      "moveInDate",
+      "move_in_date",
+    ]),
   };
 }
 

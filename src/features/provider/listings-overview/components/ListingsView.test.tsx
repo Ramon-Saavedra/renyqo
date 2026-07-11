@@ -29,6 +29,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     createdAt: "2026-03-14",
     updatedAt: "2026-05-22T14:00:00",
     publishedAt: "2026-03-15T10:00:00",
+    availableFrom: "2026-06-01",
   },
   {
     id: "b",
@@ -45,6 +46,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     createdAt: "2026-04-08",
     updatedAt: "2026-05-20T10:00:00",
     publishedAt: "2026-04-09T08:00:00",
+    availableFrom: null,
   },
   {
     id: "c",
@@ -61,6 +63,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     createdAt: "2026-05-19",
     updatedAt: "2026-05-19T22:10:00",
     publishedAt: null,
+    availableFrom: null,
   },
   {
     id: "d",
@@ -77,6 +80,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     createdAt: "2026-01-15",
     updatedAt: "2026-05-08T12:00:00",
     publishedAt: "2026-01-16T10:00:00",
+    availableFrom: "2026-02-01",
   },
 ];
 
