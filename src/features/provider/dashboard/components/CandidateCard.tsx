@@ -9,7 +9,7 @@ interface CandidateCardProps {
 }
 
 const CARD_CLASS =
-  "flex min-w-0 flex-col rounded-md border border-border bg-background px-2 py-4 hover:border-foreground-tertiary";
+  "flex min-w-0 flex-col rounded-md border border-border bg-background-subtle px-2 py-4 hover:border-foreground-tertiary";
 const TOP_CLASS = "mb-3.5 flex items-center justify-between gap-4";
 const AVATAR_CLASS =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-soft font-display text-caption font-semibold text-primary";

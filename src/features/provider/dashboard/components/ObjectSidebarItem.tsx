@@ -14,8 +14,9 @@ interface ObjectSidebarItemProps {
 const ITEM_CLASS =
   "flex min-h-0 flex-1 cursor-pointer flex-col rounded-md border px-3 py-2 focus-within:shadow-focus";
 const INACTIVE_CLASS =
-  "border-border bg-background hover:border-border-strong hover:bg-background-subtle";
-const ACTIVE_CLASS = "border-primary shadow shadow-primary";
+  "border-border bg-background-subtle hover:border-border-strong hover:bg-background-muted";
+const ACTIVE_CLASS =
+  "border-primary bg-background-subtle shadow shadow-primary";
 
 const SELECT_CLASS =
   "block min-h-0 w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:shadow-focus";
