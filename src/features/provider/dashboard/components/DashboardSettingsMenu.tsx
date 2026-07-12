@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut } from "lucide-react";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { logout } from "@/lib/api/auth";
@@ -14,9 +14,8 @@ interface DashboardSettingsMenuProps {
   accent: AccentId;
   onAccentChange: (accent: AccentId) => void;
   userEmail: string | null;
-  buttonClassName: string;
-  iconSize: number;
-  iconStroke: number;
+  trigger: React.ReactNode;
+  triggerClassName: string;
 }
 
 const WRAP_CLASS = "relative";
@@ -40,9 +39,8 @@ export function DashboardSettingsMenu({
   accent,
   onAccentChange,
   userEmail,
-  buttonClassName,
-  iconSize,
-  iconStroke,
+  trigger,
+  triggerClassName,
 }: DashboardSettingsMenuProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -87,19 +85,14 @@ export function DashboardSettingsMenu({
     <div ref={wrapRef} className={WRAP_CLASS}>
       <button
         type="button"
-        className={buttonClassName}
+        className={triggerClassName}
         aria-label={profile.settings}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen((current) => !current)}
       >
-        <AppIcon
-          icon={Settings}
-          size={iconSize}
-          strokeWidth={iconStroke}
-          decorative
-        />
+        {trigger}
       </button>
 
       {open && (

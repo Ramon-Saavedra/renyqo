@@ -101,6 +101,49 @@ describe("DashboardTopbar", () => {
     expect(screen.getByText("mara@example.com")).not.toBeNull();
   });
 
+  it("uses the profile control as the account menu trigger", async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue({
+      id: "provider-5",
+      name: "Mara Lehmann",
+      email: "mara@example.com",
+      role: "provider",
+      providerType: "company",
+      companyName: "Lehmann Wohnen",
+    });
+
+    render(
+      <DashboardTopbar accent="schiefer" onAccentChange={onAccentChange} />,
+    );
+
+    const menuButton = await screen.findByRole("button", {
+      name: "Konto & Profil",
+    });
+
+    expect(menuButton.textContent).toContain("ML");
+    expect(menuButton.textContent).toContain("Mara Lehmann");
+  });
+
+  it("does not render a separate settings gear button", async () => {
+    vi.mocked(getCurrentUser).mockResolvedValue({
+      id: "provider-6",
+      name: "Nora Keller",
+      email: "nora@example.com",
+      role: "provider",
+      providerType: "private",
+      companyName: null,
+    });
+
+    render(
+      <DashboardTopbar accent="schiefer" onAccentChange={onAccentChange} />,
+    );
+
+    await screen.findByText("Nora Keller");
+
+    expect(
+      screen.getAllByRole("button", { name: "Konto & Profil" }),
+    ).toHaveLength(1);
+  });
+
   it("falls back to the local profile name when the current user request fails", async () => {
     vi.mocked(getCurrentUser).mockRejectedValue(new Error("unauthorized"));
 

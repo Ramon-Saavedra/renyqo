@@ -24,9 +24,8 @@ function renderMenu(userEmail: string | null = "provider@example.com") {
       accent="schiefer"
       onAccentChange={onAccentChange}
       userEmail={userEmail}
-      buttonClassName="settings-button"
-      iconSize={15}
-      iconStroke={1.7}
+      trigger={<span>Sabine Kessler</span>}
+      triggerClassName="settings-button"
     />,
   );
 }
