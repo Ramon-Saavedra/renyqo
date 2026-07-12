@@ -409,9 +409,10 @@ body {
 
 .listings-row-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
-    "miete flaeche"
+    "miete kaution"
+    "monate flaeche"
     "zimmer aktiv"
     "bew bew"
     "actions actions";
@@ -422,40 +423,51 @@ body {
   grid-area: miete;
 }
 .listings-row-stats > :nth-child(2) {
-  grid-area: flaeche;
+  grid-area: kaution;
 }
 .listings-row-stats > :nth-child(3) {
-  grid-area: zimmer;
+  grid-area: monate;
 }
 .listings-row-stats > :nth-child(4) {
-  grid-area: bew;
+  grid-area: flaeche;
 }
 .listings-row-stats > :nth-child(5) {
-  grid-area: aktiv;
-  justify-self: end;
-  text-align: right;
+  grid-area: zimmer;
 }
 .listings-row-stats > :nth-child(6) {
+  grid-area: bew;
+}
+.listings-row-stats > :nth-child(7) {
+  grid-area: aktiv;
+}
+.listings-row-stats > :nth-child(8) {
   grid-area: actions;
   justify-self: end;
 }
 @media (min-width: 640px) {
   .listings-row-stats {
-    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, 1fr)
+      minmax(96px, 1.4fr) auto;
     grid-template-areas:
-      "miete flaeche zimmer actions"
-      "bew bew bew aktiv";
+      "miete kaution monate actions"
+      "flaeche zimmer bew aktiv";
     gap: 1rem;
+  }
+  .listings-row-stats > :nth-child(6) {
+    justify-self: start;
   }
 }
 @media (min-width: 1100px) {
   .listings-row-stats {
     grid-template-columns:
-      minmax(100px, 0.85fr)
-      minmax(70px, 0.6fr)
+      minmax(82px, 0.75fr)
+      minmax(82px, 0.75fr)
+      minmax(48px, 0.42fr)
+      minmax(70px, 0.55fr)
       minmax(50px, 0.45fr)
-      minmax(140px, 1.1fr)
-      minmax(90px, 0.7fr)
+      minmax(118px, 0.95fr)
+      minmax(90px, 0.65fr)
       auto;
     grid-template-areas: none;
     gap: 1.25rem;
@@ -463,15 +475,17 @@ body {
   .listings-row-stats > :nth-child(1),
   .listings-row-stats > :nth-child(2),
   .listings-row-stats > :nth-child(3),
-  .listings-row-stats > :nth-child(4) {
+  .listings-row-stats > :nth-child(4),
+  .listings-row-stats > :nth-child(5),
+  .listings-row-stats > :nth-child(6) {
     grid-area: auto;
   }
-  .listings-row-stats > :nth-child(5) {
+  .listings-row-stats > :nth-child(7) {
     grid-area: auto;
     justify-self: start;
     text-align: left;
   }
-  .listings-row-stats > :nth-child(6) {
+  .listings-row-stats > :nth-child(8) {
     grid-area: auto;
     justify-self: end;
   }

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Home, Pencil } from "lucide-react";
+import { Home } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import { listingsCopy } from "../copy/listings";
@@ -13,19 +13,21 @@ import { StatusPill } from "./StatusPill";
 interface ListingRowProps {
   listing: ListingOverviewItem;
   onAction: (action: RowAction, listing: ListingOverviewItem) => void;
+  actionStatus?: string | undefined;
   now?: Date | null;
 }
 
 const ROW_BASE_CLASS =
-  "rounded-md border border-border/50 bg-card px-5 py-4 transition-colors hover:border-border";
+  "rounded-md border border-border/50 bg-card px-4 py-4 transition-colors hover:border-border sm:px-5";
 const ROW_INACTIVE_CLASS = "bg-background-subtle";
 
-const ROW_CONTENT_CLASS = "flex gap-4";
+const ROW_CONTENT_CLASS = "flex gap-3.5 sm:gap-4";
 
-const THUMBNAIL_CLASS = "h-24 w-24 shrink-0 rounded object-cover";
+const THUMBNAIL_CLASS =
+  "h-20 w-20 shrink-0 rounded object-cover sm:h-24 sm:w-24";
 
 const THUMBNAIL_FALLBACK_CLASS =
-  "flex h-24 w-24 shrink-0 items-center justify-center rounded-md bg-background-subtle text-primary";
+  "flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-background-subtle text-primary sm:h-24 sm:w-24";
 
 const DETAILS_CLASS = "min-w-0 flex-1";
 
@@ -45,25 +47,27 @@ const STATUS_CLUSTER_CLASS = "flex shrink-0 items-center gap-1.5";
 const STAT_CELL_CLASS = "flex min-w-0 flex-col gap-0.5";
 
 const STAT_KICKER_CLASS =
-  "font-mono text-meta uppercase text-foreground-tertiary";
+  "truncate font-mono text-meta tracking-normal text-foreground-tertiary";
 const STAT_VALUE_BASE =
   "truncate font-mono text-caption text-foreground tabular-nums";
 const STAT_VALUE_INACTIVE = "text-foreground-secondary";
 const STAT_VALUE_SOFT =
-  "truncate font-mono text-caption text-foreground-secondary tabular-nums";
+  "min-w-0 truncate font-mono text-caption text-foreground-secondary tabular-nums";
 
-const BEW_CELL_CLASS = "flex flex-wrap items-center gap-1.5";
+const BEW_CELL_CLASS = "flex min-w-0 flex-wrap items-center gap-1.5";
 
-const ACTIONS_CELL_CLASS = "flex items-center gap-1.5";
+const ACTIONS_CELL_CLASS = "flex items-center justify-end gap-1.5";
 
-const ICON_BUTTON_CLASS =
-  "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-border-strong text-foreground-secondary transition-colors hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
-
-export function ListingRow({ listing, onAction, now }: ListingRowProps) {
-  const isInactive =
-    listing.status === "rented" || listing.status === "archived";
+export function ListingRow({
+  listing,
+  onAction,
+  actionStatus,
+  now,
+}: ListingRowProps) {
+  const isInactive = listing.status === "archived";
   const visibleCount = Math.min(listing.applicationsTotal, 5);
   const waitingCount = Math.max(listing.applicationsTotal - 5, 0);
+  const actionPending = Boolean(actionStatus);
 
   return (
     <article
@@ -124,6 +128,34 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
 
             <div className={STAT_CELL_CLASS}>
               <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.deposit}
+              </span>
+              <span
+                className={cn(
+                  STAT_VALUE_BASE,
+                  isInactive && STAT_VALUE_INACTIVE,
+                )}
+              >
+                {formatEUR(listing.deposit ?? 0)}
+              </span>
+            </div>
+
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
+                {listingsCopy.row.depositMonths}
+              </span>
+              <span
+                className={cn(
+                  STAT_VALUE_BASE,
+                  isInactive && STAT_VALUE_INACTIVE,
+                )}
+              >
+                {listing.depositMonths ?? "—"}
+              </span>
+            </div>
+
+            <div className={STAT_CELL_CLASS}>
+              <span className={STAT_KICKER_CLASS}>
                 {listingsCopy.row.livingArea}
               </span>
               <span
@@ -175,16 +207,11 @@ export function ListingRow({ listing, onAction, now }: ListingRowProps) {
             </div>
 
             <div className={ACTIONS_CELL_CLASS}>
-              <button
-                type="button"
-                className={ICON_BUTTON_CLASS}
-                aria-label={listingsCopy.row.editLabel}
-                title={listingsCopy.row.editLabel}
-                onClick={() => onAction("edit", listing)}
-              >
-                <AppIcon icon={Pencil} size={14} strokeWidth={1.6} decorative />
-              </button>
-              <RowActionsMenu listing={listing} onAction={onAction} />
+              <RowActionsMenu
+                listing={listing}
+                onAction={onAction}
+                disabled={actionPending}
+              />
             </div>
           </div>
         </div>

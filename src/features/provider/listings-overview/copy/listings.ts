@@ -17,7 +17,7 @@ export interface StatusMeta {
 
 export const STATUS_META: Record<ListingStatus, StatusMeta> = {
   published: {
-    label: "Aktiv",
+    label: "Veröffentlicht",
     pillClass: "bg-primary-tint text-primary",
   },
   draft: {
@@ -27,10 +27,6 @@ export const STATUS_META: Record<ListingStatus, StatusMeta> = {
   paused: {
     label: "Pausiert",
     pillClass: "bg-background-muted text-foreground-secondary",
-  },
-  rented: {
-    label: "Vermietet",
-    pillClass: "bg-success/10 text-success",
   },
   archived: {
     label: "Archiviert",
@@ -42,16 +38,14 @@ export const STATUS_SORT_ORDER: readonly ListingStatus[] = [
   "published",
   "draft",
   "paused",
-  "rented",
   "archived",
 ];
 
 export const STATUS_FILTERS: readonly StatusFilterEntry[] = [
   { id: "alle", label: "Alle" },
-  { id: "published", label: "Aktiv" },
+  { id: "published", label: "Veröffentlicht" },
   { id: "draft", label: "Entwürfe" },
   { id: "paused", label: "Pausiert" },
-  { id: "rented", label: "Vermietet" },
   { id: "archived", label: "Archiviert" },
   { id: "attention", label: "Klärung nötig" },
 ];
@@ -101,6 +95,8 @@ export const listingsCopy = {
   },
   row: {
     coldRent: "Kaltmiete",
+    deposit: "Kaution",
+    depositMonths: "Mon.",
     livingArea: "Fläche",
     rooms: "Zimmer",
     applications: "Bewerbungen",
@@ -114,11 +110,12 @@ export const listingsCopy = {
     moreLabel: "Aktionen",
   },
   actions: {
-    preview: "Vorschau",
+    details: "Details ansehen",
     edit: "Bearbeiten",
-    pause: "Pausieren",
-    rented: "Als vermietet markieren",
+    publish: "Veröffentlichen",
+    draft: "In Entwurf verschieben",
     archive: "Archivieren",
+    unavailable: "Noch nicht verfügbar",
   },
   empty: {
     titleFresh: "Noch keine Mietobjekte angelegt.",

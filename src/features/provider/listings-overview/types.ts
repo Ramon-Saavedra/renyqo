@@ -2,7 +2,6 @@ export const LISTING_STATUS = [
   "published",
   "draft",
   "paused",
-  "rented",
   "archived",
 ] as const;
 
@@ -21,6 +20,8 @@ export interface ListingOverviewItem {
   readonly coverImageUrl?: string | null;
 
   readonly coldRent: number;
+  readonly deposit?: number;
+  readonly depositMonths?: number;
   readonly livingArea: number;
   readonly rooms: number;
 
@@ -52,7 +53,6 @@ export const STATUS_FILTER_KEYS = [
   "published",
   "draft",
   "paused",
-  "rented",
   "archived",
   "attention",
 ] as const;
@@ -62,10 +62,10 @@ export type StatusFilterKey = (typeof STATUS_FILTER_KEYS)[number];
 export type StatusCounts = Record<StatusFilterKey, number>;
 
 export const ROW_ACTIONS = [
-  "preview",
+  "details",
   "edit",
-  "pause",
-  "rented",
+  "publish",
+  "draft",
   "archive",
 ] as const;
 
