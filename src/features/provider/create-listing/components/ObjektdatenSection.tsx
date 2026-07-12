@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils/cn";
-import { Building2, DoorOpen, Home } from "lucide-react";
+import { Building2, DoorOpen, Home, Minus, Plus } from "lucide-react";
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
@@ -17,10 +17,12 @@ import {
   ROOM_OPTIONS,
 } from "../copy/create-listing";
 import type {
+  DepositMonths,
   ListingDraft,
   ListingDraftErrors,
   ListingPhoto,
 } from "../hooks/useListingDraft";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { useAutoTitle } from "../hooks/useAutoTitle";
 import { AutoTitleField } from "./AutoTitleField";
 import { PhotoGrid } from "./PhotoGrid";
@@ -46,6 +48,20 @@ function digitsOnly(value: string): string {
   return value.replace(/[^\d]/g, "");
 }
 
+function formatCurrency(value: number): string {
+  return value.toLocaleString("de-DE");
+}
+
+function calculateDeposit(price: string, months: DepositMonths): string | null {
+  const coldRent = parseInt(price, 10);
+  if (!coldRent || Number.isNaN(coldRent)) return null;
+  return formatCurrency(coldRent * months);
+}
+
+function isDepositMonths(value: number): value is DepositMonths {
+  return value === 1 || value === 2 || value === 3;
+}
+
 export function ObjektdatenSection({
   draft,
   setField,
@@ -61,11 +77,15 @@ export function ObjektdatenSection({
   });
 
   const charCount = draft.description.length;
+  const calculatedDeposit = calculateDeposit(draft.price, draft.depositMonths);
   const isOverWarn = charCount > fields.description.warnAt;
   const charClass = cn(
     "font-mono text-meta tabular-nums",
     isOverWarn ? "text-warning" : "text-foreground-tertiary",
   );
+  const changeDepositMonths = (next: number) => {
+    if (isDepositMonths(next)) setField("depositMonths", next);
+  };
 
   return (
     <SectionCard
@@ -249,19 +269,46 @@ export function ObjektdatenSection({
         </FormField>
         <FormField
           label={fields.deposit.label}
-          htmlFor="deposit"
-          error={fieldErrors?.deposit}
+          error={fieldErrors?.depositMonths ?? fieldErrors?.deposit}
         >
-          <InputAffix suffix={fields.deposit.suffix}>
-            <Input
-              id="deposit"
-              inputMode="numeric"
-              value={draft.deposit}
-              placeholder={fields.deposit.placeholder}
-              onChange={(e) => setField("deposit", digitsOnly(e.target.value))}
-              className="pr-13"
-            />
-          </InputAffix>
+          <div
+            role="group"
+            aria-label={fields.deposit.label}
+            className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-background-subtle"
+          >
+            <button
+              type="button"
+              aria-label="Kaution verringern"
+              disabled={draft.depositMonths <= 1}
+              onClick={() => changeDepositMonths(draft.depositMonths - 1)}
+              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+            >
+              <AppIcon icon={Minus} size={16} strokeWidth={1.8} decorative />
+            </button>
+            <span className="min-w-0 flex-1 text-center font-display text-action font-medium tabular-nums text-foreground">
+              {draft.depositMonths} Mon.
+            </span>
+            <span
+              aria-hidden="true"
+              className="font-mono text-meta text-foreground-tertiary"
+            >
+              |
+            </span>
+            <span className="min-w-0 flex-1 text-center font-display text-action font-medium tabular-nums text-foreground">
+              {calculatedDeposit
+                ? `${calculatedDeposit} €`
+                : fields.deposit.empty}
+            </span>
+            <button
+              type="button"
+              aria-label="Kaution erhöhen"
+              disabled={draft.depositMonths >= 3}
+              onClick={() => changeDepositMonths(draft.depositMonths + 1)}
+              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+            >
+              <AppIcon icon={Plus} size={16} strokeWidth={1.8} decorative />
+            </button>
+          </div>
         </FormField>
       </div>
 

@@ -33,6 +33,8 @@ describe("ObjektdatenSection", () => {
     expect(document.getElementById("available-from")).toBeInstanceOf(
       HTMLInputElement,
     );
+    expect(screen.getByText("2 Mon.")).toBeInstanceOf(HTMLElement);
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
     expect(screen.getByText("Fotos")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("0 / 600")).toBeInstanceOf(HTMLElement);
   });
@@ -66,6 +68,26 @@ describe("ObjektdatenSection", () => {
     expect(setField).toHaveBeenCalledWith("area", "68");
     expect(setField).toHaveBeenCalledWith("price", "980");
     expect(setField).toHaveBeenCalledWith("description", "a".repeat(800));
+  });
+
+  it("calculates deposit from cold rent and deposit months", async () => {
+    const user = userEvent.setup();
+    const setField = vi.fn();
+
+    render(
+      <ObjektdatenSection
+        draft={{ ...INITIAL_DRAFT, price: "1000" }}
+        setField={setField}
+        setPhotos={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("2 Mon.")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("2.000 €")).toBeInstanceOf(HTMLElement);
+
+    await user.click(screen.getByRole("button", { name: "Kaution erhöhen" }));
+
+    expect(setField).toHaveBeenCalledWith("depositMonths", 3);
   });
 
   it("forwards photo updates through the photo grid", async () => {

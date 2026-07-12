@@ -20,12 +20,9 @@ export const publishSchema = z.object({
       (val) => val === "" || (Number.isFinite(Number(val)) && Number(val) >= 0),
       { message: v.additionalCosts },
     ),
-  deposit: z
-    .string()
-    .refine(
-      (val) => val === "" || (Number.isFinite(Number(val)) && Number(val) >= 0),
-      { message: v.deposit },
-    ),
+  depositMonths: z.union([z.literal(1), z.literal(2), z.literal(3)], {
+    message: v.depositMonths,
+  }),
   availableFrom: z.string().min(1, v.availableFrom),
   legalAccepted: z.literal(true, v.legalAccepted),
 });

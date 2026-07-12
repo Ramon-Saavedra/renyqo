@@ -18,6 +18,7 @@ export interface ListingDraftErrors {
   bedrooms?: string;
   price?: string;
   additionalCosts?: string;
+  depositMonths?: string;
   deposit?: string;
   availableFrom?: string;
   legalAccepted?: string;
@@ -28,6 +29,8 @@ export interface ListingPhoto {
   readonly src: string;
   readonly file: File;
 }
+
+export type DepositMonths = 1 | 2 | 3;
 
 export interface ListingDraft {
   city: string;
@@ -40,6 +43,7 @@ export interface ListingDraft {
   bedrooms: number | null;
   price: string;
   additionalCosts: string;
+  depositMonths: DepositMonths;
   deposit: string;
   availableFrom: string;
   titleOverride: string;
@@ -66,6 +70,7 @@ export const INITIAL_DRAFT: ListingDraft = {
   bedrooms: null,
   price: "",
   additionalCosts: "",
+  depositMonths: 2,
   deposit: "",
   availableFrom: "",
   titleOverride: "",

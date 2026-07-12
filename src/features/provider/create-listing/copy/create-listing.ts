@@ -124,8 +124,7 @@ export const createListingCopy = {
       },
       deposit: {
         label: "Kaution",
-        placeholder: "z. B. 1500",
-        suffix: "€",
+        empty: "—",
       },
       availableFrom: { label: "Frei ab" },
       title: {
@@ -283,6 +282,7 @@ export const createListingCopy = {
     price: "Bitte gib die Kaltmiete an",
     additionalCosts: "Bitte gib einen gültigen Betrag an",
     deposit: "Bitte gib einen gültigen Betrag an",
+    depositMonths: "Bitte wähle eine gültige Kaution",
     availableFrom: "Bitte wähle ein Datum",
     photos: "Mindestens 1 Foto ist erforderlich",
     legalAccepted: "Bitte bestätige die Berechtigung zur Inserierung",
