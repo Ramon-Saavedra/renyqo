@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -22,6 +22,11 @@ describe("PhotoGrid", () => {
     expect(
       screen.getByRole("button", { name: "Foto hinzufügen" }),
     ).toBeInstanceOf(HTMLButtonElement);
+    expect(screen.getByText("Fotos hier ablegen")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("oder Foto auswählen")).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByText("JPG, PNG oder WebP · bis zu 12 Fotos"),
+    ).toBeInstanceOf(HTMLElement);
     expect(
       screen.getByText(
         "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
@@ -59,6 +64,47 @@ describe("PhotoGrid", () => {
     expect(added).toHaveLength(1);
     expect(added[0]!.src).toBe("blob:test-url");
     expect(added[0]!.file).toBe(file);
+  });
+
+  it("adds a photo when an image file is dropped on the grid", () => {
+    const setPhotos = vi.fn();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:dropped-url");
+
+    render(<PhotoGrid photos={[]} setPhotos={setPhotos} />);
+
+    const grid = screen
+      .getByRole("button", { name: "Foto hinzufügen" })
+      .closest(".photo-grid");
+    const file = new File(["content"], "dropped.jpg", { type: "image/jpeg" });
+
+    fireEvent.dragEnter(grid as Element, {
+      dataTransfer: { types: ["Files"], files: [file] },
+    });
+    fireEvent.drop(grid as Element, {
+      dataTransfer: { types: ["Files"], files: [file] },
+    });
+
+    expect(setPhotos).toHaveBeenCalledTimes(1);
+    const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
+    expect(added).toHaveLength(1);
+    expect(added[0]!.src).toBe("blob:dropped-url");
+    expect(added[0]!.file).toBe(file);
+  });
+
+  it("shows the active drop state while files are dragged over the grid", () => {
+    render(<PhotoGrid photos={[]} setPhotos={vi.fn()} />);
+
+    const grid = screen
+      .getByRole("button", { name: "Foto hinzufügen" })
+      .closest(".photo-grid");
+
+    fireEvent.dragEnter(grid as Element, {
+      dataTransfer: { types: ["Files"], files: [] },
+    });
+
+    expect(screen.getByText("Loslassen zum Hinzufügen")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("renders the cover tag and removes a photo when requested", async () => {

@@ -149,6 +149,10 @@ export const createListingCopy = {
       photos: {
         label: "Fotos",
         addLabel: "Foto hinzufügen",
+        dropTitle: "Fotos hier ablegen",
+        dropAction: "oder Foto auswählen",
+        dropHint: "JPG, PNG oder WebP · bis zu 12 Fotos",
+        dropActive: "Loslassen zum Hinzufügen",
         cover: "Titelbild",
         hint: "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
         remove: "Entfernen",
