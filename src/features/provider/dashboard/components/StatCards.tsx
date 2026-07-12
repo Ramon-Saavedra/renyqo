@@ -10,7 +10,7 @@ interface StatCardsProps {
 
 const GRID_CLASS = "grid grid-cols-3 gap-1.5 md:max-w-2xl md:gap-2.5";
 const CARD_CLASS =
-  "flex min-h-16 flex-col justify-between gap-1 rounded-md border border-border bg-background px-2 py-1.5 md:min-h-0 md:justify-start md:gap-0.5 md:px-4 md:py-3";
+  "flex min-h-16 flex-col justify-between gap-1 rounded-md border border-border bg-background-subtle px-2 py-1.5 md:min-h-0 md:justify-start md:gap-0.5 md:px-4 md:py-3";
 const LABEL_CLASS = "font-mono text-meta uppercase text-foreground-tertiary";
 const NUM_CLASS =
   "self-end text-right font-display text-brand font-medium tabular-nums text-foreground md:self-auto md:text-left md:text-title";

@@ -46,7 +46,7 @@ const MISSING_LBL_CLASS =
   "font-mono text-meta uppercase text-foreground-tertiary";
 const CHECKLIST_CLASS: Record<ChecklistVariant, string> = {
   inline: "min-w-0 xl:hidden",
-  rail: "sticky top-21 hidden w-full rounded-md bg-card px-1 py-3 xl:block",
+  rail: "sticky top-21 hidden w-full rounded-md border border-border bg-background-subtle px-3 py-3 xl:block",
 };
 const CHECKLIST_HEADER_CLASS = "mb-2 flex items-center justify-between gap-3";
 const CHECKLIST_COUNT_CLASS =

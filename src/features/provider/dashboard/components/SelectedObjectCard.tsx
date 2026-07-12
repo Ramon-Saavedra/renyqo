@@ -18,7 +18,7 @@ interface SelectedObjectCardProps {
 }
 
 const CARD_CLASS =
-  "mb-7 overflow-hidden rounded-md border border-border bg-background";
+  "mb-7 overflow-hidden rounded-md border border-border bg-background-subtle";
 const HEAD_CLASS =
   "flex flex-col gap-4 border-b border-border px-6 py-5 xl:flex-row xl:items-start xl:justify-between";
 const HEAD_LEFT_CLASS = "flex min-w-0 gap-5";

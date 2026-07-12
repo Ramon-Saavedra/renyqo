@@ -21,7 +21,7 @@ const COUNTER_STRONG_CLASS = "font-medium text-foreground";
 const GRID_CLASS =
   "grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5";
 const EMPTY_CLASS =
-  "flex min-h-55 flex-col items-center justify-center gap-2.5 rounded-md border border-dashed border-border-strong px-4 text-center text-caption text-foreground-tertiary";
+  "flex min-h-55 flex-col items-center justify-center gap-2.5 rounded-md border border-dashed border-border bg-background-subtle px-4 text-center text-caption text-foreground-tertiary";
 
 const DRAFT_CLASS =
   "rounded-md border border-dashed border-border-strong bg-background-subtle px-6 py-12 text-center text-caption text-foreground-secondary";
