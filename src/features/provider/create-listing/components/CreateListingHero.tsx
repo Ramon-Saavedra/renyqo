@@ -8,7 +8,11 @@ const TITLE_CLASS =
 const LEAD_CLASS =
   "max-w-lg text-lead font-normal leading-normal text-foreground-secondary";
 
-export function CreateListingHero() {
+interface CreateListingHeroProps {
+  title?: string;
+}
+
+export function CreateListingHero({ title }: CreateListingHeroProps) {
   const copy = createListingCopy.hero;
   return (
     <div className="mb-9">
@@ -17,7 +21,7 @@ export function CreateListingHero() {
         <span aria-hidden="true" className={SEP_CLASS} />
         <span>{copy.kickerStep}</span>
       </div>
-      <h1 className={TITLE_CLASS}>{copy.title}</h1>
+      <h1 className={TITLE_CLASS}>{title ?? copy.title}</h1>
       <p className={LEAD_CLASS}>{copy.lead}</p>
     </div>
   );

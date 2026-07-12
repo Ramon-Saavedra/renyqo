@@ -51,6 +51,8 @@ export const createListingCopy = {
     kicker: "Neues Mietobjekt",
     kickerStep: "Schritt für Schritt",
     title: "Erstes Mietobjekt anlegen",
+    fallbackTitle: "Neues Mietobjekt anlegen",
+    nextTitle: "Weiteres Mietobjekt anlegen",
     lead: "Erfasse die wichtigsten Daten deiner Immobilie. Du kannst jederzeit als Entwurf speichern und später weiterarbeiten — nichts wird veröffentlicht, bevor du es selbst freigibst.",
   },
   headerNav: {

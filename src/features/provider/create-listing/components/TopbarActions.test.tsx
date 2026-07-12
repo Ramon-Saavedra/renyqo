@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import type { MouseEvent } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { createListingCopy } from "../copy/create-listing";
@@ -115,5 +116,19 @@ describe("TopbarActions", () => {
 
     expect(onUndo).toHaveBeenCalledTimes(1);
     expect(onRedo).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls the back click handler before leaving", () => {
+    const onBackClick = vi.fn((event: MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+    });
+
+    renderTopbarActions({ onBackClick });
+
+    fireEvent.click(
+      screen.getByRole("link", { name: createListingCopy.topbar.back }),
+    );
+
+    expect(onBackClick).toHaveBeenCalledTimes(1);
   });
 });

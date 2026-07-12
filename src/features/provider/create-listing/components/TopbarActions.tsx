@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { MouseEventHandler } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -21,6 +22,7 @@ interface TopbarActionsProps {
   canRedo: boolean;
   onUndo: () => void;
   onRedo: () => void;
+  onBackClick?: MouseEventHandler<HTMLAnchorElement>;
 }
 
 const STATUS_TEXT_CLASS: Record<Exclude<ListingSaveStatus, "idle">, string> = {
@@ -47,6 +49,7 @@ export function TopbarActions({
   canRedo,
   onUndo,
   onRedo,
+  onBackClick,
 }: TopbarActionsProps) {
   return (
     <>
@@ -113,6 +116,7 @@ export function TopbarActions({
       <Link
         href={createListingCopy.topbar.backHref}
         className={buttonClass("ghost")}
+        {...(onBackClick ? { onClick: onBackClick } : {})}
       >
         <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
         {createListingCopy.topbar.back}

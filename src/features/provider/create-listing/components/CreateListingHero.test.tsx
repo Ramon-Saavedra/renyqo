@@ -22,6 +22,17 @@ describe("CreateListingHero", () => {
     ).toBeInstanceOf(HTMLElement);
   });
 
+  it("renders a provided dynamic heading", () => {
+    render(<CreateListingHero title="Weiteres Mietobjekt anlegen" />);
+
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Weiteres Mietobjekt anlegen",
+      }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
   it("renders the lead paragraph", () => {
     render(<CreateListingHero />);
 
