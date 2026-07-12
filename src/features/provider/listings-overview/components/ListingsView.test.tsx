@@ -3,12 +3,25 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "@/lib/api/client";
-import { getProviderListings } from "../api/provider-listings";
+import {
+  archiveProviderListing,
+  getProviderListings,
+  publishProviderListing,
+} from "../api/provider-listings";
 import type { ListingOverviewItem } from "../types";
 import { ListingsView } from "./ListingsView";
 
 vi.mock("../api/provider-listings", () => ({
+  archiveProviderListing: vi.fn(),
   getProviderListings: vi.fn(),
+  moveProviderListingToDraft: vi.fn(),
+  publishProviderListing: vi.fn(),
+}));
+
+const mockPush = vi.hoisted(() => vi.fn());
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
 }));
 
 const NOW = new Date("2026-05-22T15:00:00");
@@ -19,6 +32,8 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     title: "Helle 3-Zimmer Altbauwohnung",
     displayAddress: "Schönhauser Allee 142 · Berlin, Prenzlauer Berg · 10437",
     coldRent: 1480,
+    deposit: 2960,
+    depositMonths: 2,
     livingArea: 84,
     rooms: 3,
     applicationsTotal: 2,
@@ -36,6 +51,8 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     title: "Modernes Loft",
     displayAddress: "Friedrichstraße 88 · Hamburg, Altona · 22765",
     coldRent: 2150,
+    deposit: 4300,
+    depositMonths: 2,
     livingArea: 112,
     rooms: 4,
     applicationsTotal: 4,
@@ -53,6 +70,8 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     title: "Entwurf Studio",
     displayAddress: "Brüderstraße 8 · Leipzig, Zentrum-Süd · 04103",
     coldRent: 680,
+    deposit: 1360,
+    depositMonths: 2,
     livingArea: 32,
     rooms: 1,
     applicationsTotal: 0,
@@ -70,11 +89,13 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     title: "Penthouse mit Rheinblick",
     displayAddress: "Konrad-Adenauer-Ufer 22 · Düsseldorf, Altstadt · 40213",
     coldRent: 3450,
+    deposit: 10350,
+    depositMonths: 3,
     livingArea: 168,
     rooms: 5,
     applicationsTotal: 5,
     openQuestionsCount: 0,
-    status: "rented",
+    status: "archived",
     needsAttention: false,
     attentionReason: null,
     createdAt: "2026-01-15",
@@ -95,6 +116,8 @@ function renderRemoteView() {
 describe("ListingsView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(archiveProviderListing).mockResolvedValue(undefined);
+    vi.mocked(publishProviderListing).mockResolvedValue(undefined);
   });
 
   it("renders all initial listings", () => {
@@ -158,13 +181,11 @@ describe("ListingsView", () => {
       within(filterGroup).getByRole("radio", { name: /Alle/ }).textContent,
     ).toContain(String(SAMPLE.length));
     expect(
-      within(filterGroup).getByRole("radio", { name: /Aktiv/ }).textContent,
+      within(filterGroup).getByRole("radio", { name: /Veröffentlicht/ })
+        .textContent,
     ).toContain("2");
     expect(
       within(filterGroup).getByRole("radio", { name: /Entwürfe/ }).textContent,
-    ).toContain("1");
-    expect(
-      within(filterGroup).getByRole("radio", { name: /Vermietet/ }).textContent,
     ).toContain("1");
     expect(
       screen.getByRole("radio", { name: /Klärung nötig/ }).textContent,
@@ -250,12 +271,12 @@ describe("ListingsView", () => {
   it("shows the archived-only empty state when filter Aktiv yields zero but archive exists", async () => {
     const user = userEvent.setup();
     const onlyInactive: readonly ListingOverviewItem[] = SAMPLE.filter(
-      (l) => l.status === "rented" || l.status === "archived",
+      (l) => l.status === "paused" || l.status === "archived",
     );
 
     renderView(onlyInactive);
 
-    await user.click(screen.getByRole("radio", { name: /Aktiv/ }));
+    await user.click(screen.getByRole("radio", { name: /Veröffentlicht/ }));
 
     expect(
       screen.getByText("Du hast aktuell keine aktiven Mietobjekte."),
@@ -265,7 +286,7 @@ describe("ListingsView", () => {
     ).toBeInstanceOf(HTMLElement);
   });
 
-  it("marks a listing as paused when the row action is invoked", async () => {
+  it("navigates to listing details from the details action", async () => {
     const user = userEvent.setup();
     renderView();
 
@@ -275,15 +296,11 @@ describe("ListingsView", () => {
     expect(row).not.toBeNull();
     if (!row) return;
 
-    const trigger = within(row as HTMLElement).getByRole("button", {
-      name: "Aktionen",
-    });
-    await user.click(trigger);
-
-    await user.click(screen.getByRole("menuitem", { name: /Pausieren/ }));
-
-    expect(within(row as HTMLElement).getByText("Pausiert")).toBeInstanceOf(
-      HTMLElement,
+    await user.click(
+      within(row as HTMLElement).getByRole("button", { name: "Aktionen" }),
     );
+    await user.click(screen.getByRole("menuitem", { name: /Details ansehen/ }));
+
+    expect(mockPush).toHaveBeenCalledWith("/provider/listings/a");
   });
 });

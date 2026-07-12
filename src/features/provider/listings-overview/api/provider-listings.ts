@@ -1,4 +1,5 @@
 import { apiGet } from "@/lib/api/client";
+import { apiPatch } from "@/lib/api/client";
 import type {
   AttentionReason,
   ListingOverviewItem,
@@ -60,10 +61,9 @@ function readBoolean(
 
 function normalizeStatus(value: string | null): ListingStatus {
   const normalized = value?.toLowerCase();
-  if (normalized === "published" || normalized === "active") return "published";
+  if (normalized === "published") return "published";
   if (normalized === "draft") return "draft";
   if (normalized === "paused") return "paused";
-  if (normalized === "rented") return "rented";
   if (normalized === "archived") return "archived";
   return "draft";
 }
@@ -172,6 +172,8 @@ function mapProviderListing(value: unknown): ListingOverviewItem | null {
     displayAddress: buildDisplayAddress(value),
     coverImageUrl: readCoverImageUrl(value),
     coldRent: readNumber(value, ["coldRent", "rent", "price"]) ?? 0,
+    deposit: readNumber(value, ["deposit"]) ?? 0,
+    depositMonths: readNumber(value, ["depositMonths"]) ?? 0,
     livingArea: readNumber(value, ["livingArea", "area"]) ?? 0,
     rooms: readNumber(value, ["rooms"]) ?? 0,
     applicationsTotal:
@@ -209,4 +211,16 @@ export async function getProviderListings(): Promise<
   return readRows(response)
     .map(mapProviderListing)
     .filter(isListingOverviewItem);
+}
+
+export async function publishProviderListing(id: string): Promise<void> {
+  await apiPatch<void>(`/api/v1/provider/listings/${id}/publish`);
+}
+
+export async function moveProviderListingToDraft(id: string): Promise<void> {
+  await apiPatch<void>(`/api/v1/provider/listings/${id}/draft`);
+}
+
+export async function archiveProviderListing(id: string): Promise<void> {
+  await apiPatch<void>(`/api/v1/provider/listings/${id}/archive`);
 }

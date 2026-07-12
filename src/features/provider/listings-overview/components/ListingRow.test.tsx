@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ListingOverviewItem } from "../types";
@@ -12,6 +11,8 @@ const BASE: ListingOverviewItem = {
   title: "Helle Wohnung am Park",
   displayAddress: "Parkstraße 12 · Berlin, Mitte · 10115",
   coldRent: 1200,
+  deposit: 2400,
+  depositMonths: 2,
   livingArea: 68,
   rooms: 2,
   applicationsTotal: 3,
@@ -58,7 +59,13 @@ describe("ListingRow", () => {
 
   it("renders the status pill", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByText("Aktiv")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Veröffentlicht")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("renders deposit and deposit months", () => {
+    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
+    expect(screen.getByText("2.400 €")).toBeInstanceOf(HTMLElement);
+    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
   });
 
   it("renders the applications label '3 sichtbar' for applicationsTotal 3", () => {
@@ -101,24 +108,15 @@ describe("ListingRow", () => {
     expect(screen.queryByRole("img", { name: /Rückfragen/ })).toBeNull();
   });
 
-  it("calls onAction with 'edit' and the listing when the edit button is clicked", async () => {
-    const user = userEvent.setup();
-    const onAction = vi.fn();
-    render(<ListingRow listing={BASE} onAction={onAction} now={NOW} />);
-    await user.click(screen.getByRole("button", { name: "Bearbeiten" }));
-    expect(onAction).toHaveBeenCalledWith("edit", BASE);
+  it("does not render an edit (pencil) button", () => {
+    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
+    expect(screen.queryByRole("button", { name: "Bearbeiten" })).toBeNull();
   });
 
-  it("applies the inactive style for 'rented' status", () => {
-    const { container } = render(
-      <ListingRow
-        listing={{ ...BASE, status: "rented" }}
-        onAction={vi.fn()}
-        now={NOW}
-      />,
-    );
-    expect(container.querySelector("article")?.className).toContain(
-      "bg-background-subtle",
+  it("exposes the actions menu trigger", () => {
+    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
+    expect(screen.getByRole("button", { name: "Aktionen" })).toBeInstanceOf(
+      HTMLElement,
     );
   });
 

@@ -6,10 +6,9 @@ import { StatusPill } from "./StatusPill";
 describe("StatusPill", () => {
   it("renders the German label for each status", () => {
     const cases = [
-      { status: "published", label: "Aktiv" },
+      { status: "published", label: "Veröffentlicht" },
       { status: "draft", label: "Entwurf" },
       { status: "paused", label: "Pausiert" },
-      { status: "rented", label: "Vermietet" },
       { status: "archived", label: "Archiviert" },
     ] as const;
 
@@ -22,14 +21,8 @@ describe("StatusPill", () => {
 
   it("applies the matching pill color class for published", () => {
     render(<StatusPill status="published" />);
-    const pill = screen.getByText("Aktiv");
+    const pill = screen.getByText("Veröffentlicht");
     expect(pill.className).toContain("text-primary");
-  });
-
-  it("applies the success color class for rented", () => {
-    render(<StatusPill status="rented" />);
-    const pill = screen.getByText("Vermietet");
-    expect(pill.className).toContain("text-success");
   });
 
   it("appends an additional className when provided", () => {

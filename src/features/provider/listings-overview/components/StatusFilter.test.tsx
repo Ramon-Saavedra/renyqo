@@ -10,7 +10,6 @@ const COUNTS: StatusCounts = {
   published: 4,
   draft: 2,
   paused: 1,
-  rented: 2,
   archived: 1,
   attention: 3,
 };
@@ -28,16 +27,13 @@ describe("StatusFilter", () => {
     expect(screen.getByRole("radio", { name: /Alle/ })).toBeInstanceOf(
       HTMLElement,
     );
-    expect(screen.getByRole("radio", { name: /Aktiv/ })).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(
+      screen.getByRole("radio", { name: /Veröffentlicht/ }),
+    ).toBeInstanceOf(HTMLElement);
     expect(screen.getByRole("radio", { name: /Entwürfe/ })).toBeInstanceOf(
       HTMLElement,
     );
     expect(screen.getByRole("radio", { name: /Pausiert/ })).toBeInstanceOf(
-      HTMLElement,
-    );
-    expect(screen.getByRole("radio", { name: /Vermietet/ })).toBeInstanceOf(
       HTMLElement,
     );
     expect(screen.getByRole("radio", { name: /Archiviert/ })).toBeInstanceOf(
@@ -78,9 +74,9 @@ describe("StatusFilter", () => {
     expect(btn.textContent).toContain("10");
   });
 
-  it("shows the count for the 'Aktiv' filter", () => {
+  it("shows the count for the 'Veröffentlicht' filter", () => {
     render(<StatusFilter value="alle" onChange={vi.fn()} counts={COUNTS} />);
-    const btn = screen.getByRole("radio", { name: /Aktiv/ });
+    const btn = screen.getByRole("radio", { name: /Veröffentlicht/ });
     expect(btn.textContent).toContain("4");
   });
 });

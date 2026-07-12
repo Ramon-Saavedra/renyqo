@@ -7,9 +7,15 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { useRouter } from "next/navigation";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { ApiError } from "@/lib/api/client";
-import { getProviderListings } from "../api/provider-listings";
+import {
+  archiveProviderListing,
+  getProviderListings,
+  moveProviderListingToDraft,
+  publishProviderListing,
+} from "../api/provider-listings";
 import { STATUS_SORT_ORDER } from "../copy/listings";
 import type {
   ListingOverviewItem,
@@ -34,6 +40,7 @@ interface ListingsViewProps {
 }
 
 type FetchStatus = "idle" | "loading" | "error";
+type ActionStatus = "publishing" | "drafting" | "archiving";
 
 function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
   return {
@@ -41,7 +48,6 @@ function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
     published: listings.filter((l) => l.status === "published").length,
     draft: listings.filter((l) => l.status === "draft").length,
     paused: listings.filter((l) => l.status === "paused").length,
-    rented: listings.filter((l) => l.status === "rented").length,
     archived: listings.filter((l) => l.status === "archived").length,
     attention: listings.filter((l) => l.needsAttention).length,
   };
@@ -65,11 +71,14 @@ function matchesSearch(listing: ListingOverviewItem, q: string): boolean {
   );
 }
 
-const NO_SUBSCRIBE = (): (() => void) => {
-  return () => {};
-};
-const getClientSnapshot = (): boolean => true;
-const getServerSnapshot = (): boolean => false;
+const ACTIVITY_TICK_MS = 60_000;
+
+function subscribeActivityClock(onTick: () => void): () => void {
+  const id = setInterval(onTick, ACTIVITY_TICK_MS);
+  return () => clearInterval(id);
+}
+const getActivityTick = (): number => Math.floor(Date.now() / ACTIVITY_TICK_MS);
+const getServerActivityTick = (): number => 0;
 
 const SORTERS: Record<
   SortKey,
@@ -85,6 +94,7 @@ const SORTERS: Record<
 };
 
 export function ListingsView({ initialListings, now }: ListingsViewProps) {
+  const router = useRouter();
   const [listings, setListings] = useState<readonly ListingOverviewItem[]>(
     initialListings ?? [],
   );
@@ -92,17 +102,21 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
     initialListings ? "idle" : "loading",
   );
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionStatusById, setActionStatusById] = useState<
+    Readonly<Record<string, ActionStatus>>
+  >({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("alle");
   const [sort, setSort] = useState<SortKey>("updated");
-  const isHydrated = useSyncExternalStore(
-    NO_SUBSCRIBE,
-    getClientSnapshot,
-    getServerSnapshot,
+  const activityTick = useSyncExternalStore(
+    subscribeActivityClock,
+    getActivityTick,
+    getServerActivityTick,
   );
   const renderNow = useMemo<Date | null>(
-    () => now ?? (isHydrated ? new Date() : null),
-    [now, isHydrated],
+    () => now ?? (activityTick > 0 ? new Date() : null),
+    [now, activityTick],
   );
 
   useEffect(() => {
@@ -146,38 +160,74 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
   }, [listings, statusFilter, search, sort]);
 
   const handleAction = useCallback<
-    (action: RowAction, listing: ListingOverviewItem) => void
-  >((action, listing) => {
-    if (action === "edit" || action === "preview") return;
-    setListings((current) =>
-      current.map((item) => {
-        if (item.id !== listing.id) return item;
-        const updatedAt = new Date().toISOString();
-        if (action === "pause") {
-          return { ...item, status: "paused", updatedAt };
+    (action: RowAction, listing: ListingOverviewItem) => Promise<void>
+  >(
+    async (action, listing) => {
+      if (action === "details") {
+        router.push(`/provider/listings/${listing.id}`);
+        return;
+      }
+      if (action === "edit") return;
+
+      const nextStatus =
+        action === "publish"
+          ? "published"
+          : action === "draft"
+            ? "draft"
+            : "archived";
+      const pendingStatus =
+        action === "publish"
+          ? "publishing"
+          : action === "draft"
+            ? "drafting"
+            : "archiving";
+
+      setActionError(null);
+      setActionStatusById((current) => ({
+        ...current,
+        [listing.id]: pendingStatus,
+      }));
+
+      try {
+        if (action === "publish") {
+          await publishProviderListing(listing.id);
+        } else if (action === "draft") {
+          await moveProviderListingToDraft(listing.id);
+        } else {
+          await archiveProviderListing(listing.id);
         }
-        if (action === "rented") {
-          return {
-            ...item,
-            status: "rented",
-            updatedAt,
-            needsAttention: false,
-            attentionReason: null,
-          };
-        }
-        if (action === "archive") {
-          return {
-            ...item,
-            status: "archived",
-            updatedAt,
-            needsAttention: false,
-            attentionReason: null,
-          };
-        }
-        return item;
-      }),
-    );
-  }, []);
+
+        setListings((current) =>
+          current.map((item) =>
+            item.id === listing.id
+              ? {
+                  ...item,
+                  status: nextStatus,
+                  updatedAt: new Date().toISOString(),
+                  needsAttention:
+                    nextStatus === "archived" ? false : item.needsAttention,
+                  attentionReason:
+                    nextStatus === "archived" ? null : item.attentionReason,
+                }
+              : item,
+          ),
+        );
+      } catch (err) {
+        setActionError(
+          err instanceof ApiError && err.status === 0
+            ? "Netzwerkfehler — Aktion konnte nicht ausgeführt werden"
+            : "Aktion konnte nicht ausgeführt werden",
+        );
+      } finally {
+        setActionStatusById((current) => {
+          const next = { ...current };
+          delete next[listing.id];
+          return next;
+        });
+      }
+    },
+    [router],
+  );
 
   const resetFilters = useCallback(() => {
     setStatusFilter("alle");
@@ -185,7 +235,7 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
   }, []);
 
   const hasArchive = listings.some(
-    (l) => l.status === "rented" || l.status === "archived",
+    (l) => l.status === "paused" || l.status === "archived",
   );
 
   const emptyVariant: "fresh" | "archived-only" | "filtered" | null = (() => {
@@ -225,6 +275,12 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
           onSortChange={setSort}
         />
 
+        {actionError ? (
+          <div className="mb-4 rounded-md border border-border bg-background px-4 py-3 text-caption text-foreground-secondary">
+            {actionError}
+          </div>
+        ) : null}
+
         {fetchStatus === "loading" ? (
           <ListingsLoadingSkeleton />
         ) : fetchStatus === "error" ? (
@@ -244,6 +300,7 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
                 key={listing.id}
                 listing={listing}
                 onAction={handleAction}
+                actionStatus={actionStatusById[listing.id]}
                 now={renderNow}
               />
             ))}

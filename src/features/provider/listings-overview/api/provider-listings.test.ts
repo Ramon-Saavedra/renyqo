@@ -1,10 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiGet } from "@/lib/api/client";
-import { getProviderListings } from "./provider-listings";
+import { apiGet, apiPatch } from "@/lib/api/client";
+import {
+  archiveProviderListing,
+  getProviderListings,
+  moveProviderListingToDraft,
+  publishProviderListing,
+} from "./provider-listings";
 
 vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
+  apiPatch: vi.fn(),
 }));
 
 describe("getProviderListings", () => {
@@ -29,8 +35,10 @@ describe("getProviderListings", () => {
         street: "Musterstraße 1",
         zip: "10115",
         city: "Berlin",
-        status: "ACTIVE",
+        status: "PUBLISHED",
         coldRent: 1200,
+        deposit: 2400,
+        depositMonths: 2,
         livingArea: 70,
         rooms: 3,
         applicationsCount: 4,
@@ -49,6 +57,8 @@ describe("getProviderListings", () => {
         displayAddress: "Musterstraße 1 · Berlin · 10115",
         coverImageUrl: "https://example.com/cover.jpg",
         coldRent: 1200,
+        deposit: 2400,
+        depositMonths: 2,
         livingArea: 70,
         rooms: 3,
         applicationsTotal: 4,
@@ -83,6 +93,8 @@ describe("getProviderListings", () => {
         displayAddress: "Direkte Adresse",
         coverImageUrl: null,
         coldRent: 0,
+        deposit: 0,
+        depositMonths: 0,
         livingArea: 0,
         rooms: 0,
         applicationsTotal: 0,
@@ -96,5 +108,35 @@ describe("getProviderListings", () => {
         availableFrom: null,
       },
     ]);
+  });
+
+  it("publishes a provider listing", async () => {
+    vi.mocked(apiPatch).mockResolvedValue(undefined);
+
+    await publishProviderListing("listing-1");
+
+    expect(apiPatch).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/publish",
+    );
+  });
+
+  it("moves a provider listing to draft", async () => {
+    vi.mocked(apiPatch).mockResolvedValue(undefined);
+
+    await moveProviderListingToDraft("listing-1");
+
+    expect(apiPatch).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/draft",
+    );
+  });
+
+  it("archives a provider listing", async () => {
+    vi.mocked(apiPatch).mockResolvedValue(undefined);
+
+    await archiveProviderListing("listing-1");
+
+    expect(apiPatch).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/archive",
+    );
   });
 });

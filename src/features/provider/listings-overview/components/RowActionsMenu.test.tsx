@@ -10,6 +10,8 @@ const BASE: ListingOverviewItem = {
   title: "Testobject",
   displayAddress: "Teststraße 1 · Berlin · 10000",
   coldRent: 900,
+  deposit: 1800,
+  depositMonths: 2,
   livingArea: 55,
   rooms: 2,
   applicationsTotal: 1,
@@ -35,55 +37,22 @@ describe("RowActionsMenu", () => {
     expect(screen.getByRole("menu")).toBeInstanceOf(HTMLElement);
   });
 
-  it("shows 'Pausieren' when status is published", async () => {
+  it("shows only the 'Details ansehen' action", async () => {
     const user = userEvent.setup();
     render(<RowActionsMenu listing={BASE} onAction={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: "Aktionen" }));
-    expect(screen.getByRole("menuitem", { name: "Pausieren" })).toBeInstanceOf(
-      HTMLElement,
-    );
+    const items = screen.getAllByRole("menuitem");
+    expect(items).toHaveLength(1);
+    expect(items[0]?.textContent).toContain("Details ansehen");
   });
 
-  it("does not show 'Pausieren' when status is paused", async () => {
-    const user = userEvent.setup();
-    render(
-      <RowActionsMenu
-        listing={{ ...BASE, status: "paused" }}
-        onAction={vi.fn()}
-      />,
-    );
-    await user.click(screen.getByRole("button", { name: "Aktionen" }));
-    expect(screen.queryByRole("menuitem", { name: "Pausieren" })).toBeNull();
-  });
-
-  it("shows 'Als vermietet markieren' when status is published", async () => {
-    const user = userEvent.setup();
-    render(<RowActionsMenu listing={BASE} onAction={vi.fn()} />);
-    await user.click(screen.getByRole("button", { name: "Aktionen" }));
-    expect(
-      screen.getByRole("menuitem", { name: "Als vermietet markieren" }),
-    ).toBeInstanceOf(HTMLElement);
-  });
-
-  it("does not show 'Archivieren' when status is archived", async () => {
-    const user = userEvent.setup();
-    render(
-      <RowActionsMenu
-        listing={{ ...BASE, status: "archived" }}
-        onAction={vi.fn()}
-      />,
-    );
-    await user.click(screen.getByRole("button", { name: "Aktionen" }));
-    expect(screen.queryByRole("menuitem", { name: "Archivieren" })).toBeNull();
-  });
-
-  it("calls onAction and closes the menu when an item is clicked", async () => {
+  it("calls onAction with 'details' and closes the menu when clicked", async () => {
     const user = userEvent.setup();
     const onAction = vi.fn();
     render(<RowActionsMenu listing={BASE} onAction={onAction} />);
     await user.click(screen.getByRole("button", { name: "Aktionen" }));
-    await user.click(screen.getByRole("menuitem", { name: "Pausieren" }));
-    expect(onAction).toHaveBeenCalledWith("pause", BASE);
+    await user.click(screen.getByRole("menuitem", { name: "Details ansehen" }));
+    expect(onAction).toHaveBeenCalledWith("details", BASE);
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
