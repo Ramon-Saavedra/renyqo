@@ -1,12 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MOCK_OBJECTS } from "../data/mock";
 import { ObjectSidebar } from "./ObjectSidebar";
 
-const onSearchChange = vi.fn();
 const onSelect = vi.fn();
 const onCollapse = vi.fn();
 
@@ -16,30 +14,9 @@ function renderSidebar(objects = MOCK_OBJECTS) {
       objects={objects}
       totalCount={MOCK_OBJECTS.length}
       selectedId="obj-kreuzberg"
-      search=""
-      onSearchChange={onSearchChange}
       onSelect={onSelect}
       onCollapse={onCollapse}
     />,
-  );
-}
-
-function SidebarSearchHarness() {
-  const [search, setSearch] = useState("");
-
-  return (
-    <ObjectSidebar
-      objects={MOCK_OBJECTS}
-      totalCount={MOCK_OBJECTS.length}
-      selectedId="obj-kreuzberg"
-      search={search}
-      onSearchChange={(value) => {
-        onSearchChange(value);
-        setSearch(value);
-      }}
-      onSelect={onSelect}
-      onCollapse={onCollapse}
-    />
   );
 }
 
@@ -51,21 +28,26 @@ describe("ObjectSidebar", () => {
   it("renders the object count and visible objects", () => {
     renderSidebar();
 
-    expect(screen.getByText("Meine Mietobjekte · 4")).not.toBeNull();
+    expect(screen.getByText("meine mietobjekte")).not.toBeNull();
+    expect(screen.getByText("4")).not.toBeNull();
     expect(screen.getByText("2,5-Zimmer-Wohnung Kreuzberg")).not.toBeNull();
     expect(screen.getByText("Studio am Maybachufer")).not.toBeNull();
   });
 
-  it("emits search changes", async () => {
-    const user = userEvent.setup();
-    render(<SidebarSearchHarness />);
+  it("renders the header without a bottom border or search input", () => {
+    renderSidebar();
 
-    await user.type(
-      screen.getByRole("searchbox", { name: "Objekte filtern" }),
-      "Pankow",
-    );
+    const heading = screen.getByText("meine mietobjekte");
+    const count = screen.getByText("4");
+    const header = heading.closest("div");
 
-    expect(onSearchChange).toHaveBeenLastCalledWith("Pankow");
+    expect(heading.className).toContain("text-warning-vivid");
+    expect(heading.className).not.toContain("uppercase");
+    expect(count.className).toContain("text-warning-vivid");
+    expect(header?.className).not.toContain("border-b");
+    expect(
+      screen.queryByRole("searchbox", { name: "Objekte filtern" }),
+    ).toBeNull();
   });
 
   it("emits selected object ids", async () => {

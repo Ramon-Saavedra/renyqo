@@ -134,8 +134,6 @@ export function DashboardView({
             objects={filteredObjects}
             totalCount={objects.length}
             selectedId={selected?.id ?? null}
-            search={search}
-            onSearchChange={setSearch}
             onSelect={setSelectedId}
             onCollapse={() => setCollapsed(true)}
           />
