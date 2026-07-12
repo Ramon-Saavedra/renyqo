@@ -161,6 +161,7 @@ describe("useCreateListing", () => {
       const payload = vi.mocked(createListingDraft).mock.calls[0]?.[0];
       expect(payload?.street).toBeUndefined();
       expect(payload?.additionalCosts).toBeUndefined();
+      expect(payload?.depositMonths).toBeUndefined();
       expect(payload?.deposit).toBeUndefined();
       expect(payload?.availableFrom).toBeUndefined();
       expect(payload?.minimumHouseholdNetIncome).toBeUndefined();
@@ -203,6 +204,8 @@ describe("useCreateListing", () => {
           livingArea: 65,
           rooms: 3,
           coldRent: 1100,
+          depositMonths: 2,
+          deposit: 2200,
           title: "Mein Titel",
         }),
         PHOTO_FILE,
@@ -594,6 +597,26 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ suitableForPeopleCount: 3 }),
+      );
+    });
+
+    it("computes deposit from coldRent and depositMonths", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, price: "950", depositMonths: 3 },
+          "Titel",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          coldRent: 950,
+          depositMonths: 3,
+          deposit: 2850,
+        }),
       );
     });
 

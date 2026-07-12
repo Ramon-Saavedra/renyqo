@@ -20,6 +20,7 @@ const PAYLOAD: CreateListingPayload = {
   bedrooms: null,
   coldRent: 1100,
   additionalCosts: undefined,
+  depositMonths: 2,
   deposit: 2200,
   availableFrom: "2026-07-01",
   title: "Wohnung in Berlin",
@@ -65,6 +66,8 @@ describe("createListingDraft", () => {
     expect(formData.get("city")).toBe("Berlin");
     expect(formData.get("showExactAddress")).toBe("false");
     expect(formData.get("livingArea")).toBe("65");
+    expect(formData.get("depositMonths")).toBe("2");
+    expect(formData.get("deposit")).toBe("2200");
     expect(formData.get("incomeProofRequired")).toBe("true");
     expect(formData.has("street")).toBe(false);
     expect(formData.has("bedrooms")).toBe(false);

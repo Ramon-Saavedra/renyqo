@@ -12,7 +12,11 @@ import {
   type SmokingPolicyBackend,
 } from "@/lib/api/listings";
 import { publishSchema } from "../schemas/listing-schemas";
-import type { ListingDraft, ListingDraftErrors } from "./useListingDraft";
+import type {
+  DepositMonths,
+  ListingDraft,
+  ListingDraftErrors,
+} from "./useListingDraft";
 import { INITIAL_DRAFT } from "./useListingDraft";
 
 export type SubmitStatus = "idle" | "saving" | "publishing";
@@ -50,6 +54,14 @@ function toOptionalPositiveNumber(value: string): number | undefined {
 function toOptionalNonNegativeNumber(value: string): number | undefined {
   const n = parseFloat(value.trim().replace(",", "."));
   return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
+function calculateDeposit(
+  coldRent: number | undefined,
+  months: DepositMonths,
+): number | undefined {
+  if (coldRent === undefined || coldRent <= 0) return undefined;
+  return coldRent * months;
 }
 
 function toObjectType(value: string): ObjectTypeBackend {
@@ -128,7 +140,6 @@ export function hasMeaningfulDraftContent(draft: ListingDraft): boolean {
     draft.bedrooms !== null ||
     toOptionalPositiveNumber(draft.price) !== undefined ||
     toOptionalNonNegativeNumber(draft.additionalCosts) !== undefined ||
-    toOptionalNonNegativeNumber(draft.deposit) !== undefined ||
     toOptionalIsoDate(draft.availableFrom) !== undefined ||
     hasText(draft.titleOverride) ||
     hasText(draft.description) ||
@@ -147,6 +158,9 @@ function mapDraftToCreateListingDto(
   draft: ListingDraft,
   title: string,
 ): CreateListingPayload {
+  const coldRent = toPositiveNumber(draft.price);
+  const deposit = calculateDeposit(coldRent, draft.depositMonths);
+
   return {
     city: draft.city.trim(),
     zip: draft.zip.trim(),
@@ -156,13 +170,13 @@ function mapDraftToCreateListingDto(
     livingArea: toPositiveNumber(draft.area),
     rooms: toRooms(draft.rooms),
     bedrooms: draft.bedrooms,
-    coldRent: toPositiveNumber(draft.price),
+    coldRent,
     additionalCosts:
       draft.additionalCosts.length > 0
         ? toPositiveNumber(draft.additionalCosts)
         : undefined,
-    deposit:
-      draft.deposit.length > 0 ? toPositiveNumber(draft.deposit) : undefined,
+    depositMonths: draft.depositMonths,
+    deposit,
     availableFrom: draft.availableFrom,
     title: title.trim(),
     shortDescription: draft.description.trim(),
@@ -195,7 +209,7 @@ function mapDraftToPartialCreateListingDto(
   const rooms = toOptionalRooms(draft.rooms);
   const coldRent = toOptionalPositiveNumber(draft.price);
   const additionalCosts = toOptionalNonNegativeNumber(draft.additionalCosts);
-  const deposit = toOptionalNonNegativeNumber(draft.deposit);
+  const deposit = calculateDeposit(coldRent, draft.depositMonths);
   const availableFrom = toOptionalIsoDate(draft.availableFrom);
   const trimmedTitle = title.trim();
   const shortDescription = draft.description.trim();
@@ -216,7 +230,10 @@ function mapDraftToPartialCreateListingDto(
   if (draft.bedrooms !== null) payload.bedrooms = draft.bedrooms;
   if (coldRent !== undefined) payload.coldRent = coldRent;
   if (additionalCosts !== undefined) payload.additionalCosts = additionalCosts;
-  if (deposit !== undefined) payload.deposit = deposit;
+  if (deposit !== undefined) {
+    payload.depositMonths = draft.depositMonths;
+    payload.deposit = deposit;
+  }
   if (availableFrom !== undefined) payload.availableFrom = availableFrom;
   if (trimmedTitle && hasMeaningfulDraftContent(draft)) {
     payload.title = trimmedTitle;
@@ -275,7 +292,7 @@ function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
     "bedrooms",
     "price",
     "additionalCosts",
-    "deposit",
+    "depositMonths",
     "availableFrom",
     "legalAccepted",
   ] as const;
@@ -295,6 +312,8 @@ function mapBackendMessage(message: string): ListingDraftErrors {
     errors.area = "Bitte gib die Wohnfläche an";
   if (/coldRent|rent/i.test(message))
     errors.price = "Bitte gib die Kaltmiete an";
+  if (/depositMonths|deposit/i.test(message))
+    errors.depositMonths = "Bitte wähle eine gültige Kaution";
   if (/\brooms\b/i.test(message)) errors.rooms = "Bitte wähle die Zimmeranzahl";
   if (/\bbedrooms\b/i.test(message))
     errors.bedrooms = "Bitte gib die Anzahl der Schlafzimmer an";

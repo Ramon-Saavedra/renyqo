@@ -15,6 +15,7 @@ export interface CreateListingPayload {
   readonly bedrooms?: number | null | undefined;
   readonly coldRent?: number | undefined;
   readonly additionalCosts?: number | undefined;
+  readonly depositMonths?: number | undefined;
   readonly deposit?: number | undefined;
   readonly availableFrom?: string | undefined;
   readonly title?: string | undefined;
@@ -64,6 +65,7 @@ function buildCreateListingFormData(
     "additionalCosts",
     payload.additionalCosts,
   );
+  appendCreateListingField(formData, "depositMonths", payload.depositMonths);
   appendCreateListingField(formData, "deposit", payload.deposit);
   appendCreateListingField(formData, "availableFrom", payload.availableFrom);
   appendCreateListingField(formData, "title", payload.title);
