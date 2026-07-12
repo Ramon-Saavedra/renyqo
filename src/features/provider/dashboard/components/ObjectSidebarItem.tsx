@@ -12,22 +12,21 @@ interface ObjectSidebarItemProps {
 }
 
 const ITEM_CLASS =
-  "flex min-h-0 flex-1 cursor-pointer flex-col rounded-md border px-3 py-2 focus-within:shadow-focus";
+  "flex min-h-0 flex-1 cursor-pointer flex-col rounded-md  bg-background px-3 py-2 focus-within:shadow-focus border-2";
 const INACTIVE_CLASS =
-  "border-border bg-background-subtle hover:border-border-strong hover:bg-background-muted";
-const ACTIVE_CLASS =
-  "border-primary bg-background-subtle shadow shadow-primary";
+  "border-border hover:border-border-strong hover:bg-background-muted";
+const ACTIVE_CLASS = "border-primary bg-primary-soft shadow-card";
 
 const SELECT_CLASS =
   "block min-h-0 w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:shadow-focus";
 
 const TITLE_BASE =
   "min-w-0 truncate font-display text-caption font-medium text-foreground";
-const TITLE_ACTIVE = "text-primary";
+const TITLE_ACTIVE = "";
 
 const STATUS_BASE =
   "shrink-0 rounded-sm px-1.5 py-0.5 text-xs font-medium whitespace-nowrap";
-const STATUS_PUBLISHED = "bg-primary-tint text-primary";
+const STATUS_PUBLISHED = "bg-background text-primary";
 const STATUS_DRAFT = "bg-background-muted text-foreground-secondary";
 
 const META_BASE =
