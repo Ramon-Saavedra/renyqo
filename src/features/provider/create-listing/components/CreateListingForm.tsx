@@ -1,8 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { MouseEvent } from "react";
+import { Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
+import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
 import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
 import { useActiveStepFromScroll } from "../hooks/useActiveStepFromScroll";
 import { useAutoTitle } from "../hooks/useAutoTitle";
@@ -73,9 +78,16 @@ function areDraftsEqual(left: ListingDraft, right: ListingDraft): boolean {
 }
 
 export function CreateListingForm() {
+  const router = useRouter();
   const [cleanDraft, setCleanDraft] = useState<ListingDraft>(INITIAL_DRAFT);
   const [cleanStatus, setCleanStatus] = useState<ListingSaveStatus>("idle");
   const [hasSaveError, setHasSaveError] = useState(false);
+  const [hasProviderListings, setHasProviderListings] = useState<
+    boolean | null
+  >(null);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [showSaveBeforeLeaveError, setShowSaveBeforeLeaveError] =
+    useState(false);
   const { draft, canUndo, canRedo, setField, setPhotos, undo, redo } =
     useListingDraft();
   const activeStepId = useActiveStepFromScroll(SECTION_IDS);
@@ -113,6 +125,12 @@ export function CreateListingForm() {
 
   const finalTitle = draft.titleOverride.trim() || autoTitle;
   const stepperSteps = createListingCopy.stepper.steps;
+  const heroTitle =
+    hasProviderListings === null
+      ? createListingCopy.hero.fallbackTitle
+      : hasProviderListings
+        ? createListingCopy.hero.nextTitle
+        : createListingCopy.hero.title;
   const hasUnsavedChanges = !areDraftsEqual(draft, cleanDraft);
   const canSaveBeforeLeave = hasMeaningfulDraftContent(draft);
   const saveStatus: ListingSaveStatus = hasSaveError
@@ -155,6 +173,40 @@ export function CreateListingForm() {
     [draft, finalTitle, saveDraft],
   );
 
+  const guardNavigation = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+      if (!hasUnsavedChanges) return;
+
+      event.preventDefault();
+      setShowSaveBeforeLeaveError(false);
+      setPendingHref(href);
+    },
+    [hasUnsavedChanges],
+  );
+
+  const keepEditing = useCallback(() => {
+    if (submitStatus === "saving") return;
+    setShowSaveBeforeLeaveError(false);
+    setPendingHref(null);
+  }, [submitStatus]);
+
+  const continueNavigation = useCallback(() => {
+    if (pendingHref) {
+      router.push(pendingHref);
+    }
+    setPendingHref(null);
+  }, [pendingHref, router]);
+
+  const saveAndContinueNavigation = useCallback(async () => {
+    if (!pendingHref || !canSaveBeforeLeave) return;
+
+    setShowSaveBeforeLeaveError(false);
+    const saved = await handleSaveDraftAndLeave(pendingHref);
+    if (!saved) {
+      setShowSaveBeforeLeaveError(true);
+    }
+  }, [canSaveBeforeLeave, handleSaveDraftAndLeave, pendingHref]);
+
   const handleUndo = useCallback(() => {
     undo();
     setHasSaveError(false);
@@ -190,28 +242,47 @@ export function CreateListingForm() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [canRedo, canUndo, handleRedo, handleUndo]);
 
+  useEffect(() => {
+    let active = true;
+
+    getProviderListings()
+      .then((listings) => {
+        if (active) setHasProviderListings(listings.length > 0);
+      })
+      .catch(() => {
+        if (active) setHasProviderListings(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <>
-      <AppTopbar className="sticky top-0 z-30 mb-section bg-background">
+      <AppTopbar
+        className="sticky top-0 z-30 mb-section bg-background"
+        logoHref={createListingCopy.headerNav.dashboardHref}
+        onLogoClick={(event) =>
+          guardNavigation(event, createListingCopy.headerNav.dashboardHref)
+        }
+      >
         <TopbarActions
           status={saveStatus}
           canUndo={canUndo}
           canRedo={canRedo}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          onBackClick={(event) =>
+            guardNavigation(event, createListingCopy.topbar.backHref)
+          }
         />
       </AppTopbar>
 
       <div className="px-gutter">
-        <CreateListingHero />
+        <CreateListingHero title={heroTitle} />
 
-        <HeaderNavLinks
-          hasUnsavedChanges={hasUnsavedChanges}
-          canSaveBeforeLeave={canSaveBeforeLeave}
-          isSavingBeforeLeave={submitStatus === "saving"}
-          saveBeforeLeaveError={error}
-          onSaveBeforeLeave={handleSaveDraftAndLeave}
-        />
+        <HeaderNavLinks onNavigate={guardNavigation} />
 
         <SectionStepper
           steps={stepperSteps}
@@ -252,6 +323,34 @@ export function CreateListingForm() {
           <PreviewCard draft={draft} finalTitle={finalTitle} />
         </div>
       </div>
+
+      <ConfirmationModal
+        open={pendingHref !== null}
+        title={createListingCopy.headerNav.unsavedChangesModal.title}
+        text={createListingCopy.headerNav.unsavedChangesModal.text}
+        primaryLabel={createListingCopy.headerNav.unsavedChangesModal.primary}
+        secondaryLabel={
+          createListingCopy.headerNav.unsavedChangesModal.secondary
+        }
+        tertiaryLabel={
+          canSaveBeforeLeave
+            ? createListingCopy.headerNav.unsavedChangesModal.tertiary
+            : undefined
+        }
+        tertiaryPendingLabel={
+          createListingCopy.headerNav.unsavedChangesModal.tertiaryPending
+        }
+        onPrimary={keepEditing}
+        onSecondary={continueNavigation}
+        onTertiary={saveAndContinueNavigation}
+        tertiaryPending={submitStatus === "saving"}
+        error={
+          showSaveBeforeLeaveError
+            ? error || createListingCopy.headerNav.unsavedChangesModal.saveError
+            : null
+        }
+        icon={Sparkles}
+      />
     </>
   );
 }

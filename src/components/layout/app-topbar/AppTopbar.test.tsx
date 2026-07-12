@@ -1,5 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import userEvent from "@testing-library/user-event";
+import type { MouseEvent } from "react";
+import { describe, expect, it, vi } from "vitest";
 
 import { AppTopbar } from "./AppTopbar";
 
@@ -8,6 +10,33 @@ describe("AppTopbar", () => {
     render(<AppTopbar />);
 
     expect(screen.getByText("Renyqo")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("links the logo to the public homepage by default", () => {
+    render(<AppTopbar />);
+
+    expect(
+      screen.getByRole("link", { name: "Renyqo" }).getAttribute("href"),
+    ).toBe("/");
+  });
+
+  it("supports provider-specific logo navigation", async () => {
+    const user = userEvent.setup();
+    const onLogoClick = vi.fn((event: MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+    });
+
+    render(
+      <AppTopbar logoHref="/provider/dashboard" onLogoClick={onLogoClick} />,
+    );
+
+    const logoLink = screen.getByRole("link", { name: "Renyqo" });
+
+    expect(logoLink.getAttribute("href")).toBe("/provider/dashboard");
+
+    await user.click(logoLink);
+
+    expect(onLogoClick).toHaveBeenCalledTimes(1);
   });
 
   it("renders action children on the right", () => {

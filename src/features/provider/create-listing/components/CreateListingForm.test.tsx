@@ -7,6 +7,7 @@ import { CreateListingForm } from "./CreateListingForm";
 const mockPush = vi.hoisted(() => vi.fn());
 const mockCreateListingDraft = vi.hoisted(() => vi.fn());
 const mockPublishListing = vi.hoisted(() => vi.fn());
+const mockGetProviderListings = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -17,6 +18,10 @@ vi.mock("@/lib/api/listings", () => ({
   publishListing: mockPublishListing,
 }));
 
+vi.mock("@/features/provider/listings-overview/api/provider-listings", () => ({
+  getProviderListings: mockGetProviderListings,
+}));
+
 async function fillMinimumDraft(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByPlaceholderText("Berlin"), "Berlin");
   await user.type(screen.getByPlaceholderText("10115"), "10115");
@@ -25,6 +30,31 @@ async function fillMinimumDraft(user: ReturnType<typeof userEvent.setup>) {
 describe("CreateListingForm", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetProviderListings.mockResolvedValue([]);
+  });
+
+  it("renders the first-listing title when the provider has no listings", async () => {
+    render(<CreateListingForm />);
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Erstes Mietobjekt anlegen",
+      }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
+  it("renders the next-listing title when the provider already has listings", async () => {
+    mockGetProviderListings.mockResolvedValue([{ id: "listing-1" }]);
+
+    render(<CreateListingForm />);
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "Weiteres Mietobjekt anlegen",
+      }),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("supports undo and redo keyboard shortcuts for local draft changes", async () => {
@@ -162,5 +192,37 @@ describe("CreateListingForm", () => {
     expect(await screen.findByText("Speichern fehlgeschlagen")).toBeInstanceOf(
       HTMLElement,
     );
+  });
+
+  it("opens the unsaved-changes modal when Zurück is clicked with local changes", async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, "confirm");
+
+    render(<CreateListingForm />);
+
+    await user.type(screen.getByPlaceholderText("Berlin"), "Berlin");
+    await user.click(screen.getByRole("link", { name: "Zurück" }));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("dialog", { name: "Änderungen verwerfen?" }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(mockPush).not.toHaveBeenCalled();
+
+    confirmSpy.mockRestore();
+  });
+
+  it("opens the unsaved-changes modal before provider logo navigation", async () => {
+    const user = userEvent.setup();
+
+    render(<CreateListingForm />);
+
+    await user.type(screen.getByPlaceholderText("Berlin"), "Berlin");
+    await user.click(screen.getByRole("link", { name: "Renyqo" }));
+    await user.click(
+      screen.getByRole("button", { name: "Ohne Speichern verlassen" }),
+    );
+
+    expect(mockPush).toHaveBeenCalledWith("/provider/dashboard");
   });
 });
