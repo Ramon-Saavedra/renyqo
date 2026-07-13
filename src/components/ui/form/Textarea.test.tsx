@@ -19,7 +19,7 @@ describe("Textarea", () => {
 
     expect(ta?.className).toContain("min-h-24");
     expect(ta?.className).toContain("rounded-md");
-    expect(ta?.className).toContain("bg-background-subtle");
+    expect(ta?.className).toContain("bg-input");
   });
 
   it("calls onChange when the user types", async () => {

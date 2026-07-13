@@ -118,12 +118,7 @@ export function AnforderungenSection({
           />
         </FormField>
         <FormField label={fields.total.label}>
-          <div className="flex h-11 items-center justify-between rounded-md border border-border-strong bg-background-muted px-3.5 text-action text-foreground-secondary">
-            <span>{totalLabel(draft.adults, draft.kids)}</span>
-            <span className="font-mono text-meta tracking-widest text-foreground-tertiary">
-              {fields.total.auto}
-            </span>
-          </div>
+          <Input readOnly value={totalLabel(draft.adults, draft.kids)} />
         </FormField>
       </div>
 

@@ -16,7 +16,7 @@ const TRIGGER_CLASS =
   "inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-md border border-transparent text-foreground-secondary transition-colors hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 const MENU_CLASS =
-  "absolute right-0 top-[calc(100%+0.375rem)] z-30 min-w-56 rounded-md border border-border bg-card p-1 shadow-card";
+  "absolute right-0 top-[calc(100%+0.375rem)] z-30 min-w-56 rounded-md border border-border bg-background-subtle p-1 shadow-card";
 
 const ITEM_CLASS =
   "flex w-full cursor-pointer items-center gap-2.5 rounded-sm px-3 py-2 text-left text-caption text-foreground transition-colors hover:bg-background-subtle";
@@ -52,7 +52,16 @@ export function RowActionsMenu({
   }, [open]);
 
   return (
-    <div ref={wrapperRef} className="relative">
+    <div
+      ref={wrapperRef}
+      className="relative"
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.stopPropagation();
+        }
+      }}
+    >
       <button
         type="button"
         className={TRIGGER_CLASS}

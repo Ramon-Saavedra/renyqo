@@ -19,7 +19,7 @@ const TRIGGER_LABEL_CLASS = "text-foreground-tertiary text-caption";
 const TRIGGER_VALUE_CLASS = "font-medium text-foreground";
 
 const MENU_CLASS =
-  "absolute right-0 top-[calc(100%+0.375rem)] z-30 min-w-56 rounded-md border border-border bg-card p-1 shadow-card";
+  "absolute right-0 top-[calc(100%+0.375rem)] z-30 min-w-56 rounded-md border border-border bg-background-subtle p-1 shadow-card";
 
 const ITEM_CLASS =
   "flex w-full cursor-pointer items-center justify-between gap-2 rounded-sm px-3 py-2 text-left text-caption text-foreground transition-colors hover:bg-background-subtle";

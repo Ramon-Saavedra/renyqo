@@ -20,10 +20,9 @@ describe("AnforderungenSection", () => {
     );
     expect(screen.getByText("SCHUFA-Auskunft")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Hinweis:")).toBeInstanceOf(HTMLElement);
-    const totalField = screen.getByText("AUTO").closest("div");
+    const totalField = screen.getByDisplayValue("—");
 
     expect(totalField).toBeInstanceOf(HTMLElement);
-    expect(totalField?.textContent).toContain("—");
   });
 
   it("sanitizes the income input and derives the total people label", () => {
@@ -41,7 +40,7 @@ describe("AnforderungenSection", () => {
     });
 
     expect(setField).toHaveBeenCalledWith("minIncome", "2500");
-    expect(screen.getByText("3 Personen")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByDisplayValue("3 Personen")).toBeInstanceOf(HTMLElement);
   });
 
   it("forwards segmented selection changes", async () => {

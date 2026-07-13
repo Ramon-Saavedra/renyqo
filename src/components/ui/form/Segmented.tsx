@@ -15,7 +15,7 @@ interface SegmentedProps<T extends string> {
 }
 
 const GROUP_CLASS =
-  "inline-flex h-11 w-full gap-0.5 rounded-md border border-border-strong bg-background-subtle p-0.75";
+  "inline-flex h-11 w-full gap-0.5 rounded-md border border-border-strong bg-input p-0.75";
 const SEG_CLASS =
   "inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-transparent px-2.5 text-action ";
 const SEG_ON_CLASS =

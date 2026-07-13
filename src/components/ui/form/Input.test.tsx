@@ -35,7 +35,7 @@ describe("Input", () => {
 
     expect(input?.className).toContain("h-11");
     expect(input?.className).toContain("rounded-md");
-    expect(input?.className).toContain("bg-background-subtle");
+    expect(input?.className).toContain("bg-input");
   });
 
   it("appends a custom className", () => {

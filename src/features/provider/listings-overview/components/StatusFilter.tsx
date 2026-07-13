@@ -16,7 +16,7 @@ const GROUP_CLASS =
 const BUTTON_BASE =
   "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-transparent bg-transparent px-2.5 font-mono text-meta uppercase text-foreground-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus whitespace-nowrap";
 const BUTTON_ACTIVE =
-  "border-border/50 bg-card text-foreground hover:text-foreground";
+  "border-border/50 bg-background-subtle text-foreground hover:text-foreground";
 
 const COUNT_BASE = "font-mono text-meta text-foreground-tertiary";
 const COUNT_ACTIVE = "text-foreground-secondary";
@@ -26,7 +26,7 @@ const DIVIDER_CLASS = "h-4 w-px bg-border/40 shrink-0";
 const ATTENTION_BASE =
   "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-transparent bg-transparent px-2.5 font-mono text-meta uppercase text-foreground-tertiary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus whitespace-nowrap";
 const ATTENTION_ACTIVE =
-  "border-border/50 bg-card text-foreground-secondary hover:text-foreground";
+  "border-border/50 bg-background-subtle text-foreground-secondary hover:text-foreground";
 
 const STATUS_FILTER_ITEMS = STATUS_FILTERS.filter((f) => f.id !== "attention");
 const ATTENTION_FILTER = STATUS_FILTERS.find((f) => f.id === "attention");
