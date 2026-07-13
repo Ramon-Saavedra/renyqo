@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 
 interface DetailActionButtonProps {
@@ -8,8 +9,7 @@ interface DetailActionButtonProps {
   onClick: () => void;
 }
 
-const BASE_CLASS =
-  "loading-btn inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-border-strong bg-transparent px-4.5 text-action font-medium text-foreground-secondary transition-colors hover:border-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50 max-sm:flex-1";
+const BASE_CLASS = "loading-btn min-w-42 justify-center max-sm:flex-1";
 
 export function DetailActionButton({
   label,
@@ -25,6 +25,7 @@ export function DetailActionButton({
       disabled={disabled || pending}
       aria-busy={pending}
       className={cn(
+        buttonClass("secondary"),
         BASE_CLASS,
         pending && "is-loading is-ghost cursor-progress",
       )}
