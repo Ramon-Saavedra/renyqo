@@ -1,8 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { usePhotoGrid } from "./usePhotoGrid";
+import { usePhotoGrid, type PhotoGridError } from "./usePhotoGrid";
 import type { ListingPhoto } from "./useListingDraft";
+import { MAX_LISTING_IMAGE_SIZE_BYTES } from "../utils/listing-image-validation";
 
 function makePhoto(id: string): ListingPhoto {
   return {
@@ -146,6 +147,66 @@ describe("usePhotoGrid", () => {
       const added = setPhotos.mock.calls[0]![0] as ListingPhoto[];
       expect(added).toHaveLength(2);
       expect(added[0]).toBe(existing);
+    });
+
+    it("rejects unsupported image formats before creating a preview", () => {
+      const photos: ListingPhoto[] = [];
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
+      const onError = vi.fn<(error: PhotoGridError | null) => void>();
+      const { result } = renderHook(() =>
+        usePhotoGrid({ photos, setPhotos, onError }),
+      );
+
+      act(() => {
+        result.current.addFromFiles(
+          makeFileList([
+            new File(["x"], "document.pdf", { type: "application/pdf" }),
+          ]),
+        );
+      });
+
+      expect(onError).toHaveBeenCalledWith("invalid-format");
+      expect(URL.createObjectURL).not.toHaveBeenCalled();
+      expect(setPhotos).not.toHaveBeenCalled();
+    });
+
+    it("rejects images larger than 10 MB before creating a preview", () => {
+      const photos: ListingPhoto[] = [];
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
+      const onError = vi.fn<(error: PhotoGridError | null) => void>();
+      const { result } = renderHook(() =>
+        usePhotoGrid({ photos, setPhotos, onError }),
+      );
+      const file = new File(["x"], "large.jpg", { type: "image/jpeg" });
+      Object.defineProperty(file, "size", {
+        value: MAX_LISTING_IMAGE_SIZE_BYTES + 1,
+      });
+
+      act(() => {
+        result.current.addFromFiles(makeFileList([file]));
+      });
+
+      expect(onError).toHaveBeenCalledWith("too-large");
+      expect(URL.createObjectURL).not.toHaveBeenCalled();
+      expect(setPhotos).not.toHaveBeenCalled();
+    });
+
+    it("clears the photo error when a valid image is accepted", () => {
+      const photos: ListingPhoto[] = [];
+      const setPhotos = vi.fn<(p: ReadonlyArray<ListingPhoto>) => void>();
+      const onError = vi.fn<(error: PhotoGridError | null) => void>();
+      const { result } = renderHook(() =>
+        usePhotoGrid({ photos, setPhotos, onError }),
+      );
+
+      act(() => {
+        result.current.addFromFiles(
+          makeFileList([new File(["x"], "photo.webp", { type: "image/webp" })]),
+        );
+      });
+
+      expect(onError).toHaveBeenCalledWith(null);
+      expect(setPhotos).toHaveBeenCalledOnce();
     });
   });
 

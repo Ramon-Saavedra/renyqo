@@ -152,12 +152,19 @@ export const createListingCopy = {
         addLabel: "Foto hinzufügen",
         dropTitle: "Fotos hier ablegen",
         dropAction: "oder Foto auswählen",
-        dropHint: "JPG, PNG oder WebP · bis zu 12 Fotos",
+        dropHint: "JPG, PNG oder WebP · max. 10 MB pro Bild",
         dropActive: "Loslassen zum Hinzufügen",
         cover: "Titelbild",
-        hint: "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
+        hint: "Unterstützte Formate: JPG, PNG, WebP. Max. 10 MB pro Bild. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
         remove: "Entfernen",
         max: 12,
+        errors: {
+          tooLarge: "Das Bild ist zu groß. Bitte lade ein Bild bis 10 MB hoch.",
+          invalidFormat:
+            "Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.",
+          uploadFailed:
+            "Das Bild konnte nicht hochgeladen werden. Bitte versuche es erneut.",
+        },
       },
     },
   },
