@@ -9,12 +9,24 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
   month: "short",
 });
 
+const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("de-DE", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 export function formatEUR(value: number): string {
   return EUR_FORMATTER.format(value);
 }
 
 export function formatArea(value: number): string {
   return `${value} m²`;
+}
+
+export function formatDateTime(iso: string): string {
+  return DATE_TIME_FORMATTER.format(new Date(iso));
 }
 
 export function formatRelative(iso: string, now: Date | null = null): string {

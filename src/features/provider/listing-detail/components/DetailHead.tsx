@@ -1,6 +1,8 @@
 import { MapPin } from "lucide-react";
+import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { StatusPill } from "../../listings-overview/components/StatusPill";
+import { formatDateTime } from "../../listings-overview/utils/format";
 import { OBJECT_TYPE_LABEL, listingDetailCopy } from "../copy/listing-detail";
 import type { DetailAction, ListingDetail } from "../types";
 import { DetailActionButton } from "./DetailActionButton";
@@ -21,6 +23,7 @@ const TITLE_CLASS =
 const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-foreground-secondary";
 const ACTIONS_CLASS = "flex flex-wrap items-center gap-2 max-sm:w-full";
+const META_ROW_CLASS = "flex flex-wrap items-center gap-2";
 
 const { actions } = listingDetailCopy;
 
@@ -63,6 +66,11 @@ export function DetailHead({
 }: DetailHeadProps) {
   const actionConfigs = buildActions(listing);
   const anyPending = pendingAction !== null;
+  const timestamp = listing.publishedAt ?? listing.updatedAt;
+  const timestampLabel = timestamp ? formatDateTime(timestamp) : null;
+  const timestampTitle = listing.publishedAt
+    ? `Veröffentlicht am ${timestampLabel}`
+    : `Aktualisiert am ${timestampLabel}`;
 
   return (
     <div className={HEAD_CLASS}>
@@ -75,6 +83,15 @@ export function DetailHead({
             </span>
           ) : null}
         </div>
+        {timestampLabel ? (
+          <div className={META_ROW_CLASS}>
+            <DateTimeBadge
+              value={timestampLabel}
+              title={timestampTitle}
+              className="mb-2 h-7 px-2 text-meta"
+            />
+          </div>
+        ) : null}
         <h1 className={TITLE_CLASS}>{listing.title}</h1>
         <span className={ADDR_CLASS}>
           <AppIcon

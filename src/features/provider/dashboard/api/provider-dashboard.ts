@@ -23,6 +23,10 @@ function normalizeStatus(
   return status === "draft" ? "draft" : "published";
 }
 
+function isDashboardListing(listing: ListingOverviewItem): boolean {
+  return listing.status === "published" || listing.status === "draft";
+}
+
 function formatAvailableFrom(value: string | null): string | null {
   if (!value) return null;
   const date = new Date(value);
@@ -62,5 +66,5 @@ export async function getProviderDashboardObjects(): Promise<
   readonly DashboardObject[]
 > {
   const listings = await getProviderListings();
-  return listings.map(mapDashboardObject);
+  return listings.filter(isDashboardListing).map(mapDashboardObject);
 }

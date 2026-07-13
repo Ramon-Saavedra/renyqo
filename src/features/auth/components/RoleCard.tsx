@@ -33,7 +33,7 @@ export function RoleCard({
       aria-checked={active}
       onClick={onSelect}
       className={cn(
-        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-card p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus",
+        "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-background-subtle p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus",
         active ? "border-primary" : "border-border hover:border-border-strong",
       )}
     >

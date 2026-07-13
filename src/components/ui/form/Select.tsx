@@ -5,7 +5,7 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 type SelectProps = SelectHTMLAttributes<HTMLSelectElement>;
 
 const SELECT_CLASS =
-  "h-11 w-full appearance-none rounded-md border border-border-strong bg-background-subtle pr-9 pl-3.5 text-action text-foreground outline-none transition-colors transition-shadow hover:border-foreground-tertiary focus:border-primary focus:bg-background focus:shadow-focus";
+  "h-11 w-full appearance-none rounded-md border border-border-strong bg-input pr-9 pl-3.5 text-action text-foreground outline-none transition-colors transition-shadow hover:border-foreground-tertiary focus:border-primary focus:bg-input focus:shadow-focus";
 
 export function Select({ className, children, ...rest }: SelectProps) {
   return (

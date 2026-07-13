@@ -9,7 +9,7 @@ interface NumberStepperProps {
 }
 
 const GROUP_CLASS =
-  "flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-background-subtle";
+  "flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-input";
 const BTN_CLASS =
   "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg text-foreground-secondary transition-colors hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:bg-transparent disabled:text-foreground-tertiary";
 const VAL_CLASS =

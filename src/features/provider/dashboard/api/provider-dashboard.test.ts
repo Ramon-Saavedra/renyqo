@@ -50,6 +50,24 @@ describe("getProviderDashboardObjects", () => {
         publishedAt: null,
         availableFrom: null,
       },
+      {
+        id: "listing-3",
+        title: "Archiviert",
+        displayAddress: "Archivstraße 3 · Berlin",
+        coverImageUrl: null,
+        coldRent: 1200,
+        livingArea: 70,
+        rooms: 3,
+        status: "archived",
+        applicationsTotal: 4,
+        needsAttention: false,
+        attentionReason: null,
+        openQuestionsCount: 0,
+        createdAt: "2026-07-01T10:00:00.000Z",
+        updatedAt: "2026-07-02T10:00:00.000Z",
+        publishedAt: "2026-07-02T11:00:00.000Z",
+        availableFrom: "2026-08-01",
+      },
     ]);
 
     await expect(getProviderDashboardObjects()).resolves.toEqual([

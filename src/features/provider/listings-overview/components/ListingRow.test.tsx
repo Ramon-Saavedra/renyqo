@@ -129,7 +129,7 @@ describe("ListingRow", () => {
       />,
     );
     expect(container.querySelector("article")?.className).toContain(
-      "bg-background-subtle",
+      "opacity-75",
     );
   });
 
@@ -138,7 +138,7 @@ describe("ListingRow", () => {
       <ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />,
     );
     expect(container.querySelector("article")?.className).not.toContain(
-      "bg-background-subtle",
+      "opacity-75",
     );
   });
 });
