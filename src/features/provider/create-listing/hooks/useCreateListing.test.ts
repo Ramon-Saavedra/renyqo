@@ -542,6 +542,7 @@ describe("useCreateListing", () => {
 
     it.each([
       ["erlaubt", "ALLOWED"],
+      ["absprache", "BY_ARRANGEMENT"],
       ["keine", "PREFER_NOT"],
     ] as const)(
       "maps pets '%s' to petsPolicy '%s'",
@@ -562,9 +563,25 @@ describe("useCreateListing", () => {
       },
     );
 
+    it("omits petsPolicy when no pets option is selected", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, pets: "" },
+          "Titel",
+        );
+      });
+
+      const payload = vi.mocked(createListingDraft).mock.calls[0]?.[0];
+      expect(payload?.petsPolicy).toBeUndefined();
+    });
+
     it.each([
       ["erlaubt", "ALLOWED"],
-      ["keine", "PREFER_NOT"],
+      ["absprache", "BY_ARRANGEMENT"],
+      ["nichtraucher", "NON_SMOKERS_PREFERRED"],
     ] as const)(
       "maps smoking '%s' to smokingPolicy '%s'",
       async (input, expected) => {
@@ -583,6 +600,21 @@ describe("useCreateListing", () => {
         );
       },
     );
+
+    it("omits smokingPolicy when no smoking option is selected", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, smoking: "" },
+          "Titel",
+        );
+      });
+
+      const payload = vi.mocked(createListingDraft).mock.calls[0]?.[0];
+      expect(payload?.smokingPolicy).toBeUndefined();
+    });
 
     it("computes suitableForPeopleCount from adults and kids", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
