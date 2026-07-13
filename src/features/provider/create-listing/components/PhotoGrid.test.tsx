@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ListingPhoto } from "../hooks/useListingDraft";
+import { MAX_LISTING_IMAGE_SIZE_BYTES } from "../utils/listing-image-validation";
 import { PhotoGrid } from "./PhotoGrid";
 
 const PHOTO: ListingPhoto = {
@@ -25,11 +26,11 @@ describe("PhotoGrid", () => {
     expect(screen.getByText("Fotos hier ablegen")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("oder Foto auswählen")).toBeInstanceOf(HTMLElement);
     expect(
-      screen.getByText("JPG, PNG oder WebP · bis zu 12 Fotos"),
+      screen.getByText("JPG, PNG oder WebP · max. 10 MB pro Bild"),
     ).toBeInstanceOf(HTMLElement);
     expect(
       screen.getByText(
-        "Mindestens 1 Foto wird empfohlen. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
+        "Unterstützte Formate: JPG, PNG, WebP. Max. 10 MB pro Bild. Das erste Foto erscheint als Titelbild. Querformat sieht in den Suchergebnissen am besten aus.",
       ),
     ).toBeInstanceOf(HTMLElement);
   });
@@ -41,7 +42,9 @@ describe("PhotoGrid", () => {
       'input[type="file"]',
     ) as HTMLInputElement;
     expect(input).toBeInstanceOf(HTMLInputElement);
-    expect(input.accept).toBe("image/*");
+    expect(input.accept).toBe(
+      "image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp",
+    );
     expect(input.multiple).toBe(true);
   });
 
@@ -89,6 +92,58 @@ describe("PhotoGrid", () => {
     expect(added).toHaveLength(1);
     expect(added[0]!.src).toBe("blob:dropped-url");
     expect(added[0]!.file).toBe(file);
+  });
+
+  it("shows a friendly error for unsupported image formats", () => {
+    const setPhotos = vi.fn();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
+
+    render(<PhotoGrid photos={[]} setPhotos={setPhotos} />);
+
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+
+    fireEvent.change(input, {
+      target: {
+        files: [
+          new File(["content"], "document.pdf", { type: "application/pdf" }),
+        ],
+      },
+    });
+
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Bitte lade ein Bild im Format JPG, PNG oder WebP hoch.",
+    );
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+    expect(setPhotos).not.toHaveBeenCalled();
+  });
+
+  it("shows a friendly error for images larger than 10 MB", () => {
+    const setPhotos = vi.fn();
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:test-url");
+
+    render(<PhotoGrid photos={[]} setPhotos={setPhotos} />);
+
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    const file = new File(["content"], "large.jpg", { type: "image/jpeg" });
+    Object.defineProperty(file, "size", {
+      value: MAX_LISTING_IMAGE_SIZE_BYTES + 1,
+    });
+
+    fireEvent.change(input, {
+      target: {
+        files: [file],
+      },
+    });
+
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Das Bild ist zu groß. Bitte lade ein Bild bis 10 MB hoch.",
+    );
+    expect(URL.createObjectURL).not.toHaveBeenCalled();
+    expect(setPhotos).not.toHaveBeenCalled();
   });
 
   it("shows the active drop state while files are dragged over the grid", () => {

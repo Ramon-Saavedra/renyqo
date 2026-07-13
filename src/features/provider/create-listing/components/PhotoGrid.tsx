@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils/cn";
 import { createListingCopy } from "../copy/create-listing";
 import type { ListingPhoto } from "../hooks/useListingDraft";
 import { usePhotoGrid } from "../hooks/usePhotoGrid";
+import type { PhotoGridError } from "../hooks/usePhotoGrid";
 
 interface PhotoGridProps {
   photos: ReadonlyArray<ListingPhoto>;
@@ -24,6 +25,7 @@ const COVER_TAG_CLASS =
 
 const REMOVE_BTN_CLASS =
   "absolute top-1.5 right-1.5 grid h-5.5 w-5.5 cursor-pointer place-items-center rounded-md border-0 bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100";
+const ERROR_CLASS = "mb-0 pt-2 text-caption leading-normal text-danger";
 
 function hasDraggedFiles(event: DragEvent<HTMLElement>): boolean {
   return Array.from(event.dataTransfer.types).includes("Files");
@@ -34,9 +36,11 @@ export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const dragDepthRef = useRef(0);
   const [isDraggingFiles, setIsDraggingFiles] = useState(false);
+  const [error, setError] = useState<PhotoGridError | null>(null);
   const { canAdd, addFromFiles, remove } = usePhotoGrid({
     photos,
     setPhotos,
+    onError: setError,
     max: copy.max,
   });
 
@@ -95,7 +99,7 @@ export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
         multiple
         className="sr-only"
         onChange={(e) => {
@@ -155,6 +159,13 @@ export function PhotoGrid({ photos, setPhotos }: PhotoGridProps) {
           </button>
         )}
       </div>
+      {error ? (
+        <p className={ERROR_CLASS} role="alert">
+          {error === "too-large"
+            ? copy.errors.tooLarge
+            : copy.errors.invalidFormat}
+        </p>
+      ) : null}
       <p className="mb-0 text-caption leading-normal text-foreground-tertiary pt-2.5">
         {copy.hint}
       </p>
