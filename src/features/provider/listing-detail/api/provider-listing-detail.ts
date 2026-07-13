@@ -88,6 +88,21 @@ function normalizePolicy(value: string | null): PetPolicyBackend | null {
   }
 }
 
+function normalizeSmokingPolicy(
+  value: string | null,
+): SmokingPolicyBackend | null {
+  switch (value?.toUpperCase()) {
+    case "ALLOWED":
+      return "ALLOWED";
+    case "BY_ARRANGEMENT":
+      return "BY_ARRANGEMENT";
+    case "NON_SMOKERS_PREFERRED":
+      return "NON_SMOKERS_PREFERRED";
+    default:
+      return null;
+  }
+}
+
 function readImageUrl(value: unknown): string | null {
   if (typeof value === "string" && value.trim().length > 0) return value;
   if (!isRecord(value)) return null;
@@ -184,9 +199,9 @@ export function mapProviderListingDetail(value: unknown): ListingDetail | null {
     ]),
     suitableForPeopleCount: readNumber(record, ["suitableForPeopleCount"]),
     petsPolicy: normalizePolicy(readString(record, ["petsPolicy"])),
-    smokingPolicy: normalizePolicy(
+    smokingPolicy: normalizeSmokingPolicy(
       readString(record, ["smokingPolicy"]),
-    ) as SmokingPolicyBackend | null,
+    ),
 
     images: readImages(record),
 

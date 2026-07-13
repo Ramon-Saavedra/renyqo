@@ -2,7 +2,10 @@ import { apiPatch, apiPost, apiPostFormData } from "./client";
 
 export type ObjectTypeBackend = "APARTMENT" | "HOUSE" | "ROOM";
 export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
-export type SmokingPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
+export type SmokingPolicyBackend =
+  | "ALLOWED"
+  | "BY_ARRANGEMENT"
+  | "NON_SMOKERS_PREFERRED";
 
 export interface CreateListingPayload {
   readonly city?: string | undefined;

@@ -30,7 +30,7 @@ const PAYLOAD: CreateListingPayload = {
   incomeProofRequired: true,
   suitableForPeopleCount: null,
   petsPolicy: "BY_ARRANGEMENT",
-  smokingPolicy: "PREFER_NOT",
+  smokingPolicy: "NON_SMOKERS_PREFERRED",
 };
 
 describe("createListingDraft", () => {
@@ -69,6 +69,7 @@ describe("createListingDraft", () => {
     expect(formData.get("depositMonths")).toBe("2");
     expect(formData.get("deposit")).toBe("2200");
     expect(formData.get("incomeProofRequired")).toBe("true");
+    expect(formData.get("smokingPolicy")).toBe("NON_SMOKERS_PREFERRED");
     expect(formData.has("street")).toBe(false);
     expect(formData.has("bedrooms")).toBe(false);
     expect(formData.has("additionalCosts")).toBe(false);

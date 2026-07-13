@@ -9,10 +9,14 @@ export const REQUIREMENT_OPTIONS = [
 export type RequirementOption = (typeof REQUIREMENT_OPTIONS)[number];
 
 export const PET_OPTIONS = ["erlaubt", "absprache", "keine"] as const;
-export type PetOption = (typeof PET_OPTIONS)[number];
+export type PetOption = (typeof PET_OPTIONS)[number] | "";
 
-export const SMOKING_OPTIONS = ["erlaubt", "keine", "absprache"] as const;
-export type SmokingOption = (typeof SMOKING_OPTIONS)[number];
+export const SMOKING_OPTIONS = [
+  "erlaubt",
+  "absprache",
+  "nichtraucher",
+] as const;
+export type SmokingOption = (typeof SMOKING_OPTIONS)[number] | "";
 
 export const ROOM_OPTIONS = [
   "1",
@@ -211,7 +215,7 @@ export const createListingCopy = {
         label: "Rauchen",
         options: [
           { value: "erlaubt", label: "Erlaubt" },
-          { value: "keine", label: "Nicht erlaubt" },
+          { value: "nichtraucher", label: "Nicht erlaubt" },
           { value: "absprache", label: "Auf Anfrage" },
         ],
       },

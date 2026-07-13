@@ -81,8 +81,8 @@ export const INITIAL_DRAFT: ListingDraft = {
   income: "optional",
   adults: null,
   kids: null,
-  pets: "absprache",
-  smoking: "absprache",
+  pets: "",
+  smoking: "",
   legalAccepted: false,
 };
 

@@ -71,16 +71,18 @@ function toObjectType(value: string): ObjectTypeBackend {
   return "APARTMENT";
 }
 
-function toPetsPolicy(value: string): PetPolicyBackend {
+function toPetsPolicy(value: string): PetPolicyBackend | undefined {
   if (value === "erlaubt") return "ALLOWED";
+  if (value === "absprache") return "BY_ARRANGEMENT";
   if (value === "keine") return "PREFER_NOT";
-  return "BY_ARRANGEMENT";
+  return undefined;
 }
 
-function toSmokingPolicy(value: string): SmokingPolicyBackend {
+function toSmokingPolicy(value: string): SmokingPolicyBackend | undefined {
   if (value === "erlaubt") return "ALLOWED";
-  if (value === "keine") return "PREFER_NOT";
-  return "BY_ARRANGEMENT";
+  if (value === "absprache") return "BY_ARRANGEMENT";
+  if (value === "nichtraucher") return "NON_SMOKERS_PREFERRED";
+  return undefined;
 }
 
 function toRequirement(value: string): boolean {
@@ -252,10 +254,12 @@ function mapDraftToPartialCreateListingDto(
     payload.suitableForPeopleCount = suitableForPeopleCount;
   }
   if (draft.pets !== INITIAL_DRAFT.pets) {
-    payload.petsPolicy = toPetsPolicy(draft.pets);
+    const petsPolicy = toPetsPolicy(draft.pets);
+    if (petsPolicy !== undefined) payload.petsPolicy = petsPolicy;
   }
   if (draft.smoking !== INITIAL_DRAFT.smoking) {
-    payload.smokingPolicy = toSmokingPolicy(draft.smoking);
+    const smokingPolicy = toSmokingPolicy(draft.smoking);
+    if (smokingPolicy !== undefined) payload.smokingPolicy = smokingPolicy;
   }
 
   return payload;
