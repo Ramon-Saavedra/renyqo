@@ -128,6 +128,14 @@ describe("ListingsView", () => {
     expect(getProviderListings).not.toHaveBeenCalled();
   });
 
+  it("links the logo to the provider dashboard", () => {
+    renderView();
+
+    expect(
+      screen.getByRole("link", { name: "Renyqo" }).getAttribute("href"),
+    ).toBe("/provider/dashboard");
+  });
+
   it("shows a loading state while fetching backend listings", () => {
     vi.mocked(getProviderListings).mockResolvedValue(SAMPLE);
 

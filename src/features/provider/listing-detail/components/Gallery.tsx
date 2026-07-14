@@ -54,6 +54,7 @@ export function Gallery({ images, title, className }: GalleryProps) {
               alt={title}
               fill
               sizes="(max-width: 1024px) 100vw, 60vw"
+              loading="eager"
               quality={90}
               className="object-cover"
             />

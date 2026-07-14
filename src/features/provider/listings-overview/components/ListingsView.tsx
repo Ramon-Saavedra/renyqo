@@ -16,7 +16,6 @@ import {
   moveProviderListingToDraft,
   publishProviderListing,
 } from "../api/provider-listings";
-import { STATUS_SORT_ORDER } from "../copy/listings";
 import type {
   ListingOverviewItem,
   RowAction,
@@ -89,8 +88,6 @@ const SORTERS: Record<
   created: (a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   applications: (a, b) => b.applicationsTotal - a.applicationsTotal,
-  status: (a, b) =>
-    STATUS_SORT_ORDER.indexOf(a.status) - STATUS_SORT_ORDER.indexOf(b.status),
 };
 
 export function ListingsView({ initialListings, now }: ListingsViewProps) {
@@ -249,7 +246,7 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
 
   return (
     <>
-      <AppTopbar className="mb-section">
+      <AppTopbar logoHref="/provider/dashboard" className="mb-section">
         <ListingsTopbarActions />
       </AppTopbar>
 

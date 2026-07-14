@@ -24,7 +24,7 @@ describe("SortMenu", () => {
     expect(screen.getByRole("menu")).toBeInstanceOf(HTMLElement);
   });
 
-  it("renders all sort options inside the menu", async () => {
+  it("renders the supported sort options inside the menu", async () => {
     const user = userEvent.setup();
     render(<SortMenu value="updated" onChange={vi.fn()} />);
     await user.click(screen.getByRole("button", { name: /Sortieren/ }));
@@ -37,9 +37,7 @@ describe("SortMenu", () => {
     expect(
       screen.getByRole("menuitemradio", { name: /Bewerbungen/ }),
     ).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.getByRole("menuitemradio", { name: /Status/ }),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByRole("menuitemradio", { name: /Status/ })).toBeNull();
   });
 
   it("marks the active option as aria-checked='true'", async () => {

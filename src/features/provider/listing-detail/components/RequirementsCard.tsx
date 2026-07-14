@@ -45,47 +45,49 @@ function requiredValue(required: boolean): ReactNode {
   );
 }
 
+function nullableRequiredValue(required: boolean | null): ReactNode {
+  return required === null ? requirements.empty : requiredValue(required);
+}
+
 function buildRequirements(listing: ListingDetail): Requirement[] {
-  const rows: Requirement[] = [];
-
-  if (listing.schufaRequired !== null) {
-    rows.push({
-      label: requirements.schufa,
-      value: requiredValue(listing.schufaRequired),
-    });
-  }
-  if (listing.incomeProofRequired !== null) {
-    rows.push({
-      label: requirements.incomeProof,
-      value: requiredValue(listing.incomeProofRequired),
-    });
-  }
-  if (listing.minimumHouseholdNetIncome !== null) {
-    rows.push({
+  return [
+    {
       label: requirements.minimumIncome,
-      value: formatEUR(listing.minimumHouseholdNetIncome),
-    });
-  }
-  if (listing.suitableForPeopleCount !== null) {
-    rows.push({
+      value:
+        listing.minimumHouseholdNetIncome === null
+          ? requirements.empty
+          : formatEUR(listing.minimumHouseholdNetIncome),
+    },
+    {
+      label: requirements.schufa,
+      value: nullableRequiredValue(listing.schufaRequired),
+    },
+    {
+      label: requirements.incomeProof,
+      value: nullableRequiredValue(listing.incomeProofRequired),
+    },
+    {
       label: requirements.peopleCount,
-      value: requirements.peopleCountValue(listing.suitableForPeopleCount),
-    });
-  }
-  if (listing.petsPolicy !== null) {
-    rows.push({
+      value:
+        listing.suitableForPeopleCount === null
+          ? requirements.empty
+          : requirements.peopleCountValue(listing.suitableForPeopleCount),
+    },
+    {
       label: requirements.pets,
-      value: PET_POLICY_LABEL[listing.petsPolicy],
-    });
-  }
-  if (listing.smokingPolicy !== null) {
-    rows.push({
+      value:
+        listing.petsPolicy === null
+          ? requirements.empty
+          : PET_POLICY_LABEL[listing.petsPolicy],
+    },
+    {
       label: requirements.smoking,
-      value: SMOKING_POLICY_LABEL[listing.smokingPolicy],
-    });
-  }
-
-  return rows;
+      value:
+        listing.smokingPolicy === null
+          ? requirements.empty
+          : SMOKING_POLICY_LABEL[listing.smokingPolicy],
+    },
+  ];
 }
 
 export function RequirementsCard({
@@ -93,7 +95,6 @@ export function RequirementsCard({
   className,
 }: RequirementsCardProps) {
   const rows = buildRequirements(listing);
-  if (rows.length === 0) return null;
 
   return (
     <DetailCard title={requirements.title} className={className}>
