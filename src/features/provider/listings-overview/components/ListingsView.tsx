@@ -246,7 +246,7 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
 
   return (
     <>
-      <AppTopbar className="mb-section">
+      <AppTopbar logoHref="/provider/dashboard" className="mb-section">
         <ListingsTopbarActions />
       </AppTopbar>
 

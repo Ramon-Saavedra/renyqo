@@ -113,7 +113,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
 
   return (
     <>
-      <AppTopbar className="mb-6">
+      <AppTopbar logoHref="/provider/dashboard" className="mb-6">
         <ListingsTopbarActions />
       </AppTopbar>
 
