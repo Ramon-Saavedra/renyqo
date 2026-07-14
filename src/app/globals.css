@@ -109,8 +109,8 @@ html {
 
 :root {
   --gutter: 1rem;
-  --background: #fffaf5;
-  --background-subtle: #fffaf2;
+  --background: #edebe1;
+  --background-subtle: #f8f6ed;
   --background-muted: #eeede3;
   --input: #fffdf7;
 
