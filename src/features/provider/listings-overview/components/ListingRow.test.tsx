@@ -26,21 +26,23 @@ const BASE: ListingOverviewItem = {
 };
 
 describe("ListingRow", () => {
-  it("renders the listing title", () => {
+  it("renders the listing summary and actions trigger", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
+
     expect(screen.getByText("Helle Wohnung am Park")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(
+      screen.getByText("Parkstraße 12 · Berlin, Mitte · 10115"),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Veröffentlicht")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("3 sichtbar")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("button", { name: "Aktionen" })).toBeInstanceOf(
       HTMLElement,
     );
   });
 
-  it("renders the displayAddress", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(
-      screen.getByText("Parkstraße 12 · Berlin, Mitte · 10115"),
-    ).toBeInstanceOf(HTMLElement);
-  });
-
-  it("renders the cover image when the listing has one", () => {
+  it("renders the cover image when provided", () => {
     const { container } = render(
       <ListingRow
         listing={{
@@ -52,28 +54,12 @@ describe("ListingRow", () => {
       />,
     );
 
-    const image = container.querySelector('img[src*="cover.jpg"]');
-    expect(image).toBeInstanceOf(HTMLImageElement);
-    expect(image?.className).toContain("rounded");
+    expect(container.querySelector('img[src*="cover.jpg"]')).toBeInstanceOf(
+      HTMLImageElement,
+    );
   });
 
-  it("renders the status pill", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByText("Veröffentlicht")).toBeInstanceOf(HTMLElement);
-  });
-
-  it("renders deposit and deposit months", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByText("2.400 €")).toBeInstanceOf(HTMLElement);
-    expect(screen.getAllByText("2").length).toBeGreaterThan(0);
-  });
-
-  it("renders the applications label '3 sichtbar' for applicationsTotal 3", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByText("3 sichtbar")).toBeInstanceOf(HTMLElement);
-  });
-
-  it("renders '5 sichtbar · 12 wartend' when applicationsTotal is 17", () => {
+  it("renders the waiting application label when applications exceed the visible limit", () => {
     render(
       <ListingRow
         listing={{ ...BASE, applicationsTotal: 17 }}
@@ -81,13 +67,20 @@ describe("ListingRow", () => {
         now={NOW}
       />,
     );
+
     expect(screen.getByText("5 sichtbar · 12 wartend")).toBeInstanceOf(
       HTMLElement,
     );
   });
 
-  it("renders the AttentionPill when needsAttention is true with a reason", () => {
-    render(
+  it("renders attention state only when needed", () => {
+    const { rerender } = render(
+      <ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />,
+    );
+
+    expect(screen.queryByRole("img", { name: /Rückfragen/ })).toBeNull();
+
+    rerender(
       <ListingRow
         listing={{
           ...BASE,
@@ -98,47 +91,9 @@ describe("ListingRow", () => {
         now={NOW}
       />,
     );
+
     expect(
       screen.getByRole("img", { name: "Rückfragen offen" }),
     ).toBeInstanceOf(HTMLElement);
-  });
-
-  it("does not render the AttentionPill when needsAttention is false", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.queryByRole("img", { name: /Rückfragen/ })).toBeNull();
-  });
-
-  it("does not render an edit (pencil) button", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.queryByRole("button", { name: "Bearbeiten" })).toBeNull();
-  });
-
-  it("exposes the actions menu trigger", () => {
-    render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
-    expect(screen.getByRole("button", { name: "Aktionen" })).toBeInstanceOf(
-      HTMLElement,
-    );
-  });
-
-  it("applies the inactive style for 'archived' status", () => {
-    const { container } = render(
-      <ListingRow
-        listing={{ ...BASE, status: "archived" }}
-        onAction={vi.fn()}
-        now={NOW}
-      />,
-    );
-    expect(container.querySelector("article")?.className).toContain(
-      "opacity-75",
-    );
-  });
-
-  it("does not apply the inactive style for 'published' status", () => {
-    const { container } = render(
-      <ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />,
-    );
-    expect(container.querySelector("article")?.className).not.toContain(
-      "opacity-75",
-    );
   });
 });

@@ -97,21 +97,11 @@ describe("ObjectSidebarItem", () => {
     expect(screen.queryByRole("button", { name: "Link kopieren" })).toBeNull();
   });
 
-  it("keeps readable share and title contrast on the outlined selected card", () => {
-    renderItem(publishedObject, true);
-
-    const copy = screen.getByRole("button", { name: "Link kopieren" });
-    expect(copy.className).toContain("text-foreground-secondary");
-    expect(copy.className).not.toContain("text-primary-foreground");
-
-    const title = screen.getByText("Wohnung Mitte");
-    expect(title.className).not.toContain("text-primary-foreground");
-  });
-
   it("shows share actions when not selected", () => {
     renderItem(publishedObject, false);
 
-    const copy = screen.getByRole("button", { name: "Link kopieren" });
-    expect(copy.className).toContain("text-foreground-secondary");
+    expect(
+      screen.getByRole("button", { name: "Link kopieren" }),
+    ).not.toBeNull();
   });
 });

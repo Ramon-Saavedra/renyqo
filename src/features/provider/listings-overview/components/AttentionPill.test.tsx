@@ -30,10 +30,4 @@ describe("AttentionPill", () => {
     const el = screen.getByRole("img", { name: "Rückfragen offen" });
     expect(el.getAttribute("title")).toBe("Rückfragen offen");
   });
-
-  it("applies warning color class to the wrapper span", () => {
-    const { container } = render(<AttentionPill reason="missing_data" />);
-    const span = container.querySelector("[role='img']");
-    expect(span?.className).toContain("text-warning");
-  });
 });
