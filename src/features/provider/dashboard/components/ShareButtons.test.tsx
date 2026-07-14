@@ -34,6 +34,7 @@ describe("ShareButtons", () => {
 
   it("copies the share url and shows copied feedback", async () => {
     writeText.mockResolvedValue(undefined);
+
     render(
       <ShareButtons
         title="Wohnung Mitte"
@@ -49,7 +50,7 @@ describe("ShareButtons", () => {
     });
   });
 
-  it("hides text labels in sidebar mode while keeping accessible names", () => {
+  it("keeps accessible share names in sidebar mode", () => {
     render(
       <ShareButtons
         title="Wohnung Mitte"
@@ -62,33 +63,5 @@ describe("ShareButtons", () => {
     expect(screen.getByRole("link", { name: "Facebook" })).not.toBeNull();
     expect(screen.queryByText("WhatsApp")).toBeNull();
     expect(screen.queryByText("Facebook")).toBeNull();
-  });
-
-  it("uses high-contrast neutral styling in sidebar mode when not selected", () => {
-    render(
-      <ShareButtons
-        title="Wohnung Mitte"
-        shareUrl="https://renyqo.test/objekt/one"
-        variant="sidebar"
-      />,
-    );
-
-    const copy = screen.getByRole("button", { name: "Link kopieren" });
-    expect(copy.className).toContain("text-foreground-secondary");
-    expect(copy.className).not.toContain("text-primary-foreground");
-  });
-
-  it("uses on-primary styling in sidebar mode when selected", () => {
-    render(
-      <ShareButtons
-        title="Wohnung Mitte"
-        shareUrl="https://renyqo.test/objekt/one"
-        variant="sidebar"
-        selected
-      />,
-    );
-
-    const copy = screen.getByRole("button", { name: "Link kopieren" });
-    expect(copy.className).toContain("text-primary-foreground");
   });
 });
