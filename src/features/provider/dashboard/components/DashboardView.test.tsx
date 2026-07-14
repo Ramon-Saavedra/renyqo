@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getCurrentUser } from "@/lib/api/auth";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
+import { SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { DashboardView } from "./DashboardView";
 import type { Candidate, DashboardObject } from "../types";
 
@@ -133,6 +134,16 @@ describe("DashboardView", () => {
         "Dieses Objekt ist noch ein Entwurf. Veröffentliche es, um passende Bewerbungen zu erhalten.",
       ),
     ).not.toBeNull();
+  });
+
+  it("restores the previously selected object", async () => {
+    window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, "second-object");
+
+    render(<DashboardView objects={objects} candidates={candidates} />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(screen.getByText("Zweite Wohnung in Hamburg")).not.toBeNull();
+    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
   });
 
   it("shows empty object selectors when the search has no matches", async () => {

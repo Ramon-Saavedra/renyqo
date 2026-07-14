@@ -51,18 +51,16 @@ describe("ObjectSidebarItem", () => {
     vi.clearAllMocks();
   });
 
-  it("renders published object details, application count, and share actions", () => {
+  it("renders published object details, application count, and share action", () => {
     renderItem(publishedObject);
 
     expect(screen.getByText("Wohnung Mitte")).not.toBeNull();
-    expect(screen.getByText("Berlin-Mitte")).not.toBeNull();
+    expect(screen.getByText("Torstraße 1, 10119 Berlin")).not.toBeNull();
     expect(screen.getByText("900 € kalt")).not.toBeNull();
     expect(screen.getByText("Veröffentlicht")).not.toBeNull();
     expect(screen.getByText("3 / 5 aktive Bewerbungen")).not.toBeNull();
-    expect(screen.getByRole("link", { name: "WhatsApp" })).not.toBeNull();
-    expect(screen.getByRole("link", { name: "Facebook" })).not.toBeNull();
     expect(
-      screen.getByRole("button", { name: "Link kopieren" }),
+      screen.getByRole("button", { name: "Objekt teilen" }),
     ).not.toBeNull();
   });
 
@@ -92,16 +90,14 @@ describe("ObjectSidebarItem", () => {
     expect(screen.getByText("Entwurf Hamburg")).not.toBeNull();
     expect(screen.getByText("Entwurf")).not.toBeNull();
     expect(screen.getByText("Noch nicht veröffentlicht")).not.toBeNull();
-    expect(screen.queryByRole("link", { name: "WhatsApp" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Facebook" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Link kopieren" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Objekt teilen" })).toBeNull();
   });
 
-  it("shows share actions when not selected", () => {
+  it("shows the share action when not selected", () => {
     renderItem(publishedObject, false);
 
     expect(
-      screen.getByRole("button", { name: "Link kopieren" }),
+      screen.getByRole("button", { name: "Objekt teilen" }),
     ).not.toBeNull();
   });
 });

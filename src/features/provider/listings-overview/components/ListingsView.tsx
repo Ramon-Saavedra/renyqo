@@ -36,6 +36,7 @@ import { StatusFilter } from "./StatusFilter";
 interface ListingsViewProps {
   initialListings?: readonly ListingOverviewItem[];
   now?: Date;
+  selectedListingId?: string | null;
 }
 
 type FetchStatus = "idle" | "loading" | "error";
@@ -90,7 +91,11 @@ const SORTERS: Record<
   applications: (a, b) => b.applicationsTotal - a.applicationsTotal,
 };
 
-export function ListingsView({ initialListings, now }: ListingsViewProps) {
+export function ListingsView({
+  initialListings,
+  now,
+  selectedListingId = null,
+}: ListingsViewProps) {
   const router = useRouter();
   const [listings, setListings] = useState<readonly ListingOverviewItem[]>(
     initialListings ?? [],
@@ -299,6 +304,7 @@ export function ListingsView({ initialListings, now }: ListingsViewProps) {
                 onAction={handleAction}
                 actionStatus={actionStatusById[listing.id]}
                 now={renderNow}
+                selected={listing.id === selectedListingId}
               />
             ))}
           </div>
