@@ -28,7 +28,7 @@ describe("ObjectSidebar", () => {
   it("renders the object count and visible objects", () => {
     renderSidebar();
 
-    expect(screen.getByText("meine mietobjekte")).not.toBeNull();
+    expect(screen.getByText("Meine Mietobjekte")).not.toBeNull();
     expect(screen.getByText("4")).not.toBeNull();
     expect(screen.getByText("2,5-Zimmer-Wohnung Kreuzberg")).not.toBeNull();
     expect(screen.getByText("Studio am Maybachufer")).not.toBeNull();
