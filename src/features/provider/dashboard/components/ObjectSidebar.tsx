@@ -24,7 +24,7 @@ const HEAD_TITLE_CLASS =
   "min-w-0 truncate font-mono text-meta text-warning-vivid";
 const HEAD_COUNT_CLASS = "font-mono text-meta text-warning-vivid";
 const COLLAPSE_CLASS =
-  "inline-flex cursor-pointer items-center gap-1.5 rounded-sm px-1.5 py-1 font-mono text-meta uppercase text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 const LIST_CLASS =
   "flex flex-1 flex-col gap-2 overflow-hidden px-3 pt-0 pb-4 lg:min-h-0";
@@ -49,14 +49,16 @@ export function ObjectSidebar({
     <aside className={ASIDE_CLASS}>
       <div className={HEAD_CLASS}>
         <span className={HEAD_COPY_CLASS}>
-          <span className={HEAD_TITLE_CLASS}>
-            {sidebar.heading.toLowerCase()}
-          </span>
+          <span className={HEAD_TITLE_CLASS}>{sidebar.heading}</span>
           <span className={HEAD_COUNT_CLASS}>{totalCount}</span>
         </span>
-        <button type="button" onClick={onCollapse} className={COLLAPSE_CLASS}>
+        <button
+          type="button"
+          onClick={onCollapse}
+          aria-label={sidebar.collapse}
+          className={COLLAPSE_CLASS}
+        >
           <AppIcon icon={ChevronLeft} size={12} strokeWidth={1.8} decorative />
-          {sidebar.collapse}
         </button>
       </div>
 

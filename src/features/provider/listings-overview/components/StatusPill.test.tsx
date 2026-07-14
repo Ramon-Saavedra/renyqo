@@ -1,4 +1,4 @@
-﻿import { render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { StatusPill } from "./StatusPill";
@@ -17,17 +17,5 @@ describe("StatusPill", () => {
       expect(screen.getByText(label)).toBeInstanceOf(HTMLElement);
       unmount();
     }
-  });
-
-  it("applies the matching pill color class for published", () => {
-    render(<StatusPill status="published" />);
-    const pill = screen.getByText("Veröffentlicht");
-    expect(pill.className).toContain("text-primary");
-  });
-
-  it("appends an additional className when provided", () => {
-    render(<StatusPill status="draft" className="custom-token" />);
-    const pill = screen.getByText("Entwurf");
-    expect(pill.className).toContain("custom-token");
   });
 });

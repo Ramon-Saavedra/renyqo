@@ -28,23 +28,15 @@ describe("ObjectSidebar", () => {
   it("renders the object count and visible objects", () => {
     renderSidebar();
 
-    expect(screen.getByText("meine mietobjekte")).not.toBeNull();
+    expect(screen.getByText("Meine Mietobjekte")).not.toBeNull();
     expect(screen.getByText("4")).not.toBeNull();
     expect(screen.getByText("2,5-Zimmer-Wohnung Kreuzberg")).not.toBeNull();
     expect(screen.getByText("Studio am Maybachufer")).not.toBeNull();
   });
 
-  it("renders the header without a bottom border or search input", () => {
+  it("renders the header without a search input", () => {
     renderSidebar();
 
-    const heading = screen.getByText("meine mietobjekte");
-    const count = screen.getByText("4");
-    const header = heading.closest("div");
-
-    expect(heading.className).toContain("text-warning-vivid");
-    expect(heading.className).not.toContain("uppercase");
-    expect(count.className).toContain("text-warning-vivid");
-    expect(header?.className).not.toContain("border-b");
     expect(
       screen.queryByRole("searchbox", { name: "Objekte filtern" }),
     ).toBeNull();

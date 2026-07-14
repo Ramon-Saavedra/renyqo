@@ -18,6 +18,7 @@ export type AccentId = (typeof ACCENTS)[number]["id"];
 export const DEFAULT_ACCENT: AccentId = "schiefer";
 
 export const ACCENT_STORAGE_KEY = "renyqo:provider-accent";
+export const SELECTED_OBJECT_STORAGE_KEY = "renyqo:provider-dashboard-object";
 
 export function isAccentId(value: string | null): value is AccentId {
   return value !== null && ACCENTS.some((accent) => accent.id === value);
@@ -76,6 +77,7 @@ export const dashboardCopy = {
     applicationsLabel: (active: number) => `${active} / 5 aktive Bewerbungen`,
     draftNotice: "Noch nicht veröffentlicht",
     share: {
+      aria: "Objekt teilen",
       whatsapp: "WhatsApp",
       facebook: "Facebook",
       copy: "Kopieren",

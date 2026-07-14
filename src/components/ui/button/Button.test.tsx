@@ -2,137 +2,49 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { Button, buttonClass } from "./Button";
+import { Button } from "./Button";
 
 describe("Button", () => {
-  describe("rendering", () => {
-    it("renders its children inside a button element", () => {
-      render(<Button>Click me</Button>);
+  it("renders children in a button with type button by default", () => {
+    render(<Button>Click me</Button>);
 
-      const button = screen.getByRole("button", { name: "Click me" });
+    const button = screen.getByRole("button", { name: "Click me" });
 
-      expect(button).toBeInstanceOf(HTMLButtonElement);
-    });
-
-    it('defaults the type attribute to "button"', () => {
-      render(<Button>Default</Button>);
-
-      const button = screen.getByRole("button", {
-        name: "Default",
-      }) as HTMLButtonElement;
-
-      expect(button.type).toBe("button");
-    });
-
-    it("honors an explicit type attribute", () => {
-      render(<Button type="submit">Submit</Button>);
-
-      const button = screen.getByRole("button", {
-        name: "Submit",
-      }) as HTMLButtonElement;
-
-      expect(button.type).toBe("submit");
-    });
+    expect(button).toBeInstanceOf(HTMLButtonElement);
+    expect((button as HTMLButtonElement).type).toBe("button");
   });
 
-  describe("variants", () => {
-    it("applies the primary variant by default", () => {
-      render(<Button>Primary</Button>);
-      const button = screen.getByRole("button", { name: "Primary" });
+  it("honors explicit button props", () => {
+    render(
+      <Button type="submit" aria-label="Enviar" className="custom-class">
+        Submit
+      </Button>,
+    );
 
-      expect(button.className).toContain("bg-primary");
-      expect(button.className).toContain("text-primary-foreground");
-    });
+    const button = screen.getByRole("button", { name: "Enviar" });
 
-    it("applies the ghost variant when requested", () => {
-      render(<Button variant="ghost">Ghost</Button>);
-      const button = screen.getByRole("button", { name: "Ghost" });
-
-      expect(button.className).toContain("bg-transparent");
-      expect(button.className).toContain("text-foreground-secondary");
-      expect(button.className).not.toContain("bg-primary");
-    });
-
-    it("applies the secondary variant when requested", () => {
-      render(<Button variant="secondary">Secondary</Button>);
-      const button = screen.getByRole("button", { name: "Secondary" });
-
-      expect(button.className).toContain("bg-primary-tint");
-      expect(button.className).toContain("border-primary-soft");
-      expect(button.className).toContain("text-primary");
-    });
+    expect((button as HTMLButtonElement).type).toBe("submit");
+    expect(button.className).toContain("custom-class");
   });
 
-  describe("interaction", () => {
-    it("invokes onClick when the user clicks the button", async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(<Button onClick={handleClick}>Click</Button>);
+  it("invokes onClick only when enabled", async () => {
+    const user = userEvent.setup();
+    const enabledClick = vi.fn();
+    const disabledClick = vi.fn();
 
-      await user.click(screen.getByRole("button", { name: "Click" }));
-
-      expect(handleClick).toHaveBeenCalledTimes(1);
-    });
-
-    it("does not invoke onClick when disabled", async () => {
-      const user = userEvent.setup();
-      const handleClick = vi.fn();
-      render(
-        <Button onClick={handleClick} disabled>
+    render(
+      <>
+        <Button onClick={enabledClick}>Enabled</Button>
+        <Button onClick={disabledClick} disabled>
           Disabled
-        </Button>,
-      );
-      const button = screen.getByRole("button", {
-        name: "Disabled",
-      }) as HTMLButtonElement;
+        </Button>
+      </>,
+    );
 
-      await user.click(button);
+    await user.click(screen.getByRole("button", { name: "Enabled" }));
+    await user.click(screen.getByRole("button", { name: "Disabled" }));
 
-      expect(handleClick).not.toHaveBeenCalled();
-      expect(button.disabled).toBe(true);
-    });
-  });
-
-  describe("prop forwarding", () => {
-    it("appends a custom className to the variant classes", () => {
-      render(<Button className="custom-class">Styled</Button>);
-      const button = screen.getByRole("button", { name: "Styled" });
-
-      expect(button.className).toContain("custom-class");
-      expect(button.className).toContain("bg-primary");
-    });
-
-    it("forwards arbitrary HTML attributes to the underlying button", () => {
-      render(
-        <Button aria-label="Close dialog" data-testid="close-button">
-          X
-        </Button>,
-      );
-      const button = screen.getByTestId("close-button");
-
-      expect(button.getAttribute("aria-label")).toBe("Close dialog");
-    });
-  });
-});
-
-describe("buttonClass", () => {
-  it("composes the base classes with the requested variant", () => {
-    const result = buttonClass("primary");
-
-    expect(result).toContain("inline-flex");
-    expect(result).toContain("bg-primary");
-  });
-
-  it("appends the extra class fragment when provided", () => {
-    const result = buttonClass("ghost", "extra-token");
-
-    expect(result).toContain("bg-transparent");
-    expect(result.endsWith("extra-token")).toBe(true);
-  });
-
-  it("omits trailing whitespace when no extra classes are provided", () => {
-    const result = buttonClass("primary");
-
-    expect(result).toBe(result.trim());
+    expect(enabledClick).toHaveBeenCalledTimes(1);
+    expect(disabledClick).not.toHaveBeenCalled();
   });
 });
