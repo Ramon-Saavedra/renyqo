@@ -15,9 +15,14 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/api/listings", () => ({
   createListingDraft: vi.fn(),
   publishListing: vi.fn(),
+  uploadListingImage: vi.fn(),
 }));
 
-import { createListingDraft, publishListing } from "@/lib/api/listings";
+import {
+  createListingDraft,
+  publishListing,
+  uploadListingImage,
+} from "@/lib/api/listings";
 
 const PHOTO_FILE = new File(["photo"], "photo.jpg", { type: "image/jpeg" });
 const PHOTO: ListingPhoto = {
@@ -213,7 +218,7 @@ describe("useCreateListing", () => {
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
     });
 
-    it("passes only the first photo file to createListingDraft", async () => {
+    it("passes the first photo to createListingDraft and uploads remaining photos", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const secondFile = new File(["second"], "second.jpg", {
         type: "image/jpeg",
@@ -234,6 +239,18 @@ describe("useCreateListing", () => {
         expect.any(Object),
         PHOTO_FILE,
       );
+      expect(uploadListingImage).toHaveBeenCalledWith("draft-1", secondFile);
+    });
+
+    it("does not upload additional images when only one photo exists", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(VALID_DRAFT, "Mein Titel");
+      });
+
+      expect(uploadListingImage).not.toHaveBeenCalled();
     });
 
     it("does not call createListingDraft a second time when draftId is already set", async () => {
@@ -412,6 +429,38 @@ describe("useCreateListing", () => {
       expect(createListingDraft).toHaveBeenCalledTimes(1);
       expect(publishListing).toHaveBeenCalledWith("new-draft");
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
+    });
+
+    it("uploads remaining photos before publishing a new listing", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "new-draft" });
+      vi.mocked(publishListing).mockResolvedValue(undefined);
+      const secondFile = new File(["second"], "second.jpg", {
+        type: "image/jpeg",
+      });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.publish(
+          {
+            ...VALID_DRAFT,
+            photos: [PHOTO, { id: "p2", src: "blob:second", file: secondFile }],
+          },
+          "Titel",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.any(Object),
+        PHOTO_FILE,
+      );
+      expect(uploadListingImage).toHaveBeenCalledWith("new-draft", secondFile);
+      const uploadOrder =
+        vi.mocked(uploadListingImage).mock.invocationCallOrder[0];
+      const publishOrder =
+        vi.mocked(publishListing).mock.invocationCallOrder[0];
+      expect(uploadOrder).toBeDefined();
+      expect(publishOrder).toBeDefined();
+      expect(uploadOrder!).toBeLessThan(publishOrder!);
     });
 
     it("skips createListingDraft and reuses existing draft id on publish", async () => {
