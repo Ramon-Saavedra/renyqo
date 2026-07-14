@@ -21,10 +21,13 @@ interface ListingRowProps {
   onAction: (action: RowAction, listing: ListingOverviewItem) => void;
   actionStatus?: string | undefined;
   now?: Date | null;
+  selected?: boolean;
 }
 
 const ROW_BASE_CLASS =
-  "cursor-pointer rounded-md border border-border/50 bg-background-subtle px-4 py-4 transition-colors hover:border-border focus-visible:outline-none focus-visible:shadow-focus sm:px-5";
+  "cursor-pointer rounded-md border bg-background-subtle px-4 py-4 transition-colors focus-visible:outline-none focus-visible:shadow-focus sm:px-5";
+const ROW_DEFAULT_CLASS = "border-border/50 hover:border-border";
+const ROW_SELECTED_CLASS = "border-primary shadow-focus hover:border-primary";
 const ROW_INACTIVE_CLASS = "opacity-75";
 
 const ROW_CONTENT_CLASS = "flex flex-col gap-3.5 sm:flex-row sm:gap-4";
@@ -73,6 +76,7 @@ export function ListingRow({
   onAction,
   actionStatus,
   now,
+  selected = false,
 }: ListingRowProps) {
   const isInactive = listing.status === "archived";
   const visibleCount = Math.min(listing.applicationsTotal, 5);
@@ -86,7 +90,11 @@ export function ListingRow({
 
   return (
     <article
-      className={cn(ROW_BASE_CLASS, isInactive && ROW_INACTIVE_CLASS)}
+      className={cn(
+        ROW_BASE_CLASS,
+        selected ? ROW_SELECTED_CLASS : ROW_DEFAULT_CLASS,
+        isInactive && ROW_INACTIVE_CLASS,
+      )}
       data-status={listing.status}
       role="button"
       tabIndex={0}

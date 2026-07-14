@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { ChevronRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
-import { dashboardCopy } from "../copy/dashboard";
+import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { Candidate, DashboardObject } from "../types";
 import { CandidatesSection } from "./CandidatesSection";
@@ -31,7 +31,43 @@ const CONTENT_CLASS =
   "px-3 pt-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-gutter";
 
 const REOPEN_CLASS =
-  "sticky top-0 z-10 hidden items-center gap-2 self-start border-r border-b border-border bg-background px-3.5 py-2 font-mono text-meta uppercase text-foreground-secondary transition-colors hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
+  "sticky top-0 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center self-start border-r border-b border-border bg-background text-foreground-secondary transition-colors hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
+
+function getStoredSelectedObjectId() {
+  return window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY);
+}
+
+function getServerSelectedObjectId() {
+  return null;
+}
+
+const selectedObjectListeners = new Set<() => void>();
+
+function emitSelectedObjectChange() {
+  for (const listener of selectedObjectListeners) listener();
+}
+
+function subscribeSelectedObject(onChange: () => void) {
+  selectedObjectListeners.add(onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    selectedObjectListeners.delete(onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function setStoredSelectedObjectId(id: string) {
+  window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, id);
+  emitSelectedObjectChange();
+}
+
+function useStoredSelectedObjectId() {
+  return useSyncExternalStore(
+    subscribeSelectedObject,
+    getStoredSelectedObjectId,
+    getServerSelectedObjectId,
+  );
+}
 
 export function DashboardView({
   objects: initialObjects,
@@ -45,9 +81,7 @@ export function DashboardView({
   const [loadError, setLoadError] = useState(false);
   const objects = initialObjects ?? loadedObjects;
   const [search, setSearch] = useState("");
-  const [selectedId, setSelectedId] = useState<string | null>(
-    objects[0]?.id ?? null,
-  );
+  const selectedId = useStoredSelectedObjectId();
   const [collapsed, setCollapsed] = useState(false);
   const accent = useAccent();
 
@@ -119,6 +153,7 @@ export function DashboardView({
           <button
             type="button"
             onClick={() => setCollapsed(false)}
+            aria-label={dashboardCopy.sidebar.reopen}
             className={REOPEN_CLASS}
           >
             <AppIcon
@@ -127,14 +162,13 @@ export function DashboardView({
               strokeWidth={1.8}
               decorative
             />
-            {dashboardCopy.sidebar.reopen}
           </button>
         ) : (
           <ObjectSidebar
             objects={filteredObjects}
             totalCount={objects.length}
             selectedId={selected?.id ?? null}
-            onSelect={setSelectedId}
+            onSelect={setStoredSelectedObjectId}
             onCollapse={() => setCollapsed(true)}
           />
         )}
@@ -147,7 +181,7 @@ export function DashboardView({
               objects={filteredObjects}
               totalCount={objects.length}
               selectedId={selected?.id ?? null}
-              onSelect={setSelectedId}
+              onSelect={setStoredSelectedObjectId}
             />
 
             <div className="mt-6 mb-5">

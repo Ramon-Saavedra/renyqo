@@ -1,8 +1,9 @@
+import { Share2 } from "lucide-react";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { formatEUR } from "@/features/provider/listings-overview/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { dashboardCopy, OBJECT_STATUS_LABEL } from "../copy/dashboard";
 import type { DashboardObject } from "../types";
-import { ShareButtons } from "./ShareButtons";
 
 interface ObjectSidebarItemProps {
   object: DashboardObject;
@@ -12,28 +13,31 @@ interface ObjectSidebarItemProps {
 }
 
 const ITEM_CLASS =
-  "flex min-h-0 flex-1 cursor-pointer flex-col rounded-md  bg-background px-3 py-2 focus-within:shadow-focus border-2";
-const INACTIVE_CLASS =
-  "border-border hover:border-border-strong hover:bg-background-muted";
-const ACTIVE_CLASS = "border-primary bg-primary-soft shadow-card";
+  "flex min-h-0 flex-1 cursor-pointer flex-col rounded-md border bg-primary px-3 py-2 focus-within:shadow-focus";
+const INACTIVE_CLASS = "border-transparent";
+const ACTIVE_CLASS = "border-foreground bg-primary-hover";
 
 const SELECT_CLASS =
-  "block min-h-0 w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:shadow-focus";
+  "relative block min-h-0 w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:shadow-focus";
 
 const TITLE_BASE =
-  "min-w-0 truncate font-display text-caption font-medium text-foreground";
-const TITLE_ACTIVE = "";
+  "min-w-0 truncate font-display text-caption font-medium text-primary-foreground";
 
 const STATUS_BASE =
-  "shrink-0 rounded-sm px-1.5 py-0.5 text-xs font-medium whitespace-nowrap";
-const STATUS_PUBLISHED = "bg-background text-primary";
-const STATUS_DRAFT = "bg-background-muted text-foreground-secondary";
+  "shrink-0 rounded-sm bg-primary-foreground/20 px-1.5 py-0.5 text-xs font-medium whitespace-nowrap text-primary-foreground";
 
 const META_BASE =
-  "mt-1 flex min-w-0 items-center gap-1.5 text-caption text-foreground-tertiary";
+  "block min-w-0 truncate text-caption text-primary-foreground/80";
 
 const CAND_BASE =
-  "mt-1.5 flex items-center gap-1.5 text-caption text-foreground-secondary";
+  "flex min-w-0 flex-1 items-center gap-1.5 text-caption text-primary-foreground/90";
+const DETAIL_BAR_BASE =
+  "flex items-center gap-2 border-t border-primary-foreground/20 pt-2";
+const PRICE_CLASS =
+  "shrink-0 font-display text-caption font-medium text-primary-foreground";
+const SHARE_WRAP_CLASS = "ml-auto flex shrink-0 justify-end";
+const SHARE_BUTTON_BASE =
+  "inline-flex h-6.5 w-6.5 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/40 bg-primary-foreground/15 text-primary-foreground hover:border-primary-foreground/60 hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
 
 export function ObjectSidebarItem({
   object,
@@ -43,6 +47,21 @@ export function ObjectSidebarItem({
 }: ObjectSidebarItemProps) {
   const { sidebar } = dashboardCopy;
   const isDraft = object.status === "draft";
+  const handleShare = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+
+    if (navigator.share) {
+      void navigator
+        .share({
+          title: object.fullTitle,
+          url: shareUrl,
+        })
+        .catch(() => undefined);
+      return;
+    }
+
+    void navigator.clipboard?.writeText(shareUrl);
+  };
 
   return (
     <li
@@ -50,53 +69,51 @@ export function ObjectSidebarItem({
       onClick={() => onSelect(object.id)}
     >
       <button type="button" aria-pressed={selected} className={SELECT_CLASS}>
-        <span className="flex items-start justify-between gap-2.5">
-          <span className={cn(TITLE_BASE, selected && TITLE_ACTIVE)}>
-            {object.title}
-          </span>
-          <span
-            className={cn(
-              STATUS_BASE,
-              object.status === "published" ? STATUS_PUBLISHED : STATUS_DRAFT,
-            )}
-          >
+        <span className="mb-2 flex justify-end border-b border-primary-foreground/20 pb-2">
+          <span className={STATUS_BASE}>
             {OBJECT_STATUS_LABEL[object.status]}
           </span>
         </span>
 
-        <span className={META_BASE}>
-          <span className="min-w-0 truncate">{object.district}</span>
-          <span
-            aria-hidden="true"
-            className="h-0.5 w-0.5 rounded-full bg-border-strong"
-          />
-          <span className="shrink-0">
-            {formatEUR(object.coldRent)} {sidebar.rentSuffix}
-          </span>
+        <span className="mb-2 flex flex-col gap-1 border-b border-primary-foreground/20 pb-2">
+          <span className={TITLE_BASE}>{object.title}</span>
+          <span className={META_BASE}>{object.address}</span>
         </span>
+      </button>
 
+      <span className={DETAIL_BAR_BASE}>
+        <span className={PRICE_CLASS}>
+          {formatEUR(object.coldRent)} {sidebar.rentSuffix}
+        </span>
         {isDraft ? (
-          <span className="mt-2 block text-caption text-foreground-tertiary">
+          <span className="min-w-0 flex-1 truncate text-caption text-primary-foreground/90">
             {sidebar.draftNotice}
           </span>
         ) : (
           <span className={CAND_BASE}>
             <span
               aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-primary"
+              className="h-1.5 w-1.5 rounded-full bg-primary-foreground"
             />
-            {sidebar.applicationsLabel(object.activeApplications)}
+            <span className="min-w-0 truncate">
+              {sidebar.applicationsLabel(object.activeApplications)}
+            </span>
           </span>
         )}
-      </button>
 
-      {!isDraft && (
-        <ShareButtons
-          title={object.fullTitle}
-          shareUrl={shareUrl}
-          variant="sidebar"
-        />
-      )}
+        {!isDraft && (
+          <span className={SHARE_WRAP_CLASS}>
+            <button
+              type="button"
+              onClick={handleShare}
+              className={SHARE_BUTTON_BASE}
+              aria-label={sidebar.share.aria}
+            >
+              <AppIcon icon={Share2} size={12} strokeWidth={1.8} decorative />
+            </button>
+          </span>
+        )}
+      </span>
     </li>
   );
 }
