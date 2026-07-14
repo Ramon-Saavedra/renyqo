@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiPost, apiPostFormData } from "./client";
-import { createListingDraft, type CreateListingPayload } from "./listings";
+import {
+  createListingDraft,
+  uploadListingImage,
+  type CreateListingPayload,
+} from "./listings";
 
 vi.mock("./client", () => ({
   apiPatch: vi.fn(),
@@ -75,5 +79,29 @@ describe("createListingDraft", () => {
     expect(formData.has("additionalCosts")).toBe(false);
     expect(formData.has("minimumHouseholdNetIncome")).toBe(false);
     expect(formData.has("suitableForPeopleCount")).toBe(false);
+  });
+});
+
+describe("uploadListingImage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("uploads one image to the listing images endpoint using the file field", async () => {
+    vi.mocked(apiPostFormData).mockResolvedValue({ id: "listing-1" } as never);
+    const file = new File(["image"], "gallery.jpg", { type: "image/jpeg" });
+
+    await expect(uploadListingImage("listing-1", file)).resolves.toEqual({
+      id: "listing-1",
+    });
+
+    expect(apiPostFormData).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/images",
+      expect.any(FormData),
+    );
+
+    const formData = vi.mocked(apiPostFormData).mock.calls[0]?.[1] as FormData;
+    expect(Array.from(formData.keys())).toEqual(["file"]);
+    expect(formData.get("file")).toBe(file);
   });
 });

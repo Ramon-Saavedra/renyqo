@@ -16,14 +16,18 @@ interface GalleryProps {
 const EMPTY_CLASS =
   "flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong px-6 text-center text-foreground-tertiary";
 
+const ROOT_CLASS = "flex flex-col gap-2.5";
 const MAIN_WRAP_CLASS = "relative";
 const MAIN_CLASS =
   "relative aspect-[16/10] w-full overflow-hidden rounded-md bg-background-muted";
 const COUNTER_CLASS =
   "absolute bottom-3 right-3 rounded-sm bg-foreground/55 px-2 py-1 font-mono text-meta tracking-normal text-background";
-const THUMBS_CLASS = "mt-2.5 grid grid-cols-4 gap-2";
-const THUMB_BASE =
-  "relative aspect-square overflow-hidden rounded-sm border-2 border-transparent bg-background-muted transition-colors focus-visible:outline-none focus-visible:shadow-focus";
+const THUMBS_VIEWPORT_CLASS = "w-full overflow-x-auto pb-1 scrollbar-slim";
+const THUMBS_LIST_CLASS = "flex";
+const THUMB_BUTTON =
+  "aspect-square basis-1/5 shrink-0 rounded-sm focus-visible:outline-none focus-visible:shadow-focus";
+const THUMB_FRAME =
+  "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted transition-colors";
 const THUMB_ACTIVE = "border-primary";
 
 export function Gallery({ images, title, className }: GalleryProps) {
@@ -45,7 +49,7 @@ export function Gallery({ images, title, className }: GalleryProps) {
   const activeSrc = images[Math.min(active, images.length - 1)] ?? images[0];
 
   return (
-    <div className={className}>
+    <div className={cn(ROOT_CLASS, className)}>
       <div className={MAIN_WRAP_CLASS}>
         <div className={MAIN_CLASS}>
           {activeSrc ? (
@@ -55,6 +59,8 @@ export function Gallery({ images, title, className }: GalleryProps) {
               fill
               sizes="(max-width: 1024px) 100vw, 60vw"
               loading="eager"
+              preload
+              fetchPriority="high"
               quality={90}
               className="object-cover"
             />
@@ -71,27 +77,34 @@ export function Gallery({ images, title, className }: GalleryProps) {
       </div>
 
       {images.length > 1 ? (
-        <div className={THUMBS_CLASS}>
-          {images.slice(0, 8).map((src, index) => (
-            <button
-              key={src}
-              type="button"
-              aria-label={`${title} — Bild ${index + 1}`}
-              aria-pressed={index === active}
-              className={cn(THUMB_BASE, index === active && THUMB_ACTIVE)}
-              onClick={() => setActive(index)}
-            >
-              <Image
-                src={src}
-                alt=""
-                aria-hidden="true"
-                fill
-                sizes="120px"
-                quality={75}
-                className="object-cover"
-              />
-            </button>
-          ))}
+        <div className={THUMBS_VIEWPORT_CLASS}>
+          <div className={THUMBS_LIST_CLASS}>
+            {images.map((src, index) => (
+              <button
+                key={src}
+                type="button"
+                aria-label={`${title} — Bild ${index + 1}`}
+                aria-pressed={index === active}
+                className={THUMB_BUTTON}
+                onClick={() => setActive(index)}
+              >
+                <span
+                  className={cn(THUMB_FRAME, index === active && THUMB_ACTIVE)}
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    aria-hidden="true"
+                    fill
+                    sizes="(max-width: 640px) 20vw, 96px"
+                    loading={index === active ? "eager" : "lazy"}
+                    quality={90}
+                    className="object-cover"
+                  />
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
     </div>

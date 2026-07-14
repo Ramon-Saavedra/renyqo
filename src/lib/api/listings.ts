@@ -114,6 +114,19 @@ export async function createListingDraft(
   return apiPost<CreatedListing>("/api/v1/provider/listings", payload);
 }
 
+export async function uploadListingImage(
+  id: string,
+  file: File,
+): Promise<CreatedListing> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return apiPostFormData<CreatedListing>(
+    `/api/v1/provider/listings/${id}/images`,
+    formData,
+  );
+}
+
 export async function publishListing(id: string): Promise<void> {
   return apiPatch<void>(`/api/v1/provider/listings/${id}/publish`);
 }
