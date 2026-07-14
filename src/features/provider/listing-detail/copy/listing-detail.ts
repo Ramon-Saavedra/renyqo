@@ -65,12 +65,13 @@ export const listingDetailCopy = {
   },
   requirements: {
     title: "Anforderungen an Bewerbende",
-    schufa: "SCHUFA",
+    schufa: "SCHUFA-Auskunft",
     incomeProof: "Einkommensnachweis",
-    minimumIncome: "Mindesteinkommen (Haushalt)",
-    peopleCount: "Personenanzahl",
+    minimumIncome: "Mindesteinkommen netto",
+    peopleCount: "Passend für insgesamt",
     pets: "Haustiere",
     smoking: "Rauchen",
+    empty: "-",
     required: "Erforderlich",
     notRequired: "Nicht erforderlich",
     peopleCountValue: (count: number) =>

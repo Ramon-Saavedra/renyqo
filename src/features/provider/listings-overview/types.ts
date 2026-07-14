@@ -39,12 +39,7 @@ export interface ListingOverviewItem {
   readonly availableFrom?: string | null;
 }
 
-export const SORT_KEYS = [
-  "updated",
-  "created",
-  "applications",
-  "status",
-] as const;
+export const SORT_KEYS = ["updated", "created", "applications"] as const;
 
 export type SortKey = (typeof SORT_KEYS)[number];
 

@@ -34,13 +34,6 @@ export const STATUS_META: Record<ListingStatus, StatusMeta> = {
   },
 };
 
-export const STATUS_SORT_ORDER: readonly ListingStatus[] = [
-  "published",
-  "draft",
-  "paused",
-  "archived",
-];
-
 export const STATUS_FILTERS: readonly StatusFilterEntry[] = [
   { id: "alle", label: "Alle" },
   { id: "published", label: "Veröffentlicht" },
@@ -54,7 +47,6 @@ export const SORT_OPTIONS: readonly SortOption[] = [
   { id: "updated", label: "Zuletzt aktualisiert" },
   { id: "created", label: "Neueste zuerst" },
   { id: "applications", label: "Bewerbungen" },
-  { id: "status", label: "Status" },
 ];
 
 export const listingsCopy = {
