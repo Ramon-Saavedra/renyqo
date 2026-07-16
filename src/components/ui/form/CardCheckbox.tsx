@@ -2,6 +2,8 @@
 
 import { Check } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { SAVED_FIELD_SUBTLE_CLASS } from "./saved-field";
+import { cn } from "@/lib/utils/cn";
 
 interface CardCheckboxProps {
   id: string;
@@ -9,7 +11,13 @@ interface CardCheckboxProps {
   onChange: (checked: boolean) => void;
   children: React.ReactNode;
   description?: React.ReactNode;
+  saved?: boolean;
 }
+
+const WRAPPER_CLASS =
+  "flex cursor-pointer items-start gap-3 rounded-md border bg-background-subtle px-3 py-3 transition-colors";
+const BOX_CLASS =
+  "mt-0.25 grid h-4 w-4 shrink-0 place-items-center rounded-sm border transition-colors";
 
 export function CardCheckbox({
   id,
@@ -17,14 +25,23 @@ export function CardCheckbox({
   onChange,
   children,
   description,
+  saved = false,
 }: CardCheckboxProps) {
-  const wrapperClass = `flex cursor-pointer items-start gap-3 rounded-md border bg-background-subtle px-3 py-3 transition-colors ${
-    checked ? "border-border" : "border-border hover:border-border-strong"
-  }`;
+  const wrapperClass = cn(
+    WRAPPER_CLASS,
+    saved
+      ? SAVED_FIELD_SUBTLE_CLASS
+      : checked
+        ? "border-border"
+        : "border-border hover:border-border-strong",
+  );
 
-  const boxClass = `mt-0.25 grid h-4 w-4 shrink-0 place-items-center rounded-sm border transition-colors ${
-    checked ? "border-primary bg-primary" : "border-border-strong bg-background"
-  }`;
+  const boxClass = cn(
+    BOX_CLASS,
+    checked
+      ? "border-primary bg-primary"
+      : "border-border-strong bg-background",
+  );
 
   return (
     <label htmlFor={id} className={wrapperClass}>
@@ -44,10 +61,20 @@ export function CardCheckbox({
           className={checked ? "text-primary-foreground" : "opacity-0"}
         />
       </span>
-      <span className="text-caption leading-normal text-foreground">
+      <span
+        className={cn(
+          "text-caption leading-normal",
+          !saved && "text-foreground",
+        )}
+      >
         {children}
         {description && (
-          <span className="mb-0 mt-0.5 block text-caption text-foreground-tertiary">
+          <span
+            className={cn(
+              "mb-0 mt-0.5 block text-caption",
+              !saved && "text-foreground-tertiary",
+            )}
+          >
             {description}
           </span>
         )}

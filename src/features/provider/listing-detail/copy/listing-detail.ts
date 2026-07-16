@@ -43,6 +43,9 @@ export const listingDetailCopy = {
     drafting: "Wird gespeichert …",
     archive: "Archivieren",
     archiving: "Wird archiviert …",
+    publishShort: "Online",
+    draftShort: "Entwurf",
+    archiveShort: "Archiv",
   },
   gallery: {
     counter: (current: number, total: number) => `${current} / ${total}`,

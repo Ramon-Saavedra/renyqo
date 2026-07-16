@@ -14,6 +14,8 @@ import {
   publishProviderListing,
 } from "../api/provider-listing-detail";
 import { listingDetailCopy } from "../copy/listing-detail";
+import { STICKY_HEAD_CLASS } from "../sticky-head";
+import { ListingEditView } from "../edit/components/ListingEditView";
 import type { DetailAction, ListingDetail } from "../types";
 import { AddressCard } from "./AddressCard";
 import { DescriptionCard } from "./DescriptionCard";
@@ -38,7 +40,7 @@ const LEFT_COLUMN = "contents lg:flex lg:w-3/5 lg:min-w-0 lg:flex-col lg:gap-5";
 const RIGHT_COLUMN =
   "contents lg:flex lg:w-2/5 lg:min-w-0 lg:flex-col lg:gap-5";
 const ACTION_ERROR_CLASS =
-  "mb-4 rounded-md border border-border bg-background px-4 py-3 text-caption text-foreground-secondary";
+  "mt-4 rounded-md border border-border bg-background px-4 py-3 text-caption text-foreground-secondary";
 
 const ACTION_HANDLERS: Record<DetailAction, (id: string) => Promise<void>> = {
   publish: publishProviderListing,
@@ -58,6 +60,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
   const [pendingAction, setPendingAction] = useState<DetailAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -111,6 +114,18 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
 
   const retry = useCallback(() => setReloadKey((key) => key + 1), []);
 
+  const enterEditMode = useCallback(() => {
+    setActionError(null);
+    setIsEditing(true);
+  }, []);
+
+  const handleEditSaved = useCallback((updated: ListingDetail) => {
+    setListing(updated);
+    setIsEditing(false);
+  }, []);
+
+  const exitEditMode = useCallback(() => setIsEditing(false), []);
+
   return (
     <>
       <AppTopbar logoHref="/provider/dashboard" className="mb-6">
@@ -127,19 +142,28 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
           <DetailLoadingSkeleton />
         ) : fetchStatus === "error" || !listing ? (
           <DetailErrorState onRetry={retry} />
+        ) : isEditing ? (
+          <ListingEditView
+            listing={listing}
+            onCancel={exitEditMode}
+            onSaved={handleEditSaved}
+          />
         ) : (
           <>
-            <DetailHead
-              listing={listing}
-              pendingAction={pendingAction}
-              onAction={handleAction}
-            />
+            <div className={STICKY_HEAD_CLASS}>
+              <DetailHead
+                listing={listing}
+                pendingAction={pendingAction}
+                onAction={handleAction}
+                onEdit={enterEditMode}
+              />
 
-            {actionError ? (
-              <div className={ACTION_ERROR_CLASS} role="alert">
-                {actionError}
-              </div>
-            ) : null}
+              {actionError ? (
+                <div className={ACTION_ERROR_CLASS} role="alert">
+                  {actionError}
+                </div>
+              ) : null}
+            </div>
 
             <div className={COLUMN_CONTAINER}>
               <div className={LEFT_COLUMN}>
