@@ -130,3 +130,34 @@ export async function uploadListingImage(
 export async function publishListing(id: string): Promise<void> {
   return apiPatch<void>(`/api/v1/provider/listings/${id}/publish`);
 }
+
+export type UpdateListingPayload = Partial<{
+  title: string;
+  objectType: ObjectTypeBackend;
+  street: string;
+  zip: string;
+  city: string;
+  showExactAddress: boolean;
+  coldRent: number;
+  additionalCosts: number;
+  deposit: number;
+  depositMonths: number;
+  livingArea: number;
+  rooms: number;
+  bedrooms: number | null;
+  availableFrom: string;
+  shortDescription: string;
+  minimumHouseholdNetIncome: number | null;
+  suitableForPeopleCount: number | null;
+  schufaRequired: boolean;
+  incomeProofRequired: boolean;
+  petsPolicy: PetPolicyBackend;
+  smokingPolicy: SmokingPolicyBackend;
+}>;
+
+export async function updateListing(
+  id: string,
+  payload: UpdateListingPayload,
+): Promise<void> {
+  return apiPatch<void>(`/api/v1/provider/listings/${id}`, payload);
+}
