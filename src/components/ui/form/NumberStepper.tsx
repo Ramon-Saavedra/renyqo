@@ -1,3 +1,6 @@
+import { SAVED_FIELD_CLASS } from "./saved-field";
+import { cn } from "@/lib/utils/cn";
+
 interface NumberStepperProps {
   value: number | null;
   onChange: (value: number | null) => void;
@@ -6,14 +9,16 @@ interface NumberStepperProps {
   allowNull?: boolean;
   nullLabel?: string;
   ariaLabel?: string;
+  saved?: boolean;
 }
 
 const GROUP_CLASS =
   "flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-input";
 const BTN_CLASS =
-  "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg text-foreground-secondary transition-colors hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:bg-transparent disabled:text-foreground-tertiary";
-const VAL_CLASS =
-  "flex-1 text-center font-mono text-action tabular-nums text-foreground";
+  "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg transition-colors hover:bg-background-muted disabled:cursor-not-allowed disabled:bg-transparent";
+const BTN_COLOR_CLASS =
+  "text-foreground-secondary hover:text-foreground disabled:text-foreground-tertiary";
+const VAL_CLASS = "flex-1 text-center font-mono text-action tabular-nums";
 
 export function NumberStepper({
   value,
@@ -23,6 +28,7 @@ export function NumberStepper({
   allowNull = false,
   nullLabel = "—",
   ariaLabel,
+  saved = false,
 }: NumberStepperProps) {
   const isNull = value === null;
   const decDisabled = isNull || (value <= min && !allowNull);
@@ -45,16 +51,24 @@ export function NumberStepper({
   };
 
   const display = isNull ? nullLabel : value;
-  const valClass = isNull ? `${VAL_CLASS} text-foreground-tertiary` : VAL_CLASS;
+  const btnClass = cn(BTN_CLASS, !saved && BTN_COLOR_CLASS);
+  const valClass = cn(
+    VAL_CLASS,
+    !saved && (isNull ? "text-foreground-tertiary" : "text-foreground"),
+  );
 
   return (
-    <div className={GROUP_CLASS} role="group" aria-label={ariaLabel}>
+    <div
+      className={cn(GROUP_CLASS, saved && SAVED_FIELD_CLASS)}
+      role="group"
+      aria-label={ariaLabel}
+    >
       <button
         type="button"
         onClick={dec}
         disabled={decDisabled}
         aria-label="Wert verringern"
-        className={BTN_CLASS}
+        className={btnClass}
       >
         −
       </button>
@@ -64,7 +78,7 @@ export function NumberStepper({
         onClick={inc}
         disabled={incDisabled}
         aria-label="Wert erhöhen"
-        className={BTN_CLASS}
+        className={btnClass}
       >
         +
       </button>

@@ -1,5 +1,7 @@
 import { type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { SAVED_FIELD_CLASS } from "./saved-field";
+import { cn } from "@/lib/utils/cn";
 
 export interface SegmentedOption<T extends string> {
   value: T;
@@ -12,6 +14,7 @@ interface SegmentedProps<T extends string> {
   onChange: (value: T) => void;
   options: ReadonlyArray<SegmentedOption<T>>;
   ariaLabel?: string;
+  saved?: boolean;
 }
 
 const GROUP_CLASS =
@@ -26,9 +29,14 @@ export function Segmented<T extends string>({
   onChange,
   options,
   ariaLabel,
+  saved = false,
 }: SegmentedProps<T>) {
   return (
-    <div className={GROUP_CLASS} role="radiogroup" aria-label={ariaLabel}>
+    <div
+      className={cn(GROUP_CLASS, saved && SAVED_FIELD_CLASS)}
+      role="radiogroup"
+      aria-label={ariaLabel}
+    >
       {options.map((o) => {
         const active = o.value === value;
         return (
