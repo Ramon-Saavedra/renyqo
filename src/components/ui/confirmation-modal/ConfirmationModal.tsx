@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Info, X } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
@@ -39,6 +39,12 @@ const ERROR_CLASS =
 const ACTIONS_CLASS = "grid gap-2";
 const ACTION_BUTTON_CLASS =
   "min-h-11 w-full justify-center text-center leading-tight";
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function getFocusableElements(dialog: HTMLElement): HTMLElement[] {
+  return Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+}
 
 export function ConfirmationModal({
   open,
@@ -60,65 +66,80 @@ export function ConfirmationModal({
   const textId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
+  const wasOpenRef = useRef(false);
 
-  const close = useCallback(() => {
-    if (restoreFocusRef.current?.isConnected) {
-      restoreFocusRef.current.focus();
+  useEffect(() => {
+    if (open) {
+      if (!wasOpenRef.current) {
+        const activeElement = document.activeElement;
+        restoreFocusRef.current =
+          activeElement instanceof HTMLElement ? activeElement : null;
+        wasOpenRef.current = true;
+      }
+
+      const dialog = dialogRef.current;
+      const firstFocusable = dialog
+        ? getFocusableElements(dialog)[0]
+        : undefined;
+      (firstFocusable ?? dialog)?.focus();
+      return;
     }
+
+    if (!wasOpenRef.current) return;
+
+    const elementToRestore = restoreFocusRef.current;
     restoreFocusRef.current = null;
-    onPrimary();
-  }, [onPrimary]);
+    wasOpenRef.current = false;
+    if (elementToRestore?.isConnected) elementToRestore.focus();
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
 
-    restoreFocusRef.current = document.activeElement as HTMLElement;
-    dialogRef.current?.focus();
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        close();
+        onPrimary();
         return;
       }
 
-      if (event.key === "Tab") {
-        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        );
-        if (!focusable || focusable.length === 0) return;
+      if (event.key !== "Tab") return;
 
-        const first = focusable[0]!;
-        const last = focusable[focusable.length - 1]!;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
 
-        if (event.shiftKey) {
-          if (document.activeElement === first) {
-            event.preventDefault();
-            last.focus();
-          }
-        } else if (document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
+      const focusable = getFocusableElements(dialog);
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
       }
-    };
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        event.target === event.currentTarget &&
-        dialogRef.current &&
-        !dialogRef.current.contains(event.target as Node)
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey) {
+        if (
+          activeElement === first ||
+          activeElement === dialog ||
+          !dialog.contains(activeElement)
+        ) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (
+        activeElement === last ||
+        activeElement === dialog ||
+        !dialog.contains(activeElement)
       ) {
-        close();
+        event.preventDefault();
+        first.focus();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [close, open]);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onPrimary, open]);
 
   if (!open) return null;
 
@@ -136,7 +157,7 @@ export function ConfirmationModal({
         <button
           type="button"
           className={CLOSE_BUTTON_CLASS}
-          onClick={close}
+          onClick={onPrimary}
           disabled={tertiaryPending}
           aria-label={primaryLabel}
         >
@@ -156,7 +177,7 @@ export function ConfirmationModal({
           <button
             type="button"
             className={buttonClass("primary", ACTION_BUTTON_CLASS)}
-            onClick={close}
+            onClick={onPrimary}
             disabled={tertiaryPending}
           >
             {primaryLabel}
