@@ -30,6 +30,9 @@ html {
 
   --color-success: var(--success);
   --color-success-vivid: var(--success-vivid);
+  --color-success-surface: var(--success-surface);
+  --color-success-on-surface: var(--success-on-surface);
+  --color-success-surface-border: var(--success-surface-border);
   --color-warning: var(--warning);
   --color-warning-vivid: var(--warning-vivid);
   --color-danger: var(--danger);
@@ -129,6 +132,9 @@ html {
 
   --success: #4f7a56;
   --success-vivid: #1c9434;
+  --success-surface: #3f6a49;
+  --success-on-surface: #e3f0e6;
+  --success-surface-border: #2f5638;
   --warning: #b07b3d;
   --warning-vivid: #fa8714;
   --danger: #dc2626;
@@ -168,6 +174,9 @@ html {
 
   --success: #8fb59a;
   --success-vivid: #3ecf62;
+  --success-surface: #2f5c3d;
+  --success-on-surface: #d8f5e0;
+  --success-surface-border: #4e9668;
   --warning: #d2a36a;
   --warning-vivid: #f59527;
   --danger: #f87171;
@@ -536,15 +545,6 @@ body {
   }
 }
 
-/* =====================================================================
-   Renyqo loading system (Claude Design · "Lade- & Verarbeitungszustände")
-   Signature motif: calm skeleton veil + single light sweep + alignment
-   dots. No spinners. Animations live here once; components stay page-free.
-   Colors derive from existing tokens only — primary alpha variants use
-   color-mix (there is no --primary-rgb token in this project).
-   ===================================================================== */
-
-/* Reveal wrapper: real content sits beneath a skeleton veil */
 .reveal-wrap {
   position: relative;
   border-radius: var(--radius-md);
@@ -582,14 +582,11 @@ body {
   pointer-events: none;
 }
 
-/* Standalone loader: the veil sits in normal flow and sizes itself, so no
-   underlying content is needed while data is still loading. */
 .veil.veil-static {
   position: relative;
   inset: auto;
 }
 
-/* Content appearing after a standalone loader resolves */
 .rq-fade-in {
   animation: rq-fade-in 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -604,7 +601,6 @@ body {
   }
 }
 
-/* Horizontal light sweep (default) */
 .veil::before {
   content: "";
   position: absolute;
@@ -626,7 +622,6 @@ body {
   animation-delay: var(--rq-stagger, 0s);
 }
 
-/* Vertical light sweep (for tall / full-page veils) */
 .veil.veil-v::before {
   top: -45%;
   left: 0;
@@ -700,7 +695,6 @@ body {
   }
 }
 
-/* Alignment dots — the "sorting into place" motif */
 .align-dots {
   display: inline-flex;
   align-items: center;
@@ -725,7 +719,7 @@ body {
 .align-dots i:nth-child(3) {
   animation-delay: 0.32s;
 }
-/* On a filled button the dots follow the label colour, not the accent */
+
 .align-dots-current i {
   background: currentColor;
 }
@@ -749,7 +743,6 @@ body {
   }
 }
 
-/* Skeleton primitives that live inside a veil */
 .sk {
   background: var(--background-muted);
   border-radius: var(--radius-sm);
@@ -763,7 +756,6 @@ body {
   border-radius: 999px;
 }
 
-/* Button processing state: label swaps, a faint glint sweeps once */
 .loading-btn {
   position: relative;
   overflow: hidden;
@@ -804,6 +796,37 @@ body {
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+.rq-saved {
+  --rq-saved-bg-end: var(--input);
+  --rq-saved-border-end: var(--border-strong);
+  --rq-saved-fg-end: var(--foreground);
+  background-color: var(--success-surface);
+  border-color: var(--success-surface-border);
+  color: var(--success-on-surface);
+}
+.rq-saved-subtle {
+  --rq-saved-bg-end: var(--background-subtle);
+  --rq-saved-border-end: var(--border);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rq-saved {
+    animation: rq-saved-flash 2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+}
+@keyframes rq-saved-flash {
+  0%,
+  30% {
+    background-color: var(--success-surface);
+    border-color: var(--success-surface-border);
+    color: var(--success-on-surface);
+  }
+  100% {
+    background-color: var(--rq-saved-bg-end);
+    border-color: var(--rq-saved-border-end);
+    color: var(--rq-saved-fg-end);
   }
 }
 
