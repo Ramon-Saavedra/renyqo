@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ListingDetail } from "../types";
@@ -58,5 +59,17 @@ describe("ListingDetailView", () => {
     expect(await screen.findByText("Wohnung in Berlin")).toBeInstanceOf(
       HTMLElement,
     );
+  });
+
+  it("enters edit mode from the listing detail", async () => {
+    const user = userEvent.setup();
+    render(<ListingDetailView listingId="listing-1" />);
+
+    await screen.findByRole("heading", { name: "Wohnung in Berlin" });
+    await user.click(screen.getByRole("button", { name: "Bearbeiten" }));
+
+    expect(
+      await screen.findByRole("textbox", { name: "Objekttitel" }),
+    ).toBeInstanceOf(HTMLInputElement);
   });
 });
