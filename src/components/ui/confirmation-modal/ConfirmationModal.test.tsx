@@ -131,28 +131,54 @@ describe("ConfirmationModal", () => {
     ).toBeInstanceOf(HTMLElement);
   });
 
-  it("focuses the dialog when opened", () => {
+  it("focuses the first available control when opened", () => {
     renderModal();
 
-    const dialog = screen.getByRole("dialog");
-    expect(document.activeElement).toBe(dialog);
+    const [closeButton] = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    });
+    expect(document.activeElement).toBe(closeButton);
   });
 
-  it("restores focus to the previously active element on close", async () => {
+  it("restores focus to the previously active element when closed", async () => {
     const user = userEvent.setup();
     const trigger = document.createElement("button");
     trigger.textContent = "Trigger";
     document.body.appendChild(trigger);
     trigger.focus();
 
-    const { onPrimary } = renderModal();
-    expect(onPrimary).not.toHaveBeenCalled();
+    const onPrimary = vi.fn();
+    const props = { ...BASE_PROPS, onPrimary };
+    const { rerender } = render(<ConfirmationModal {...props} open />);
 
     const allPrimary = screen.getAllByRole("button", {
       name: "Weiter bearbeiten",
     });
     await user.click(allPrimary[1]!);
 
+    expect(onPrimary).toHaveBeenCalledTimes(1);
+    rerender(<ConfirmationModal {...props} open={false} />);
+    expect(trigger).toBe(document.activeElement);
+    trigger.remove();
+  });
+
+  it("restores focus after a secondary action closes the modal", async () => {
+    const user = userEvent.setup();
+    const trigger = document.createElement("button");
+    trigger.textContent = "Trigger";
+    document.body.appendChild(trigger);
+    trigger.focus();
+
+    const onSecondary = vi.fn();
+    const props = { ...BASE_PROPS, onSecondary };
+    const { rerender } = render(<ConfirmationModal {...props} open />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Ohne Speichern verlassen" }),
+    );
+
+    expect(onSecondary).toHaveBeenCalledTimes(1);
+    rerender(<ConfirmationModal {...props} open={false} />);
     expect(trigger).toBe(document.activeElement);
     trigger.remove();
   });
@@ -178,5 +204,22 @@ describe("ConfirmationModal", () => {
 
     fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
     expect(document.activeElement).toBe(secondaryButton);
+  });
+
+  it("keeps focus in the dialog while actions are pending", () => {
+    renderModal({
+      tertiaryLabel: "Als Entwurf speichern & verlassen",
+      tertiaryPendingLabel: "Entwurf wird gespeichert",
+      tertiaryPending: true,
+    });
+
+    const dialog = screen.getByRole("dialog");
+    expect(document.activeElement).toBe(dialog);
+
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(dialog);
+
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(dialog);
   });
 });
