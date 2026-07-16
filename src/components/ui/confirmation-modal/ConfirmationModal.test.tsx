@@ -130,4 +130,53 @@ describe("ConfirmationModal", () => {
       screen.getByText("Der Entwurf konnte nicht gespeichert werden."),
     ).toBeInstanceOf(HTMLElement);
   });
+
+  it("focuses the dialog when opened", () => {
+    renderModal();
+
+    const dialog = screen.getByRole("dialog");
+    expect(document.activeElement).toBe(dialog);
+  });
+
+  it("restores focus to the previously active element on close", async () => {
+    const user = userEvent.setup();
+    const trigger = document.createElement("button");
+    trigger.textContent = "Trigger";
+    document.body.appendChild(trigger);
+    trigger.focus();
+
+    const { onPrimary } = renderModal();
+    expect(onPrimary).not.toHaveBeenCalled();
+
+    const allPrimary = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    });
+    await user.click(allPrimary[1]!);
+
+    expect(trigger).toBe(document.activeElement);
+    trigger.remove();
+  });
+
+  it("keeps Tab inside the dialog", () => {
+    renderModal();
+
+    const closeButton = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    })[0]!;
+    const secondaryButton = screen.getByRole("button", {
+      name: "Ohne Speichern verlassen",
+    });
+
+    secondaryButton.focus();
+    expect(document.activeElement).toBe(secondaryButton);
+
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(closeButton);
+
+    closeButton.focus();
+    expect(document.activeElement).toBe(closeButton);
+
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(secondaryButton);
+  });
 });

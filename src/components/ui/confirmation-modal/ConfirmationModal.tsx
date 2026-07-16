@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId } from "react";
+import { useCallback, useEffect, useId, useRef } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Info, X } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
@@ -58,33 +58,85 @@ export function ConfirmationModal({
 }: ConfirmationModalProps) {
   const titleId = useId();
   const textId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  const close = useCallback(() => {
+    if (restoreFocusRef.current?.isConnected) {
+      restoreFocusRef.current.focus();
+    }
+    restoreFocusRef.current = null;
+    onPrimary();
+  }, [onPrimary]);
 
   useEffect(() => {
     if (!open) return;
 
+    restoreFocusRef.current = document.activeElement as HTMLElement;
+    dialogRef.current?.focus();
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onPrimary();
+      if (event.key === "Escape") {
+        close();
+        return;
+      }
+
+      if (event.key === "Tab") {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (!focusable || focusable.length === 0) return;
+
+        const first = focusable[0]!;
+        const last = focusable[focusable.length - 1]!;
+
+        if (event.shiftKey) {
+          if (document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        event.target === event.currentTarget &&
+        dialogRef.current &&
+        !dialogRef.current.contains(event.target as Node)
+      ) {
+        close();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onPrimary, open]);
+    window.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [close, open]);
 
   if (!open) return null;
 
   return (
     <div className={OVERLAY_CLASS} role="presentation">
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={textId}
+        tabIndex={-1}
         className={PANEL_CLASS}
       >
         <button
           type="button"
           className={CLOSE_BUTTON_CLASS}
-          onClick={onPrimary}
+          onClick={close}
           disabled={tertiaryPending}
           aria-label={primaryLabel}
         >
@@ -104,7 +156,7 @@ export function ConfirmationModal({
           <button
             type="button"
             className={buttonClass("primary", ACTION_BUTTON_CLASS)}
-            onClick={onPrimary}
+            onClick={close}
             disabled={tertiaryPending}
           >
             {primaryLabel}
