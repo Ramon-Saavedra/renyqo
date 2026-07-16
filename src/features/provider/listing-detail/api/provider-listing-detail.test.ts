@@ -8,7 +8,6 @@ import {
 
 vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
-  apiPatch: vi.fn(),
 }));
 
 describe("mapProviderListingDetail", () => {
