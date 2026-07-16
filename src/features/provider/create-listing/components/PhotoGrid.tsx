@@ -24,7 +24,7 @@ const COVER_TAG_CLASS =
   "absolute top-1.5 left-1.5 rounded-sm border border-primary-soft bg-background px-1.5 py-0.75 font-mono text-meta uppercase text-primary";
 
 const REMOVE_BTN_CLASS =
-  "absolute top-1.5 right-1.5 grid h-5.5 w-5.5 cursor-pointer place-items-center rounded-md border-0 bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100";
+  "absolute top-1.5 right-1.5 grid h-5.5 w-5.5 cursor-pointer place-items-center rounded-md border-0 bg-black/55 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-focus";
 const ERROR_CLASS = "mb-0 pt-2 text-caption leading-normal text-danger";
 
 function hasDraggedFiles(event: DragEvent<HTMLElement>): boolean {

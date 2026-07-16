@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "default_agent": {
+      "type": "string",
+      "description": "Default agent to use when none is specified."
+    }
+  },
+  "additionalProperties": true
+}

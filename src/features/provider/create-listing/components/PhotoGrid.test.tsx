@@ -175,6 +175,18 @@ describe("PhotoGrid", () => {
     expect(setPhotos).toHaveBeenCalledWith([]);
   });
 
+  it("keeps the remove action visible when focused by keyboard", () => {
+    render(<PhotoGrid photos={[PHOTO]} setPhotos={vi.fn()} />);
+
+    const removeButton = screen.getByRole("button", { name: "Entfernen" });
+
+    removeButton.focus();
+
+    expect(document.activeElement).toBe(removeButton);
+    expect(removeButton.className).toContain("focus-visible:opacity-100");
+    expect(removeButton.className).toContain("focus-visible:shadow-focus");
+  });
+
   it("hides the add action when the maximum number of photos is reached", () => {
     const photos = Array.from({ length: 12 }, (_, index) => ({
       id: `photo-${index}`,
