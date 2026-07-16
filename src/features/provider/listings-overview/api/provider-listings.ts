@@ -1,5 +1,4 @@
-import { apiGet } from "@/lib/api/client";
-import { apiPatch } from "@/lib/api/client";
+import { apiGet, apiPatchVoid } from "@/lib/api/client";
 import type {
   AttentionReason,
   ListingOverviewItem,
@@ -214,13 +213,13 @@ export async function getProviderListings(): Promise<
 }
 
 export async function publishProviderListing(id: string): Promise<void> {
-  await apiPatch<void>(`/api/v1/provider/listings/${id}/publish`);
+  await apiPatchVoid(`/api/v1/provider/listings/${id}/publish`);
 }
 
 export async function moveProviderListingToDraft(id: string): Promise<void> {
-  await apiPatch<void>(`/api/v1/provider/listings/${id}/draft`);
+  await apiPatchVoid(`/api/v1/provider/listings/${id}/draft`);
 }
 
 export async function archiveProviderListing(id: string): Promise<void> {
-  await apiPatch<void>(`/api/v1/provider/listings/${id}/archive`);
+  await apiPatchVoid(`/api/v1/provider/listings/${id}/archive`);
 }

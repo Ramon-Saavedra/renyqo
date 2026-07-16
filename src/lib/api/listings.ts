@@ -1,4 +1,4 @@
-import { apiPatch, apiPost, apiPostFormData } from "./client";
+import { apiPatch, apiPatchVoid, apiPost, apiPostFormData } from "./client";
 
 export type ObjectTypeBackend = "APARTMENT" | "HOUSE" | "ROOM";
 export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
@@ -128,7 +128,7 @@ export async function uploadListingImage(
 }
 
 export async function publishListing(id: string): Promise<void> {
-  return apiPatch<void>(`/api/v1/provider/listings/${id}/publish`);
+  return apiPatchVoid(`/api/v1/provider/listings/${id}/publish`);
 }
 
 export type UpdateListingPayload = Partial<{

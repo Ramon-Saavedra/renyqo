@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiGet, apiPatch } from "@/lib/api/client";
+import { apiGet, apiPatchVoid } from "@/lib/api/client";
 import {
   archiveProviderListing,
   getProviderListings,
@@ -10,7 +10,7 @@ import {
 
 vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
-  apiPatch: vi.fn(),
+  apiPatchVoid: vi.fn(),
 }));
 
 describe("getProviderListings", () => {
@@ -111,31 +111,31 @@ describe("getProviderListings", () => {
   });
 
   it("publishes a provider listing", async () => {
-    vi.mocked(apiPatch).mockResolvedValue(undefined);
+    vi.mocked(apiPatchVoid).mockResolvedValue(undefined);
 
     await publishProviderListing("listing-1");
 
-    expect(apiPatch).toHaveBeenCalledWith(
+    expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/publish",
     );
   });
 
   it("moves a provider listing to draft", async () => {
-    vi.mocked(apiPatch).mockResolvedValue(undefined);
+    vi.mocked(apiPatchVoid).mockResolvedValue(undefined);
 
     await moveProviderListingToDraft("listing-1");
 
-    expect(apiPatch).toHaveBeenCalledWith(
+    expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/draft",
     );
   });
 
   it("archives a provider listing", async () => {
-    vi.mocked(apiPatch).mockResolvedValue(undefined);
+    vi.mocked(apiPatchVoid).mockResolvedValue(undefined);
 
     await archiveProviderListing("listing-1");
 
-    expect(apiPatch).toHaveBeenCalledWith(
+    expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/archive",
     );
   });

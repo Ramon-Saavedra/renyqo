@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiPost, apiPostFormData } from "./client";
+import { apiPatch, apiPatchVoid, apiPost, apiPostFormData } from "./client";
 import {
   createListingDraft,
+  publishListing,
+  updateListing,
   uploadListingImage,
   type CreateListingPayload,
+  type UpdateListingPayload,
 } from "./listings";
 
 vi.mock("./client", () => ({
   apiPatch: vi.fn(),
+  apiPatchVoid: vi.fn(),
   apiPost: vi.fn(),
   apiPostFormData: vi.fn(),
 }));
@@ -103,5 +107,39 @@ describe("uploadListingImage", () => {
     const formData = vi.mocked(apiPostFormData).mock.calls[0]?.[1] as FormData;
     expect(Array.from(formData.keys())).toEqual(["file"]);
     expect(formData.get("file")).toBe(file);
+  });
+});
+
+describe("publishListing", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls apiPatchVoid with the correct publish endpoint", async () => {
+    vi.mocked(apiPatchVoid).mockResolvedValue(undefined);
+
+    await publishListing("listing-1");
+
+    expect(apiPatchVoid).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/publish",
+    );
+  });
+});
+
+describe("updateListing", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("calls apiPatch with the correct endpoint and payload", async () => {
+    const payload: UpdateListingPayload = { title: "Neuer Titel" };
+    vi.mocked(apiPatch).mockResolvedValue(undefined);
+
+    await updateListing("listing-1", payload);
+
+    expect(apiPatch).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1",
+      payload,
+    );
   });
 });

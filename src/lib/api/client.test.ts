@@ -4,6 +4,7 @@ import {
   ApiError,
   apiGet,
   apiPatch,
+  apiPatchVoid,
   apiPost,
   apiPostFormData,
   apiPostVoid,
@@ -229,7 +230,7 @@ describe("apiPatch", () => {
     vi.unstubAllGlobals();
   });
 
-  it("sends JSON patch bodies when provided", async () => {
+  it("sends JSON patch bodies and parses the response", async () => {
     const mockFetch = vi
       .fn()
       .mockResolvedValue(makeTextResponse(200, JSON.stringify({ ok: true })));
@@ -250,13 +251,73 @@ describe("apiPatch", () => {
     );
   });
 
-  it("returns undefined when the response body is empty", async () => {
+  it("throws ApiError with status 0 on a network failure", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(makeTextResponse(204, "")),
+      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
     );
 
-    await expect(apiPatch("/profile")).resolves.toBeUndefined();
+    await expect(apiPatch("/test", {})).rejects.toMatchObject({ status: 0 });
+  });
+
+  it("throws ApiError with the response status on a non-2xx response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(400, { message: "Bad Request" })),
+    );
+
+    await expect(apiPatch("/test", {})).rejects.toMatchObject({
+      status: 400,
+      message: "Bad Request",
+    });
+  });
+});
+
+describe("apiPatchVoid", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("patches without a JSON body and returns void", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(makeTextResponse(204, ""));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPatchVoid("/publish")).resolves.toBeUndefined();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/publish"),
+      expect.objectContaining({
+        method: "PATCH",
+        credentials: "include",
+      }),
+    );
+  });
+
+  it("throws ApiError with response message on failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(401, { message: "Unauthorized" })),
+    );
+
+    await expect(apiPatchVoid("/publish")).rejects.toMatchObject({
+      status: 401,
+      message: "Unauthorized",
+    });
+  });
+
+  it("throws ApiError with status 0 on a network failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
+    );
+
+    await expect(apiPatchVoid("/publish")).rejects.toMatchObject({
+      status: 0,
+    });
   });
 });
 
