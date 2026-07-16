@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { FormAlert } from "@/components/ui/form/FormAlert";
 import { logout } from "@/lib/api/auth";
 import type { AccentId } from "../copy/dashboard";
 import { dashboardCopy } from "../copy/dashboard";
@@ -45,6 +46,7 @@ export function DashboardSettingsMenu({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const panelId = useId();
   const { profile } = dashboardCopy;
@@ -72,12 +74,14 @@ export function DashboardSettingsMenu({
   async function handleLogout() {
     if (loggingOut) return;
 
+    setLogoutError(null);
     setLoggingOut(true);
     try {
       await logout();
       router.replace("/login");
     } catch {
       setLoggingOut(false);
+      setLogoutError(profile.logoutError);
     }
   }
 
@@ -122,6 +126,10 @@ export function DashboardSettingsMenu({
               className={THEME_TOGGLE_CLASS}
             />
           </div>
+
+          {logoutError ? (
+            <FormAlert variant="error" message={logoutError} className="mt-3" />
+          ) : null}
 
           <button
             type="button"

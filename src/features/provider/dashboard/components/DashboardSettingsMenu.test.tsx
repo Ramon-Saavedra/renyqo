@@ -92,8 +92,18 @@ describe("DashboardSettingsMenu", () => {
     await user.click(screen.getByRole("button", { name: "Abmelden" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Abmelden" })).not.toBeNull();
+      const logoutButton = screen.getByRole("button", { name: "Abmelden" });
+      expect(logoutButton).not.toBeNull();
+      expect((logoutButton as HTMLButtonElement).disabled).toBe(false);
+      expect(screen.getByRole("alert").textContent).toBe(
+        "Abmeldung fehlgeschlagen. Bitte versuche es erneut.",
+      );
     });
+    expect(
+      screen.getByRole("dialog", { name: "Konto & Profil" }),
+    ).not.toBeNull();
+    await user.click(screen.getByRole("radio", { name: "Salbei" }));
+    expect(onAccentChange).toHaveBeenCalledWith("salbei");
     expect(replace).not.toHaveBeenCalled();
   });
 });

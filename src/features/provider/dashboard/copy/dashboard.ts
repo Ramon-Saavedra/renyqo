@@ -55,6 +55,7 @@ export const dashboardCopy = {
     company: "Kessler Immobilien GbR",
     initials: "SK",
     settings: "Konto & Profil",
+    logoutError: "Abmeldung fehlgeschlagen. Bitte versuche es erneut.",
   },
   topbar: {
     searchPlaceholder: "Adresse oder Titel suchen …",
