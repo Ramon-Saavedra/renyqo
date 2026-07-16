@@ -3,7 +3,7 @@ description: Starts a Renyqo feature task through the mandatory review, test and
 agent: build
 ---
 
-Treat the following request as a coding task. Before editing anything, run the review, test and security subagents in parallel as required by the build coordinator. Keep the scope limited to the user's request and wait for approval when AGENTS.md requires it.
+Treat the following request as a coding task. The build coordinator must inspect, plan, obtain implementation approval when required, implement the approved scope, run approved validations, and present the result. Do not invoke review, test or security before implementation. After presenting the result, ask for explicit approval before running those three subagents in parallel against the final diff.
 
 User request:
 
