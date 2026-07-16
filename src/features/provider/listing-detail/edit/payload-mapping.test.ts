@@ -81,4 +81,28 @@ describe("mapEditFormToUpdatePayload", () => {
     );
     expect("coldRent" in payload).toBe(false);
   });
+
+  it("rejects an impossible calendar date", () => {
+    const payload = mapEditFormToUpdatePayload(
+      { ...INITIAL, availableFrom: "2026-02-31" },
+      INITIAL,
+    );
+    expect("availableFrom" in payload).toBe(false);
+  });
+
+  it("rejects a date in wrong format", () => {
+    const payload = mapEditFormToUpdatePayload(
+      { ...INITIAL, availableFrom: "31.08.2026" },
+      INITIAL,
+    );
+    expect("availableFrom" in payload).toBe(false);
+  });
+
+  it("rejects an empty availableFrom", () => {
+    const payload = mapEditFormToUpdatePayload(
+      { ...INITIAL, availableFrom: "" },
+      INITIAL,
+    );
+    expect("availableFrom" in payload).toBe(false);
+  });
 });
