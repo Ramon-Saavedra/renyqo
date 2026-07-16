@@ -1,591 +1,202 @@
-# Prompt Instrucciones para Copilot & Claude frontend
-
-# Propósito del documento
-
-Nunca dejes comentarios
-######NUNCA DEJES COMENTARIOS########
-
-Idioma Aleman todo
-
-Nunca hagas tu commits ni push
-
-Antes de hacer cualquier cosa di: "Ramoncito, estoy leyendo tus instrucciones y voy a trabajar en ello"
-
-Definir las instrucciones maestras para Copilot en el frontend, de forma que trabaje con disciplina, calidad profesional y respeto absoluto por las reglas del proyecto.
-
-Este documento no es decorativo. Debe servir como contrato operativo para cualquier ayuda automatizada dentro del frontend.
-
-# Objetivo
-
-Conseguir que Copilot actúe como un asistente técnico disciplinado, conservador, limpio y orientado a producción, evitando atajos, deuda técnica temprana y cambios impulsivos.
-
-# Principio rector
-
-Copilot no debe actuar como generador automático de código sin criterio.
-
-Debe comportarse como un asistente de ingeniería serio que:
-
-- respeta las reglas del proyecto
-- explica antes de cambiar
-- no improvisa arquitectura
-- no mete librerías por comodidad
-- no ensucia el código
-- no rompe consistencia
-- no avanza a ciegas
-
-# Instrucción base obligatoria
-
-Antes de responder a cualquier petición técnica del usuario o proponer cualquier cambio, debes asumir que estás revisando y obedeciendo las reglas que Ramoncito te dio para este proyecto.
-
-Debes trabajar siempre bajo esa premisa.
-
-# Componentes reutlizables para icono
-
-No quiero hooks vacíos, pobres ni decorativos.
-
-Si creas un custom hook o una base reutilizable para iconos, debe ser **profesional, tipada y extensible**, no una función mínima con un número hardcodeado y comentarios innecesarios.
-
-Reglas:
-
-- no dejes comentarios
-- no uses `any`
-- no hagas hooks absurdos para devolver un valor fijo sin necesidad real
-- si la lógica no necesita estado ni efectos, evalúa si debe ser un hook o una utilidad/config tipada
-- usa interfaces o types claros
-- piensa en reutilización real en toda la app
-
-Para iconos, quiero una solución profesional que contemple como mínimo:
-
-- `size` opcional
-- `color` opcional
-- `title` opcional
-- `disabled` opcional
-- `className` opcional
-- posibilidad de definir valores por defecto limpios
-- consistencia con toda la app
-
-Antes de implementarlo, dime:
-
-1. si realmente debe ser un hook o una utilidad/config tipada
-2. qué interfaz o type vas a crear
-3. qué archivos tocarás
-4. por qué esa solución es mejor que un hook pobre
-
-No implementes todavía. Primero explícame el plan y pregúntame si procedes.
-
-# Comportamiento general esperado
-
-## 1. Antes de cambiar cualquier cosa
-
-Nunca hagas cambios directamente sin antes decir qué quieres cambiar y por qué.
-
-Debes comunicarte así, o con una formulación equivalente:
-
-- qué parte quieres tocar
-- por qué quieres tocarla
-- qué impacto tendrá
-- preguntar si procedes
-
-Ejemplo de comportamiento esperado:
-
-"Quiero cambiar X por Y por esta razón. ¿Procedo?"
-
-## 2. Siempre prioriza seguridad y limpieza
-
-Si una solución rápida ensucia el proyecto, no la uses.
-
-Si una solución parece cómoda pero rompe consistencia, no la uses.
-
-Si una solución genera deuda técnica innecesaria, no la uses.
-
-## 3. Cambios pequeños y controlados
-
-No hagas refactors gigantes o múltiples cambios no pedidos a la vez.
-
-Trabaja por pasos cortos, claros y revisables.
-
-## 4. Un componente o bloque a la vez
-
-No intentes rehacer varias piezas del proyecto en una sola respuesta si no se te pidió expresamente.
-
-Mejor avanzar por unidades pequeñas, limpias y comprobables.
-
-# Reglas obligatorias de código
-
-## 5. TypeScript estricto
-
-Debes escribir código compatible con TypeScript estricto.
-
-## 6. `any` prohibido
-
-No uses `any`.
-
-Solo si existe una razón realmente excepcional, debes decirlo explícitamente, justificarlo y pedir confirmación antes de usarlo.
-
-## 7. Nada de comentarios innecesarios
-
-No dejes comentarios dentro del código salvo que el usuario los pida expresamente o sean absolutamente necesarios para evitar un error serio de interpretación.
-
-## 8. No dejes basura temporal
-
-No dejes:
-
-- TODOs vagos
-- placeholders sin sentido
-- código comentado muerto
-- console.logs innecesarios
-- hacks temporales sin avisar
-
-## 9. No sobreapliques DRY
-
-Evita el 100% DRY obsesivo si eso hace el código más difícil de leer o entender.
-
-La claridad del código está por encima de abstraer por abstraer.
-
-## 10. Código legible antes que “ingenioso”
-
-No busques soluciones demasiado listas, mágicas o rebuscadas.
-
-Prefiere claridad, mantenimiento y previsibilidad.
-
-# Reglas de diseño frontend
-
-## 11. Tailwind obligatorio
-
-Usaremos Tailwind para estilos.
-
-Project styling rules:
-
-This project uses Tailwind CSS v4 with design tokens defined in the global CSS file through @theme inline.
-
-Do not use arbitrary Tailwind values as the default approach.
-
-Avoid patterns like:
-px-[var(--page-padding)]
-pt-[var(--space-8)]
-pb-[var(--space-12)]
-text-[42px]
-leading-[1.05]
-tracking-[-0.032em]
-
-Use existing Tailwind utilities generated from theme tokens instead.
-
-Correct examples:
-bg-primary
-bg-background
-text-foreground
-text-foreground-secondary
-border-border
-shadow-card
-rounded-md
-font-display
-px-page
-pt-space-8
-pb-space-12
-mb-space-6
-gap-space-4
-text-heading-xl
-leading-heading-xl
-tracking-heading-xl
-
-Do not write CSS utility classes like .heading-xl, .section, .card, etc. unless I explicitly ask for component-level CSS.
-
-Do not use inline var() inside JSX className when a Tailwind token utility exists.
-
-Do not invent random pixel values or arbitrary values to make the design look right.
-
-If a spacing, typography, color, radius, shadow, or layout token is missing, stop and tell me exactly which token is needed before continuing.
-
-Use the existing design system first. Extend the theme only when necessary and only after asking.
-
-All spacing should come from the Tailwind token scale:
-space, page, section, card, gap, margin, padding tokens.
-
-All typography should come from Tailwind text/font/leading/tracking tokens.
-
-All colors must come from Tailwind color tokens, never hardcoded hex values inside components.
-
-The JSX should stay clean, consistent, and easy to maintain.
-
-Preferred style:
-className="flex min-h-screen bg-background text-foreground"
-className="mx-auto flex w-full max-w-6xl flex-col px-page pt-space-8 pb-space-12"
-className="mb-space-6 text-heading-xl leading-heading-xl tracking-heading-xl"
-
-Wrong style:
-Avoid this pattern: className=" **px-[var(--page-padding)] **pt-[var(--space-8)] text-[42px] leading-[1.05]"
-
-Important: Do not bypass the Tailwind theme system. This project is token-based. Arbitrary values are only allowed in rare exceptional cases and must be explained before use.
-
-## 12. Uso correcto de tokens y variables
-
-Debes usar las variables y tokens definidos en nuestro sistema global.
-
-Ejemplo correcto:
-
-- `bg-primary`
-- `text-foreground`
-- `border-border`
-
-Ejemplo incorrecto:
-
-- `var(--bg-primary)` dentro de clases utilitarias
-- colores hardcodeados si ya existe token del sistema
-
-Ofrece siempre una libreria para dar disenos mejores.
-No uses nunca SVG siempre iconos de Lucide
-
-## 13. Nada de colores improvisados
-
-No inventes colores, sombras, spacing o tamaños arbitrarios si ya existe una convención en el proyecto.
-
-Nunca uses mt, empezamos de arriba abajo y usaremos solo mb.
-
-## 14. Respeta `global.css` y el sistema visual
-
-Usa solo las variables, tokens y estilos globales aprobados por el proyecto.
-
-No metas estilos paralelos o sistemas visuales alternos.
-
-# Reglas sobre librerías y paquetes
-
-## 15. Nunca metas una librería por impulso
-
-Si crees que hace falta una librería de terceros, antes debes:
-
-- decir qué librería propones
-- explicar por qué hace falta
-- explicar por qué no conviene resolverlo sin ella
-- revisar primero la documentación oficial
-- proponer su uso solo después de esa revisión
-
-## 16. Documentación oficial primero
-
-Antes de usar cualquier librería, framework, paquete o API externa, debes ir primero a la documentación oficial y basar tu propuesta en ella.
-
-No debes guiarte por memoria imprecisa, ejemplos sueltos o tutoriales dudosos.
-
-## 17. Minimiza dependencias
-
-No añadas paquetes si el problema puede resolverse bien con el stack actual.
-
-Cada dependencia nueva debe justificarse.
-
-Toda dependencia que dejemos de usar por sierta cosa, debemos borrarla para que no quede como basura
-
-# Reglas de arquitectura y estructura
-
-## 18. No improvises arquitectura
-
-No cambies estructura de carpetas, patrones de estado, rutas o arquitectura sin explicarlo y pedir confirmación.
-
-Ve a Next y busca una arquitectura limpia a profesional para el filesystem
-
-## 19. Respeta el dominio del proyecto
-
-La estructura debe responder al producto real.
-
-No generes carpetas o capas genéricas sin razón clara.
-
-## 20. No mezcles responsabilidades
-
-Evita componentes gigantes con lógica de UI, estado, fetching y validación todo junto.
-
-Separa responsabilidades con criterio.
-
-## 21. Componentes limpios y enfocados
-
-Cada componente debe tener una responsabilidad clara.
-
-Si empieza a hacer demasiado, debes advertirlo.
-
-# Reglas de calidad antes de entregar código
-
-## 22. Triple chequeo obligatorio
-
-Antes de decir que algo está listo, debes revisarlo tres veces a nivel profesional.
-
-Ese chequeo no se limita a lint, test o typecheck.
-
-Debe incluir revisión humana de ingeniería sobre:
-
-- claridad
-- consistencia
-- legibilidad
-- estructura
-- naming
-- tipado
-- mantenibilidad
-- best practices
-- posibles riesgos
-
-## 23. Revisión profesional previa a pruebas
-
-Antes de confiar en tests o lint, debes hacer una comprobación profesional del componente o bloque.
-
-Primero criterio técnico. Después herramientas.
-
-## 24. No digas “listo” demasiado pronto
-
-Solo puedes decir que algo está listo si:
-
-- cumple lo pedido
-- respeta las reglas del proyecto
-- no ensucia la base
-- no introduce deuda obvia
-- ya pasó tu revisión profesional previa
-
-# Reglas de comunicación con el usuario
-
-## 25. Siempre explicita intención de cambio
-
-No respondas con cambios ciegos.
-
-Debes decir siempre qué quieres modificar.
-
-## 26. Tono esperado
-
-Habla claro, directo y profesional.
-
-Sin exceso de explicación técnica inútil.
-
-Sin lenguaje robótico.
-
-## 27. Advierte riesgos reales
-
-Si detectas que una petición puede dañar arquitectura, mantenibilidad, UX, seguridad o consistencia, debes decirlo de forma clara.
-
-No debes obedecer en silencio si ves un problema real.
-
-## 28. Si falta contexto, no inventes
-
-Si una decisión depende de algo no definido, debes decirlo.
-
-No debes rellenar huecos críticos con suposiciones arbitrarias.
-
-## 29. Recuerda siempre las reglas de Ramoncito
-
-En cada petición técnica del usuario, debes actuar como si estuvieras revisando activamente las reglas que Ramoncito te dejó para este proyecto antes de responder.
-
-# Reglas de implementación
-
-## 30. Contexto de arquitectura obligatoria
-
-Debes recordar siempre que este frontend no vive aislado.
-
-Está pensado para trabajar con:
-
-- frontend en Next.js
-- backend en NestJS
-- empaquetado con Docker
-- despliegue objetivo en AWS
-
-Por lo tanto, no debes proponer soluciones como si esto fuera una app local sin backend serio, sin contenedores o sin producción real.
-
-## 31. Un paso por vez
-
-No implementes varios cambios grandes de una sola vez si no se te pidió.
-
-## 32. No cambies otras cosas “ya que estás ahí”
-
-Si estás tocando un bloque concreto, no aproveches para rehacer piezas vecinas sin autorización.
-
-## 33. Evita cambios silenciosos de comportamiento
-
-Si el cambio afecta lógica, UX, props, estado, rutas o comportamiento, debes avisarlo antes.
-
-## 34. Mantén compatibilidad interna
-
-No rompas componentes, contratos, props o estilos compartidos sin decirlo.
-
-# Reglas de validación técnica
-
-## 35. Debes pensar en:
-
-- tipado correcto
-- accesibilidad básica
-- responsive razonable
-- consistencia visual
-- limpieza semántica
-- riesgos de render innecesario si aplica
-- simplicidad de mantenimiento
-- compatibilidad futura con backend NestJS
-- separación correcta entre cliente y servidor
-- impacto en Docker y despliegue
-
-## 36. Si algo huele mal, dilo
-
-Si ves una solución débil, frágil o poco profesional, debes advertirlo y proponer una mejor.
-
-# Reglas específicas del proyecto
-
-## 37. Proyecto orientado a producción
-
-Debes asumir siempre que este frontend irá a producción y podrá ser usado por miles o incluso millones de usuarios.
-
-Eso obliga a trabajar con más disciplina que en un prototipo.
-
-## 38. Nada de código “de prueba” disfrazado de producción
-
-No entregues soluciones válidas solo para demo si el contexto pide producción.
-
-## 39. Respeta el sistema existente
-
-No introduzcas un segundo sistema de estilos, naming, estados o componentes.
-
-## 40. Piensa siempre en integración con NestJS
-
-Cuando diseñes formularios, estado, contratos, validaciones o flujos, recuerda que el backend será NestJS.
-
-Eso significa que debes favorecer:
-
-- DTOs claros
-- contratos previsibles
-- validación seria
-- errores de backend bien modelados
-- manejo explícito de respuestas exitosas y fallidas
-
-## 41. Manejo correcto de errores del backend
-
-Debes contemplar siempre que pueden llegar errores desde el backend.
-
-No diseñes componentes como si todo siempre devolviera éxito.
-
-Debes prever estados para:
-
-- error de validación
-- error de autorización
-- error de permisos
-- error de negocio
-- error temporal del servidor
-- estado vacío o no encontrado cuando aplique
-
-## 42. Piensa en Docker y AWS aunque no estés escribiendo DevOps
-
-Aunque trabajes en frontend, debes recordar que esta app se empaquetará con Docker y se desplegará en AWS.
-
-Por eso no debes introducir dependencias, configuraciones o comportamientos que compliquen innecesariamente:
-
-- el build de producción
-- la ejecución en contenedor
-- la separación entre variables públicas y privadas
-- la reproducibilidad del entorno
-
-# Reglas de pipeline y disciplina de entrega
-
-## 43. Piensa siempre en el pipeline
-
-Todo cambio que propongas debe poder sobrevivir a un pipeline profesional.
-
-Debes asumir que el proyecto tendrá como mínimo estos jobs o checks:
-
-1. dependency review
-2. instalación limpia con `npm ci`
-3. lint
-4. typecheck
-5. tests
-6. build de Next.js
-7. smoke runtime
-8. Docker build
-9. Docker smoke run
-10. deploy a staging con checks posteriores
-11. aprobación para producción
-12. deploy a producción con checks posteriores
-13. rollback o contención si algo falla
-
-Tu código no debe dificultar ni romper ninguno de esos pasos.
-
-## 44. No propongas cambios que rompan CI por descuido
-
-Si una propuesta puede afectar build, variables de entorno, imports, rutas, tipos, arranque en runtime o compatibilidad con contenedor, debes advertirlo antes.
-
-## 45. El código debe ser compatible con branch protection
-
-Asume siempre que `main` está protegida y que nada entra sin checks obligatorios.
-
-Por eso tu estándar de trabajo no puede depender de “ya luego lo arreglamos”.
-
-## 46. Antes de dar algo por terminado, piensa como si fuese a entrar hoy mismo en PR
-
-Debes revisar si lo que propones:
-
-- compilaría
-- tiparía correctamente
-- pasaría lint
-- no introduciría dependencias problemáticas
-- arrancaría en runtime
-- mantendría consistencia del proyecto
-- no rompería el empaquetado futuro con Docker
-- no dificultaría deploy a staging o production
-
-## 47. Mantén el README vivo
-
-Debes asumir que el README se construye desde el inicio y se mantiene durante el proyecto.
-
-Si un cambio afecta alguno de estos puntos, debes avisar explícitamente que también debe actualizarse el README:
-
-- setup local
-- scripts
-- variables de entorno
-- estructura del proyecto
-- CI o pipeline
-- Docker
-- flujo de ramas o PR
-- arquitectura relevante
-
-## 48. No permitas que código y documentación se desalineen
-
-Si propones o haces un cambio que impacta la forma de usar, arrancar, construir o desplegar el proyecto, debes decirlo claramente y recordar que la documentación debe actualizarse.
-
-# Qué sí debes hacer siempre
-
-- revisar primero las reglas del proyecto
-- proponer antes de cambiar
-- justificar decisiones
-- escribir código limpio y tipado
-- respetar Tailwind y nuestros tokens
-- revisar la documentación oficial antes de usar librerías
-- pensar en NestJS como backend real
-- contemplar errores del backend en la UI
-- pensar en Docker y AWS como destino real
-- mantener alineado el README cuando cambie setup, scripts, variables, CI, Docker o arquitectura
-- hacer triple chequeo profesional antes de declarar algo listo
-- advertir riesgos reales
-- trabajar por pasos pequeños y controlados
-
-# Qué no debes hacer nunca
-
-- usar `any` sin justificación y confirmación
-- meter librerías sin revisar documentación oficial
-- dejar comentarios innecesarios
-- hardcodear colores o estilos si ya existen tokens
-- cambiar arquitectura sin avisar
-- hacer refactors grandes sin permiso
-- avanzar sin explicar intención
-- ignorar errores posibles del backend
-- actuar como si esto fuera solo frontend local sin NestJS, Docker ni AWS
-- decir que algo está listo sin revisión profesional seria
-- ensuciar el proyecto con soluciones rápidas
-
-# Formato de respuesta esperado de Copilot ante una petición técnica
-
-Cuando el usuario pida hacer algo técnico, el comportamiento ideal es:
-
-1. indicar que estás actuando bajo las reglas del proyecto que Ramoncito definió
-2. explicar qué quieres cambiar
-3. explicar por qué
-4. indicar el alcance del cambio
-5. pedir confirmación si el cambio modifica algo relevante
-6. solo entonces proponer implementación
-
-# Nota final
-
-Este proyecto no se construye con mentalidad de demo.
-
-Se construye con mentalidad de producto serio.
-
-Copilot debe actuar como un asistente técnico exigente, disciplinado y conservador con la calidad del código.
-
-Si duda entre velocidad y limpieza, debe elegir limpieza.
-
-Si duda entre una solución rápida y una solución profesional, debe elegir la profesional.
+# AGENTS.md — Renyqo Engineering Instructions
+
+These are the general operating instructions for any coding agent working on
+Renyqo, including Claude Code, GitHub Copilot, OpenCode and others. They define
+how to work in this repository with discipline, consistency and production
+quality. Follow them for every technical request unless the user explicitly
+overrides them.
+
+## 1. Purpose and project context
+
+Renyqo is a production-oriented rental platform that connects applicants (people
+looking for a home) with providers (landlords, property owners and real estate
+agents). It is built to run in production and serve real users, so every change
+must meet a production standard rather than a prototype standard.
+
+The system spans the full stack:
+
+- **Frontend:** Next.js (App Router, React, TypeScript).
+- **Backend:** NestJS.
+- **Packaging:** Docker.
+- **Deployment target:** AWS.
+
+Do not design solutions as if this were a local-only app without a real backend,
+containers or production deployment. Frontend work must stay compatible with the
+NestJS backend, the Docker build and the AWS environment.
+
+## 2. Communication and approval workflow
+
+- Ask for confirmation before starting a new non-trivial task, changing
+  architecture, expanding scope, or making an important technical decision.
+  Briefly state what you intend to change, why, and its impact — a short "I want
+  to change X to Y for this reason — proceed?" is enough.
+- Once a task and its implementation plan have been approved, continue with the
+  necessary small implementation steps without asking for permission again for
+  each step.
+- Speak clearly, directly and professionally. Avoid filler and unnecessary
+  technical noise.
+- If a request could harm architecture, maintainability, UX, security or
+  consistency, say so clearly and propose a better option instead of complying
+  silently.
+- If a decision depends on missing context, ask. Do not fill critical gaps with
+  arbitrary assumptions.
+
+## 3. Scope and change discipline
+
+- Make small, controlled, reviewable changes. Avoid large refactors or multiple
+  unrequested changes in a single step.
+- Work in focused units — one component or block at a time unless a wider change
+  was explicitly requested.
+- Do not modify unrelated files or refactor neighboring code "while you're
+  there." Touch only what the task requires.
+- Do not change folder structure, state patterns, routing or architecture
+  without explaining it and getting approval first.
+- Announce behavior changes: if a change affects logic, UX, props, state, routes
+  or shared contracts, flag it before applying it, and do not break shared
+  components, props or styles silently.
+- Leave no temporary debris: no vague TODOs, dead commented-out code, stray
+  `console.log` calls or undisclosed temporary hacks.
+
+## 4. TypeScript and code quality
+
+- Write code that compiles under strict TypeScript.
+- Do not use `any`. If a genuinely exceptional case requires it, state it
+  explicitly, justify it, and get approval before using it.
+- Prefer clarity, maintainability and predictability over clever or "magic"
+  solutions. Do not over-apply DRY when it makes the code harder to read;
+  readability wins over abstraction for its own sake.
+- Comments: do not write comments that merely restate the code. Concise comments
+  are welcome when they explain complex reasoning, an important limitation or
+  non-obvious behavior.
+- Use clear `interface` / `type` definitions and meaningful naming.
+
+## 5. Architecture and component responsibilities
+
+- Reuse existing components and utilities before creating new ones. Do not
+  introduce a parallel system for styling, naming, state or components.
+- Keep responsibilities separated. Do not mix UI, state, data fetching,
+  validation and mapping logic in one oversized component.
+- Each component should have a single clear responsibility. If a component starts
+  doing too much, flag it.
+- Let structure follow the real product domain. Do not create generic folders or
+  layers without a clear reason.
+
+## 6. Frontend and design-system rules
+
+This project uses **Tailwind CSS v4** with design tokens defined in the global
+CSS file via `@theme inline`. Use the existing token-based design system first;
+extend the theme only when necessary and only after asking.
+
+- Do not use arbitrary Tailwind values as the default approach. Avoid patterns
+  such as `px-[var(--page-padding)]`, `pt-[var(--space-8)]`, `text-[42px]`,
+  `leading-[1.05]` or `tracking-[-0.032em]`.
+- Use the utilities generated from theme tokens instead, for example:
+  `bg-primary`, `bg-background`, `text-foreground`, `text-foreground-secondary`,
+  `border-border`, `shadow-card`, `rounded-md`, `font-display`, `px-page`,
+  `pt-space-8`, `pb-space-12`, `mb-space-6`, `gap-space-4`, `text-heading-xl`,
+  `leading-heading-xl`, `tracking-heading-xl`.
+- All spacing must come from the token scale (space, page, section, card, gap,
+  margin, padding). All typography must come from the text/font/leading/tracking
+  tokens.
+- All colors must come from color tokens. Never hardcode hex colors, shadows,
+  spacing or sizes when a token already exists.
+- Do not use inline `var(--…)` inside a JSX `className` when a token utility
+  exists. Do not author component-level CSS utility classes (`.heading-xl`,
+  `.section`, `.card`, …) unless explicitly requested.
+- If a spacing, typography, color, radius, shadow or layout token is missing,
+  stop and state exactly which token is needed before continuing. Arbitrary
+  values are allowed only in rare, justified cases, and must be explained first.
+- Use **Lucide** icons. Do not hand-write SVG icons.
+- Build for accessibility (semantics, labels, keyboard) and responsive behavior
+  by default.
+- Always handle loading, empty, success and error states — do not build UI that
+  assumes every request succeeds.
+
+## 7. Dependencies and official documentation
+
+- Minimize dependencies. Prefer solving problems with the current stack.
+- Do not add a new dependency without explicit approval. Before proposing one,
+  state which package it is, why it is needed, and why the problem cannot be
+  solved cleanly without it.
+- Consult the official documentation before using any library, framework,
+  package or external API, and base your proposal on it rather than on vague
+  memory or unofficial tutorials.
+- Remove dependencies that are no longer used so they don't accumulate as dead
+  weight.
+
+## 8. Backend integration and error handling
+
+- Design frontend forms, state, contracts, validation and flows to fit the
+  NestJS backend: clear DTOs, predictable API contracts, serious validation, and
+  explicit handling of both successful and failed responses.
+- Never assume the backend always returns success. Account for the relevant
+  failure states, including: validation errors, authentication/authorization
+  errors, business-rule errors, transient server errors, and empty/not-found
+  states.
+
+## 9. Security and privacy
+
+- Treat applicant and provider data as sensitive. Protect personal and rental
+  information and avoid exposing it in logs, URLs or client-visible state beyond
+  what is necessary.
+- Keep public and private configuration separate (e.g. do not leak server-only
+  environment variables to the client bundle).
+- Do not unnecessarily expose sensitive data, including internal database IDs,
+  applicant or provider documents, income and eligibility information, private
+  contact details, complete private addresses, or authentication/authorization
+  data. Such information must not appear in URLs, logs, client-visible errors,
+  analytics or public API responses unless it is strictly required and explicitly
+  authorized.
+- Do not introduce code that weakens the security posture of the app, its build
+  or its deployment.
+
+## 10. Testing, linting and formatting
+
+- Run lint, formatting or tests only when explicitly requested or approved, and
+  keep them targeted to the change at hand.
+- Do not run repository-wide formatting that produces large unrelated diffs.
+- Before considering work done, review it with engineering judgment — clarity,
+  consistency, naming, typing, structure, maintainability and obvious risks —
+  not only tooling output.
+
+## 11. Git, CI, Docker, AWS and documentation
+
+- Do not create commits, pushes, pull requests or remote branch changes unless
+  explicitly requested. Assume `main` is protected and that nothing merges
+  without required checks.
+- Keep changes compatible with a professional pipeline (dependency review, clean
+  install, lint, typecheck, tests, Next.js build, Docker build and deploy). If a
+  change could affect the build, environment variables, imports, routes, types,
+  runtime startup or container compatibility, flag it beforehand.
+- Avoid introducing dependencies, configuration or behavior that unnecessarily
+  complicate the production build, container execution or environment
+  reproducibility.
+- Keep documentation aligned with the code. If a change affects local setup,
+  scripts, environment variables, project structure, CI/pipeline, Docker, branch
+  or PR flow, or relevant architecture, state clearly that the README must be
+  updated too.
+
+## 12. Language rules
+
+- **User-facing interface text must be written in German.**
+- **Communication with Ramon should be in Spanish**, unless he requests another
+  language.
+- **Code identifiers, technical documentation and this `AGENTS.md` file are
+  written in English.**
+
+## Definition of done
+
+A change is done only when it:
+
+- does what was requested and respects these rules;
+- is written to compile and type-check under strict TypeScript, and does so when
+  technical validation has been requested or approved;
+- passes the requested or approved validation checks (lint, typecheck, tests);
+- reuses existing components, utilities and design tokens;
+- keeps UI, state, fetching, validation and mapping responsibilities separated;
+- handles loading, empty, success and error states and backend failures;
+- introduces no unapproved dependencies and no unrelated file changes;
+- adds no dead code, debug output or noise comments;
+- notes any required README or documentation updates;
+- has passed your own manual engineering review, which is always required even
+  when tooling has not yet been authorized.
