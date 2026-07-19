@@ -76,6 +76,10 @@ NestJS backend, the Docker build and the AWS environment.
   introduce a parallel system for styling, naming, state or components.
 - Keep responsibilities separated. Do not mix UI, state, data fetching,
   validation and mapping logic in one oversized component.
+- Separate logic deliberately: keep API transport and timeout handling in the
+  API client, validation and error classification in focused utilities, and
+  feature UI flows in independent components. Do not create oversized files or
+  concentrate an entire multi-step flow in one component.
 - Each component should have a single clear responsibility. If a component starts
   doing too much, flag it.
 - Let structure follow the real product domain. Do not create generic folders or
