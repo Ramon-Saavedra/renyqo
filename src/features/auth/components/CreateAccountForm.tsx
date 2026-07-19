@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiApple } from "react-icons/si";
 import { FcGoogle } from "react-icons/fc";
 import { cn } from "@/lib/utils/cn";
@@ -84,12 +84,15 @@ function validateForm(
 export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [onboardingError, setOnboardingError] = useState(false);
   const [password, setPassword] = useState("");
   const [providerType, setProviderType] = useState<ProviderType>("private");
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
   const [globalMessage, setGlobalMessage] = useState<GlobalMessage | null>(
     null,
   );
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const nameId = `${idPrefix}-name`;
   const emailId = `${idPrefix}-email`;
@@ -98,14 +101,47 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
   const consentId = `${idPrefix}-terms`;
 
   const strength = getPasswordStrength(password);
+  const formLocked = loading || registrationComplete;
+
+  useEffect(
+    () => () => {
+      if (redirectTimerRef.current !== null) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    },
+    [],
+  );
 
   function handleSuggestPassword() {
     setPassword(generateSecurePassword());
     setFieldErrors((prev) => ({ ...prev, password: undefined }));
   }
 
+  async function resolveOnboardingPath() {
+    setLoading(true);
+    setOnboardingError(false);
+
+    try {
+      const { nextStep } = await getOnboardingState();
+      const path = resolveRedirectPath(nextStep);
+      setGlobalMessage({
+        variant: "success",
+        text: createAccountCopy.success,
+      });
+      redirectTimerRef.current = setTimeout(() => router.push(path), 1500);
+    } catch {
+      setLoading(false);
+      setOnboardingError(true);
+      setGlobalMessage({
+        variant: "error",
+        text: createAccountCopy.globalErrors.onboarding,
+      });
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (registrationComplete) return;
     setGlobalMessage(null);
 
     const data = new FormData(e.currentTarget);
@@ -159,18 +195,8 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
       return;
     }
 
-    setGlobalMessage({
-      variant: "success",
-      text: createAccountCopy.success,
-    });
-
-    let path = "/provider/get-started";
-    try {
-      const { nextStep } = await getOnboardingState();
-      path = resolveRedirectPath(nextStep);
-    } catch {}
-
-    setTimeout(() => router.push(path), 1500);
+    setRegistrationComplete(true);
+    await resolveOnboardingPath();
   }
 
   return (
@@ -183,14 +209,14 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         <SocialButton
           icon={<BrandIcon icon={FcGoogle} size={16} decorative />}
           aria-label={createAccountCopy.google}
-          disabled={loading}
+          disabled={formLocked}
         >
           {createAccountCopy.google}
         </SocialButton>
         <SocialButton
           icon={<BrandIcon icon={SiApple} size={16} decorative />}
           aria-label={createAccountCopy.apple}
-          disabled={loading}
+          disabled={formLocked}
         >
           {createAccountCopy.apple}
         </SocialButton>
@@ -214,7 +240,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
             <Select
               id={`${idPrefix}-provider-type`}
               value={providerType}
-              disabled={loading}
+              disabled={formLocked}
               aria-label={createAccountCopy.providerIdentity.ariaLabel}
               onChange={(event) => {
                 setProviderType(event.target.value as ProviderType);
@@ -241,7 +267,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
               label={createAccountCopy.fields.companyName.label}
               placeholder={createAccountCopy.fields.companyName.placeholder}
               required
-              disabled={loading}
+              disabled={formLocked}
               error={fieldErrors.companyName}
               onChange={() =>
                 setFieldErrors((prev) => ({
@@ -262,7 +288,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         label={createAccountCopy.fields.name.label}
         placeholder={createAccountCopy.fields.name.placeholder}
         required
-        disabled={loading}
+        disabled={formLocked}
         error={fieldErrors.name}
         onChange={() =>
           setFieldErrors((prev) => ({ ...prev, name: undefined }))
@@ -279,7 +305,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         label={createAccountCopy.fields.email.label}
         placeholder={createAccountCopy.fields.email.placeholder}
         required
-        disabled={loading}
+        disabled={formLocked}
         error={fieldErrors.email}
         onChange={() =>
           setFieldErrors((prev) => ({ ...prev, email: undefined }))
@@ -294,7 +320,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
           autoComplete="new-password"
           minLength={8}
           required
-          disabled={loading}
+          disabled={formLocked}
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
@@ -335,7 +361,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
 
         <button
           type="button"
-          disabled={loading}
+          disabled={formLocked}
           onClick={handleSuggestPassword}
           className="pt-1 text-caption font-medium text-primary hover:text-primary-hover focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -348,7 +374,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
           id={consentId}
           name="terms"
           required
-          disabled={loading}
+          disabled={formLocked}
           onChange={() =>
             setFieldErrors((prev) => ({ ...prev, terms: undefined }))
           }
@@ -381,9 +407,21 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         />
       )}
 
+      {onboardingError && (
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={loading}
+          onClick={() => void resolveOnboardingPath()}
+          className="mb-4 w-full justify-center"
+        >
+          {createAccountCopy.retryOnboarding}
+        </Button>
+      )}
+
       <Button
         type="submit"
-        disabled={loading}
+        disabled={formLocked}
         className="mb-4.5 w-full justify-center"
       >
         {loading ? createAccountCopy.submitting : createAccountCopy.submit}

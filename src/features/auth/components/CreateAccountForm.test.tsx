@@ -269,6 +269,36 @@ describe("CreateAccountForm", () => {
     });
   });
 
+  describe("onboarding handoff", () => {
+    it("allows retrying onboarding without registering again", async () => {
+      const user = userEvent.setup();
+      vi.mocked(getOnboardingState)
+        .mockRejectedValueOnce(new Error("onboarding unavailable"))
+        .mockResolvedValueOnce({ nextStep: "dashboard" });
+      renderForm("test", "applicant");
+
+      await fillRequiredAccountFields();
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      expect(
+        await screen.findByText(createAccountCopy.globalErrors.onboarding),
+      ).toBeInstanceOf(HTMLElement);
+      expect(register).toHaveBeenCalledTimes(1);
+      expect(push).not.toHaveBeenCalled();
+
+      await user.click(
+        screen.getByRole("button", {
+          name: createAccountCopy.retryOnboarding,
+        }),
+      );
+
+      await waitFor(() => expect(getOnboardingState).toHaveBeenCalledTimes(2));
+      expect(register).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe("idPrefix wiring", () => {
     it("composes input IDs from the given prefix", () => {
       renderForm("foo");
