@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { ArrowRight, Building2, Search, type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { buttonClass } from "@/components/ui/button/Button";
@@ -17,6 +18,39 @@ const ROLE_KEYS: readonly Role[] = ["applicant", "provider"];
 
 export function RoleSelector() {
   const [role, setRole] = useState<Role>("applicant");
+  const roleRefs = useRef<Partial<Record<Role, HTMLDivElement | null>>>({});
+
+  function handleRoleKeyDown(
+    event: KeyboardEvent<HTMLDivElement>,
+    position: number,
+  ) {
+    let nextPosition: number | undefined;
+
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        nextPosition = (position + 1) % ROLE_KEYS.length;
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        nextPosition = (position - 1 + ROLE_KEYS.length) % ROLE_KEYS.length;
+        break;
+      case "Home":
+        nextPosition = 0;
+        break;
+      case "End":
+        nextPosition = ROLE_KEYS.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const nextRole = ROLE_KEYS[nextPosition];
+    if (!nextRole) return;
+    setRole(nextRole);
+    roleRefs.current[nextRole]?.focus();
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -39,6 +73,11 @@ export function RoleSelector() {
               glyph={ROLE_GLYPHS[key]}
               active={role === key}
               onSelect={() => setRole(key)}
+              onKeyDown={(event) => handleRoleKeyDown(event, position)}
+              ref={(element) => {
+                roleRefs.current[key] = element;
+              }}
+              tabIndex={role === key ? 0 : -1}
             />
           );
         })}
