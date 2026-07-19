@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   ApiError,
@@ -6,6 +6,7 @@ import {
   apiPatch,
   apiPatchVoid,
   apiPost,
+  apiPostJsonVoid,
   apiPostFormData,
   apiPostVoid,
 } from "./client";
@@ -26,6 +27,11 @@ function makeTextResponse(status: number, body: string): Response {
     text: () => Promise.resolve(body),
   } as Response;
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 describe("ApiError", () => {
   it("is an instance of Error", () => {
@@ -136,6 +142,54 @@ describe("apiPost", () => {
 
     expect(caught).toBeInstanceOf(ApiError);
   });
+
+  it("maps an aborted request caused by the timeout", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_: string, init?: RequestInit) =>
+          new Promise<Response>((_, reject) => {
+            init?.signal?.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"));
+            });
+          }),
+      ),
+    );
+
+    const request = apiPost("/test", {});
+    const expectation = expect(request).rejects.toMatchObject({
+      kind: "timeout",
+      status: 0,
+    });
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    await expectation;
+  });
+
+  it("preserves an external cancellation signal", async () => {
+    const controller = new AbortController();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_: string, init?: RequestInit) =>
+          new Promise<Response>((_, reject) => {
+            init?.signal?.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"));
+            });
+          }),
+      ),
+    );
+
+    const request = apiPost("/test", {}, { signal: controller.signal });
+    const expectation = expect(request).rejects.toMatchObject({
+      kind: "cancelled",
+      status: 0,
+    });
+    controller.abort();
+
+    await expectation;
+  });
 });
 
 describe("apiPostFormData", () => {
@@ -222,6 +276,31 @@ describe("apiPostVoid", () => {
       status: 401,
       message: "Unauthorized",
     });
+  });
+});
+
+describe("apiPostJsonVoid", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("posts a JSON body without requiring a response body", async () => {
+    const mockFetch = vi.fn().mockResolvedValue(makeMockResponse(204, {}));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(
+      apiPostJsonVoid("/password-reset", { token: "token" }),
+    ).resolves.toBeUndefined();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/password-reset"),
+      expect.objectContaining({
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: "token" }),
+      }),
+    );
   });
 });
 
