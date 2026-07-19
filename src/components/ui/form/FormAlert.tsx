@@ -6,6 +6,7 @@ interface FormAlertProps {
   variant: FormAlertVariant;
   message: string;
   className?: string;
+  id?: string;
 }
 
 const VARIANT_CLASSES: Record<FormAlertVariant, string> = {
@@ -13,9 +14,10 @@ const VARIANT_CLASSES: Record<FormAlertVariant, string> = {
   success: "border-success/20 bg-success/10 text-success",
 };
 
-export function FormAlert({ variant, message, className }: FormAlertProps) {
+export function FormAlert({ variant, message, className, id }: FormAlertProps) {
   return (
     <div
+      id={id}
       role="alert"
       className={cn(
         "rounded-md border px-4 py-3 text-caption",

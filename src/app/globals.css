@@ -119,7 +119,7 @@ html {
 
   --foreground: #0e0e0e;
   --foreground-secondary: #555452;
-  --foreground-tertiary: #8c8a87;
+  --foreground-tertiary: #696763;
 
   --border: #e0e0e0;
   --border-strong: #c8c8c8;
@@ -135,7 +135,7 @@ html {
   --success-surface: #3f6a49;
   --success-on-surface: #e3f0e6;
   --success-surface-border: #2f5638;
-  --warning: #b07b3d;
+  --warning: #8b5f28;
   --warning-vivid: #fa8714;
   --danger: #dc2626;
 

@@ -7,9 +7,15 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { loginCopy } from "@/features/auth/copy/login";
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ reset?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { reset } = await searchParams;
+
   return (
-    <PageShell>
+    <PageShell className="flex-1">
       <AppTopbar className="mb-section">
         <Link href="/register/account-type" className={buttonClass("ghost")}>
           {loginCopy.register}
@@ -26,7 +32,11 @@ export default function LoginPage() {
             {loginCopy.subtitle}
           </p>
         </div>
-        <LoginForm />
+        <LoginForm
+          {...(reset === "success"
+            ? { initialSuccessMessage: loginCopy.resetSuccess }
+            : {})}
+        />
       </div>
     </PageShell>
   );
