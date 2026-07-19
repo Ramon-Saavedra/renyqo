@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiGet, apiPost, apiPostVoid } from "./client";
+import { apiGet, apiPost, apiPostJsonVoid, apiPostVoid } from "./client";
 import {
   getCurrentUser,
+  forgotPassword,
   getOnboardingState,
   login,
+  resetPassword,
   logout,
   register,
   resolveRedirectPath,
@@ -12,6 +14,7 @@ import {
 
 vi.mock("./client", () => ({
   apiPost: vi.fn(),
+  apiPostJsonVoid: vi.fn(),
   apiPostVoid: vi.fn(),
   apiGet: vi.fn(),
 }));
@@ -157,6 +160,34 @@ describe("login", () => {
 
     await expect(login({ email: "t@t.de", password: "pass" })).resolves.toEqual(
       user,
+    );
+  });
+});
+
+describe("password recovery", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("sends the email to the neutral forgot-password endpoint", async () => {
+    vi.mocked(apiPostJsonVoid).mockResolvedValue(undefined);
+
+    await forgotPassword({ email: "test@test.de" });
+
+    expect(apiPostJsonVoid).toHaveBeenCalledWith(
+      "/api/v1/auth/forgot-password",
+      { email: "test@test.de" },
+    );
+  });
+
+  it("sends the reset token and new password to the reset endpoint", async () => {
+    vi.mocked(apiPostJsonVoid).mockResolvedValue(undefined);
+
+    await resetPassword({ token: "reset-token", newPassword: "Secure123!" });
+
+    expect(apiPostJsonVoid).toHaveBeenCalledWith(
+      "/api/v1/auth/reset-password",
+      { token: "reset-token", newPassword: "Secure123!" },
     );
   });
 });

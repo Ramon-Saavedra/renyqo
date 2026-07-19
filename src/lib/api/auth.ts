@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPostVoid } from "./client";
+import { apiGet, apiPost, apiPostJsonVoid, apiPostVoid } from "./client";
 
 export type UserRole = "applicant" | "provider";
 export type ProviderType = "private" | "company";
@@ -38,6 +38,15 @@ interface LoginPayload {
   readonly password: string;
 }
 
+export interface ForgotPasswordPayload {
+  readonly email: string;
+}
+
+export interface ResetPasswordPayload {
+  readonly token: string;
+  readonly newPassword: string;
+}
+
 export function resolveRedirectPath(nextStep: OnboardingNextStep): string {
   switch (nextStep) {
     case "applicant_area_pending":
@@ -57,6 +66,20 @@ export async function register(payload: RegisterPayload): Promise<SafeUser> {
 
 export async function login(payload: LoginPayload): Promise<SafeUser> {
   return apiPost<SafeUser>("/api/v1/auth/login", payload);
+}
+
+export async function forgotPassword(
+  payload: ForgotPasswordPayload,
+): Promise<void> {
+  return apiPostJsonVoid("/api/v1/auth/forgot-password", {
+    email: payload.email,
+  });
+}
+
+export async function resetPassword(
+  payload: ResetPasswordPayload,
+): Promise<void> {
+  return apiPostJsonVoid("/api/v1/auth/reset-password", payload);
 }
 
 export async function getOnboardingState(): Promise<OnboardingState> {
