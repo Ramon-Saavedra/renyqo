@@ -74,6 +74,13 @@ describe("LoginForm", () => {
       expect(link.getAttribute("href")).toBe("/register/account-type");
     });
 
+    it("renders the password recovery link pointing to /forgot-password", () => {
+      renderForm();
+      const link = screen.getByRole("link", { name: loginCopy.forgotPassword });
+
+      expect(link.getAttribute("href")).toBe("/forgot-password");
+    });
+
     it("does not show an error alert on initial render", () => {
       renderForm();
 
@@ -134,6 +141,9 @@ describe("LoginForm", () => {
       })) as HTMLButtonElement;
 
       expect(btn.disabled).toBe(true);
+      expect(btn.closest("form")?.getAttribute("aria-busy")).toBe("true");
+      await user.click(btn);
+      expect(login).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -170,13 +180,63 @@ describe("LoginForm", () => {
       );
     });
 
-    it("shows unknown error message for unexpected status codes", async () => {
+    it("shows a timeout message for timed out requests", async () => {
+      const user = userEvent.setup();
+      vi.mocked(login).mockRejectedValue(new ApiError(0, "timeout", "timeout"));
+
+      renderForm();
+      await user.type(
+        screen.getByLabelText(loginCopy.fields.email.label),
+        "t@t.de",
+      );
+      await user.type(
+        screen.getByLabelText(loginCopy.fields.password.label),
+        "pass",
+      );
+      await user.click(screen.getByRole("button", { name: loginCopy.submit }));
+
+      expect((await screen.findByRole("alert")).textContent).toContain(
+        "Die Anfrage dauert zu lange",
+      );
+    });
+
+    it("shows a server error message for unexpected server failures", async () => {
+      const user = userEvent.setup();
+      vi.mocked(login).mockRejectedValue(new ApiError(503, "unavailable"));
+
+      renderForm();
+      await user.type(
+        screen.getByLabelText(loginCopy.fields.email.label),
+        "t@t.de",
+      );
+      await user.type(
+        screen.getByLabelText(loginCopy.fields.password.label),
+        "pass",
+      );
+      await user.click(screen.getByRole("button", { name: loginCopy.submit }));
+
+      expect((await screen.findByRole("alert")).textContent).toContain(
+        "Der Server konnte die Anmeldung nicht verarbeiten",
+      );
+    });
+
+    it("validates email and password before sending the request", async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.click(screen.getByRole("button", { name: loginCopy.submit }));
+
+      expect(login).not.toHaveBeenCalled();
+      expect(screen.getAllByRole("alert")).toHaveLength(2);
+      expect(screen.getByText(loginCopy.errors.emailRequired)).toBeTruthy();
+      expect(screen.getByText(loginCopy.errors.passwordRequired)).toBeTruthy();
+    });
+
+    it("shows a server error message for unexpected server status codes", async () => {
       await submitAndTriggerError(500);
       const alert = await screen.findByRole("alert");
 
-      expect(alert.textContent).toContain(
-        "Ein unbekannter Fehler ist aufgetreten",
-      );
+      expect(alert.textContent).toContain(loginCopy.errors.server);
     });
 
     it("re-enables the submit button after an error", async () => {
@@ -208,7 +268,7 @@ describe("LoginForm", () => {
       const alert = await screen.findByRole("alert");
 
       expect(alert.textContent).toContain(
-        "Ein unbekannter Fehler ist aufgetreten",
+        "Ein unerwarteter Fehler ist aufgetreten",
       );
     });
   });
