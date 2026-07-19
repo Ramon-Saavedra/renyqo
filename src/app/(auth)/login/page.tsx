@@ -33,9 +33,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
         <LoginForm
-          initialSuccessMessage={
-            reset === "success" ? loginCopy.resetSuccess : undefined
-          }
+          {...(reset === "success"
+            ? { initialSuccessMessage: loginCopy.resetSuccess }
+            : {})}
         />
       </div>
     </PageShell>

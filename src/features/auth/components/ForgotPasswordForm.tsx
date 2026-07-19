@@ -21,7 +21,7 @@ export function ForgotPasswordForm() {
   const [error, setError] = useState<string | null>(null);
 
   function clearEmailError() {
-    setFieldErrors((current) => ({ ...current, email: undefined }));
+    setFieldErrors({});
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
