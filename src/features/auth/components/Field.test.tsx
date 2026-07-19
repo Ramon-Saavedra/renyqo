@@ -83,6 +83,42 @@ describe("Field", () => {
     });
   });
 
+  describe("error accessibility", () => {
+    it("marks the input as invalid and links the error via aria-describedby", () => {
+      render(
+        <Field
+          id="email"
+          label="E-Mail"
+          error="Bitte gib eine gültige E-Mail-Adresse ein."
+        />,
+      );
+      const input = screen.getByLabelText("E-Mail");
+
+      expect(input.getAttribute("aria-invalid")).toBe("true");
+      expect(input.getAttribute("aria-describedby")).toBe("email-error");
+    });
+
+    it("does not set aria-invalid or aria-describedby when there is no error", () => {
+      render(<Field id="email" label="E-Mail" />);
+      const input = screen.getByLabelText("E-Mail");
+
+      expect(input.getAttribute("aria-invalid")).toBeNull();
+      expect(input.getAttribute("aria-describedby")).toBeNull();
+    });
+
+    it("renders the error message with the expected id", () => {
+      render(
+        <Field
+          id="email"
+          label="E-Mail"
+          error="Bitte gib eine gültige E-Mail-Adresse ein."
+        />,
+      );
+
+      expect(screen.getByRole("alert").getAttribute("id")).toBe("email-error");
+    });
+  });
+
   describe("class composition", () => {
     it("includes the base grid classes on the root", () => {
       const { container } = render(<Field id="email" label="E-Mail" />);

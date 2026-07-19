@@ -212,6 +212,32 @@ describe("CreateListingForm", () => {
     confirmSpy.mockRestore();
   });
 
+  it("scrolls to the first missing field when publishing with an empty form", () => {
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(Element.prototype, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    try {
+      render(<CreateListingForm />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Veröffentlichen" }));
+
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        behavior: "smooth",
+        block: "center",
+      });
+      expect(mockPublishListing).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(Element.prototype, "scrollIntoView", {
+        configurable: true,
+        value: originalScrollIntoView,
+      });
+    }
+  });
+
   it("opens the unsaved-changes modal before provider logo navigation", async () => {
     const user = userEvent.setup();
 

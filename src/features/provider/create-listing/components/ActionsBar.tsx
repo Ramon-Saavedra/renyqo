@@ -22,7 +22,10 @@ interface MissingChecklistProps {
   variant: ChecklistVariant;
 }
 
-const CHECKLIST_ITEMS: ReadonlyArray<{ label: string; targetId: string }> = [
+export const CHECKLIST_ITEMS: ReadonlyArray<{
+  label: string;
+  targetId: string;
+}> = [
   { label: createListingCopy.missingLabels.city, targetId: "city" },
   { label: createListingCopy.missingLabels.zip, targetId: "zip" },
   { label: createListingCopy.missingLabels.street, targetId: "street" },
@@ -81,7 +84,7 @@ function focusInteractiveTarget(target: HTMLElement) {
   focusable?.focus({ preventScroll: true });
 }
 
-function focusMissingField(targetId: string) {
+export function scrollToMissingField(targetId: string) {
   const target = document.getElementById(targetId);
   if (!target) return;
   target.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -124,7 +127,7 @@ export function MissingChecklist({
               key={label}
               type="button"
               className={MISSING_BUTTON_VARIANT_CLASS[variant]}
-              onClick={() => focusMissingField(targetId)}
+              onClick={() => scrollToMissingField(targetId)}
             >
               <AppIcon
                 icon={isDone ? CheckCircle2 : CircleDashed}
