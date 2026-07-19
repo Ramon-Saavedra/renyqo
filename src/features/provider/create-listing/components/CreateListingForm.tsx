@@ -23,7 +23,12 @@ import type {
 } from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
-import { ActionsBar, MissingChecklist } from "./ActionsBar";
+import {
+  ActionsBar,
+  CHECKLIST_ITEMS,
+  MissingChecklist,
+  scrollToMissingField,
+} from "./ActionsBar";
 import { AnforderungenSection } from "./AnforderungenSection";
 import { CreateListingHero } from "./CreateListingHero";
 import { HeaderNavLinks } from "./HeaderNavLinks";
@@ -315,7 +320,15 @@ export function CreateListingForm() {
               missing={missing}
               canPublish={canPublish}
               onSaveDraft={handleSaveDraft}
-              onPublish={() => publish(draft, finalTitle)}
+              onPublish={() => {
+                if (!canPublish && missing.length > 0) {
+                  const item = CHECKLIST_ITEMS.find(
+                    (i) => i.label === missing[0],
+                  );
+                  if (item) scrollToMissingField(item.targetId);
+                }
+                publish(draft, finalTitle);
+              }}
               submitStatus={submitStatus}
               error={error}
             />

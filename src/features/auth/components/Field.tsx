@@ -22,7 +22,17 @@ export function Field({
   className,
   ...inputProps
 }: FieldProps) {
-  const input = <Input id={id} className={inputClassName} {...inputProps} />;
+  const errorId = `${id}-error`;
+
+  const input = (
+    <Input
+      id={id}
+      className={inputClassName}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={error ? errorId : undefined}
+      {...inputProps}
+    />
+  );
 
   return (
     <div className={cn("grid gap-1.5", className)}>
@@ -40,7 +50,7 @@ export function Field({
       ) : (
         input
       )}
-      {error && <FieldError message={error} />}
+      {error && <FieldError id={errorId} message={error} />}
       {!error && hint && (
         <span className="text-caption text-foreground-tertiary">{hint}</span>
       )}

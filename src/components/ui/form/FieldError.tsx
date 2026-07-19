@@ -1,10 +1,11 @@
 interface FieldErrorProps {
   message: string;
+  id?: string;
 }
 
-export function FieldError({ message }: FieldErrorProps) {
+export function FieldError({ message, id }: FieldErrorProps) {
   return (
-    <span role="alert" className="text-caption text-warning">
+    <span id={id} role="alert" className="text-caption text-warning">
       {message}
     </span>
   );
