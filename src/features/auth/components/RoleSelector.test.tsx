@@ -143,5 +143,98 @@ describe("RoleSelector", () => {
         "/register/create-account?role=applicant",
       );
     });
+
+    it("moves selection and focus with arrow keys", async () => {
+      const user = userEvent.setup();
+      render(<RoleSelector />);
+
+      getApplicantCard().focus();
+      await user.keyboard("{ArrowRight}");
+
+      expect(getProviderCard().getAttribute("aria-checked")).toBe("true");
+      expect(document.activeElement).toBe(getProviderCard());
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=provider",
+      );
+
+      await user.keyboard("{ArrowLeft}");
+
+      expect(getApplicantCard().getAttribute("aria-checked")).toBe("true");
+      expect(document.activeElement).toBe(getApplicantCard());
+    });
+
+    it("wraps arrow navigation at both ends", async () => {
+      const user = userEvent.setup();
+      render(<RoleSelector />);
+
+      getApplicantCard().focus();
+      await user.keyboard("{ArrowLeft}");
+
+      expect(getProviderCard().getAttribute("aria-checked")).toBe("true");
+      expect(document.activeElement).toBe(getProviderCard());
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=provider",
+      );
+
+      await user.keyboard("{ArrowRight}");
+
+      expect(getApplicantCard().getAttribute("aria-checked")).toBe("true");
+      expect(document.activeElement).toBe(getApplicantCard());
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=applicant",
+      );
+    });
+
+    it("supports vertical arrow navigation", async () => {
+      const user = userEvent.setup();
+      render(<RoleSelector />);
+
+      getApplicantCard().focus();
+      await user.keyboard("{ArrowDown}");
+      expect(document.activeElement).toBe(getProviderCard());
+      expect(getProviderCard().getAttribute("aria-checked")).toBe("true");
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=provider",
+      );
+
+      await user.keyboard("{ArrowUp}");
+      expect(document.activeElement).toBe(getApplicantCard());
+      expect(getApplicantCard().getAttribute("aria-checked")).toBe("true");
+
+      await user.keyboard("{ArrowUp}");
+      expect(document.activeElement).toBe(getProviderCard());
+
+      await user.keyboard("{ArrowDown}");
+      expect(document.activeElement).toBe(getApplicantCard());
+    });
+
+    it("supports Home and End keys and roving tabindex", async () => {
+      const user = userEvent.setup();
+      render(<RoleSelector />);
+
+      expect((getApplicantCard() as HTMLButtonElement).tabIndex).toBe(0);
+      expect((getProviderCard() as HTMLButtonElement).tabIndex).toBe(-1);
+
+      getApplicantCard().focus();
+      await user.keyboard("{End}");
+
+      expect(document.activeElement).toBe(getProviderCard());
+      expect(getProviderCard().getAttribute("aria-checked")).toBe("true");
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=provider",
+      );
+      expect((getApplicantCard() as HTMLButtonElement).tabIndex).toBe(-1);
+      expect((getProviderCard() as HTMLButtonElement).tabIndex).toBe(0);
+
+      await user.keyboard("{Home}");
+
+      expect(document.activeElement).toBe(getApplicantCard());
+      expect(getApplicantCard().getAttribute("aria-checked")).toBe("true");
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=applicant",
+      );
+      expect((getApplicantCard() as HTMLButtonElement).tabIndex).toBe(0);
+      expect((getProviderCard() as HTMLButtonElement).tabIndex).toBe(-1);
+    });
   });
 });

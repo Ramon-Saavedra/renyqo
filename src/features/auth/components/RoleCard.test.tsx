@@ -30,7 +30,7 @@ describe("RoleCard", () => {
 
     expect(
       screen.getByRole("radio", { name: /ich suche ein zuhause/i }),
-    ).toBeInstanceOf(HTMLButtonElement);
+    ).toBeInstanceOf(HTMLDivElement);
     expect(screen.getByText(baseProps.description)).toBeInstanceOf(HTMLElement);
     expect(screen.getAllByRole("listitem")).toHaveLength(
       baseProps.points.length,
@@ -55,5 +55,18 @@ describe("RoleCard", () => {
     await user.keyboard("{Enter}");
 
     expect(onSelect).toHaveBeenCalledTimes(2);
+  });
+
+  it("activates on Space without scrolling the page", async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+
+    render(<RoleCard {...baseProps} onSelect={onSelect} />);
+
+    const option = screen.getByRole("radio");
+    option.focus();
+    await user.keyboard(" ");
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
   });
 });
