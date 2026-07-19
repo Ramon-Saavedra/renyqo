@@ -66,7 +66,10 @@ export const createAccountCopy = {
       "Der Server ist aktuell nicht erreichbar. Bitte versuche es später noch einmal.",
     unknown:
       "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
+    onboarding:
+      "Dein Konto wurde erstellt, aber der nächste Schritt konnte nicht geladen werden. Bitte versuche es erneut.",
   },
+  retryOnboarding: "Erneut versuchen",
 } as const;
 
 interface ReassureItem {
