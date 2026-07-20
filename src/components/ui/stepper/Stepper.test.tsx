@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { Stepper } from "./Stepper";
 
-const STEPS = ["02 Kontotyp", "03 Konto erstellen", "04 Bestätigung"] as const;
+const STEPS = ["01 Auswahl", "02 Formular", "03 Abschluss"] as const;
 
 describe("Stepper", () => {
   describe("navigation element", () => {
@@ -37,20 +37,24 @@ describe("Stepper", () => {
       render(<Stepper steps={STEPS} currentIndex={1} />);
       const nav = screen.getByRole("navigation");
 
-      expect(within(nav).getByText("02 Kontotyp")).toBeInstanceOf(HTMLElement);
-      expect(within(nav).getByText("03 Konto erstellen")).toBeInstanceOf(
+      expect(within(nav).getByText("01 Auswahl")).toBeInstanceOf(HTMLElement);
+      expect(within(nav).getByText("02 Formular")).toBeInstanceOf(
         HTMLElement,
       );
-      expect(within(nav).getByText("04 Bestätigung")).toBeInstanceOf(
-        HTMLElement,
-      );
+      expect(within(nav).getByText("03 Abschluss")).toBeInstanceOf(HTMLElement);
+    });
+
+    it("shows a compact progress summary on mobile", () => {
+      render(<Stepper steps={STEPS} currentIndex={1} />);
+
+      expect(screen.getByText("Schritt 2 von 3")).toBeInstanceOf(HTMLElement);
     });
   });
 
   describe("active step", () => {
     it("marks the step at currentIndex with aria-current=step", () => {
       render(<Stepper steps={STEPS} currentIndex={1} />);
-      const active = screen.getByText("03 Konto erstellen");
+      const active = screen.getByText("02 Formular");
 
       expect(active.getAttribute("aria-current")).toBe("step");
     });
@@ -65,14 +69,14 @@ describe("Stepper", () => {
 
     it("does not mark done steps with aria-current", () => {
       render(<Stepper steps={STEPS} currentIndex={2} />);
-      const done = screen.getByText("02 Kontotyp");
+      const done = screen.getByText("01 Auswahl");
 
       expect(done.getAttribute("aria-current")).toBeNull();
     });
 
     it("does not mark future steps with aria-current", () => {
       render(<Stepper steps={STEPS} currentIndex={0} />);
-      const future = screen.getByText("04 Bestätigung");
+      const future = screen.getByText("03 Abschluss");
 
       expect(future.getAttribute("aria-current")).toBeNull();
     });
@@ -115,7 +119,7 @@ describe("Stepper", () => {
       const { container } = render(<Stepper steps={STEPS} currentIndex={0} />);
 
       expect(container.querySelectorAll("svg")).toHaveLength(0);
-      expect(screen.getByText("02 Kontotyp").getAttribute("aria-current")).toBe(
+      expect(screen.getByText("01 Auswahl").getAttribute("aria-current")).toBe(
         "step",
       );
     });
@@ -125,7 +129,7 @@ describe("Stepper", () => {
 
       expect(container.querySelectorAll("svg")).toHaveLength(2);
       expect(
-        screen.getByText("04 Bestätigung").getAttribute("aria-current"),
+        screen.getByText("03 Abschluss").getAttribute("aria-current"),
       ).toBe("step");
     });
   });
