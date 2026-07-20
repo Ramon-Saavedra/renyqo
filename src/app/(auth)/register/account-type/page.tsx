@@ -9,8 +9,18 @@ import { Stepper } from "@/components/ui/stepper/Stepper";
 import { RoleSelector } from "@/features/auth/components/RoleSelector";
 import { accountTypeCopy } from "@/features/auth/copy/account-type";
 import { REGISTER_STEPS } from "@/features/auth/copy/register-flow";
+import { resolveRole } from "@/features/auth/utils/role";
 
-export default function AccountTypePage() {
+interface AccountTypePageProps {
+  searchParams: Promise<{ role?: string }>;
+}
+
+export default async function AccountTypePage({
+  searchParams,
+}: AccountTypePageProps) {
+  const { role: roleParam } = await searchParams;
+  const initialRole = resolveRole(roleParam);
+
   return (
     <PageShell>
       <AppTopbar className="mb-section">
@@ -24,7 +34,10 @@ export default function AccountTypePage() {
         <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
 
         <div className="mb-9 flex max-w-3xl flex-col gap-3">
-          <h1 className="font-display text-display font-medium text-balance text-foreground">
+          <h1
+            id="account-type-title"
+            className="font-display text-display font-medium text-balance text-foreground"
+          >
             {withBrand(accountTypeCopy.title)}
           </h1>
           <p className="max-w-xl text-lead text-foreground-secondary">
@@ -32,7 +45,10 @@ export default function AccountTypePage() {
           </p>
         </div>
 
-        <RoleSelector />
+        <RoleSelector
+          initialRole={initialRole}
+          ariaLabelledBy="account-type-title"
+        />
       </div>
     </PageShell>
   );

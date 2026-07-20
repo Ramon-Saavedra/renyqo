@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import type { KeyboardEvent, KeyboardEventHandler } from "react";
 import { Check, type LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -6,6 +6,7 @@ import { RotatingBenefits } from "./RotatingBenefits";
 import { cn } from "@/lib/utils/cn";
 
 interface RoleCardProps {
+  id?: string;
   kicker: string;
   title: string;
   description: string;
@@ -22,6 +23,7 @@ interface RoleCardProps {
 export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
   function RoleCard(
     {
+      id,
       kicker,
       title,
       description,
@@ -36,6 +38,10 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
     },
     ref,
   ) {
+    const generatedId = useId();
+    const titleId = `${id ?? generatedId}-title`;
+    const descriptionId = `${id ?? generatedId}-description`;
+
     function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
       onKeyDown?.(event);
       if (event.defaultPrevented) return;
@@ -50,6 +56,8 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
         ref={ref}
         role="radio"
         aria-checked={active}
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         onClick={onSelect}
         onKeyDown={handleKeyDown}
         tabIndex={tabIndex}
@@ -99,10 +107,16 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
           <AppIcon icon={glyph} size={16} strokeWidth={1.6} decorative />
         </span>
 
-        <h3 className="mb-6 font-display text-title font-medium text-foreground">
+        <h3
+          id={titleId}
+          className="mb-6 font-display text-title font-medium text-foreground"
+        >
           {title}
         </h3>
-        <p className="mb-8 text-body text-foreground-secondary">
+        <p
+          id={descriptionId}
+          className="mb-8 text-body text-foreground-secondary"
+        >
           {description}
         </p>
 

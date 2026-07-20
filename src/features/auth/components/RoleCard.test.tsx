@@ -31,6 +31,15 @@ describe("RoleCard", () => {
     expect(
       screen.getByRole("radio", { name: /ich suche ein zuhause/i }),
     ).toBeInstanceOf(HTMLDivElement);
+    const option = screen.getByRole("radio");
+    const title = screen.getByRole("heading", {
+      name: baseProps.title,
+      level: 3,
+    });
+    const description = screen.getByText(baseProps.description);
+
+    expect(option.getAttribute("aria-labelledby")).toBe(title.id);
+    expect(option.getAttribute("aria-describedby")).toBe(description.id);
     expect(screen.getByText(baseProps.description)).toBeInstanceOf(HTMLElement);
     expect(screen.getAllByRole("listitem")).toHaveLength(
       baseProps.points.length,

@@ -16,8 +16,16 @@ const ROLE_GLYPHS: Record<Role, LucideIcon> = {
 
 const ROLE_KEYS: readonly Role[] = ["applicant", "provider"];
 
-export function RoleSelector() {
-  const [role, setRole] = useState<Role>("applicant");
+interface RoleSelectorProps {
+  initialRole?: Role;
+  ariaLabelledBy?: string;
+}
+
+export function RoleSelector({
+  initialRole = "applicant",
+  ariaLabelledBy,
+}: RoleSelectorProps) {
+  const [role, setRole] = useState<Role>(initialRole);
   const roleRefs = useRef<Partial<Record<Role, HTMLDivElement | null>>>({});
 
   function handleRoleKeyDown(
@@ -56,7 +64,8 @@ export function RoleSelector() {
     <div className="flex flex-1 flex-col gap-7">
       <div
         role="radiogroup"
-        aria-label={accountTypeCopy.title}
+        aria-label={ariaLabelledBy ? undefined : accountTypeCopy.roleGroupLabel}
+        aria-labelledby={ariaLabelledBy}
         className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2"
       >
         {ROLE_KEYS.map((key, position) => {
@@ -64,6 +73,7 @@ export function RoleSelector() {
           return (
             <RoleCard
               key={key}
+              id={`${key}-role-option`}
               kicker={data.kicker}
               title={data.title}
               description={data.description}

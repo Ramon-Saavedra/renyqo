@@ -26,11 +26,13 @@ function getWeiterCta() {
 
 describe("RoleSelector", () => {
   describe("structure", () => {
-    it("renders a radiogroup labelled by accountTypeCopy.title", () => {
+    it("renders a radiogroup with a stable accessible label", () => {
       render(<RoleSelector />);
 
       expect(
-        screen.getByRole("radiogroup", { name: accountTypeCopy.title }),
+        screen.getByRole("radiogroup", {
+          name: accountTypeCopy.roleGroupLabel,
+        }),
       ).toBeInstanceOf(HTMLElement);
     });
 
@@ -85,6 +87,15 @@ describe("RoleSelector", () => {
 
       expect(getApplicantCard().getAttribute("aria-checked")).toBe("true");
       expect(getProviderCard().getAttribute("aria-checked")).toBe("false");
+    });
+
+    it("supports a provider role supplied by the registration flow", () => {
+      render(<RoleSelector initialRole="provider" />);
+
+      expect(getProviderCard().getAttribute("aria-checked")).toBe("true");
+      expect(getWeiterCta().getAttribute("href")).toBe(
+        "/register/create-account?role=provider",
+      );
     });
 
     it("points the Weiter CTA at /register/create-account?role=applicant", () => {

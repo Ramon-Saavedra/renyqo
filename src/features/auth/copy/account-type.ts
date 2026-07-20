@@ -1,6 +1,7 @@
 export const accountTypeCopy = {
   back: "Zurück",
   title: "Wie möchtest du {brand} nutzen?",
+  roleGroupLabel: "Rolle auswählen",
   subtitle:
     "Wähle die Rolle, die zu dir passt. Du kannst dies später nicht ohne Weiteres ändern.",
   alreadyAccount: "Bereits ein Konto?",

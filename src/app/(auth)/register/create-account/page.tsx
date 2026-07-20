@@ -46,7 +46,10 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
   return (
     <PageShell>
       <AppTopbar className="mb-section">
-        <Link href="/register/account-type" className={buttonClass("ghost")}>
+        <Link
+          href={`/register/account-type?role=${role}`}
+          className={buttonClass("ghost")}
+        >
           <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
           {createAccountCopy.back}
         </Link>
