@@ -7,20 +7,24 @@ import type {
 } from "@/lib/api/listings";
 import type { DepositMonths, ListingDraft } from "./useListingDraft";
 import { INITIAL_DRAFT } from "./useListingDraft";
+import {
+  normalizeListingDate,
+  parseListingNumber,
+} from "../utils/listing-validation";
 
 function toPositiveNumber(value: string): number {
-  const n = parseFloat(value.replace(",", "."));
-  return Number.isFinite(n) && n > 0 ? n : 0;
+  const parsed = parseListingNumber(value);
+  return parsed !== undefined && parsed > 0 ? parsed : 0;
 }
 
 function toOptionalPositiveNumber(value: string): number | undefined {
-  const n = parseFloat(value.trim().replace(",", "."));
-  return Number.isFinite(n) && n > 0 ? n : undefined;
+  const parsed = parseListingNumber(value);
+  return parsed !== undefined && parsed > 0 ? parsed : undefined;
 }
 
 function toOptionalNonNegativeNumber(value: string): number | undefined {
-  const n = parseFloat(value.trim().replace(",", "."));
-  return Number.isFinite(n) && n >= 0 ? n : undefined;
+  const parsed = parseListingNumber(value);
+  return parsed !== undefined && parsed >= 0 ? parsed : undefined;
 }
 
 function calculateDeposit(
@@ -74,26 +78,6 @@ function toSuitableForPeopleCount(
   return total > 0 ? total : null;
 }
 
-function toOptionalIsoDate(value: string): string | undefined {
-  const trimmed = value.trim();
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
-  if (!match) return undefined;
-  const [, yearValue, monthValue, dayValue] = match;
-  if (!yearValue || !monthValue || !dayValue) return undefined;
-  const year = Number(yearValue);
-  const month = Number(monthValue);
-  const day = Number(dayValue);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  if (
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() !== month - 1 ||
-    date.getUTCDate() !== day
-  ) {
-    return undefined;
-  }
-  return date.toISOString();
-}
-
 function hasText(value: string): boolean {
   return value.trim().length > 0;
 }
@@ -109,7 +93,7 @@ export function hasMeaningfulDraftContent(draft: ListingDraft): boolean {
     draft.bedrooms !== null ||
     toOptionalPositiveNumber(draft.price) !== undefined ||
     toOptionalNonNegativeNumber(draft.additionalCosts) !== undefined ||
-    toOptionalIsoDate(draft.availableFrom) !== undefined ||
+    normalizeListingDate(draft.availableFrom) !== undefined ||
     hasText(draft.titleOverride) ||
     hasText(draft.description) ||
     draft.photos.length > 0 ||
@@ -146,7 +130,7 @@ export function mapDraftToCreateListingDto(
         : undefined,
     depositMonths: draft.depositMonths,
     deposit,
-    availableFrom: draft.availableFrom,
+    availableFrom: normalizeListingDate(draft.availableFrom),
     title: title.trim(),
     shortDescription: draft.description.trim(),
     minimumHouseholdNetIncome: draft.minIncome
@@ -233,7 +217,7 @@ export function mapDraftToPartialCreateListingDto(
   const coldRent = toOptionalPositiveNumber(draft.price);
   const additionalCosts = toOptionalNonNegativeNumber(draft.additionalCosts);
   const deposit = calculateDeposit(coldRent, draft.depositMonths);
-  const availableFrom = toOptionalIsoDate(draft.availableFrom);
+  const availableFrom = normalizeListingDate(draft.availableFrom);
   const trimmedTitle = title.trim();
   const shortDescription = draft.description.trim();
   const minimumHouseholdNetIncome = toOptionalPositiveNumber(draft.minIncome);

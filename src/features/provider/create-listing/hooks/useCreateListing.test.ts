@@ -450,6 +450,20 @@ describe("useCreateListing", () => {
       expect(createListingDraft).not.toHaveBeenCalled();
     });
 
+    it("sets fieldErrors.availableFrom when the date is impossible", async () => {
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.publish(
+          { ...VALID_DRAFT, availableFrom: "2026-02-31" },
+          "Titel",
+        );
+      });
+
+      expect(result.current.fieldErrors.availableFrom).toBeTruthy();
+      expect(createListingDraft).not.toHaveBeenCalled();
+    });
+
     it("calls API when all required fields are valid", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       vi.mocked(publishListing).mockResolvedValue(undefined);
@@ -460,6 +474,12 @@ describe("useCreateListing", () => {
       });
 
       expect(createListingDraft).toHaveBeenCalledTimes(1);
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          availableFrom: "2026-07-01T00:00:00.000Z",
+        }),
+        PHOTO_FILE,
+      );
       expect(publishListing).toHaveBeenCalledWith("draft-1");
     });
   });

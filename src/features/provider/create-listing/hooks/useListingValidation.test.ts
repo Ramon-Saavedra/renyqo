@@ -99,8 +99,29 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("Wohnfläche");
     });
 
+    it("includes Wohnfläche when area is zero or negative", () => {
+      const zeroDraft = { ...VALID_DRAFT, area: "0" };
+      const negativeDraft = { ...VALID_DRAFT, area: "-10" };
+
+      expect(
+        renderHook(() => useListingValidation(zeroDraft)).result.current
+          .missing,
+      ).toContain("Wohnfläche");
+      expect(
+        renderHook(() => useListingValidation(negativeDraft)).result.current
+          .missing,
+      ).toContain("Wohnfläche");
+    });
+
     it("includes Zimmer when rooms is empty", () => {
       const draft: ListingDraft = { ...VALID_DRAFT, rooms: "" as RoomOption };
+      const { result } = renderHook(() => useListingValidation(draft));
+
+      expect(result.current.missing).toContain("Zimmer");
+    });
+
+    it("includes Zimmer when rooms is zero", () => {
+      const draft = { ...VALID_DRAFT, rooms: "0" as RoomOption };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("Zimmer");
@@ -113,8 +134,22 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("Kaltmiete");
     });
 
+    it("includes Kaltmiete when price is zero", () => {
+      const draft = { ...VALID_DRAFT, price: "0" };
+      const { result } = renderHook(() => useListingValidation(draft));
+
+      expect(result.current.missing).toContain("Kaltmiete");
+    });
+
     it("includes Frei ab when availableFrom is empty", () => {
       const draft = { ...VALID_DRAFT, availableFrom: "" };
+      const { result } = renderHook(() => useListingValidation(draft));
+
+      expect(result.current.missing).toContain("Frei ab");
+    });
+
+    it("includes Frei ab when the date is impossible", () => {
+      const draft = { ...VALID_DRAFT, availableFrom: "2026-02-31" };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("Frei ab");
