@@ -485,6 +485,67 @@ describe("useCreateListing", () => {
   });
 
   describe("publish — API success", () => {
+    it("completes the create, save, edit and publish lifecycle", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "listing-1" });
+      vi.mocked(publishListing).mockResolvedValue(undefined);
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(DRAFT_SAVE_VALID, "Initial title", {
+          redirectTo: false,
+        });
+      });
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, city: "Hamburg" },
+          "Updated title",
+          { redirectTo: false },
+        );
+      });
+      await act(async () => {
+        await result.current.publish(
+          { ...VALID_DRAFT, city: "Hamburg" },
+          "Updated title",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledTimes(1);
+      expect(updateListing).toHaveBeenCalledTimes(2);
+      expect(updateListing).toHaveBeenNthCalledWith(
+        1,
+        "listing-1",
+        expect.objectContaining({ city: "Hamburg" }),
+      );
+      expect(updateListing).toHaveBeenNthCalledWith(
+        2,
+        "listing-1",
+        expect.objectContaining({ city: "Hamburg" }),
+      );
+      expect(uploadListingImage).toHaveBeenCalledWith("listing-1", PHOTO_FILE);
+      expect(publishListing).toHaveBeenCalledWith("listing-1");
+
+      const createOrder =
+        vi.mocked(createListingDraft).mock.invocationCallOrder[0];
+      const firstUpdateOrder =
+        vi.mocked(updateListing).mock.invocationCallOrder[0];
+      const secondUpdateOrder =
+        vi.mocked(updateListing).mock.invocationCallOrder[1];
+      const uploadOrder =
+        vi.mocked(uploadListingImage).mock.invocationCallOrder[0];
+      const publishOrder =
+        vi.mocked(publishListing).mock.invocationCallOrder[0];
+
+      expect(createOrder).toBeDefined();
+      expect(firstUpdateOrder).toBeDefined();
+      expect(secondUpdateOrder).toBeDefined();
+      expect(uploadOrder).toBeDefined();
+      expect(publishOrder).toBeDefined();
+      expect(createOrder!).toBeLessThan(firstUpdateOrder!);
+      expect(firstUpdateOrder!).toBeLessThan(secondUpdateOrder!);
+      expect(secondUpdateOrder!).toBeLessThan(uploadOrder!);
+      expect(uploadOrder!).toBeLessThan(publishOrder!);
+    });
+
     it("creates draft, publishes and redirects when no draft exists", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "new-draft" });
       vi.mocked(publishListing).mockResolvedValue(undefined);
@@ -571,6 +632,28 @@ describe("useCreateListing", () => {
         await result.current.publish(VALID_DRAFT, "Titel");
       });
 
+      expect(publishListing).not.toHaveBeenCalled();
+      expect(result.current.error).toMatch(/Veröffentlichen/);
+    });
+
+    it("does not publish when uploading images fails after an update", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "existing-draft" });
+      vi.mocked(uploadListingImage).mockRejectedValue(
+        new ApiError(500, "upload failed"),
+      );
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+      });
+      await act(async () => {
+        await result.current.publish(VALID_DRAFT, "Titel");
+      });
+
+      expect(updateListing).toHaveBeenCalledWith(
+        "existing-draft",
+        expect.objectContaining({ city: "Berlin" }),
+      );
       expect(publishListing).not.toHaveBeenCalled();
       expect(result.current.error).toMatch(/Veröffentlichen/);
     });
