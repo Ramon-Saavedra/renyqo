@@ -15,12 +15,14 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/api/listings", () => ({
   createListingDraft: vi.fn(),
   publishListing: vi.fn(),
+  updateListing: vi.fn(),
   uploadListingImage: vi.fn(),
 }));
 
 import {
   createListingDraft,
   publishListing,
+  updateListing,
   uploadListingImage,
 } from "@/lib/api/listings";
 
@@ -54,6 +56,7 @@ const VALID_DRAFT: ListingDraft = {
 describe("useCreateListing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(updateListing).mockResolvedValue(undefined);
   });
 
   describe("initial state", () => {
@@ -267,6 +270,51 @@ describe("useCreateListing", () => {
       expect(createListingDraft).toHaveBeenCalledTimes(1);
     });
 
+    it("updates an existing draft before saving it again", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+      });
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, city: "Hamburg" },
+          "Titel aktualisiert",
+          { redirectTo: false },
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledTimes(1);
+      expect(updateListing).toHaveBeenCalledWith(
+        "draft-1",
+        expect.objectContaining({ city: "Hamburg" }),
+      );
+    });
+
+    it("stops saving when updating an existing draft fails", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      vi.mocked(updateListing).mockRejectedValue(
+        new ApiError(500, "update failed"),
+      );
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+      });
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, city: "Hamburg" },
+          "Titel aktualisiert",
+          { redirectTo: false },
+        );
+      });
+
+      expect(result.current.error).toMatch(/Speichern/);
+      expect(result.current.submitStatus).toBe("idle");
+      expect(uploadListingImage).not.toHaveBeenCalled();
+    });
+
     it("returns to idle status with no error after success", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const { result } = renderHook(() => useCreateListing());
@@ -476,7 +524,35 @@ describe("useCreateListing", () => {
       });
 
       expect(createListingDraft).toHaveBeenCalledTimes(1);
+      expect(updateListing).toHaveBeenCalledWith(
+        "existing-draft",
+        expect.objectContaining({ city: "Berlin" }),
+      );
       expect(publishListing).toHaveBeenCalledWith("existing-draft");
+      const updateOrder = vi.mocked(updateListing).mock.invocationCallOrder[0];
+      const publishOrder =
+        vi.mocked(publishListing).mock.invocationCallOrder[0];
+      expect(updateOrder).toBeDefined();
+      expect(publishOrder).toBeDefined();
+      expect(updateOrder!).toBeLessThan(publishOrder!);
+    });
+
+    it("does not publish when updating an existing draft fails", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "existing-draft" });
+      vi.mocked(updateListing).mockRejectedValue(
+        new ApiError(500, "update failed"),
+      );
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(DRAFT_SAVE_VALID, "Titel");
+      });
+      await act(async () => {
+        await result.current.publish(VALID_DRAFT, "Titel");
+      });
+
+      expect(publishListing).not.toHaveBeenCalled();
+      expect(result.current.error).toMatch(/Veröffentlichen/);
     });
   });
 
