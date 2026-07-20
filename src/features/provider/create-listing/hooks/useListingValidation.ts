@@ -1,5 +1,9 @@
 import { useMemo } from "react";
 import { createListingCopy } from "../copy/create-listing";
+import {
+  isPositiveListingNumber,
+  isValidListingDate,
+} from "../utils/listing-validation";
 import type { ListingDraft } from "./useListingDraft";
 
 export interface ListingValidationResult {
@@ -17,11 +21,17 @@ export function useListingValidation(
     if (!draft.city.trim()) missing.push(labels.city);
     if (!draft.zip.trim()) missing.push(labels.zip);
     if (!draft.street.trim()) missing.push(labels.street);
-    if (!draft.area) missing.push(labels.area);
-    if (!draft.rooms) missing.push(labels.rooms);
-    if (draft.bedrooms === null) missing.push(labels.bedrooms);
-    if (!draft.price) missing.push(labels.price);
-    if (!draft.availableFrom) missing.push(labels.availableFrom);
+    if (!isPositiveListingNumber(draft.area)) missing.push(labels.area);
+    if (draft.rooms !== "6+" && !isPositiveListingNumber(draft.rooms)) {
+      missing.push(labels.rooms);
+    }
+    if (draft.bedrooms === null || draft.bedrooms < 0) {
+      missing.push(labels.bedrooms);
+    }
+    if (!isPositiveListingNumber(draft.price)) missing.push(labels.price);
+    if (!isValidListingDate(draft.availableFrom)) {
+      missing.push(labels.availableFrom);
+    }
     if (!draft.legalAccepted) missing.push(labels.legal);
 
     const canPublish = missing.length === 0;
@@ -30,11 +40,12 @@ export function useListingValidation(
       draft.city &&
       draft.zip &&
       draft.street &&
-      draft.area &&
-      draft.rooms &&
+      isPositiveListingNumber(draft.area) &&
+      (draft.rooms === "6+" || isPositiveListingNumber(draft.rooms)) &&
       draft.bedrooms !== null &&
-      draft.price &&
-      draft.availableFrom
+      draft.bedrooms >= 0 &&
+      isPositiveListingNumber(draft.price) &&
+      isValidListingDate(draft.availableFrom)
     ) {
       completedSteps.push("sec-01");
     }
