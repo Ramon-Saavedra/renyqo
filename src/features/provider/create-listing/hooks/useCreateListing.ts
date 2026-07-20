@@ -3,7 +3,11 @@
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
-import { createListingDraft, publishListing } from "@/lib/api/listings";
+import {
+  createListingDraft,
+  publishListing,
+  updateListing,
+} from "@/lib/api/listings";
 import { publishSchema } from "../schemas/listing-schemas";
 import {
   hasErrors,
@@ -16,6 +20,7 @@ import {
 } from "./listingImageUploads";
 import {
   hasMeaningfulDraftContent,
+  mapCreateListingPayloadToUpdatePayload,
   mapDraftToCreateListingDto,
   mapDraftToPartialCreateListingDto,
 } from "./listingPayload";
@@ -88,6 +93,12 @@ export function useCreateListing(): UseCreateListingResult {
         setFieldErrors({});
         setSubmitStatus("saving");
         try {
+          await updateListing(
+            draftIdRef.current,
+            mapCreateListingPayloadToUpdatePayload(
+              mapDraftToPartialCreateListingDto(draft, title),
+            ),
+          );
           await uploadPendingListingImages(
             draftIdRef.current,
             getListingPhotoFiles(draft),
@@ -183,6 +194,13 @@ export function useCreateListing(): UseCreateListingResult {
           id = created.id;
           draftIdRef.current = id;
           if (firstPhoto) uploadedPhotoIdsRef.current.add(firstPhoto.id);
+        } else {
+          await updateListing(
+            id,
+            mapCreateListingPayloadToUpdatePayload(
+              mapDraftToCreateListingDto(draft, title),
+            ),
+          );
         }
         await uploadPendingListingImages(
           id,

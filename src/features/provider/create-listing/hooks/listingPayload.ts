@@ -3,6 +3,7 @@ import type {
   ObjectTypeBackend,
   PetPolicyBackend,
   SmokingPolicyBackend,
+  UpdateListingPayload,
 } from "@/lib/api/listings";
 import type { DepositMonths, ListingDraft } from "./useListingDraft";
 import { INITIAL_DRAFT } from "./useListingDraft";
@@ -156,6 +157,60 @@ export function mapDraftToCreateListingDto(
     suitableForPeopleCount: toSuitableForPeopleCount(draft.adults, draft.kids),
     petsPolicy: toPetsPolicy(draft.pets),
     smokingPolicy: toSmokingPolicy(draft.smoking),
+  };
+}
+
+export function mapCreateListingPayloadToUpdatePayload(
+  source: CreateListingPayload,
+): UpdateListingPayload {
+  return {
+    ...(source.title !== undefined ? { title: source.title } : {}),
+    ...(source.objectType !== undefined
+      ? { objectType: source.objectType }
+      : {}),
+    ...(source.street !== undefined ? { street: source.street } : {}),
+    ...(source.zip !== undefined ? { zip: source.zip } : {}),
+    ...(source.city !== undefined ? { city: source.city } : {}),
+    ...(source.showExactAddress !== undefined
+      ? { showExactAddress: source.showExactAddress }
+      : {}),
+    ...(source.coldRent !== undefined ? { coldRent: source.coldRent } : {}),
+    ...(source.additionalCosts !== undefined
+      ? { additionalCosts: source.additionalCosts }
+      : {}),
+    ...(source.deposit !== undefined ? { deposit: source.deposit } : {}),
+    ...(source.depositMonths !== undefined
+      ? { depositMonths: source.depositMonths }
+      : {}),
+    ...(source.livingArea !== undefined
+      ? { livingArea: source.livingArea }
+      : {}),
+    ...(source.rooms !== undefined ? { rooms: source.rooms } : {}),
+    ...(source.bedrooms !== undefined ? { bedrooms: source.bedrooms } : {}),
+    ...(source.availableFrom !== undefined
+      ? { availableFrom: source.availableFrom }
+      : {}),
+    ...(source.shortDescription !== undefined
+      ? { shortDescription: source.shortDescription }
+      : {}),
+    ...(source.minimumHouseholdNetIncome !== undefined
+      ? { minimumHouseholdNetIncome: source.minimumHouseholdNetIncome }
+      : {}),
+    ...(source.suitableForPeopleCount !== undefined
+      ? { suitableForPeopleCount: source.suitableForPeopleCount }
+      : {}),
+    ...(source.schufaRequired !== undefined
+      ? { schufaRequired: source.schufaRequired }
+      : {}),
+    ...(source.incomeProofRequired !== undefined
+      ? { incomeProofRequired: source.incomeProofRequired }
+      : {}),
+    ...(source.petsPolicy !== undefined
+      ? { petsPolicy: source.petsPolicy }
+      : {}),
+    ...(source.smokingPolicy !== undefined
+      ? { smokingPolicy: source.smokingPolicy }
+      : {}),
   };
 }
 
