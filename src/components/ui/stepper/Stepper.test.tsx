@@ -38,9 +38,7 @@ describe("Stepper", () => {
       const nav = screen.getByRole("navigation");
 
       expect(within(nav).getByText("01 Auswahl")).toBeInstanceOf(HTMLElement);
-      expect(within(nav).getByText("02 Formular")).toBeInstanceOf(
-        HTMLElement,
-      );
+      expect(within(nav).getByText("02 Formular")).toBeInstanceOf(HTMLElement);
       expect(within(nav).getByText("03 Abschluss")).toBeInstanceOf(HTMLElement);
     });
 
