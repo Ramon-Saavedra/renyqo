@@ -44,8 +44,8 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
   const roleCopy = createAccountRoleCopy[role];
 
   return (
-    <PageShell>
-      <AppTopbar className="mb-section">
+    <PageShell className="flex-1 lg:pb-0">
+      <AppTopbar className="mb-section lg:mb-7">
         <Link
           href={`/register/account-type?role=${role}`}
           className={buttonClass("ghost")}
@@ -56,7 +56,11 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
       </AppTopbar>
 
       <div className="flex flex-1 flex-col px-gutter">
-        <Stepper steps={REGISTER_STEPS} currentIndex={1} className="mb-7" />
+        <Stepper
+          steps={REGISTER_STEPS}
+          currentIndex={1}
+          className="mb-7 lg:mb-6"
+        />
 
         <div className="grid flex-1 items-start gap-20 lg:grid-cols-2">
           <div>

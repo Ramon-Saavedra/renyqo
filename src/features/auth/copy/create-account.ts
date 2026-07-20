@@ -16,7 +16,7 @@ export const createAccountCopy = {
     },
     password: {
       label: "Passwort",
-      placeholder: "Mindestens 8 Zeichen",
+      placeholder: "Mindestens 8 Zeichen, Zahl oder Sonderzeichen",
       hint: "Mindestens 8 Zeichen, mit einer Zahl oder einem Sonderzeichen.",
       show: "Passwort anzeigen",
       hide: "Passwort verbergen",
@@ -64,6 +64,13 @@ export const createAccountCopy = {
   globalErrors: {
     unavailable:
       "Der Server ist aktuell nicht erreichbar. Bitte versuche es später noch einmal.",
+    timeout:
+      "Die Anfrage dauert zu lange. Bitte überprüfe deine Verbindung und versuche es erneut.",
+    validation: "Bitte überprüfe deine Angaben und versuche es erneut.",
+    rateLimited:
+      "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.",
+    server:
+      "Der Server konnte dein Konto nicht erstellen. Bitte versuche es später erneut.",
     unknown:
       "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
     onboarding:
