@@ -25,6 +25,7 @@ import {
   type PasswordStrength,
 } from "@/features/auth/utils/password";
 import { createAccountCopy } from "../copy/create-account";
+import { resolveRegistrationErrorMessage } from "../utils/register-error";
 import { Checkbox } from "./Checkbox";
 import { Field } from "./Field";
 import { PasswordField } from "./PasswordField";
@@ -62,6 +63,8 @@ const PROVIDER_TYPE_OPTIONS = [
   },
 ] satisfies ReadonlyArray<{ value: ProviderType; label: string }>;
 
+const PASSWORD_REQUIREMENT = /[0-9]|[^A-Za-z0-9]/;
+
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -75,7 +78,7 @@ function validateForm(
   const errors: FormErrors = {};
   if (!name.trim()) errors.name = createAccountCopy.validation.name;
   if (!isValidEmail(email)) errors.email = createAccountCopy.validation.email;
-  if (password.length < 8)
+  if (password.length < 8 || !PASSWORD_REQUIREMENT.test(password))
     errors.password = createAccountCopy.validation.password;
   if (!termsChecked) errors.terms = createAccountCopy.validation.terms;
   return errors;
@@ -180,15 +183,10 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setFieldErrors({ email: createAccountCopy.validation.emailTaken });
-      } else if (err instanceof ApiError && err.status === 0) {
-        setGlobalMessage({
-          variant: "error",
-          text: createAccountCopy.globalErrors.unavailable,
-        });
       } else {
         setGlobalMessage({
           variant: "error",
-          text: createAccountCopy.globalErrors.unknown,
+          text: resolveRegistrationErrorMessage(err),
         });
       }
       setLoading(false);
@@ -202,8 +200,12 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
   return (
     <form
       noValidate
+      aria-busy={loading}
+      aria-describedby={
+        globalMessage ? "create-account-form-message" : undefined
+      }
       onSubmit={handleSubmit}
-      className="mx-auto w-full max-w-md rounded-md border border-border bg-background px-8 pt-8 pb-7"
+      className="mx-auto flex w-full max-w-md flex-col rounded-md border border-border bg-background px-8 pb-7 pt-8"
     >
       <div className="grid gap-2.5">
         <SocialButton
@@ -328,6 +330,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
           }}
           label={createAccountCopy.fields.password.label}
           placeholder={createAccountCopy.fields.password.placeholder}
+          hint={createAccountCopy.fields.password.hint}
           error={fieldErrors.password}
         />
 
@@ -375,6 +378,10 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
           name="terms"
           required
           disabled={formLocked}
+          aria-invalid={fieldErrors.terms ? true : undefined}
+          aria-describedby={
+            fieldErrors.terms ? `${consentId}-error` : undefined
+          }
           onChange={() =>
             setFieldErrors((prev) => ({ ...prev, terms: undefined }))
           }
@@ -396,11 +403,14 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
           </a>
           {createAccountCopy.consent.suffix}
         </Checkbox>
-        {fieldErrors.terms && <FieldError message={fieldErrors.terms} />}
+        {fieldErrors.terms && (
+          <FieldError id={`${consentId}-error`} message={fieldErrors.terms} />
+        )}
       </div>
 
       {globalMessage && (
         <FormAlert
+          id="create-account-form-message"
           variant={globalMessage.variant}
           message={globalMessage.text}
           className="mb-4"
@@ -426,6 +436,11 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
       >
         {loading ? createAccountCopy.submitting : createAccountCopy.submit}
       </Button>
+      {loading && (
+        <span role="status" className="sr-only">
+          {createAccountCopy.submitting}
+        </span>
+      )}
 
       <div className="flex items-center justify-center gap-1.5 text-caption text-foreground-secondary">
         {createAccountCopy.alreadyAccount}

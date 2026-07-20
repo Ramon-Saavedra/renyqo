@@ -57,6 +57,8 @@ describe("CreateAccountForm", () => {
 
       expect(form).toBeInstanceOf(HTMLFormElement);
       expect((form as HTMLFormElement).noValidate).toBe(true);
+      expect(form?.className).toContain("w-full");
+      expect(form?.className).toContain("max-w-md");
     });
   });
 
@@ -146,6 +148,40 @@ describe("CreateAccountForm", () => {
           name: createAccountCopy.passwordStrength.suggest,
         }),
       ).toBeInstanceOf(HTMLElement);
+    });
+
+    it("renders the password requirement hint", () => {
+      renderForm();
+
+      expect(screen.getByText(fields.password.hint)).toBeInstanceOf(
+        HTMLElement,
+      );
+    });
+
+    it("rejects passwords without a number or special character", async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(
+        screen.getByLabelText(fields.name.label),
+        "Ramon Saavedra",
+      );
+      await user.type(
+        screen.getByLabelText(fields.email.label),
+        "ramon@test.de",
+      );
+      await user.type(screen.getByLabelText(fields.password.label), "abcdefgh");
+      await user.click(
+        document.getElementById("test-terms") as HTMLInputElement,
+      );
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      expect(
+        await screen.findByText(createAccountCopy.validation.password),
+      ).toBeInstanceOf(HTMLElement);
+      expect(register).not.toHaveBeenCalled();
     });
   });
 
@@ -343,6 +379,23 @@ describe("CreateAccountForm", () => {
       expect(checkbox.required).toBe(true);
     });
 
+    it("associates the consent error with the checkbox", async () => {
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      const checkbox = document.getElementById(
+        "test-terms",
+      ) as HTMLInputElement;
+      const error = await screen.findByText(createAccountCopy.validation.terms);
+
+      expect(checkbox.getAttribute("aria-invalid")).toBe("true");
+      expect(checkbox.getAttribute("aria-describedby")).toBe(error.id);
+    });
+
     it("renders the terms link pointing at the terms anchor", () => {
       renderForm();
 
@@ -369,6 +422,32 @@ describe("CreateAccountForm", () => {
       }) as HTMLButtonElement;
 
       expect(submit.getAttribute("type")).toBe("submit");
+    });
+
+    it("announces the loading state while registering", async () => {
+      vi.mocked(register).mockReturnValue(new Promise(() => {}));
+      renderForm();
+      const user = await fillRequiredAccountFields();
+      await user.click(
+        screen.getByRole("button", { name: createAccountCopy.submit }),
+      );
+
+      expect(screen.getByRole("status").textContent).toContain(
+        createAccountCopy.submitting,
+      );
+      expect(
+        (
+          screen.getByRole("button", {
+            name: createAccountCopy.submitting,
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(true);
+      expect(
+        screen
+          .getByRole("button", { name: createAccountCopy.submitting })
+          .closest("form")
+          ?.getAttribute("aria-busy"),
+      ).toBe("true");
     });
   });
 
