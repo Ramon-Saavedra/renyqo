@@ -96,22 +96,6 @@ export function AnforderungenSection({
       </Note>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField
-          label={fields.peopleCount.label}
-          error={fieldErrors?.peopleCount}
-        >
-          <NumberStepper
-            value={draft.peopleCount}
-            onChange={(value) => setField("peopleCount", value)}
-            min={1}
-            max={12}
-            allowNull
-            ariaLabel={fields.peopleCount.label}
-          />
-        </FormField>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
         <FormField label={fields.pets.label}>
           <Segmented<PetOption>
             value={draft.pets}
@@ -130,6 +114,23 @@ export function AnforderungenSection({
               value: o.value as SmokingOption,
               label: o.label,
             }))}
+          />
+        </FormField>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField
+          label={fields.peopleCount.label}
+          error={fieldErrors?.peopleCount}
+        >
+          <NumberStepper
+            value={draft.peopleCount}
+            onChange={(value) => setField("peopleCount", value)}
+            min={1}
+            max={12}
+            allowNull
+            nullLabel={fields.peopleCount.empty}
+            ariaLabel={fields.peopleCount.label}
           />
         </FormField>
       </div>

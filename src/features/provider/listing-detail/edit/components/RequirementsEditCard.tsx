@@ -81,6 +81,7 @@ export function RequirementsEditCard({
               min={1}
               max={12}
               allowNull
+              nullLabel={fields.peopleCountEmpty}
               ariaLabel={fields.peopleCount}
               saved={savedFields.has("suitableForPeopleCount")}
             />

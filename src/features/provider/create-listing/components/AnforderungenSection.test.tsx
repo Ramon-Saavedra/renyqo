@@ -25,6 +25,24 @@ describe("AnforderungenSection", () => {
     );
   });
 
+  it("shows an explicit empty state for an unset people count", () => {
+    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
+
+    expect(screen.getByText("Nicht festgelegt")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("—")).toBeNull();
+  });
+
+  it("sets the people count to 1 from the empty state", async () => {
+    const user = userEvent.setup();
+    const setField = vi.fn();
+
+    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={setField} />);
+
+    await user.click(screen.getByRole("button", { name: "Wert erhöhen" }));
+
+    expect(setField).toHaveBeenCalledWith("peopleCount", 1);
+  });
+
   it("does not render provider-selectable household figures", () => {
     render(<AnforderungenSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
 
