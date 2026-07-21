@@ -66,6 +66,7 @@ export const listingEditCopy = {
     schufaRequired: "SCHUFA-Auskunft erforderlich",
     incomeProofRequired: "Einkommensnachweis erforderlich",
     peopleCount: "Passend für insgesamt",
+    peopleCountEmpty: "Nicht festgelegt",
     pets: "Haustiere",
     smoking: "Rauchen",
   },

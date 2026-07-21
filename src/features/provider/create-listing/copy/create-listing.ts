@@ -200,7 +200,10 @@ export const createListingCopy = {
           { value: "nein", label: "Nicht nötig" },
         ],
       },
-      peopleCount: { label: "Passend für insgesamt" },
+      peopleCount: {
+        label: "Passend für insgesamt",
+        empty: "Nicht festgelegt",
+      },
       pets: {
         label: "Haustiere",
         options: [

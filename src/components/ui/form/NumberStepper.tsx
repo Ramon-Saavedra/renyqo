@@ -18,7 +18,8 @@ const BTN_CLASS =
   "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg transition-colors hover:bg-background-muted disabled:cursor-not-allowed disabled:bg-transparent";
 const BTN_COLOR_CLASS =
   "text-foreground-secondary hover:text-foreground disabled:text-foreground-tertiary";
-const VAL_CLASS = "flex-1 text-center font-mono text-action tabular-nums";
+const VAL_CLASS = "flex-1 text-center text-action";
+const NUM_CLASS = "font-mono tabular-nums";
 
 export function NumberStepper({
   value,
@@ -54,6 +55,7 @@ export function NumberStepper({
   const btnClass = cn(BTN_CLASS, !saved && BTN_COLOR_CLASS);
   const valClass = cn(
     VAL_CLASS,
+    !isNull && NUM_CLASS,
     !saved && (isNull ? "text-foreground-tertiary" : "text-foreground"),
   );
 

@@ -76,6 +76,47 @@ describe("NumberStepper", () => {
     expect(screen.getByText("—")).toBeInstanceOf(HTMLElement);
   });
 
+  it("renders a textual null label without digit typography", () => {
+    render(
+      <NumberStepper
+        value={null}
+        onChange={() => {}}
+        allowNull
+        nullLabel="Nicht festgelegt"
+      />,
+    );
+
+    const label = screen.getByText("Nicht festgelegt");
+
+    expect(label.className).not.toContain("font-mono");
+    expect(label.className).not.toContain("tabular-nums");
+  });
+
+  it("keeps digit typography for an actual value", () => {
+    render(<NumberStepper value={3} onChange={() => {}} allowNull />);
+
+    const value = screen.getByText("3");
+
+    expect(value.className).toContain("font-mono");
+    expect(value.className).toContain("tabular-nums");
+  });
+
+  it("disables decrement while no value is set", () => {
+    render(
+      <NumberStepper
+        value={null}
+        onChange={() => {}}
+        min={1}
+        allowNull
+        nullLabel="Nicht festgelegt"
+      />,
+    );
+
+    const decrement = screen.getByRole("button", { name: "Wert verringern" });
+
+    expect((decrement as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it("starts at min when + is clicked from null", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
