@@ -113,6 +113,54 @@ describe("useAutoTitle", () => {
       expect(result.current.autoTitle).toBe("5-Zimmer-Haus in Hamburg");
     });
 
+    it("omits the room count for zimmer so the label is not duplicated", () => {
+      const { result } = renderHook(() =>
+        useAutoTitle({
+          objectType: "zimmer",
+          rooms: "2",
+          city: "Nordhorn",
+        }),
+      );
+
+      expect(result.current.autoTitle).toBe("Zimmer in Nordhorn");
+    });
+
+    it("omits the room count for zimmer even when rooms is 1", () => {
+      const { result } = renderHook(() =>
+        useAutoTitle({
+          objectType: "zimmer",
+          rooms: "1",
+          city: "Nordhorn",
+        }),
+      );
+
+      expect(result.current.autoTitle).toBe("Zimmer in Nordhorn");
+    });
+
+    it("uses a German decimal comma for half rooms", () => {
+      const { result } = renderHook(() =>
+        useAutoTitle({
+          objectType: "wohnung",
+          rooms: "1.5",
+          city: "Berlin",
+        }),
+      );
+
+      expect(result.current.autoTitle).toBe("1,5-Zimmer-Wohnung in Berlin");
+    });
+
+    it("uses the mit-form for the open-ended 6+ option", () => {
+      const { result } = renderHook(() =>
+        useAutoTitle({
+          objectType: "haus",
+          rooms: "6+",
+          city: "Hamburg",
+        }),
+      );
+
+      expect(result.current.autoTitle).toBe("Haus mit 6+ Zimmern in Hamburg");
+    });
+
     it("returns only typeLabel when city is empty", () => {
       const { result } = renderHook(() =>
         useAutoTitle({
