@@ -79,6 +79,7 @@ export const listingEditCopy = {
     amount: "Bitte gib einen gültigen Betrag an",
     area: "Bitte gib eine gültige Wohnfläche an",
     rooms: "Bitte gib eine gültige Zimmeranzahl an",
+    peopleCount: "Bitte gib eine gültige Personenanzahl an",
   },
   error: {
     save: "Die Änderungen konnten nicht gespeichert werden — bitte versuche es erneut.",

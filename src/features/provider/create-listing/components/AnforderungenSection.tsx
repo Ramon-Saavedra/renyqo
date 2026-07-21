@@ -13,7 +13,10 @@ import {
   type RequirementOption,
   type SmokingOption,
 } from "../copy/create-listing";
-import type { ListingDraft } from "../hooks/useListingDraft";
+import type {
+  ListingDraft,
+  ListingDraftErrors,
+} from "../hooks/useListingDraft";
 import { SectionCard } from "./SectionCard";
 
 interface AnforderungenSectionProps {
@@ -22,22 +25,17 @@ interface AnforderungenSectionProps {
     field: K,
     value: ListingDraft[K],
   ) => void;
+  fieldErrors?: ListingDraftErrors;
 }
 
 function digitsOnly(value: string): string {
   return value.replace(/[^\d]/g, "");
 }
 
-function totalLabel(adults: number | null, kids: number | null): string {
-  const fields = createListingCopy.anforderungen.fields.total;
-  if (adults === null && kids === null) return fields.empty;
-  const total = (adults ?? 0) + (kids ?? 0);
-  return `${total} Person${total === 1 ? "" : "en"}`;
-}
-
 export function AnforderungenSection({
   draft,
   setField,
+  fieldErrors,
 }: AnforderungenSectionProps) {
   const copy = createListingCopy.anforderungen;
   const fields = copy.fields;
@@ -55,6 +53,7 @@ export function AnforderungenSection({
           label={fields.minIncome.label}
           htmlFor="min-income"
           hint={fields.minIncome.hint}
+          error={fieldErrors?.minIncome}
         >
           <InputAffix suffix={fields.minIncome.suffix}>
             <Input
@@ -96,29 +95,19 @@ export function AnforderungenSection({
         {note.body}
       </Note>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <FormField label={fields.adults.label}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField
+          label={fields.peopleCount.label}
+          error={fieldErrors?.peopleCount}
+        >
           <NumberStepper
-            value={draft.adults}
-            onChange={(value) => setField("adults", value)}
+            value={draft.peopleCount}
+            onChange={(value) => setField("peopleCount", value)}
             min={1}
-            max={8}
+            max={12}
             allowNull
-            ariaLabel={fields.adults.label}
+            ariaLabel={fields.peopleCount.label}
           />
-        </FormField>
-        <FormField label={fields.kids.label}>
-          <NumberStepper
-            value={draft.kids}
-            onChange={(value) => setField("kids", value)}
-            min={0}
-            max={8}
-            allowNull
-            ariaLabel={fields.kids.label}
-          />
-        </FormField>
-        <FormField label={fields.total.label}>
-          <Input readOnly value={totalLabel(draft.adults, draft.kids)} />
         </FormField>
       </div>
 

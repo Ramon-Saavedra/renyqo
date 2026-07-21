@@ -20,27 +20,44 @@ describe("AnforderungenSection", () => {
     );
     expect(screen.getByText("SCHUFA-Auskunft")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Hinweis:")).toBeInstanceOf(HTMLElement);
-    const totalField = screen.getByDisplayValue("—");
-
-    expect(totalField).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Passend für insgesamt")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
-  it("sanitizes the income input and derives the total people label", () => {
+  it("does not render provider-selectable household figures", () => {
+    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
+
+    expect(screen.queryByText("Erwachsene")).toBeNull();
+    expect(screen.queryByText("Kinder")).toBeNull();
+  });
+
+  it("sanitizes the income input", () => {
     const setField = vi.fn();
 
-    render(
-      <AnforderungenSection
-        draft={{ ...INITIAL_DRAFT, adults: 2, kids: 1 }}
-        setField={setField}
-      />,
-    );
+    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={setField} />);
 
     fireEvent.change(screen.getByLabelText("Mindesteinkommen netto"), {
       target: { value: "2.500 €" },
     });
 
     expect(setField).toHaveBeenCalledWith("minIncome", "2500");
-    expect(screen.getByDisplayValue("3 Personen")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("renders the people count validation message", () => {
+    render(
+      <AnforderungenSection
+        draft={INITIAL_DRAFT}
+        setField={vi.fn()}
+        fieldErrors={{
+          peopleCount: "Bitte gib eine gültige Personenanzahl an",
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText("Bitte gib eine gültige Personenanzahl an"),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("forwards segmented selection changes", async () => {

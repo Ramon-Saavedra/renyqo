@@ -200,9 +200,7 @@ export const createListingCopy = {
           { value: "nein", label: "Nicht nötig" },
         ],
       },
-      adults: { label: "Erwachsene" },
-      kids: { label: "Kinder" },
-      total: { label: "Passend für insgesamt", auto: "AUTO", empty: "—" },
+      peopleCount: { label: "Passend für insgesamt" },
       pets: {
         label: "Haustiere",
         options: [
@@ -295,6 +293,8 @@ export const createListingCopy = {
     deposit: "Bitte gib einen gültigen Betrag an",
     depositMonths: "Bitte wähle eine gültige Kaution",
     availableFrom: "Bitte wähle ein Datum",
+    minIncome: "Bitte gib einen gültigen Betrag an",
+    peopleCount: "Bitte gib eine gültige Personenanzahl an",
     photos: "Mindestens 1 Foto ist erforderlich",
     legalAccepted: "Bitte bestätige die Berechtigung zur Inserierung",
   },

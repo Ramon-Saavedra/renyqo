@@ -71,7 +71,10 @@ export function RequirementsEditCard({
               />
             </InputAffix>
           </FormField>
-          <FormField label={fields.peopleCount}>
+          <FormField
+            label={fields.peopleCount}
+            error={errors.suitableForPeopleCount}
+          >
             <NumberStepper
               value={form.suitableForPeopleCount}
               onChange={(value) => setField("suitableForPeopleCount", value)}

@@ -21,6 +21,8 @@ export interface ListingDraftErrors {
   depositMonths?: string;
   deposit?: string;
   availableFrom?: string;
+  minIncome?: string;
+  peopleCount?: string;
   legalAccepted?: string;
 }
 
@@ -52,8 +54,8 @@ export interface ListingDraft {
   minIncome: string;
   schufa: RequirementOption;
   income: RequirementOption;
-  adults: number | null;
-  kids: number | null;
+  /** Own optional eligibility criterion — not derived from household figures. */
+  peopleCount: number | null;
   pets: PetOption;
   smoking: SmokingOption;
   legalAccepted: boolean;
@@ -79,8 +81,7 @@ export const INITIAL_DRAFT: ListingDraft = {
   minIncome: "",
   schufa: "optional",
   income: "optional",
-  adults: null,
-  kids: null,
+  peopleCount: null,
   pets: "",
   smoking: "",
   legalAccepted: false,

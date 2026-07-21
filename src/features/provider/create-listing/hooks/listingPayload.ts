@@ -5,6 +5,11 @@ import type {
   SmokingPolicyBackend,
   UpdateListingPayload,
 } from "@/lib/api/listings";
+import {
+  isConfiguredCriterion,
+  parseMinimumHouseholdNetIncome,
+  parseSuitableForPeopleCount,
+} from "@/lib/validators/eligibility-criteria";
 import type { DepositMonths, ListingDraft } from "./useListingDraft";
 import { INITIAL_DRAFT } from "./useListingDraft";
 import {
@@ -70,14 +75,6 @@ function toOptionalRooms(value: string): number | undefined {
   return toOptionalPositiveNumber(value);
 }
 
-function toSuitableForPeopleCount(
-  adults: number | null,
-  kids: number | null,
-): number | null {
-  const total = (adults ?? 0) + (kids ?? 0);
-  return total > 0 ? total : null;
-}
-
 function hasText(value: string): boolean {
   return value.trim().length > 0;
 }
@@ -97,11 +94,10 @@ export function hasMeaningfulDraftContent(draft: ListingDraft): boolean {
     hasText(draft.titleOverride) ||
     hasText(draft.description) ||
     draft.photos.length > 0 ||
-    toOptionalPositiveNumber(draft.minIncome) !== undefined ||
+    parseMinimumHouseholdNetIncome(draft.minIncome) !== undefined ||
     draft.schufa !== INITIAL_DRAFT.schufa ||
     draft.income !== INITIAL_DRAFT.income ||
-    (draft.adults !== null && draft.adults > 0) ||
-    (draft.kids !== null && draft.kids > 0) ||
+    draft.peopleCount !== null ||
     draft.pets !== INITIAL_DRAFT.pets ||
     draft.smoking !== INITIAL_DRAFT.smoking
   );
@@ -113,6 +109,10 @@ export function mapDraftToCreateListingDto(
 ): CreateListingPayload {
   const coldRent = toPositiveNumber(draft.price);
   const deposit = calculateDeposit(coldRent, draft.depositMonths);
+  const minimumHouseholdNetIncome = parseMinimumHouseholdNetIncome(
+    draft.minIncome,
+  );
+  const suitableForPeopleCount = parseSuitableForPeopleCount(draft.peopleCount);
 
   return {
     city: draft.city.trim(),
@@ -133,12 +133,14 @@ export function mapDraftToCreateListingDto(
     availableFrom: normalizeListingDate(draft.availableFrom),
     title: title.trim(),
     shortDescription: draft.description.trim(),
-    minimumHouseholdNetIncome: draft.minIncome
-      ? toPositiveNumber(draft.minIncome)
-      : null,
+    ...(isConfiguredCriterion(minimumHouseholdNetIncome)
+      ? { minimumHouseholdNetIncome }
+      : {}),
     schufaRequired: toRequirement(draft.schufa),
     incomeProofRequired: toRequirement(draft.income),
-    suitableForPeopleCount: toSuitableForPeopleCount(draft.adults, draft.kids),
+    ...(isConfiguredCriterion(suitableForPeopleCount)
+      ? { suitableForPeopleCount }
+      : {}),
     petsPolicy: toPetsPolicy(draft.pets),
     smokingPolicy: toSmokingPolicy(draft.smoking),
   };
@@ -220,11 +222,10 @@ export function mapDraftToPartialCreateListingDto(
   const availableFrom = normalizeListingDate(draft.availableFrom);
   const trimmedTitle = title.trim();
   const shortDescription = draft.description.trim();
-  const minimumHouseholdNetIncome = toOptionalPositiveNumber(draft.minIncome);
-  const suitableForPeopleCount = toSuitableForPeopleCount(
-    draft.adults,
-    draft.kids,
+  const minimumHouseholdNetIncome = parseMinimumHouseholdNetIncome(
+    draft.minIncome,
   );
+  const suitableForPeopleCount = parseSuitableForPeopleCount(draft.peopleCount);
 
   if (city) payload.city = city;
   if (zip) payload.zip = zip;
@@ -246,7 +247,7 @@ export function mapDraftToPartialCreateListingDto(
     payload.title = trimmedTitle;
   }
   if (shortDescription) payload.shortDescription = shortDescription;
-  if (minimumHouseholdNetIncome !== undefined) {
+  if (isConfiguredCriterion(minimumHouseholdNetIncome)) {
     payload.minimumHouseholdNetIncome = minimumHouseholdNetIncome;
   }
   if (draft.schufa !== INITIAL_DRAFT.schufa) {
@@ -255,7 +256,7 @@ export function mapDraftToPartialCreateListingDto(
   if (draft.income !== INITIAL_DRAFT.income) {
     payload.incomeProofRequired = toRequirement(draft.income);
   }
-  if (suitableForPeopleCount !== null) {
+  if (isConfiguredCriterion(suitableForPeopleCount)) {
     payload.suitableForPeopleCount = suitableForPeopleCount;
   }
   if (draft.pets !== INITIAL_DRAFT.pets) {

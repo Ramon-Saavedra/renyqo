@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  parseMinimumHouseholdNetIncome,
+  parseSuitableForPeopleCount,
+} from "@/lib/validators/eligibility-criteria";
 import { listingEditCopy } from "./copy";
 import type { ListingEditErrors, ListingEditForm } from "./types";
 
@@ -27,7 +31,15 @@ export const editListingSchema = z.object({
   rooms: z.string().refine(isPositiveAmount, { message: v.rooms }),
   minimumHouseholdNetIncome: z
     .string()
-    .refine(isNonNegativeAmount, { message: v.amount }),
+    .refine((value) => parseMinimumHouseholdNetIncome(value) !== null, {
+      message: v.amount,
+    }),
+  suitableForPeopleCount: z
+    .number()
+    .nullable()
+    .refine((value) => parseSuitableForPeopleCount(value) !== null, {
+      message: v.peopleCount,
+    }),
 });
 
 /**

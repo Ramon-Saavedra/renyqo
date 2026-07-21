@@ -105,4 +105,58 @@ describe("mapEditFormToUpdatePayload", () => {
     );
     expect("availableFrom" in payload).toBe(false);
   });
+
+  describe("optional eligibility criteria", () => {
+    it("omits both criteria when they are unchanged", () => {
+      const payload = mapEditFormToUpdatePayload({ ...INITIAL }, INITIAL);
+
+      expect(payload).not.toHaveProperty("minimumHouseholdNetIncome");
+      expect(payload).not.toHaveProperty("suitableForPeopleCount");
+    });
+
+    it("clears a deliberately emptied people count with null", () => {
+      const payload = mapEditFormToUpdatePayload(
+        { ...INITIAL, suitableForPeopleCount: null },
+        INITIAL,
+      );
+
+      expect(payload.suitableForPeopleCount).toBeNull();
+    });
+
+    it("sends an income of 0 instead of dropping it", () => {
+      const payload = mapEditFormToUpdatePayload(
+        { ...INITIAL, minimumHouseholdNetIncome: "0" },
+        INITIAL,
+      );
+
+      expect(payload.minimumHouseholdNetIncome).toBe(0);
+    });
+
+    it("sends a people count of 1 instead of dropping it", () => {
+      const payload = mapEditFormToUpdatePayload(
+        { ...INITIAL, suitableForPeopleCount: 1 },
+        INITIAL,
+      );
+
+      expect(payload.suitableForPeopleCount).toBe(1);
+    });
+
+    it("never clears the income because the input was invalid", () => {
+      const payload = mapEditFormToUpdatePayload(
+        { ...INITIAL, minimumHouseholdNetIncome: "abc" },
+        INITIAL,
+      );
+
+      expect(payload).not.toHaveProperty("minimumHouseholdNetIncome");
+    });
+
+    it("never clears the people count because the value was a decimal", () => {
+      const payload = mapEditFormToUpdatePayload(
+        { ...INITIAL, suitableForPeopleCount: 2.5 },
+        INITIAL,
+      );
+
+      expect(payload).not.toHaveProperty("suitableForPeopleCount");
+    });
+  });
 });

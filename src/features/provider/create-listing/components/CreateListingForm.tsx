@@ -74,8 +74,7 @@ function areDraftsEqual(left: ListingDraft, right: ListingDraft): boolean {
     left.minIncome === right.minIncome &&
     left.schufa === right.schufa &&
     left.income === right.income &&
-    left.adults === right.adults &&
-    left.kids === right.kids &&
+    left.peopleCount === right.peopleCount &&
     left.pets === right.pets &&
     left.smoking === right.smoking &&
     left.legalAccepted === right.legalAccepted
@@ -310,7 +309,11 @@ export function CreateListingForm() {
               setPhotos={handleSetPhotos}
               fieldErrors={fieldErrors}
             />
-            <AnforderungenSection draft={draft} setField={handleSetField} />
+            <AnforderungenSection
+              draft={draft}
+              setField={handleSetField}
+              fieldErrors={fieldErrors}
+            />
             <AbschlussSection
               draft={draft}
               setField={handleSetField}
