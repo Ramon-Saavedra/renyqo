@@ -19,6 +19,7 @@ import { ListingEditView } from "../edit/components/ListingEditView";
 import type { DetailAction, ListingDetail } from "../types";
 import { AddressCard } from "./AddressCard";
 import { DescriptionCard } from "./DescriptionCard";
+import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
 import { DetailErrorState } from "./DetailErrorState";
 import { DetailHead } from "./DetailHead";
 import { DetailLoadingSkeleton } from "./DetailLoadingSkeleton";
@@ -130,6 +131,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
     <>
       <AppTopbar logoHref="/provider/dashboard" className="mb-6">
         <ListingsTopbarActions />
+        <AccountMenu />
       </AppTopbar>
 
       <div className={BODY_CLASS}>
@@ -170,26 +172,20 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                 <Gallery
                   images={listing.images}
                   title={listing.title}
-                  className="order-1 lg:order-none"
+                  className="order-1 lg:order-0"
                 />
                 <DescriptionCard
                   description={listing.shortDescription}
-                  className="order-3 lg:order-none"
+                  className="order-3 lg:order-0"
                 />
                 <RequirementsCard
                   listing={listing}
-                  className="order-4 lg:order-none"
+                  className="order-4 lg:order-0"
                 />
               </div>
               <div className={RIGHT_COLUMN}>
-                <FactsCard
-                  listing={listing}
-                  className="order-2 lg:order-none"
-                />
-                <AddressCard
-                  listing={listing}
-                  className="order-5 lg:order-none"
-                />
+                <FactsCard listing={listing} className="order-2 lg:order-0" />
+                <AddressCard listing={listing} className="order-5 lg:order-0" />
               </div>
             </div>
           </>

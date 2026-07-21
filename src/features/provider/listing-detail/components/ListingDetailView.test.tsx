@@ -13,6 +13,22 @@ vi.mock("../api/provider-listing-detail", () => ({
   publishProviderListing: vi.fn(),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
+}));
+
+vi.mock("@/lib/api/auth", () => ({
+  getCurrentUser: vi.fn().mockResolvedValue({
+    id: "provider-1",
+    name: "Mara Lehmann",
+    email: "mara@example.com",
+    role: "provider",
+    providerType: "company",
+    companyName: "Lehmann Wohnen",
+  }),
+  logout: vi.fn(),
+}));
+
 const BASE: ListingDetail = {
   id: "listing-1",
   title: "Wohnung in Berlin",

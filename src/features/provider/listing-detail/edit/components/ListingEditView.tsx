@@ -94,20 +94,20 @@ export function ListingEditView({
           <Gallery
             images={listing.images}
             title={form.title || listing.title}
-            className="order-1 lg:order-none"
+            className="order-1 lg:order-0"
           />
           <DescriptionEditCard
             form={form}
             setField={setField}
             savedFields={savedFields}
-            className="order-3 lg:order-none"
+            className="order-3 lg:order-0"
           />
           <RequirementsEditCard
             form={form}
             setField={setField}
             errors={errors}
             savedFields={savedFields}
-            className="order-4 lg:order-none"
+            className="order-4 lg:order-0"
           />
         </div>
         <div className={RIGHT_COLUMN}>
@@ -116,13 +116,13 @@ export function ListingEditView({
             setField={setField}
             errors={errors}
             savedFields={savedFields}
-            className="order-2 lg:order-none"
+            className="order-2 lg:order-0"
           />
           <AddressEditCard
             form={form}
             setField={setField}
             savedFields={savedFields}
-            className="order-5 lg:order-none"
+            className="order-5 lg:order-0"
           />
         </div>
       </div>

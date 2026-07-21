@@ -9,6 +9,7 @@ import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { Candidate, DashboardObject } from "../types";
+import { AccentPicker } from "./AccentPicker";
 import { CandidatesSection } from "./CandidatesSection";
 import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
 import { DashboardSearch } from "./DashboardSearch";
@@ -174,7 +175,7 @@ export function DashboardView({
         )}
 
         <div className={MAIN_CLASS}>
-          <DashboardTopbar accent={accent} onAccentChange={setStoredAccent} />
+          <DashboardTopbar />
 
           <div className={CONTENT_CLASS}>
             <ObjectSelectorMobile
@@ -184,7 +185,11 @@ export function DashboardView({
               onSelect={setStoredSelectedObjectId}
             />
 
-            <div className="mt-6 mb-5">
+            <div className="mt-6 flex">
+              <AccentPicker value={accent} onChange={setStoredAccent} />
+            </div>
+
+            <div className="mt-3 mb-5">
               <DashboardSearch
                 value={search}
                 onChange={setSearch}
