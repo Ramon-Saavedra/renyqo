@@ -26,6 +26,7 @@ import type {
 import { ListingRow } from "./ListingRow";
 import { ListingsEmptyState } from "./ListingsEmptyState";
 import { ListingsLoadingSkeleton } from "./ListingsLoadingSkeleton";
+import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
 import { ListingsHero } from "./ListingsHero";
 import { ListingsToolbar } from "./ListingsToolbar";
 import { ListingsTopbarActions } from "./ListingsTopbarActions";
@@ -253,6 +254,7 @@ export function ListingsView({
     <>
       <AppTopbar logoHref="/provider/dashboard" className="mb-section">
         <ListingsTopbarActions />
+        <AccountMenu />
       </AppTopbar>
 
       <div className="px-gutter">

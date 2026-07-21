@@ -8,6 +8,7 @@ import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
+import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
 import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
 import { useActiveStepFromScroll } from "../hooks/useActiveStepFromScroll";
 import { useAutoTitle } from "../hooks/useAutoTitle";
@@ -281,6 +282,7 @@ export function CreateListingForm() {
             guardNavigation(event, createListingCopy.topbar.backHref)
           }
         />
+        <AccountMenu />
       </AppTopbar>
 
       <div className="px-gutter">

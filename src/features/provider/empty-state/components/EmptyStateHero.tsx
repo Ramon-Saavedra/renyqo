@@ -5,7 +5,7 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { InfoPill } from "@/components/ui/info-pill/InfoPill";
 
 interface EmptyStateHeroProps {
-  welcome: string;
+  welcome: React.ReactNode;
   title: string;
   lead: string;
   ctaLabel: string;

@@ -87,7 +87,7 @@ export const dashboardCopy = {
     },
   },
   accent: {
-    label: "Akzent",
+    label: "Dashboard-Akzent",
     ariaLabel: "Akzentfarbe wählen",
   },
   stats: {

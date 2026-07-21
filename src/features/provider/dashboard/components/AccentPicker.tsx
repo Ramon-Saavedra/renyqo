@@ -7,29 +7,22 @@ import { cn } from "@/lib/utils/cn";
 interface AccentPickerProps {
   value: AccentId;
   onChange: (accent: AccentId) => void;
-  variant?: "inline" | "panel";
 }
 
-const WRAP_INLINE_CLASS =
-  "inline-flex shrink-0 items-center gap-3 rounded-full border border-border bg-background px-3.5 py-2";
-const WRAP_PANEL_CLASS =
-  "flex flex-col gap-3 rounded-md border border-border bg-background-subtle p-3";
+const WRAP_CLASS =
+  "inline-flex shrink-0 items-center gap-2.5 rounded-full bg-background px-2.5 py-1.5";
 const LABEL_CLASS = "font-mono text-meta uppercase text-foreground-tertiary";
 const SWATCHES_CLASS = "flex flex-wrap items-center gap-1.5";
 const SWATCH_BASE =
   "h-3.5 w-3.5 cursor-pointer rounded-full bg-primary transition-transform hover:scale-115 focus-visible:outline-none focus-visible:shadow-focus";
 const SWATCH_ACTIVE =
-  "scale-110 ring-2 ring-foreground ring-offset-2 ring-offset-background";
+  "scale-110 ring-1 ring-foreground ring-offset-2 ring-offset-background";
 
-export function AccentPicker({
-  value,
-  onChange,
-  variant = "inline",
-}: AccentPickerProps) {
+export function AccentPicker({ value, onChange }: AccentPickerProps) {
   const { accent } = dashboardCopy;
 
   return (
-    <div className={variant === "panel" ? WRAP_PANEL_CLASS : WRAP_INLINE_CLASS}>
+    <div className={WRAP_CLASS}>
       <span className={LABEL_CLASS}>{accent.label}</span>
       <div
         role="radiogroup"
