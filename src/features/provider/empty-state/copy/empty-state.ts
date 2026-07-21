@@ -22,7 +22,12 @@ export const providerEmptyStateCopy = {
     help: "Hilfe",
   },
   hero: {
-    welcome: "Willkommen bei Renyqo, Sabine",
+    welcome: {
+      fallback: "Willkommen bei Renyqo.",
+      private: (firstName: string) => `Willkommen bei Renyqo, ${firstName}.`,
+      company: (firstName: string, companyName: string) =>
+        `Willkommen bei Renyqo, ${firstName} und das Team von ${companyName}.`,
+    },
     title: "Weniger sortieren. Klarer vermieten.",
     lead: "Lege dein Mietobjekt einmal sauber an und definiere direkt, welche Anforderungen wirklich wichtig sind. So erhältst du später weniger unpassende Anfragen und mehr Bewerbungen, die fachlich und finanziell zu deiner Immobilie passen.",
     cta: {

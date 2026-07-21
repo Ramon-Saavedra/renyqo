@@ -1,13 +1,14 @@
 import { HelpCircle } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
-import { Avatar } from "@/components/ui/avatar/Avatar";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { BenefitsSection } from "@/features/provider/empty-state/components/BenefitsSection";
 import { EmptyStateHero } from "@/features/provider/empty-state/components/EmptyStateHero";
 import { FlowStepsCard } from "@/features/provider/empty-state/components/FlowStepsCard";
+import { WelcomeGreeting } from "@/features/provider/empty-state/components/WelcomeGreeting";
 import { providerEmptyStateCopy } from "@/features/provider/empty-state/copy/empty-state";
+import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
 
 export default function ProviderGetStartedPage() {
   const copy = providerEmptyStateCopy;
@@ -19,13 +20,13 @@ export default function ProviderGetStartedPage() {
           <AppIcon icon={HelpCircle} size={14} strokeWidth={1.6} decorative />
           {copy.topbar.help}
         </button>
-        <Avatar initials="?" label="Benutzer" />
+        <AccountMenu />
       </AppTopbar>
 
       <div className="px-gutter">
         <section className="mb-section grid grid-cols-1 items-center gap-20 lg:grid-cols-2">
           <EmptyStateHero
-            welcome={copy.hero.welcome}
+            welcome={<WelcomeGreeting />}
             title={copy.hero.title}
             lead={copy.hero.lead}
             ctaLabel={copy.hero.cta.label}
