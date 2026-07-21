@@ -20,6 +20,23 @@ function neighborhoodFrom(address: string): string {
   return "";
 }
 
+function roomsLabel(rooms: RoomOption): string {
+  return rooms.replace(".", ",");
+}
+
+function buildAutoTitle(
+  objectType: ObjectType,
+  typeLabel: string,
+  rooms: RoomOption,
+): string {
+  // A single room is one unit: the room count adds nothing and would read
+  // as "2-Zimmer-Zimmer".
+  if (objectType === "zimmer" || !rooms) return typeLabel;
+  // "6+" cannot carry the compound hyphenation.
+  if (rooms.endsWith("+")) return `${typeLabel} mit ${rooms} Zimmern`;
+  return `${roomsLabel(rooms)}-Zimmer-${typeLabel}`;
+}
+
 interface UseAutoTitleArgs {
   readonly objectType: ObjectType;
   readonly rooms: RoomOption;
@@ -40,10 +57,10 @@ export function useAutoTitle({
   const typeLabel = OBJECT_TYPE_LABELS[objectType];
 
   const autoTitle = useMemo(() => {
-    const r = rooms ? `${rooms}-Zimmer-` : "";
+    const base = buildAutoTitle(objectType, typeLabel, rooms);
     const where = city ? ` in ${city}` : "";
-    return `${r}${typeLabel}${where}`.trim().replace(/^[- ]+/, "");
-  }, [rooms, typeLabel, city]);
+    return `${base}${where}`.trim();
+  }, [objectType, rooms, typeLabel, city]);
 
   const isAutoPlaceholder = !autoTitle || autoTitle.trim() === typeLabel;
 

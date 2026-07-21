@@ -219,21 +219,28 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("PLZ");
     });
 
-    it("includes sec-02 when adults is 1 or more", () => {
-      const draft = { ...INITIAL_DRAFT, adults: 1 };
+    it("includes sec-02 when the people count is configured", () => {
+      const draft = { ...INITIAL_DRAFT, peopleCount: 1 };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.completedSteps).toContain("sec-02");
     });
 
-    it("does not include sec-02 when adults is 0", () => {
-      const draft = { ...INITIAL_DRAFT, adults: 0 };
+    it("includes sec-02 when only the minimum income is configured", () => {
+      const draft = { ...INITIAL_DRAFT, minIncome: "2500" };
       const { result } = renderHook(() => useListingValidation(draft));
 
-      expect(result.current.completedSteps).not.toContain("sec-02");
+      expect(result.current.completedSteps).toContain("sec-02");
     });
 
-    it("does not include sec-02 when adults is null", () => {
+    it("includes sec-02 when only a policy differs from the default", () => {
+      const draft = { ...INITIAL_DRAFT, pets: "erlaubt" as const };
+      const { result } = renderHook(() => useListingValidation(draft));
+
+      expect(result.current.completedSteps).toContain("sec-02");
+    });
+
+    it("does not include sec-02 when no criterion is configured", () => {
       const { result } = renderHook(() => useListingValidation(INITIAL_DRAFT));
 
       expect(result.current.completedSteps).not.toContain("sec-02");

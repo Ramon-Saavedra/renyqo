@@ -15,6 +15,8 @@ export function mapZodErrors(flat: ZodFlatErrors): ListingDraftErrors {
     "additionalCosts",
     "depositMonths",
     "availableFrom",
+    "minIncome",
+    "peopleCount",
     "legalAccepted",
   ] as const;
   for (const key of keys) {

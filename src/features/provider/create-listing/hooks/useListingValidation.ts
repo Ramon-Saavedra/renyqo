@@ -5,6 +5,7 @@ import {
   isValidListingDate,
 } from "../utils/listing-validation";
 import type { ListingDraft } from "./useListingDraft";
+import { INITIAL_DRAFT } from "./useListingDraft";
 
 export interface ListingValidationResult {
   readonly missing: ReadonlyArray<string>;
@@ -49,7 +50,14 @@ export function useListingValidation(
     ) {
       completedSteps.push("sec-01");
     }
-    if (draft.adults !== null && draft.adults >= 1) {
+    if (
+      draft.minIncome.trim().length > 0 ||
+      draft.peopleCount !== null ||
+      draft.schufa !== INITIAL_DRAFT.schufa ||
+      draft.income !== INITIAL_DRAFT.income ||
+      draft.pets !== INITIAL_DRAFT.pets ||
+      draft.smoking !== INITIAL_DRAFT.smoking
+    ) {
       completedSteps.push("sec-02");
     }
     if (draft.legalAccepted) {

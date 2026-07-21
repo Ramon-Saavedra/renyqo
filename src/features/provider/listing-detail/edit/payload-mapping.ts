@@ -1,4 +1,8 @@
 import type { UpdateListingPayload } from "@/lib/api/listings";
+import {
+  parseMinimumHouseholdNetIncome,
+  parseSuitableForPeopleCount,
+} from "@/lib/validators/eligibility-criteria";
 import type { ListingEditForm } from "./types";
 
 type MutablePayload = {
@@ -88,13 +92,22 @@ export function mapEditFormToUpdatePayload(
     payload.shortDescription = form.shortDescription.trim();
   }
 
+  // `undefined` means the provider deliberately cleared the criterion, which
+  // the API clears with an explicit `null`. `null` means invalid input and is
+  // blocked by validation before a payload is ever built.
   if (form.minimumHouseholdNetIncome !== initial.minimumHouseholdNetIncome) {
-    payload.minimumHouseholdNetIncome = toNumber(
+    const income = parseMinimumHouseholdNetIncome(
       form.minimumHouseholdNetIncome,
     );
+    if (income === undefined) payload.minimumHouseholdNetIncome = null;
+    else if (income !== null) payload.minimumHouseholdNetIncome = income;
   }
   if (form.suitableForPeopleCount !== initial.suitableForPeopleCount) {
-    payload.suitableForPeopleCount = form.suitableForPeopleCount;
+    const peopleCount = parseSuitableForPeopleCount(
+      form.suitableForPeopleCount,
+    );
+    if (peopleCount === undefined) payload.suitableForPeopleCount = null;
+    else if (peopleCount !== null) payload.suitableForPeopleCount = peopleCount;
   }
   if (form.schufaRequired !== initial.schufaRequired) {
     payload.schufaRequired = form.schufaRequired;

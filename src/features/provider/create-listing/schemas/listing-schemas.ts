@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  parseMinimumHouseholdNetIncome,
+  parseSuitableForPeopleCount,
+} from "@/lib/validators/eligibility-criteria";
 import { createListingCopy } from "../copy/create-listing";
 import {
   isNonNegativeListingNumber,
@@ -38,6 +42,17 @@ export const publishSchema = z.object({
     message: v.depositMonths,
   }),
   availableFrom: z.string().refine(isValidListingDate, v.availableFrom),
+  minIncome: z
+    .string()
+    .refine((value) => parseMinimumHouseholdNetIncome(value) !== null, {
+      message: v.minIncome,
+    }),
+  peopleCount: z
+    .number()
+    .nullable()
+    .refine((value) => parseSuitableForPeopleCount(value) !== null, {
+      message: v.peopleCount,
+    }),
   legalAccepted: z.literal(true, v.legalAccepted),
 });
 

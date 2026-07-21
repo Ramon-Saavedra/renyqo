@@ -49,6 +49,7 @@ export type ListingEditErrorKey =
   | "deposit"
   | "livingArea"
   | "rooms"
-  | "minimumHouseholdNetIncome";
+  | "minimumHouseholdNetIncome"
+  | "suitableForPeopleCount";
 
 export type ListingEditErrors = Partial<Record<ListingEditErrorKey, string>>;

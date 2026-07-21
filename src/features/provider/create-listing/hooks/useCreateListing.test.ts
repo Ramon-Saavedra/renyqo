@@ -844,19 +844,51 @@ describe("useCreateListing", () => {
       expect(payload?.smokingPolicy).toBeUndefined();
     });
 
-    it("computes suitableForPeopleCount from adults and kids", async () => {
+    it("sends suitableForPeopleCount from its own field", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
       const { result } = renderHook(() => useCreateListing());
 
       await act(async () => {
         await result.current.saveDraft(
-          { ...DRAFT_SAVE_VALID, adults: 2, kids: 1 },
+          { ...DRAFT_SAVE_VALID, peopleCount: 3 },
           "Titel",
         );
       });
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ suitableForPeopleCount: 3 }),
+      );
+    });
+
+    it("preserves a suitableForPeopleCount of 1", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, peopleCount: 1 },
+          "Titel",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.objectContaining({ suitableForPeopleCount: 1 }),
+      );
+    });
+
+    it("preserves a minimumHouseholdNetIncome of 0", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          { ...DRAFT_SAVE_VALID, minIncome: "0" },
+          "Titel",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalledWith(
+        expect.objectContaining({ minimumHouseholdNetIncome: 0 }),
       );
     });
 
@@ -880,19 +912,20 @@ describe("useCreateListing", () => {
       );
     });
 
-    it("omits suitableForPeopleCount when adults and kids are both null", async () => {
+    it("omits both eligibility criteria when they are not configured", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
       const { result } = renderHook(() => useCreateListing());
 
       await act(async () => {
         await result.current.saveDraft(
-          { ...DRAFT_SAVE_VALID, adults: null, kids: null },
+          { ...DRAFT_SAVE_VALID, peopleCount: null, minIncome: "" },
           "Titel",
         );
       });
 
       const payload = vi.mocked(createListingDraft).mock.calls[0]?.[0];
-      expect(payload?.suitableForPeopleCount).toBeUndefined();
+      expect(payload).not.toHaveProperty("suitableForPeopleCount");
+      expect(payload).not.toHaveProperty("minimumHouseholdNetIncome");
     });
   });
 });
