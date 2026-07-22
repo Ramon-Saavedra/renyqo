@@ -56,14 +56,14 @@ describe("useListingDraft", () => {
       expect(result.current.draft.hideAddress).toBe(false);
     });
 
-    it("updates a nullable number field", () => {
+    it("updates a select string field", () => {
       const { result } = renderHook(() => useListingDraft());
 
       act(() => {
-        result.current.setField("bedrooms", 2);
+        result.current.setField("bedrooms", "2");
       });
 
-      expect(result.current.draft.bedrooms).toBe(2);
+      expect(result.current.draft.bedrooms).toBe("2");
     });
 
     it("updates legalAccepted independently", () => {

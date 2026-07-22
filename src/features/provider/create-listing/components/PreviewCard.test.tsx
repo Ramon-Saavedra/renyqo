@@ -12,7 +12,7 @@ const POPULATED_DRAFT: ListingDraft = {
   hideAddress: false,
   area: "68",
   rooms: "2.5",
-  bedrooms: 1,
+  bedrooms: "1",
   price: "1250",
   availableFrom: "2026-06-15",
   photos: [

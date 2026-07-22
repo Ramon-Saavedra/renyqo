@@ -18,18 +18,18 @@ export const SMOKING_OPTIONS = [
 ] as const;
 export type SmokingOption = (typeof SMOKING_OPTIONS)[number] | "";
 
-export const ROOM_OPTIONS = [
-  "1",
-  "1.5",
-  "2",
-  "2.5",
-  "3",
-  "3.5",
-  "4",
-  "5",
-  "6+",
-] as const;
-export type RoomOption = (typeof ROOM_OPTIONS)[number] | "";
+function rangeStep(min: number, max: number, step: number): readonly string[] {
+  const out: string[] = [];
+  const count = Math.round((max - min) / step);
+  for (let i = 0; i <= count; i++) {
+    out.push(String(min + i * step));
+  }
+  return out;
+}
+
+export const ROOM_OPTIONS: readonly string[] = rangeStep(1, 50, 0.5);
+export const BEDROOM_OPTIONS: readonly string[] = rangeStep(0, 50, 1);
+export type RoomOption = string;
 
 export const SECTION_IDS = ["sec-01", "sec-02", "sec-03"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
@@ -115,7 +115,7 @@ export const createListingCopy = {
       },
       area: { label: "Wohnfläche", placeholder: "z. B. 68", suffix: "m²" },
       rooms: { label: "Zimmer", placeholder: "Bitte wählen" },
-      bedrooms: { label: "Schlafzimmer" },
+      bedrooms: { label: "Schlafzimmer", placeholder: "Bitte wählen" },
       price: {
         label: "Kaltmiete",
         placeholder: "z. B. 980",
@@ -133,10 +133,6 @@ export const createListingCopy = {
       availableFrom: { label: "Frei ab" },
       title: {
         label: "Objekttitel",
-        autoKickerActive: "Vorschlag · automatisch generiert",
-        autoKickerOverridden: "Vorschlag · wird ersetzt",
-        autoPlaceholder:
-          "Ergänze Adresse und Zimmer, um einen Titelvorschlag zu sehen",
         overrideLabelActive: "Eigener Titel · aktiv",
         overrideLabelIdle: "Eigener Titel · optional",
         overridePlaceholder: "z. B. Helle Altbauwohnung mit Balkon",

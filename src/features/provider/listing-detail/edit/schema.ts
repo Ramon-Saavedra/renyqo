@@ -3,6 +3,7 @@ import {
   parseMinimumHouseholdNetIncome,
   parseSuitableForPeopleCount,
 } from "@/lib/validators/eligibility-criteria";
+import { toNonNegativeInteger } from "@/features/provider/create-listing/utils/listing-validation";
 import { listingEditCopy } from "./copy";
 import type { ListingEditErrors, ListingEditForm } from "./types";
 
@@ -20,6 +21,11 @@ function isPositiveAmount(value: string): boolean {
   return Number.isFinite(parsed) && parsed > 0;
 }
 
+function isValidBedrooms(value: string): boolean {
+  if (value.trim().length === 0) return true;
+  return toNonNegativeInteger(value) !== null;
+}
+
 export const editListingSchema = z.object({
   title: z.string().trim().min(1, v.title),
   coldRent: z.string().refine(isNonNegativeAmount, { message: v.amount }),
@@ -29,6 +35,7 @@ export const editListingSchema = z.object({
   deposit: z.string().refine(isNonNegativeAmount, { message: v.amount }),
   livingArea: z.string().refine(isPositiveAmount, { message: v.area }),
   rooms: z.string().refine(isPositiveAmount, { message: v.rooms }),
+  bedrooms: z.string().refine(isValidBedrooms, { message: v.rooms }),
   minimumHouseholdNetIncome: z
     .string()
     .refine((value) => parseMinimumHouseholdNetIncome(value) !== null, {

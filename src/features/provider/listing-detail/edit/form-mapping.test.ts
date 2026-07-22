@@ -53,7 +53,7 @@ describe("mapListingToEditForm", () => {
       depositMonths: 2,
       livingArea: "70",
       rooms: "2.5",
-      bedrooms: 1,
+      bedrooms: "1",
       availableFrom: "2026-08-01",
       shortDescription: "Ruhige Lage",
       minimumHouseholdNetIncome: "3000",
@@ -86,7 +86,7 @@ describe("mapListingToEditForm", () => {
     expect(form.street).toBe("");
     expect(form.coldRent).toBe("");
     expect(form.depositMonths).toBeNull();
-    expect(form.bedrooms).toBeNull();
+    expect(form.bedrooms).toBe("");
     expect(form.availableFrom).toBe("");
     expect(form.shortDescription).toBe("");
     expect(form.schufaRequired).toBe(false);
@@ -108,7 +108,7 @@ describe("isEditFormEqual", () => {
     const base = mapListingToEditForm(LISTING);
     expect(isEditFormEqual(base, { ...base })).toBe(true);
     expect(isEditFormEqual(base, { ...base, title: "Neu" })).toBe(false);
-    expect(isEditFormEqual(base, { ...base, bedrooms: 2 })).toBe(false);
+    expect(isEditFormEqual(base, { ...base, bedrooms: "2" })).toBe(false);
     expect(isEditFormEqual(base, { ...base, showExactAddress: true })).toBe(
       false,
     );

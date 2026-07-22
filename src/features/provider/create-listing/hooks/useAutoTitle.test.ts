@@ -149,16 +149,16 @@ describe("useAutoTitle", () => {
       expect(result.current.autoTitle).toBe("1,5-Zimmer-Wohnung in Berlin");
     });
 
-    it("uses the mit-form for the open-ended 6+ option", () => {
+    it("generates title for a high room count", () => {
       const { result } = renderHook(() =>
         useAutoTitle({
           objectType: "haus",
-          rooms: "6+",
+          rooms: "25",
           city: "Hamburg",
         }),
       );
 
-      expect(result.current.autoTitle).toBe("Haus mit 6+ Zimmern in Hamburg");
+      expect(result.current.autoTitle).toBe("25-Zimmer-Haus in Hamburg");
     });
 
     it("returns only typeLabel when city is empty", () => {

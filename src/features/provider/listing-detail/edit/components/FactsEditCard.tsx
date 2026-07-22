@@ -2,6 +2,7 @@ import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
 import { InputAffix } from "@/components/ui/form/InputAffix";
 import { NumberStepper } from "@/components/ui/form/NumberStepper";
+import { Select } from "@/components/ui/form/Select";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { DetailCard } from "../../components/DetailCard";
 import type { ChangedFields } from "../changed-fields";
@@ -11,6 +12,7 @@ import type {
   ListingEditErrors,
   ListingEditForm,
 } from "../types";
+import { BEDROOM_OPTIONS } from "@/features/provider/create-listing/copy/create-listing";
 
 interface FactsEditCardProps {
   form: ListingEditForm;
@@ -132,16 +134,19 @@ export function FactsEditCard({
             onChange={(e) => setField("rooms", decimalOnly(e.target.value))}
           />
         </FormField>
-        <FormField label={fields.bedrooms}>
-          <NumberStepper
+        <FormField label={fields.bedrooms} htmlFor="edit-bedrooms">
+          <Select
+            id="edit-bedrooms"
             value={form.bedrooms}
-            onChange={(value) => setField("bedrooms", value)}
-            min={0}
-            max={10}
-            allowNull
-            ariaLabel={fields.bedrooms}
-            saved={savedFields.has("bedrooms")}
-          />
+            onChange={(e) => setField("bedrooms", e.target.value)}
+          >
+            <option value="">{listingEditCopy.emptyOption}</option>
+            {BEDROOM_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option.replace(".", ",")}
+              </option>
+            ))}
+          </Select>
         </FormField>
         <FormField label={fields.availableFrom} htmlFor="edit-available-from">
           <Input

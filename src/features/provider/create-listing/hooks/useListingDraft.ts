@@ -42,13 +42,13 @@ export interface ListingDraft {
   objectType: ObjectType;
   area: string;
   rooms: RoomOption;
-  bedrooms: number | null;
+  bedrooms: string;
+  titleOverride: string;
   price: string;
   additionalCosts: string;
   depositMonths: DepositMonths;
   deposit: string;
   availableFrom: string;
-  titleOverride: string;
   description: string;
   photos: ReadonlyArray<ListingPhoto>;
   minIncome: string;
@@ -69,7 +69,7 @@ export const INITIAL_DRAFT: ListingDraft = {
   objectType: "wohnung",
   area: "",
   rooms: "",
-  bedrooms: null,
+  bedrooms: "",
   price: "",
   additionalCosts: "",
   depositMonths: 2,

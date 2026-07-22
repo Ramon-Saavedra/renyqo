@@ -16,6 +16,13 @@ export function isNonNegativeListingNumber(value: string): boolean {
   return parsed !== undefined && parsed >= 0;
 }
 
+export function toNonNegativeInteger(value: string): number | null {
+  const parsed = parseListingNumber(value);
+  if (parsed === undefined || !Number.isInteger(parsed) || parsed < 0)
+    return null;
+  return parsed;
+}
+
 export function normalizeListingDate(value: string): string | undefined {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
   if (!match) return undefined;

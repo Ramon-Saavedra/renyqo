@@ -6,7 +6,6 @@ import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
 import { InputAffix } from "@/components/ui/form/InputAffix";
-import { NumberStepper } from "@/components/ui/form/NumberStepper";
 import { Segmented } from "@/components/ui/form/Segmented";
 import { Select } from "@/components/ui/form/Select";
 import { Textarea } from "@/components/ui/form/Textarea";
@@ -15,6 +14,7 @@ import {
   type ObjectType,
   type RoomOption,
   ROOM_OPTIONS,
+  BEDROOM_OPTIONS,
 } from "../copy/create-listing";
 import type {
   DepositMonths,
@@ -23,7 +23,6 @@ import type {
   ListingPhoto,
 } from "../hooks/useListingDraft";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { useAutoTitle } from "../hooks/useAutoTitle";
 import { AutoTitleField } from "./AutoTitleField";
 import { PhotoGrid } from "./PhotoGrid";
 import { SectionCard } from "./SectionCard";
@@ -70,11 +69,6 @@ export function ObjektdatenSection({
 }: ObjektdatenSectionProps) {
   const copy = createListingCopy.objektdaten;
   const fields = copy.fields;
-  const { autoTitle, isAutoPlaceholder } = useAutoTitle({
-    objectType: draft.objectType,
-    rooms: draft.rooms,
-    city: draft.city,
-  });
 
   const charCount = draft.description.length;
   const calculatedDeposit = calculateDeposit(draft.price, draft.depositMonths);
@@ -93,6 +87,7 @@ export function ObjektdatenSection({
       num={copy.num}
       title={copy.title}
       description={copy.description}
+      className="bg-background"
     >
       <FormField
         label={fields.street.label}
@@ -199,19 +194,22 @@ export function ObjektdatenSection({
 
         <FormField
           label={fields.bedrooms.label}
+          htmlFor="bedrooms"
           required
           error={fieldErrors?.bedrooms}
         >
-          <div id="bedrooms">
-            <NumberStepper
-              value={draft.bedrooms}
-              onChange={(value) => setField("bedrooms", value)}
-              min={0}
-              max={10}
-              allowNull
-              ariaLabel={fields.bedrooms.label}
-            />
-          </div>
+          <Select
+            id="bedrooms"
+            value={draft.bedrooms}
+            onChange={(e) => setField("bedrooms", e.target.value)}
+          >
+            <option value="">{fields.bedrooms.placeholder}</option>
+            {BEDROOM_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option.replace(".", ",")}
+              </option>
+            ))}
+          </Select>
         </FormField>
       </div>
 
@@ -314,8 +312,6 @@ export function ObjektdatenSection({
 
       <FormField label={fields.title.label}>
         <AutoTitleField
-          autoTitle={autoTitle}
-          isAutoPlaceholder={isAutoPlaceholder}
           override={draft.titleOverride}
           onOverrideChange={(value) => setField("titleOverride", value)}
         />

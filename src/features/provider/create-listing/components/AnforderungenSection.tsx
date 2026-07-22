@@ -47,6 +47,7 @@ export function AnforderungenSection({
       num={copy.num}
       title={copy.title}
       description={copy.description}
+      className="bg-anforderung-bg"
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField

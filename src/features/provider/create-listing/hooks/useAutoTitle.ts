@@ -32,7 +32,6 @@ function buildAutoTitle(
   // A single room is one unit: the room count adds nothing and would read
   // as "2-Zimmer-Zimmer".
   if (objectType === "zimmer" || !rooms) return typeLabel;
-  // "6+" cannot carry the compound hyphenation.
   if (rooms.endsWith("+")) return `${typeLabel} mit ${rooms} Zimmern`;
   return `${roomsLabel(rooms)}-Zimmer-${typeLabel}`;
 }

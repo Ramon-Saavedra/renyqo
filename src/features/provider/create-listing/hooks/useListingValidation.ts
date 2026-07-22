@@ -23,10 +23,10 @@ export function useListingValidation(
     if (!draft.zip.trim()) missing.push(labels.zip);
     if (!draft.street.trim()) missing.push(labels.street);
     if (!isPositiveListingNumber(draft.area)) missing.push(labels.area);
-    if (draft.rooms !== "6+" && !isPositiveListingNumber(draft.rooms)) {
+    if (!isPositiveListingNumber(draft.rooms)) {
       missing.push(labels.rooms);
     }
-    if (draft.bedrooms === null || draft.bedrooms < 0) {
+    if (!draft.bedrooms) {
       missing.push(labels.bedrooms);
     }
     if (!isPositiveListingNumber(draft.price)) missing.push(labels.price);
@@ -42,9 +42,8 @@ export function useListingValidation(
       draft.zip &&
       draft.street &&
       isPositiveListingNumber(draft.area) &&
-      (draft.rooms === "6+" || isPositiveListingNumber(draft.rooms)) &&
-      draft.bedrooms !== null &&
-      draft.bedrooms >= 0 &&
+      isPositiveListingNumber(draft.rooms) &&
+      draft.bedrooms !== "" &&
       isPositiveListingNumber(draft.price) &&
       isValidListingDate(draft.availableFrom)
     ) {

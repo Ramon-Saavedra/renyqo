@@ -46,7 +46,7 @@ const VALID_DRAFT: ListingDraft = {
   street: "Musterstraße 1",
   area: "65",
   rooms: "3",
-  bedrooms: 1,
+  bedrooms: "1",
   price: "1100",
   availableFrom: "2026-07-01",
   photos: [PHOTO],
@@ -422,14 +422,11 @@ describe("useCreateListing", () => {
       expect(createListingDraft).not.toHaveBeenCalled();
     });
 
-    it("sets fieldErrors.bedrooms when bedrooms is null on publish", async () => {
+    it("sets fieldErrors.bedrooms when bedrooms is empty on publish", async () => {
       const { result } = renderHook(() => useCreateListing());
 
       await act(async () => {
-        await result.current.publish(
-          { ...VALID_DRAFT, bedrooms: null },
-          "Titel",
-        );
+        await result.current.publish({ ...VALID_DRAFT, bedrooms: "" }, "Titel");
       });
 
       expect(result.current.fieldErrors.bedrooms).toBeTruthy();
@@ -736,19 +733,19 @@ describe("useCreateListing", () => {
       );
     });
 
-    it("maps rooms '6+' to 6", async () => {
+    it("maps rooms '25' to 25", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "d1" });
       const { result } = renderHook(() => useCreateListing());
 
       await act(async () => {
         await result.current.saveDraft(
-          { ...DRAFT_SAVE_VALID, rooms: "6+" },
+          { ...DRAFT_SAVE_VALID, rooms: "25" },
           "Titel",
         );
       });
 
       expect(createListingDraft).toHaveBeenCalledWith(
-        expect.objectContaining({ rooms: 6 }),
+        expect.objectContaining({ rooms: 25 }),
       );
     });
 

@@ -27,6 +27,7 @@ html {
   --color-primary-soft: var(--primary-soft);
   --color-primary-tint: var(--primary-tint);
   --color-primary-foreground: var(--primary-foreground);
+  --color-anforderung-bg: var(--anforderung-bg);
 
   --color-success: var(--success);
   --color-success-vivid: var(--success-vivid);
@@ -146,6 +147,8 @@ html {
   --card-shadow:
     0 1px 2px rgb(14 14 14 / 0.04), 0 4px 12px rgb(14 14 14 / 0.05);
 
+  --anforderung-bg: rgb(79 122 86 / 0.22);
+
   --typeface-display:
     var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
   --typeface-sans:
@@ -180,6 +183,8 @@ html {
   --warning: #d2a36a;
   --warning-vivid: #f59527;
   --danger: #f87171;
+
+  --anforderung-bg: rgb(143 181 154 / 0.22);
 
   --watermark-opacity-peak: 0.5;
 

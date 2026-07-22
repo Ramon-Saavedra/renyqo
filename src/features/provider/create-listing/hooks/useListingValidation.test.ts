@@ -20,7 +20,7 @@ const VALID_DRAFT: ListingDraft = {
   street: "Musterstraße 1",
   area: "65",
   rooms: "3",
-  bedrooms: 1,
+  bedrooms: "1",
   price: "1100",
   availableFrom: "2026-07-01",
   photos: [PHOTO],
@@ -85,8 +85,8 @@ describe("useListingValidation", () => {
       expect(result.current.missing).toContain("Straße");
     });
 
-    it("includes Schlafzimmer when bedrooms is null", () => {
-      const draft = { ...VALID_DRAFT, bedrooms: null };
+    it("includes Schlafzimmer when bedrooms is empty", () => {
+      const draft = { ...VALID_DRAFT, bedrooms: "" };
       const { result } = renderHook(() => useListingValidation(draft));
 
       expect(result.current.missing).toContain("Schlafzimmer");
@@ -178,7 +178,7 @@ describe("useListingValidation", () => {
         street: "Musterstraße 1",
         area: "60",
         rooms: "2" as const,
-        bedrooms: 1,
+        bedrooms: "1",
         price: "900",
         availableFrom: "2026-08-01",
       };
@@ -208,7 +208,7 @@ describe("useListingValidation", () => {
         street: "Musterstraße 1",
         area: "60",
         rooms: "2" as const,
-        bedrooms: 1,
+        bedrooms: "1",
         price: "900",
         availableFrom: "2026-08-01",
       };

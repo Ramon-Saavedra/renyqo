@@ -15,6 +15,7 @@ import { INITIAL_DRAFT } from "./useListingDraft";
 import {
   normalizeListingDate,
   parseListingNumber,
+  toNonNegativeInteger,
 } from "../utils/listing-validation";
 
 function toPositiveNumber(value: string): number {
@@ -66,12 +67,10 @@ function toRequirement(value: string): boolean {
 }
 
 function toRooms(value: string): number {
-  if (value === "6+") return 6;
   return toPositiveNumber(value);
 }
 
 function toOptionalRooms(value: string): number | undefined {
-  if (value === "6+") return 6;
   return toOptionalPositiveNumber(value);
 }
 
@@ -87,7 +86,7 @@ export function hasMeaningfulDraftContent(draft: ListingDraft): boolean {
     draft.objectType !== INITIAL_DRAFT.objectType ||
     toOptionalPositiveNumber(draft.area) !== undefined ||
     toOptionalRooms(draft.rooms) !== undefined ||
-    draft.bedrooms !== null ||
+    draft.bedrooms !== "" ||
     toOptionalPositiveNumber(draft.price) !== undefined ||
     toOptionalNonNegativeNumber(draft.additionalCosts) !== undefined ||
     normalizeListingDate(draft.availableFrom) !== undefined ||
@@ -122,7 +121,7 @@ export function mapDraftToCreateListingDto(
     objectType: toObjectType(draft.objectType),
     livingArea: toPositiveNumber(draft.area),
     rooms: toRooms(draft.rooms),
-    bedrooms: draft.bedrooms,
+    bedrooms: toNonNegativeInteger(draft.bedrooms),
     coldRent,
     additionalCosts:
       draft.additionalCosts.length > 0
@@ -235,7 +234,10 @@ export function mapDraftToPartialCreateListingDto(
   }
   if (livingArea !== undefined) payload.livingArea = livingArea;
   if (rooms !== undefined) payload.rooms = rooms;
-  if (draft.bedrooms !== null) payload.bedrooms = draft.bedrooms;
+  if (draft.bedrooms !== "") {
+    const bedrooms = toNonNegativeInteger(draft.bedrooms);
+    if (bedrooms !== null) payload.bedrooms = bedrooms;
+  }
   if (coldRent !== undefined) payload.coldRent = coldRent;
   if (additionalCosts !== undefined) payload.additionalCosts = additionalCosts;
   if (deposit !== undefined) {
