@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import type { ListingDetail } from "../../types";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
@@ -19,6 +19,7 @@ interface ListingEditViewProps {
   listing: ListingDetail;
   onCancel: () => void;
   onSaved: (updated: ListingDetail) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const COLUMN_CONTAINER = "flex flex-col gap-5 lg:flex-row lg:items-start";
@@ -34,26 +35,63 @@ export function ListingEditView({
   listing,
   onCancel,
   onSaved,
+  onDirtyChange,
 }: ListingEditViewProps) {
+  const [currentImages, setCurrentImages] = useState<readonly string[]>(
+    () => listing.images,
+  );
+  const [photosModified, setPhotosModified] = useState(false);
+
+  const handleSavedWithImages = useCallback(
+    (updated: ListingDetail) => {
+      setPhotosModified(false);
+      const merged = { ...updated, images: [...currentImages] };
+      if (photosModified) {
+        setPhotoSaved(true);
+        setTimeout(() => onSaved(merged), 800);
+      } else {
+        onSaved(merged);
+      }
+    },
+    [onSaved, currentImages, photosModified],
+  );
+
   const { form, errors, status, error, isDirty, savedFields, setField, save } =
-    useListingEdit(listing, { onSaved });
+    useListingEdit(listing, { onSaved: handleSavedWithImages });
   const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [photoSaved, setPhotoSaved] = useState(false);
   const saving = status === "saving";
-  const saved = status === "saved";
+  const saved = status === "saved" || photoSaved;
+  const totalDirty = isDirty || photosModified;
+
+  useLayoutEffect(() => {
+    onDirtyChange?.(totalDirty);
+    return () => onDirtyChange?.(false);
+  }, [totalDirty, onDirtyChange]);
 
   const handleCancel = useCallback(() => {
-    if (isDirty) {
+    if (totalDirty) {
       setShowDiscardModal(true);
       return;
     }
     onCancel();
-  }, [isDirty, onCancel]);
+  }, [totalDirty, onCancel]);
 
   const keepEditing = useCallback(() => setShowDiscardModal(false), []);
   const confirmDiscard = useCallback(() => {
     setShowDiscardModal(false);
     onCancel();
   }, [onCancel]);
+
+  const handleImagesChange = useCallback((urls: readonly string[]) => {
+    setCurrentImages(urls);
+    setPhotosModified(true);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (status !== "idle") return;
+    await save();
+  }, [status, save]);
 
   return (
     <>
@@ -66,7 +104,7 @@ export function ListingEditView({
           saving={saving}
           saved={saved}
           savedFields={savedFields}
-          onSave={save}
+          onSave={handleSave}
           onCancel={handleCancel}
         />
 
@@ -94,6 +132,7 @@ export function ListingEditView({
           <EditableGallery
             listingId={listing.id}
             images={listing.images}
+            onImagesChange={handleImagesChange}
             className="order-1 lg:order-0"
           />
           <DescriptionEditCard

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils/cn";
 import { FormField } from "@/components/ui/form/FormField";
 import { Textarea } from "@/components/ui/form/Textarea";
 import { listingDetailCopy } from "../../copy/listing-detail";
@@ -24,7 +25,7 @@ export function DescriptionEditCard({
   return (
     <DetailCard
       title={listingDetailCopy.description.title}
-      className={className}
+      className={cn("bg-background-subtle", className)}
     >
       <FormField
         label={listingEditCopy.fields.description}

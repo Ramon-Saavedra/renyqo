@@ -1,4 +1,5 @@
 import { listingDetailCopy } from "../copy/listing-detail";
+import { cn } from "@/lib/utils/cn";
 import type { ListingDetail } from "../types";
 import {
   formatArea,
@@ -71,7 +72,10 @@ export function FactsCard({ listing, className }: FactsCardProps) {
   if (facts.length === 0) return null;
 
   return (
-    <DetailCard title={listingDetailCopy.facts.title} className={className}>
+    <DetailCard
+      title={listingDetailCopy.facts.title}
+      className={cn("bg-background-subtle", className)}
+    >
       <dl className={GRID_CLASS}>
         {facts.map((fact) => (
           <div key={fact.label}>

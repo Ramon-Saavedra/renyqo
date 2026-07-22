@@ -1,4 +1,5 @@
 import { Minus, Plus } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
 import { InputAffix } from "@/components/ui/form/InputAffix";
@@ -13,7 +14,10 @@ import type {
   ListingEditErrors,
   ListingEditForm,
 } from "../types";
-import { BEDROOM_OPTIONS } from "@/features/provider/create-listing/copy/create-listing";
+import {
+  BEDROOM_OPTIONS,
+  ROOM_OPTIONS,
+} from "@/features/provider/create-listing/copy/create-listing";
 
 interface FactsEditCardProps {
   form: ListingEditForm;
@@ -27,10 +31,6 @@ const { fields, suffix } = listingEditCopy;
 
 function digitsOnly(value: string): string {
   return value.replace(/[^\d]/g, "");
-}
-
-function decimalOnly(value: string): string {
-  return value.replace(/[^\d.,]/g, "");
 }
 
 function formatCurrency(value: number): string {
@@ -59,7 +59,10 @@ export function FactsEditCard({
   };
 
   return (
-    <DetailCard title={listingDetailCopy.facts.title} className={className}>
+    <DetailCard
+      title={listingDetailCopy.facts.title}
+      className={cn("bg-background-subtle", className)}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField
           label={fields.coldRent}
@@ -104,7 +107,7 @@ export function FactsEditCard({
         </FormField>
         <FormField
           label={fields.deposit}
-          error={errors.deposit ?? errors.depositMonths}
+          error={errors.deposit}
           className="sm:col-span-2"
         >
           <div
@@ -167,13 +170,19 @@ export function FactsEditCard({
           htmlFor="edit-rooms"
           error={errors.rooms}
         >
-          <Input
+          <Select
             id="edit-rooms"
-            inputMode="decimal"
             value={form.rooms}
             saved={savedFields.has("rooms")}
-            onChange={(e) => setField("rooms", decimalOnly(e.target.value))}
-          />
+            onChange={(e) => setField("rooms", e.target.value)}
+          >
+            <option value="">{listingEditCopy.emptyOption}</option>
+            {ROOM_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option.replace(".", ",")}
+              </option>
+            ))}
+          </Select>
         </FormField>
         <FormField label={fields.bedrooms} htmlFor="edit-bedrooms">
           <Select

@@ -7,8 +7,7 @@ interface DetailCardProps {
   className?: string | undefined;
 }
 
-const CARD_CLASS =
-  "rounded-md border border-border bg-background-subtle px-5.5 py-5";
+const CARD_CLASS = "rounded-md border border-border px-5.5 py-5";
 const TITLE_CLASS =
   "mb-3.5 font-display text-action font-medium text-foreground";
 

@@ -47,7 +47,6 @@ export type ListingEditErrorKey =
   | "coldRent"
   | "additionalCosts"
   | "deposit"
-  | "depositMonths"
   | "livingArea"
   | "rooms"
   | "bedrooms"

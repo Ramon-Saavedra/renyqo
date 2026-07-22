@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils/cn";
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
@@ -23,7 +24,10 @@ export function AddressEditCard({
   className,
 }: AddressEditCardProps) {
   return (
-    <DetailCard title={listingDetailCopy.address.title} className={className}>
+    <DetailCard
+      title={listingDetailCopy.address.title}
+      className={cn("bg-background-subtle", className)}
+    >
       <div className="flex flex-col gap-4">
         <FormField label={fields.street} htmlFor="edit-street">
           <Input

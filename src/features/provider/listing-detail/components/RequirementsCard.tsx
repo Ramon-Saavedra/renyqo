@@ -6,6 +6,7 @@ import {
   SMOKING_POLICY_LABEL,
   listingDetailCopy,
 } from "../copy/listing-detail";
+import { cn } from "@/lib/utils/cn";
 import type { ListingDetail } from "../types";
 import { formatEUR } from "../utils/format";
 import { DetailCard } from "./DetailCard";
@@ -97,7 +98,10 @@ export function RequirementsCard({
   const rows = buildRequirements(listing);
 
   return (
-    <DetailCard title={requirements.title} className={className}>
+    <DetailCard
+      title={requirements.title}
+      className={cn("bg-anforderung-bg", className)}
+    >
       <ul className={LIST_CLASS}>
         {rows.map((row) => (
           <li key={row.label} className={ITEM_CLASS}>

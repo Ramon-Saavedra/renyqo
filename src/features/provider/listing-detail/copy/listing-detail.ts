@@ -13,14 +13,14 @@ export const OBJECT_TYPE_LABEL: Record<ObjectTypeBackend, string> = {
 
 export const PET_POLICY_LABEL: Record<PetPolicyBackend, string> = {
   ALLOWED: "Erlaubt",
-  BY_ARRANGEMENT: "Nach Absprache",
-  PREFER_NOT: "Nicht erwünscht",
+  BY_ARRANGEMENT: "Auf Anfrage",
+  PREFER_NOT: "Nicht erlaubt",
 };
 
 export const SMOKING_POLICY_LABEL: Record<SmokingPolicyBackend, string> = {
   ALLOWED: "Erlaubt",
-  BY_ARRANGEMENT: "Nach Absprache",
-  NON_SMOKERS_PREFERRED: "Nichtraucher bevorzugt",
+  BY_ARRANGEMENT: "Auf Anfrage",
+  NON_SMOKERS_PREFERRED: "Nicht erlaubt",
 };
 
 export const VISIBILITY_NOTE: Record<ListingStatus, string> = {

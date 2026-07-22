@@ -2,6 +2,7 @@ import type {
   PetPolicyBackend,
   SmokingPolicyBackend,
 } from "@/lib/api/listings";
+import { cn } from "@/lib/utils/cn";
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
@@ -46,7 +47,7 @@ export function RequirementsEditCard({
   return (
     <DetailCard
       title={listingDetailCopy.requirements.title}
-      className={className}
+      className={cn("bg-anforderung-bg", className)}
     >
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
