@@ -24,6 +24,8 @@
     "zod": "^4.4.3"
   },
   "overrides": {
+    "postcss": "8.5.22",
+    "sharp": "0.35.3",
     "vite": ">=8.1.0"
   },
   "devDependencies": {
