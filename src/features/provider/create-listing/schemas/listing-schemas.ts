@@ -19,11 +19,9 @@ export const publishSchema = z.object({
   street: z.string().min(1, v.street),
   area: z.string().refine(isPositiveListingNumber, v.area),
   rooms: z.string().refine((value) => isPositiveListingNumber(value), v.rooms),
-  bedrooms: z
-    .string()
-    .refine((value) => toNonNegativeInteger(value) !== null, {
-      message: v.bedrooms,
-    }),
+  bedrooms: z.string().refine((value) => toNonNegativeInteger(value) !== null, {
+    message: v.bedrooms,
+  }),
   price: z.string().refine(isPositiveListingNumber, v.price),
   additionalCosts: z
     .string()
