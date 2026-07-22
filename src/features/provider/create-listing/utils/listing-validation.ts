@@ -18,7 +18,8 @@ export function isNonNegativeListingNumber(value: string): boolean {
 
 export function toNonNegativeInteger(value: string): number | null {
   const parsed = parseListingNumber(value);
-  if (parsed === undefined || !Number.isInteger(parsed) || parsed < 0) return null;
+  if (parsed === undefined || !Number.isInteger(parsed) || parsed < 0)
+    return null;
   return parsed;
 }
 
