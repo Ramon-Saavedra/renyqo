@@ -43,7 +43,7 @@ export function mapListingToEditForm(listing: ListingDetail): ListingEditForm {
     depositMonths: listing.depositMonths,
     livingArea: numberToString(listing.livingArea),
     rooms: numberToString(listing.rooms),
-    bedrooms: listing.bedrooms,
+    bedrooms: numberToString(listing.bedrooms),
     availableFrom: toDateInputValue(listing.availableFrom),
 
     shortDescription: listing.shortDescription ?? "",
@@ -115,7 +115,7 @@ export function applyEditFormToListing(
     depositMonths: form.depositMonths,
     livingArea: stringToNumber(form.livingArea),
     rooms: stringToNumber(form.rooms),
-    bedrooms: form.bedrooms,
+    bedrooms: stringToNumber(form.bedrooms),
     availableFrom: form.availableFrom || null,
     shortDescription: form.shortDescription.trim() || null,
     minimumHouseholdNetIncome: stringToNumber(form.minimumHouseholdNetIncome),

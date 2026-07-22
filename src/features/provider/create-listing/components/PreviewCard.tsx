@@ -61,7 +61,7 @@ export function PreviewCard({ draft, finalTitle }: PreviewCardProps) {
   const copy = createListingCopy.preview;
   const cover = draft.photos[0];
   const price = formatPrice(draft.price);
-  const bedroomsLabel = draft.bedrooms === null ? copy.empty : draft.bedrooms;
+  const bedroomsLabel = draft.bedrooms || copy.empty;
 
   return (
     <aside

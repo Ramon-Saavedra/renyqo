@@ -82,7 +82,9 @@ export function mapEditFormToUpdatePayload(
     const rooms = toNumber(form.rooms);
     if (rooms !== null) payload.rooms = rooms;
   }
-  if (form.bedrooms !== initial.bedrooms) payload.bedrooms = form.bedrooms;
+  if (form.bedrooms !== initial.bedrooms) {
+    payload.bedrooms = form.bedrooms ? toNumber(form.bedrooms) : null;
+  }
   if (form.availableFrom !== initial.availableFrom) {
     const availableFrom = toIsoDate(form.availableFrom);
     if (availableFrom !== undefined) payload.availableFrom = availableFrom;

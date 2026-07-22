@@ -35,6 +35,7 @@ export function AbschlussSection({
       num={copy.num}
       title={copy.title}
       description={copy.description}
+      className="bg-background"
     >
       <div className="flex flex-wrap items-center gap-2.5">
         <span className={PILL_CLASS}>

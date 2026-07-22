@@ -9,7 +9,7 @@ interface SectionCardProps {
   className?: string;
 }
 
-const BASE_CLASS = "rounded-md border border-border bg-background px-7 py-6.5";
+const BASE_CLASS = "rounded-md border border-border px-7 py-6.5";
 
 export function SectionCard({
   id,

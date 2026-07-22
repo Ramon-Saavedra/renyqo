@@ -16,7 +16,7 @@ const VALID: ListingEditForm = {
   depositMonths: 2,
   livingArea: "70",
   rooms: "2.5",
-  bedrooms: 1,
+  bedrooms: "1",
   availableFrom: "2026-08-01",
   shortDescription: "Ruhige Lage",
   minimumHouseholdNetIncome: "3000",

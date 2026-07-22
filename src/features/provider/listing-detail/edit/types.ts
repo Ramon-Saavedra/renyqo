@@ -24,7 +24,7 @@ export interface ListingEditForm {
   depositMonths: number | null;
   livingArea: string;
   rooms: string;
-  bedrooms: number | null;
+  bedrooms: string;
   availableFrom: string;
 
   shortDescription: string;
@@ -49,6 +49,7 @@ export type ListingEditErrorKey =
   | "deposit"
   | "livingArea"
   | "rooms"
+  | "bedrooms"
   | "minimumHouseholdNetIncome"
   | "suitableForPeopleCount";
 

@@ -8,6 +8,7 @@ import {
   isNonNegativeListingNumber,
   isPositiveListingNumber,
   isValidListingDate,
+  toNonNegativeInteger,
 } from "../utils/listing-validation";
 
 const v = createListingCopy.validation;
@@ -17,18 +18,11 @@ export const publishSchema = z.object({
   zip: z.string().min(1, v.zip),
   street: z.string().min(1, v.street),
   area: z.string().refine(isPositiveListingNumber, v.area),
-  rooms: z
+  rooms: z.string().refine((value) => isPositiveListingNumber(value), v.rooms),
+  bedrooms: z
     .string()
     .refine(
-      (value) => value === "6+" || isPositiveListingNumber(value),
-      v.rooms,
-    ),
-  bedrooms: z
-    .number()
-    .nullable()
-    .refine(
-      (value): value is number =>
-        value !== null && Number.isInteger(value) && value >= 0,
+      (value) => toNonNegativeInteger(value) !== null,
       { message: v.bedrooms },
     ),
   price: z.string().refine(isPositiveListingNumber, v.price),
