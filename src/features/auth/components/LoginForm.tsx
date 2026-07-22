@@ -71,7 +71,7 @@ export function LoginForm({ initialSuccessMessage }: LoginFormProps) {
         return;
       }
 
-      router.push(resolveRedirectPath(nextStep));
+      router.replace(resolveRedirectPath(nextStep));
     } catch (err) {
       const message = resolveLoginErrorMessage(resolveAuthErrorCategory(err));
       if (message) setError(message);

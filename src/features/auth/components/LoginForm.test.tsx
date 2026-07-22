@@ -6,10 +6,10 @@ import { ApiError } from "@/lib/api/client";
 import { loginCopy } from "../copy/login";
 import { LoginForm } from "./LoginForm";
 
-const mockPush = vi.hoisted(() => vi.fn());
+const mockReplace = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ replace: mockReplace }),
 }));
 
 vi.mock("@/lib/api/auth", () => ({
@@ -118,7 +118,7 @@ describe("LoginForm", () => {
         password: "password123",
       });
       expect(getOnboardingState).toHaveBeenCalled();
-      expect(mockPush).toHaveBeenCalledWith("/dashboard/applicant");
+      expect(mockReplace).toHaveBeenCalledWith("/dashboard/applicant");
     });
 
     it("disables the submit button and shows submitting copy while loading", async () => {
