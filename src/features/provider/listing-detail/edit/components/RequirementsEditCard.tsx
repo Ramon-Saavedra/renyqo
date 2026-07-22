@@ -7,7 +7,7 @@ import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
 import { InputAffix } from "@/components/ui/form/InputAffix";
 import { NumberStepper } from "@/components/ui/form/NumberStepper";
-import { Select } from "@/components/ui/form/Select";
+import { Segmented } from "@/components/ui/form/Segmented";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { DetailCard } from "../../components/DetailCard";
 import type { ChangedFields } from "../changed-fields";
@@ -30,7 +30,7 @@ interface RequirementsEditCardProps {
   className?: string;
 }
 
-const { fields, suffix, emptyOption } = listingEditCopy;
+const { fields, suffix } = listingEditCopy;
 
 function digitsOnly(value: string): string {
   return value.replace(/[^\d]/g, "");
@@ -89,42 +89,25 @@ export function RequirementsEditCard({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label={fields.pets} htmlFor="edit-pets">
-            <Select
-              id="edit-pets"
+          <FormField label={fields.pets}>
+            <Segmented<PetPolicyBackend | "">
               value={form.petsPolicy}
+              onChange={(value) =>
+                setField("petsPolicy", value as PetPolicyBackend | "")
+              }
+              options={PET_POLICY_OPTIONS}
               saved={savedFields.has("petsPolicy")}
-              onChange={(e) =>
-                setField("petsPolicy", e.target.value as PetPolicyBackend | "")
-              }
-            >
-              <option value="">{emptyOption}</option>
-              {PET_POLICY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+            />
           </FormField>
-          <FormField label={fields.smoking} htmlFor="edit-smoking">
-            <Select
-              id="edit-smoking"
+          <FormField label={fields.smoking}>
+            <Segmented<SmokingPolicyBackend | "">
               value={form.smokingPolicy}
-              saved={savedFields.has("smokingPolicy")}
-              onChange={(e) =>
-                setField(
-                  "smokingPolicy",
-                  e.target.value as SmokingPolicyBackend | "",
-                )
+              onChange={(value) =>
+                setField("smokingPolicy", value as SmokingPolicyBackend | "")
               }
-            >
-              <option value="">{emptyOption}</option>
-              {SMOKING_POLICY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+              options={SMOKING_POLICY_OPTIONS}
+              saved={savedFields.has("smokingPolicy")}
+            />
           </FormField>
         </div>
 

@@ -1,8 +1,9 @@
+import { Minus, Plus } from "lucide-react";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
 import { InputAffix } from "@/components/ui/form/InputAffix";
-import { NumberStepper } from "@/components/ui/form/NumberStepper";
 import { Select } from "@/components/ui/form/Select";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { DetailCard } from "../../components/DetailCard";
 import type { ChangedFields } from "../changed-fields";
@@ -32,6 +33,10 @@ function decimalOnly(value: string): string {
   return value.replace(/[^\d.,]/g, "");
 }
 
+function formatCurrency(value: number): string {
+  return value.toLocaleString("de-DE");
+}
+
 export function FactsEditCard({
   form,
   setField,
@@ -39,6 +44,20 @@ export function FactsEditCard({
   savedFields,
   className,
 }: FactsEditCardProps) {
+  const coldRent = parseInt(form.coldRent, 10);
+  const calculatedDeposit =
+    !isNaN(coldRent) && coldRent > 0 && form.depositMonths !== null
+      ? formatCurrency(coldRent * form.depositMonths)
+      : null;
+
+  const changeDepositMonths = (next: number) => {
+    setField("depositMonths", next);
+    const rent = parseInt(form.coldRent, 10);
+    if (!isNaN(rent) && rent > 0) {
+      setField("deposit", String(rent * next));
+    }
+  };
+
   return (
     <DetailCard title={listingDetailCopy.facts.title} className={className}>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -53,7 +72,14 @@ export function FactsEditCard({
               inputMode="numeric"
               value={form.coldRent}
               saved={savedFields.has("coldRent")}
-              onChange={(e) => setField("coldRent", digitsOnly(e.target.value))}
+              onChange={(e) => {
+                const val = digitsOnly(e.target.value);
+                setField("coldRent", val);
+                const rent = parseInt(val, 10);
+                if (!isNaN(rent) && rent > 0 && form.depositMonths !== null) {
+                  setField("deposit", String(rent * form.depositMonths));
+                }
+              }}
               className="pr-22"
             />
           </InputAffix>
@@ -78,30 +104,45 @@ export function FactsEditCard({
         </FormField>
         <FormField
           label={fields.deposit}
-          htmlFor="edit-deposit"
-          error={errors.deposit}
+          error={errors.deposit ?? errors.depositMonths}
+          className="sm:col-span-2"
         >
-          <InputAffix suffix={suffix.euro}>
-            <Input
-              id="edit-deposit"
-              inputMode="numeric"
-              value={form.deposit}
-              saved={savedFields.has("deposit")}
-              onChange={(e) => setField("deposit", digitsOnly(e.target.value))}
-              className="pr-9"
-            />
-          </InputAffix>
-        </FormField>
-        <FormField label={fields.depositMonths}>
-          <NumberStepper
-            value={form.depositMonths}
-            onChange={(value) => setField("depositMonths", value)}
-            min={1}
-            max={3}
-            allowNull
-            ariaLabel={fields.depositMonths}
-            saved={savedFields.has("depositMonths")}
-          />
+          <div
+            role="group"
+            aria-label={fields.deposit}
+            className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-background-subtle"
+          >
+            <button
+              type="button"
+              aria-label="Kaution verringern"
+              disabled={form.depositMonths === null || form.depositMonths <= 1}
+              onClick={() => changeDepositMonths(form.depositMonths! - 1)}
+              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+            >
+              <AppIcon icon={Minus} size={16} strokeWidth={1.8} decorative />
+            </button>
+            <span className="min-w-0 flex-1 text-center font-display text-action font-medium tabular-nums text-foreground">
+              {form.depositMonths ?? "—"} Mon.
+            </span>
+            <span
+              aria-hidden="true"
+              className="font-mono text-meta text-foreground-tertiary"
+            >
+              |
+            </span>
+            <span className="min-w-0 flex-1 text-center font-display text-action font-medium tabular-nums text-foreground">
+              {calculatedDeposit ? `${calculatedDeposit} €` : "—"}
+            </span>
+            <button
+              type="button"
+              aria-label="Kaution erhöhen"
+              disabled={form.depositMonths !== null && form.depositMonths >= 3}
+              onClick={() => changeDepositMonths((form.depositMonths ?? 1) + 1)}
+              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+            >
+              <AppIcon icon={Plus} size={16} strokeWidth={1.8} decorative />
+            </button>
+          </div>
         </FormField>
         <FormField
           label={fields.livingArea}

@@ -3,7 +3,6 @@
 import { useCallback, useState } from "react";
 import { Pencil } from "lucide-react";
 import type { ListingDetail } from "../../types";
-import { Gallery } from "../../components/Gallery";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { STICKY_HEAD_CLASS } from "../../sticky-head";
@@ -11,6 +10,7 @@ import { listingEditCopy } from "../copy";
 import { useListingEdit } from "../useListingEdit";
 import { AddressEditCard } from "./AddressEditCard";
 import { DescriptionEditCard } from "./DescriptionEditCard";
+import { EditableGallery } from "./EditableGallery";
 import { FactsEditCard } from "./FactsEditCard";
 import { ListingEditHead } from "./ListingEditHead";
 import { RequirementsEditCard } from "./RequirementsEditCard";
@@ -91,9 +91,9 @@ export function ListingEditView({
 
       <div className={COLUMN_CONTAINER}>
         <div className={LEFT_COLUMN}>
-          <Gallery
+          <EditableGallery
+            listingId={listing.id}
             images={listing.images}
-            title={form.title || listing.title}
             className="order-1 lg:order-0"
           />
           <DescriptionEditCard

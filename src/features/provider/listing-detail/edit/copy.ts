@@ -18,8 +18,8 @@ export const PET_POLICY_OPTIONS: ReadonlyArray<{
   label: string;
 }> = [
   { value: "ALLOWED", label: "Erlaubt" },
-  { value: "BY_ARRANGEMENT", label: "Nach Absprache" },
-  { value: "PREFER_NOT", label: "Nicht erwünscht" },
+  { value: "BY_ARRANGEMENT", label: "Auf Anfrage" },
+  { value: "PREFER_NOT", label: "Nicht erlaubt" },
 ];
 
 export const SMOKING_POLICY_OPTIONS: ReadonlyArray<{
@@ -27,8 +27,8 @@ export const SMOKING_POLICY_OPTIONS: ReadonlyArray<{
   label: string;
 }> = [
   { value: "ALLOWED", label: "Erlaubt" },
-  { value: "BY_ARRANGEMENT", label: "Nach Absprache" },
-  { value: "NON_SMOKERS_PREFERRED", label: "Nichtraucher bevorzugt" },
+  { value: "BY_ARRANGEMENT", label: "Auf Anfrage" },
+  { value: "NON_SMOKERS_PREFERRED", label: "Nicht erlaubt" },
 ];
 
 export const listingEditCopy = {

@@ -1,4 +1,10 @@
-import { apiPatch, apiPatchVoid, apiPost, apiPostFormData } from "./client";
+import {
+  apiDeleteVoid,
+  apiPatch,
+  apiPatchVoid,
+  apiPost,
+  apiPostFormData,
+} from "./client";
 
 export type ObjectTypeBackend = "APARTMENT" | "HOUSE" | "ROOM";
 export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
@@ -125,6 +131,13 @@ export async function uploadListingImage(
     `/api/v1/provider/listings/${id}/images`,
     formData,
   );
+}
+
+export async function deleteListingImage(
+  id: string,
+  imageId: string,
+): Promise<void> {
+  return apiDeleteVoid(`/api/v1/provider/listings/${id}/images/${imageId}`);
 }
 
 export async function publishListing(id: string): Promise<void> {
