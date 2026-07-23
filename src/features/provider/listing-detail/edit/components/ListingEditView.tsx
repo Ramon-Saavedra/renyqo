@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
 import type { ListingDetail } from "../../types";
-import { Gallery } from "../../components/Gallery";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { STICKY_HEAD_CLASS } from "../../sticky-head";
@@ -11,6 +10,7 @@ import { listingEditCopy } from "../copy";
 import { useListingEdit } from "../useListingEdit";
 import { AddressEditCard } from "./AddressEditCard";
 import { DescriptionEditCard } from "./DescriptionEditCard";
+import { EditableGallery } from "./EditableGallery";
 import { FactsEditCard } from "./FactsEditCard";
 import { ListingEditHead } from "./ListingEditHead";
 import { RequirementsEditCard } from "./RequirementsEditCard";
@@ -19,6 +19,7 @@ interface ListingEditViewProps {
   listing: ListingDetail;
   onCancel: () => void;
   onSaved: (updated: ListingDetail) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 const COLUMN_CONTAINER = "flex flex-col gap-5 lg:flex-row lg:items-start";
@@ -34,26 +35,66 @@ export function ListingEditView({
   listing,
   onCancel,
   onSaved,
+  onDirtyChange,
 }: ListingEditViewProps) {
+  const [currentImages, setCurrentImages] = useState<readonly string[]>(
+    () => listing.images,
+  );
+  const [photosModified, setPhotosModified] = useState(false);
+  const [photoSaved, setPhotoSaved] = useState(false);
+
+  const onSavedRef = useRef(onSaved);
+  onSavedRef.current = onSaved;
+
   const { form, errors, status, error, isDirty, savedFields, setField, save } =
-    useListingEdit(listing, { onSaved });
+    useListingEdit(listing, {
+      onSaved: (updated: ListingDetail) => {
+        setPhotosModified(false);
+        const merged = { ...updated, images: [...currentImages] };
+        onSavedRef.current(merged);
+      },
+    });
+
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const saving = status === "saving";
-  const saved = status === "saved";
+  const saved = status === "saved" || photoSaved;
+  const totalDirty = isDirty || photosModified;
+
+  useLayoutEffect(() => {
+    onDirtyChange?.(totalDirty);
+    return () => onDirtyChange?.(false);
+  }, [totalDirty, onDirtyChange]);
 
   const handleCancel = useCallback(() => {
-    if (isDirty) {
+    if (totalDirty) {
       setShowDiscardModal(true);
       return;
     }
     onCancel();
-  }, [isDirty, onCancel]);
+  }, [totalDirty, onCancel]);
 
   const keepEditing = useCallback(() => setShowDiscardModal(false), []);
   const confirmDiscard = useCallback(() => {
     setShowDiscardModal(false);
     onCancel();
   }, [onCancel]);
+
+  const handleImagesChange = useCallback((urls: readonly string[]) => {
+    setCurrentImages(urls);
+    setPhotosModified(true);
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    if (status !== "idle") return;
+    if (photosModified && !isDirty) {
+      setPhotoSaved(true);
+      setTimeout(() => {
+        onSavedRef.current({ ...listing, images: [...currentImages] });
+      }, 800);
+    } else {
+      await save();
+    }
+  }, [status, photosModified, isDirty, listing, currentImages, save]);
 
   return (
     <>
@@ -66,7 +107,7 @@ export function ListingEditView({
           saving={saving}
           saved={saved}
           savedFields={savedFields}
-          onSave={save}
+          onSave={handleSave}
           onCancel={handleCancel}
         />
 
@@ -82,7 +123,7 @@ export function ListingEditView({
             message={listingEditCopy.savedNotice}
             className="mt-4"
           />
-        ) : isDirty ? (
+        ) : totalDirty ? (
           <div className={NOTICE_CLASS} role="status">
             {listingEditCopy.unsavedNotice}
           </div>
@@ -91,9 +132,10 @@ export function ListingEditView({
 
       <div className={COLUMN_CONTAINER}>
         <div className={LEFT_COLUMN}>
-          <Gallery
+          <EditableGallery
+            listingId={listing.id}
             images={listing.images}
-            title={form.title || listing.title}
+            onImagesChange={handleImagesChange}
             className="order-1 lg:order-0"
           />
           <DescriptionEditCard

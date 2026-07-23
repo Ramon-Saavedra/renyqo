@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ApiError } from "@/lib/api/client";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { ListingsTopbarActions } from "../../listings-overview/components/ListingsTopbarActions";
 import {
   archiveProviderListing,
@@ -35,7 +37,7 @@ type FetchStatus = "loading" | "loaded" | "error";
 
 const BODY_CLASS = "px-gutter pt-7 pb-12";
 const BACK_LINK_CLASS =
-  "mb-4.5 inline-flex items-center gap-1.5 text-caption font-medium text-foreground-tertiary transition-colors hover:text-foreground";
+  "mb-4.5 inline-flex items-center gap-1.5 cursor-pointer text-caption font-medium text-foreground-tertiary transition-colors hover:text-foreground";
 const COLUMN_CONTAINER = "flex flex-col gap-5 lg:flex-row lg:items-start";
 const LEFT_COLUMN = "contents lg:flex lg:w-3/5 lg:min-w-0 lg:flex-col lg:gap-5";
 const RIGHT_COLUMN =
@@ -56,12 +58,15 @@ const NEXT_STATUS: Record<DetailAction, ListingDetail["status"]> = {
 };
 
 export function ListingDetailView({ listingId }: ListingDetailViewProps) {
+  const router = useRouter();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [fetchStatus, setFetchStatus] = useState<FetchStatus>("loading");
   const [pendingAction, setPendingAction] = useState<DetailAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditDirty, setIsEditDirty] = useState(false);
+  const [pendingLeave, setPendingLeave] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -115,6 +120,11 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
 
   const retry = useCallback(() => setReloadKey((key) => key + 1), []);
 
+  const handleEditDirtyChange = useCallback(
+    (dirty: boolean) => setIsEditDirty(dirty),
+    [],
+  );
+
   const enterEditMode = useCallback(() => {
     setActionError(null);
     setIsEditing(true);
@@ -123,22 +133,82 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
   const handleEditSaved = useCallback((updated: ListingDetail) => {
     setListing(updated);
     setIsEditing(false);
+    setIsEditDirty(false);
   }, []);
 
-  const exitEditMode = useCallback(() => setIsEditing(false), []);
+  const exitEditMode = useCallback(() => {
+    setIsEditing(false);
+    setIsEditDirty(false);
+  }, []);
+
+  const handleBackClick = useCallback(() => {
+    if (isEditDirty) {
+      setPendingLeave(true);
+    } else {
+      router.push(listingDetailCopy.backHref);
+    }
+  }, [isEditDirty, router]);
+
+  const confirmLeave = useCallback(() => {
+    setPendingLeave(false);
+    setIsEditing(false);
+    setIsEditDirty(false);
+    router.push(listingDetailCopy.backHref);
+  }, [router]);
+
+  const cancelLeave = useCallback(() => setPendingLeave(false), []);
+
+  const handleLogoClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (isEditDirty) {
+        e.preventDefault();
+        setPendingLeave(true);
+      }
+    },
+    [isEditDirty],
+  );
 
   return (
     <>
-      <AppTopbar logoHref="/provider/dashboard" className="mb-6">
-        <ListingsTopbarActions />
+      <AppTopbar
+        logoHref="/provider/dashboard"
+        className="mb-6"
+        {...(isEditing && isEditDirty ? { onLogoClick: handleLogoClick } : {})}
+      >
+        <ListingsTopbarActions
+          {...(isEditing && isEditDirty
+            ? { onBackClick: () => setPendingLeave(true) }
+            : {})}
+        />
         <AccountMenu />
       </AppTopbar>
 
       <div className={BODY_CLASS}>
-        <Link href={listingDetailCopy.backHref} className={BACK_LINK_CLASS}>
-          <AppIcon icon={ChevronLeft} size={13} strokeWidth={1.8} decorative />
-          {listingDetailCopy.backLabel}
-        </Link>
+        {isEditing ? (
+          <button
+            type="button"
+            onClick={handleBackClick}
+            className={BACK_LINK_CLASS}
+          >
+            <AppIcon
+              icon={ChevronLeft}
+              size={13}
+              strokeWidth={1.8}
+              decorative
+            />
+            {listingDetailCopy.backLabel}
+          </button>
+        ) : (
+          <Link href={listingDetailCopy.backHref} className={BACK_LINK_CLASS}>
+            <AppIcon
+              icon={ChevronLeft}
+              size={13}
+              strokeWidth={1.8}
+              decorative
+            />
+            {listingDetailCopy.backLabel}
+          </Link>
+        )}
 
         {fetchStatus === "loading" ? (
           <DetailLoadingSkeleton />
@@ -149,6 +219,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
             listing={listing}
             onCancel={exitEditMode}
             onSaved={handleEditSaved}
+            onDirtyChange={handleEditDirtyChange}
           />
         ) : (
           <>
@@ -191,6 +262,16 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
           </>
         )}
       </div>
+
+      <ConfirmationModal
+        open={pendingLeave}
+        title="Änderungen verwerfen?"
+        text="Du hast ungespeicherte Änderungen. Wenn du die Seite verlässt, gehen diese Änderungen verloren."
+        primaryLabel="Weiter bearbeiten"
+        secondaryLabel="Ohne Speichern verlassen"
+        onPrimary={cancelLeave}
+        onSecondary={confirmLeave}
+      />
     </>
   );
 }
