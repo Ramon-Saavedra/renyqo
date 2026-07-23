@@ -1,21 +1,15 @@
-import { Archive, FileText, Globe, MapPin, Pencil } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { buttonClass } from "@/components/ui/button/Button";
 import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { cn } from "@/lib/utils/cn";
 import { StatusPill } from "../../listings-overview/components/StatusPill";
 import { formatDateTime } from "../../listings-overview/utils/format";
-import { listingEditCopy } from "../edit/copy";
-import { OBJECT_TYPE_LABEL, listingDetailCopy } from "../copy/listing-detail";
+import { Archive, FileText, Globe } from "lucide-react";
+import { listingDetailCopy, OBJECT_TYPE_LABEL } from "../copy/listing-detail";
 import type { DetailAction, ListingDetail } from "../types";
-import { DetailActionButton } from "./DetailActionButton";
 
 interface DetailHeadProps {
   listing: ListingDetail;
-  pendingAction: DetailAction | null;
-  onAction: (action: DetailAction) => void;
-  onEdit?: () => void;
 }
 
 const HEAD_CLASS =
@@ -27,12 +21,11 @@ const TITLE_CLASS =
   "mb-2 font-display text-title font-medium tracking-tight text-foreground text-balance";
 const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-foreground-secondary";
-const ACTIONS_CLASS = "flex flex-wrap items-center gap-2 max-sm:w-full";
 const META_ROW_CLASS = "flex flex-wrap items-center gap-2";
 
 const { actions } = listingDetailCopy;
 
-interface ActionConfig {
+export interface ActionConfig {
   readonly action: DetailAction;
   readonly label: string;
   readonly shortLabel: string;
@@ -40,7 +33,7 @@ interface ActionConfig {
   readonly icon: LucideIcon;
 }
 
-function buildActions(listing: ListingDetail): ActionConfig[] {
+export function buildActions(listing: ListingDetail): ActionConfig[] {
   const list: ActionConfig[] = [];
   if (listing.status !== "published") {
     list.push({
@@ -72,14 +65,7 @@ function buildActions(listing: ListingDetail): ActionConfig[] {
   return list;
 }
 
-export function DetailHead({
-  listing,
-  pendingAction,
-  onAction,
-  onEdit,
-}: DetailHeadProps) {
-  const actionConfigs = buildActions(listing);
-  const anyPending = pendingAction !== null;
+export function DetailHead({ listing }: DetailHeadProps) {
   const timestamp = listing.publishedAt ?? listing.updatedAt;
   const timestampLabel = timestamp ? formatDateTime(timestamp) : null;
   const timestampTitle = listing.publishedAt
@@ -118,41 +104,6 @@ export function DetailHead({
           {listing.headerAddress}
         </span>
       </div>
-
-      {onEdit || actionConfigs.length > 0 ? (
-        <div className={ACTIONS_CLASS}>
-          {onEdit ? (
-            <button
-              type="button"
-              onClick={onEdit}
-              disabled={anyPending}
-              aria-label={listingEditCopy.edit}
-              className={cn(
-                buttonClass("secondary"),
-                "justify-center gap-2 max-md:h-auto max-md:min-h-14 max-md:min-w-16 max-md:flex-col max-md:gap-1 max-md:px-2 max-md:py-1.5 md:min-w-42",
-              )}
-            >
-              <AppIcon icon={Pencil} size={16} strokeWidth={1.7} decorative />
-              <span className="font-mono text-meta font-medium tracking-normal leading-none md:hidden">
-                {listingEditCopy.editShort}
-              </span>
-              <span className="hidden md:inline">{listingEditCopy.edit}</span>
-            </button>
-          ) : null}
-          {actionConfigs.map((config) => (
-            <DetailActionButton
-              key={config.action}
-              icon={config.icon}
-              label={config.label}
-              shortLabel={config.shortLabel}
-              loadingLabel={config.loadingLabel}
-              pending={pendingAction === config.action}
-              disabled={anyPending}
-              onClick={() => onAction(config.action)}
-            />
-          ))}
-        </div>
-      ) : null}
     </div>
   );
 }

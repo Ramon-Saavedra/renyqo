@@ -125,8 +125,8 @@ function readCoverImageUrl(record: ApiRecord): string | null {
   }
 
   const images =
-    record.photos ??
     record.images ??
+    record.photos ??
     record.listingImages ??
     record.listing_images;
   if (!Array.isArray(images)) return null;
@@ -137,13 +137,17 @@ function readCoverImageUrl(record: ApiRecord): string | null {
   }
   if (!isRecord(firstImage)) return null;
 
-  return readString(firstImage, [
-    "url",
-    "src",
-    "imageUrl",
-    "publicUrl",
-    "fileUrl",
-  ]);
+  return (
+    readString(firstImage, [
+      "secureUrl",
+      "secure_url",
+      "url",
+      "src",
+      "imageUrl",
+      "publicUrl",
+      "fileUrl",
+    ]) ?? null
+  );
 }
 
 function mapProviderListing(value: unknown): ListingOverviewItem | null {

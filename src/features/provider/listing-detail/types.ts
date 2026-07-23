@@ -1,4 +1,5 @@
 import type {
+  ListingImage,
   ObjectTypeBackend,
   PetPolicyBackend,
   SmokingPolicyBackend,
@@ -6,6 +7,7 @@ import type {
 import type { ListingStatus } from "../listings-overview/types";
 
 export type { ListingStatus } from "../listings-overview/types";
+export type { ListingImage } from "@/lib/api/listings";
 
 export interface ListingDetail {
   readonly id: string;
@@ -37,7 +39,7 @@ export interface ListingDetail {
   readonly petsPolicy: PetPolicyBackend | null;
   readonly smokingPolicy: SmokingPolicyBackend | null;
 
-  readonly images: readonly string[];
+  readonly images: readonly ListingImage[];
 
   readonly createdAt: string | null;
   readonly updatedAt: string | null;

@@ -1,12 +1,17 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import type { ListingImage } from "@/lib/api/listings";
 
 import { Gallery } from "./Gallery";
 
-const images = Array.from(
+const images: readonly ListingImage[] = Array.from(
   { length: 9 },
-  (_, index) =>
-    `https://res.cloudinary.com/dixoj5chu/image/upload/v1784031546/renyqo/listings/listing-${index}/photo-${index}.webp`,
+  (_, index) => ({
+    id: `img-${index}`,
+    secureUrl: `https://res.cloudinary.com/dixoj5chu/image/upload/v1784031546/renyqo/listings/listing-${index}/photo-${index}.webp`,
+    position: index,
+    isCover: index === 0,
+  }),
 );
 
 describe("Gallery", () => {

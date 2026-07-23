@@ -37,6 +37,13 @@ export interface CreateListingPayload {
   readonly smokingPolicy?: SmokingPolicyBackend | undefined;
 }
 
+export interface ListingImage {
+  readonly id: string;
+  readonly secureUrl: string;
+  readonly position: number;
+  readonly isCover: boolean;
+}
+
 export interface CreatedListing {
   readonly id: string;
 }
@@ -123,11 +130,11 @@ export async function createListingDraft(
 export async function uploadListingImage(
   id: string,
   file: File,
-): Promise<CreatedListing> {
+): Promise<ListingImage> {
   const formData = new FormData();
   formData.append("file", file);
 
-  return apiPostFormData<CreatedListing>(
+  return apiPostFormData<ListingImage>(
     `/api/v1/provider/listings/${id}/images`,
     formData,
   );
@@ -138,6 +145,15 @@ export async function deleteListingImage(
   imageId: string,
 ): Promise<void> {
   return apiDeleteVoid(`/api/v1/provider/listings/${id}/images/${imageId}`);
+}
+
+export async function reorderListingImages(
+  listingId: string,
+  imageIds: readonly string[],
+): Promise<void> {
+  return apiPatch<void>(`/api/v1/provider/listings/${listingId}/images/order`, {
+    imageIds,
+  });
 }
 
 export async function publishListing(id: string): Promise<void> {
