@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Pencil } from "lucide-react";
 import type { ListingDetail } from "../../types";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
