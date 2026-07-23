@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
 import type { ListingDetail } from "../../types";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
@@ -44,7 +44,10 @@ export function ListingEditView({
   const [photoSaved, setPhotoSaved] = useState(false);
 
   const onSavedRef = useRef(onSaved);
-  onSavedRef.current = onSaved;
+
+  useEffect(() => {
+    onSavedRef.current = onSaved;
+  }, [onSaved]);
 
   const { form, errors, status, error, isDirty, savedFields, setField, save } =
     useListingEdit(listing, {
