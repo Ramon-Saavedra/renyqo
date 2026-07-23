@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { ListingDetail } from "../types";
 import { DetailHead } from "./DetailHead";
@@ -37,63 +36,28 @@ const BASE: ListingDetail = {
 };
 
 describe("DetailHead", () => {
-  it("shows publish and archive actions for draft listings", () => {
-    render(
-      <DetailHead listing={BASE} pendingAction={null} onAction={vi.fn()} />,
-    );
+  it("shows the status pill, object type chip, title and address", () => {
+    render(<DetailHead listing={BASE} />);
 
-    expect(
-      screen.getByRole("button", { name: "Veröffentlichen" }),
-    ).toBeInstanceOf(HTMLButtonElement);
-    expect(
-      screen.queryByRole("button", { name: "Als Entwurf setzen" }),
-    ).toBeNull();
-    expect(screen.getByRole("button", { name: "Archivieren" })).toBeInstanceOf(
-      HTMLButtonElement,
+    expect(screen.getByText("Entwurf")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Wohnung")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Wohnung in Berlin")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Musterstraße 1, 10115 Berlin")).toBeInstanceOf(
+      HTMLElement,
     );
   });
 
-  it("shows draft and archive actions for published listings", () => {
+  it("shows a published date for published listings", () => {
     render(
       <DetailHead
-        listing={{ ...BASE, status: "published" }}
-        pendingAction={null}
-        onAction={vi.fn()}
+        listing={{
+          ...BASE,
+          status: "published",
+          publishedAt: "2026-07-03T10:00:00.000Z",
+        }}
       />,
     );
 
-    expect(
-      screen.queryByRole("button", { name: "Veröffentlichen" }),
-    ).toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Als Entwurf setzen" }),
-    ).toBeInstanceOf(HTMLButtonElement);
-    expect(screen.getByRole("button", { name: "Archivieren" })).toBeInstanceOf(
-      HTMLButtonElement,
-    );
-  });
-
-  it("does not show archive action for archived listings", () => {
-    render(
-      <DetailHead
-        listing={{ ...BASE, status: "archived" }}
-        pendingAction={null}
-        onAction={vi.fn()}
-      />,
-    );
-
-    expect(screen.queryByRole("button", { name: "Archivieren" })).toBeNull();
-  });
-
-  it("calls onAction with the selected status action", async () => {
-    const user = userEvent.setup();
-    const onAction = vi.fn();
-    render(
-      <DetailHead listing={BASE} pendingAction={null} onAction={onAction} />,
-    );
-
-    await user.click(screen.getByRole("button", { name: "Veröffentlichen" }));
-
-    expect(onAction).toHaveBeenCalledWith("publish");
+    expect(screen.getByText("Veröffentlicht")).toBeInstanceOf(HTMLElement);
   });
 });

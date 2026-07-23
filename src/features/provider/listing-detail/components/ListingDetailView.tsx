@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Pencil } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ApiError } from "@/lib/api/client";
+import { buttonClass } from "@/components/ui/button/Button";
+import { cn } from "@/lib/utils/cn";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { ListingsTopbarActions } from "../../listings-overview/components/ListingsTopbarActions";
 import {
@@ -16,14 +18,16 @@ import {
   publishProviderListing,
 } from "../api/provider-listing-detail";
 import { listingDetailCopy } from "../copy/listing-detail";
+import { listingEditCopy } from "../edit/copy";
 import { STICKY_HEAD_CLASS } from "../sticky-head";
 import { ListingEditView } from "../edit/components/ListingEditView";
 import type { DetailAction, ListingDetail } from "../types";
 import { AddressCard } from "./AddressCard";
 import { DescriptionCard } from "./DescriptionCard";
 import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
+import { DetailActionButton } from "./DetailActionButton";
 import { DetailErrorState } from "./DetailErrorState";
-import { DetailHead } from "./DetailHead";
+import { DetailHead, buildActions } from "./DetailHead";
 import { DetailLoadingSkeleton } from "./DetailLoadingSkeleton";
 import { FactsCard } from "./FactsCard";
 import { Gallery } from "./Gallery";
@@ -223,13 +227,46 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
           />
         ) : (
           <>
+            <DetailHead listing={listing} />
+
             <div className={STICKY_HEAD_CLASS}>
-              <DetailHead
-                listing={listing}
-                pendingAction={pendingAction}
-                onAction={handleAction}
-                onEdit={enterEditMode}
-              />
+              <div className="flex flex-wrap items-center justify-end gap-2 max-sm:w-full">
+                <button
+                  type="button"
+                  onClick={enterEditMode}
+                  disabled={pendingAction !== null}
+                  aria-label={listingEditCopy.edit}
+                  className={cn(
+                    buttonClass("secondary"),
+                    "justify-center gap-2 max-md:h-auto max-md:min-h-14 max-md:min-w-16 max-md:flex-col max-md:gap-1 max-md:px-2 max-md:py-1.5 md:min-w-42",
+                  )}
+                >
+                  <AppIcon
+                    icon={Pencil}
+                    size={16}
+                    strokeWidth={1.7}
+                    decorative
+                  />
+                  <span className="font-mono text-meta font-medium tracking-normal leading-none md:hidden">
+                    {listingEditCopy.editShort}
+                  </span>
+                  <span className="hidden md:inline">
+                    {listingEditCopy.edit}
+                  </span>
+                </button>
+                {buildActions(listing).map((config) => (
+                  <DetailActionButton
+                    key={config.action}
+                    icon={config.icon}
+                    label={config.label}
+                    shortLabel={config.shortLabel}
+                    loadingLabel={config.loadingLabel}
+                    pending={pendingAction === config.action}
+                    disabled={pendingAction !== null}
+                    onClick={() => handleAction(config.action)}
+                  />
+                ))}
+              </div>
 
               {actionError ? (
                 <div className={ACTION_ERROR_CLASS} role="alert">
