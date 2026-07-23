@@ -5,10 +5,11 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, ImageIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
+import type { ListingImage } from "@/lib/api/listings";
 import { listingDetailCopy } from "../copy/listing-detail";
 
 interface GalleryProps {
-  images: readonly string[];
+  images: readonly ListingImage[];
   title: string;
   className?: string;
 }
@@ -78,7 +79,7 @@ export function Gallery({ images, title, className }: GalleryProps) {
         >
           {activeSrc ? (
             <Image
-              src={activeSrc}
+              src={activeSrc.secureUrl}
               alt={title}
               fill
               sizes="(max-width: 1024px) 100vw, 60vw"
@@ -132,9 +133,9 @@ export function Gallery({ images, title, className }: GalleryProps) {
       {images.length > 1 ? (
         <div className={THUMBS_VIEWPORT_CLASS}>
           <div className={THUMBS_LIST_CLASS}>
-            {images.map((src, index) => (
+            {images.map((img, index) => (
               <button
-                key={src}
+                key={img.id}
                 type="button"
                 aria-label={`${title} — Bild ${index + 1}`}
                 aria-pressed={index === active}
@@ -145,7 +146,7 @@ export function Gallery({ images, title, className }: GalleryProps) {
                   className={cn(THUMB_FRAME, index === active && THUMB_ACTIVE)}
                 >
                   <Image
-                    src={src}
+                    src={img.secureUrl}
                     alt=""
                     aria-hidden="true"
                     fill
