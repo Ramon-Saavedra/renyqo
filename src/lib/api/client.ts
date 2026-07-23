@@ -209,6 +209,33 @@ export async function apiPatchVoid(
   );
 }
 
+export async function apiDelete<T>(
+  path: string,
+  options?: ApiRequestOptions,
+): Promise<T> {
+  return apiRequest(
+    path,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+    options,
+    (response) => response.json() as Promise<T>,
+  );
+}
+
+export async function apiDeleteVoid(
+  path: string,
+  options?: ApiRequestOptions,
+): Promise<void> {
+  return apiRequest(
+    path,
+    { method: "DELETE", credentials: "include" },
+    options,
+    async () => undefined,
+  );
+}
+
 export async function apiGet<T>(
   path: string,
   options?: ApiRequestOptions,

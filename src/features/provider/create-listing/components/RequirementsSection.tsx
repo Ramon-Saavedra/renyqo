@@ -19,7 +19,7 @@ import type {
 } from "../hooks/useListingDraft";
 import { SectionCard } from "./SectionCard";
 
-interface AnforderungenSectionProps {
+interface RequirementsSectionProps {
   draft: ListingDraft;
   setField: <K extends keyof ListingDraft>(
     field: K,
@@ -32,12 +32,12 @@ function digitsOnly(value: string): string {
   return value.replace(/[^\d]/g, "");
 }
 
-export function AnforderungenSection({
+export function RequirementsSection({
   draft,
   setField,
   fieldErrors,
-}: AnforderungenSectionProps) {
-  const copy = createListingCopy.anforderungen;
+}: RequirementsSectionProps) {
+  const copy = createListingCopy.requirements;
   const fields = copy.fields;
   const note = copy.note;
 
@@ -47,7 +47,6 @@ export function AnforderungenSection({
       num={copy.num}
       title={copy.title}
       description={copy.description}
-      className="bg-anforderung-bg"
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField

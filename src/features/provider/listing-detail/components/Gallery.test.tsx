@@ -22,18 +22,21 @@ describe("Gallery", () => {
     render(<Gallery images={images} title="Wohnung in Berlin" />);
 
     const buttons = screen.getAllByRole("button");
-    expect(buttons).toHaveLength(9);
-    expect(buttons[0]?.querySelector("img")?.getAttribute("loading")).toBe(
+    const thumbnails = buttons.filter((b) =>
+      /Bild \d+$/.test(b.getAttribute("aria-label") ?? ""),
+    );
+    expect(thumbnails).toHaveLength(9);
+    expect(thumbnails[0]?.querySelector("img")?.getAttribute("loading")).toBe(
       "eager",
     );
 
-    fireEvent.click(buttons[8]!);
+    fireEvent.click(thumbnails[8]!);
 
     expect(screen.getByText("9 / 9")).toBeInstanceOf(HTMLElement);
     expect(
       screen.getByAltText("Wohnung in Berlin").getAttribute("src"),
     ).toContain("photo-8.webp");
-    expect(buttons[8]?.querySelector("img")?.getAttribute("loading")).toBe(
+    expect(thumbnails[8]?.querySelector("img")?.getAttribute("loading")).toBe(
       "eager",
     );
   });

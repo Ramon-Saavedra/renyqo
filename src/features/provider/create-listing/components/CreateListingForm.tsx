@@ -30,7 +30,7 @@ import {
   MissingChecklist,
   scrollToMissingField,
 } from "./ActionsBar";
-import { AnforderungenSection } from "./AnforderungenSection";
+import { RequirementsSection } from "./RequirementsSection";
 import { CreateListingHero } from "./CreateListingHero";
 import { HeaderNavLinks } from "./HeaderNavLinks";
 import { ObjektdatenSection } from "./ObjektdatenSection";
@@ -311,7 +311,7 @@ export function CreateListingForm() {
               setPhotos={handleSetPhotos}
               fieldErrors={fieldErrors}
             />
-            <AnforderungenSection
+            <RequirementsSection
               draft={draft}
               setField={handleSetField}
               fieldErrors={fieldErrors}

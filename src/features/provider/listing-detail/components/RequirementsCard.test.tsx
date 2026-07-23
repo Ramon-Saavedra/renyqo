@@ -52,11 +52,9 @@ describe("RequirementsCard", () => {
     );
     expect(screen.getByText("Max. 2 Personen")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Haustiere")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Nach Absprache")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Auf Anfrage")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Rauchen")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Nichtraucher bevorzugt")).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(screen.getByText("Nicht erlaubt")).toBeInstanceOf(HTMLElement);
   });
 
   it("shows a dash for applicant requirement fields without values", () => {

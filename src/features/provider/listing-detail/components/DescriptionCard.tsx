@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils/cn";
 import { listingDetailCopy } from "../copy/listing-detail";
 import { DetailCard } from "./DetailCard";
 
@@ -18,7 +19,7 @@ export function DescriptionCard({
   return (
     <DetailCard
       title={listingDetailCopy.description.title}
-      className={className}
+      className={cn("bg-background-subtle", className)}
     >
       <p className={TEXT_CLASS}>{description}</p>
     </DetailCard>

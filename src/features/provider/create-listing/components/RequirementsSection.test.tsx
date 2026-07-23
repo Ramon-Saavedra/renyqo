@@ -3,11 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { INITIAL_DRAFT } from "../hooks/useListingDraft";
-import { AnforderungenSection } from "./AnforderungenSection";
+import { RequirementsSection } from "./RequirementsSection";
 
-describe("AnforderungenSection", () => {
+describe("RequirementsSection", () => {
   it("renders the section heading, note and requirement fields", () => {
-    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
+    render(<RequirementsSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
 
     expect(
       screen.getByRole("heading", {
@@ -26,7 +26,7 @@ describe("AnforderungenSection", () => {
   });
 
   it("shows an explicit empty state for an unset people count", () => {
-    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
+    render(<RequirementsSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
 
     expect(screen.getByText("Nicht festgelegt")).toBeInstanceOf(HTMLElement);
     expect(screen.queryByText("—")).toBeNull();
@@ -36,7 +36,7 @@ describe("AnforderungenSection", () => {
     const user = userEvent.setup();
     const setField = vi.fn();
 
-    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={setField} />);
+    render(<RequirementsSection draft={INITIAL_DRAFT} setField={setField} />);
 
     await user.click(screen.getByRole("button", { name: "Wert erhöhen" }));
 
@@ -44,7 +44,7 @@ describe("AnforderungenSection", () => {
   });
 
   it("does not render provider-selectable household figures", () => {
-    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
+    render(<RequirementsSection draft={INITIAL_DRAFT} setField={vi.fn()} />);
 
     expect(screen.queryByText("Erwachsene")).toBeNull();
     expect(screen.queryByText("Kinder")).toBeNull();
@@ -53,7 +53,7 @@ describe("AnforderungenSection", () => {
   it("sanitizes the income input", () => {
     const setField = vi.fn();
 
-    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={setField} />);
+    render(<RequirementsSection draft={INITIAL_DRAFT} setField={setField} />);
 
     fireEvent.change(screen.getByLabelText("Mindesteinkommen netto"), {
       target: { value: "2.500 €" },
@@ -64,7 +64,7 @@ describe("AnforderungenSection", () => {
 
   it("renders the people count validation message", () => {
     render(
-      <AnforderungenSection
+      <RequirementsSection
         draft={INITIAL_DRAFT}
         setField={vi.fn()}
         fieldErrors={{
@@ -82,7 +82,7 @@ describe("AnforderungenSection", () => {
     const user = userEvent.setup();
     const setField = vi.fn();
 
-    render(<AnforderungenSection draft={INITIAL_DRAFT} setField={setField} />);
+    render(<RequirementsSection draft={INITIAL_DRAFT} setField={setField} />);
 
     await user.click(
       screen.getAllByRole("radio", { name: "Erforderlich" })[0]!,
