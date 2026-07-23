@@ -1,27 +1,21 @@
-import { MapPin } from "lucide-react";
+import { Archive, FileText, Globe, MapPin } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { StatusPill } from "../../listings-overview/components/StatusPill";
 import { formatDateTime } from "../../listings-overview/utils/format";
-import { Archive, FileText, Globe } from "lucide-react";
-import { listingDetailCopy, OBJECT_TYPE_LABEL } from "../copy/listing-detail";
+import { listingDetailCopy } from "../copy/listing-detail";
 import type { DetailAction, ListingDetail } from "../types";
+import { TypeChip } from "./TypeChip";
 
 interface DetailHeadProps {
   listing: ListingDetail;
 }
 
-const HEAD_CLASS =
-  "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6";
-const KICKER_CLASS = "mb-2 flex flex-wrap items-center gap-2";
-const TYPE_CHIP_CLASS =
-  "rounded-sm border border-border px-1.75 py-0.75 font-mono text-meta tracking-normal text-foreground-tertiary uppercase";
 const TITLE_CLASS =
   "mb-2 font-display text-title font-medium tracking-tight text-foreground text-balance";
 const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-foreground-secondary";
-const META_ROW_CLASS = "flex flex-wrap items-center gap-2";
 
 const { actions } = listingDetailCopy;
 
@@ -73,25 +67,8 @@ export function DetailHead({ listing }: DetailHeadProps) {
     : `Aktualisiert am ${timestampLabel}`;
 
   return (
-    <div className={HEAD_CLASS}>
-      <div className="min-w-0">
-        <div className={KICKER_CLASS}>
-          <StatusPill status={listing.status} />
-          {listing.objectType ? (
-            <span className={TYPE_CHIP_CLASS}>
-              {OBJECT_TYPE_LABEL[listing.objectType]}
-            </span>
-          ) : null}
-        </div>
-        {timestampLabel ? (
-          <div className={META_ROW_CLASS}>
-            <DateTimeBadge
-              value={timestampLabel}
-              title={timestampTitle}
-              className="mb-2 h-7 px-2 text-meta"
-            />
-          </div>
-        ) : null}
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0 flex-1">
         <h1 className={TITLE_CLASS}>{listing.title}</h1>
         <span className={ADDR_CLASS}>
           <AppIcon
@@ -103,6 +80,23 @@ export function DetailHead({ listing }: DetailHeadProps) {
           />
           {listing.headerAddress}
         </span>
+      </div>
+
+      {listing.objectType ? (
+        <div className="mt-1 self-start">
+          <TypeChip objectType={listing.objectType} />
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-center gap-2">
+        {timestampLabel ? (
+          <DateTimeBadge
+            value={timestampLabel}
+            title={timestampTitle}
+            className="h-7 px-2 text-meta"
+          />
+        ) : null}
+        <StatusPill status={listing.status} />
       </div>
     </div>
   );
