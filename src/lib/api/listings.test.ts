@@ -4,9 +4,11 @@ import { apiPatch, apiPatchVoid, apiPost, apiPostFormData } from "./client";
 import {
   createListingDraft,
   publishListing,
+  reorderListingImages,
   updateListing,
   uploadListingImage,
   type CreateListingPayload,
+  type ListingImage,
   type UpdateListingPayload,
 } from "./listings";
 
@@ -91,13 +93,17 @@ describe("uploadListingImage", () => {
     vi.clearAllMocks();
   });
 
-  it("uploads one image to the listing images endpoint using the file field", async () => {
-    vi.mocked(apiPostFormData).mockResolvedValue({ id: "listing-1" } as never);
+  it("uploads one image and returns the complete ListingImage object", async () => {
+    const image: ListingImage = {
+      id: "img-1",
+      secureUrl: "https://example.com/photo.jpg",
+      position: 0,
+      isCover: true,
+    };
+    vi.mocked(apiPostFormData).mockResolvedValue(image as never);
     const file = new File(["image"], "gallery.jpg", { type: "image/jpeg" });
 
-    await expect(uploadListingImage("listing-1", file)).resolves.toEqual({
-      id: "listing-1",
-    });
+    await expect(uploadListingImage("listing-1", file)).resolves.toEqual(image);
 
     expect(apiPostFormData).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/images",
@@ -107,6 +113,23 @@ describe("uploadListingImage", () => {
     const formData = vi.mocked(apiPostFormData).mock.calls[0]?.[1] as FormData;
     expect(Array.from(formData.keys())).toEqual(["file"]);
     expect(formData.get("file")).toBe(file);
+  });
+});
+
+describe("reorderListingImages", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("sends the ordered image ID array to the images/order endpoint", async () => {
+    vi.mocked(apiPatch).mockResolvedValue(undefined);
+
+    await reorderListingImages("listing-1", ["img-2", "img-1", "img-3"]);
+
+    expect(apiPatch).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/images/order",
+      { imageIds: ["img-2", "img-1", "img-3"] },
+    );
   });
 });
 

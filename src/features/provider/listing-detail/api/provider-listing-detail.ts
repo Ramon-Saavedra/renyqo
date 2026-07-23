@@ -1,5 +1,6 @@
 import { apiGet } from "@/lib/api/client";
 import type {
+  ListingImage,
   ObjectTypeBackend,
   PetPolicyBackend,
   SmokingPolicyBackend,
@@ -103,40 +104,43 @@ function normalizeSmokingPolicy(
   }
 }
 
-function readImageUrl(value: unknown): string | null {
-  if (typeof value === "string" && value.trim().length > 0) return value;
-  if (!isRecord(value)) return null;
-  return readString(value, ["url", "src", "imageUrl", "publicUrl", "fileUrl"]);
-}
-
-function readImages(record: ApiRecord): string[] {
-  const collected: string[] = [];
-  const push = (url: string | null) => {
-    if (url && !collected.includes(url)) collected.push(url);
-  };
-
-  push(
-    readString(record, [
-      "coverImageUrl",
-      "coverUrl",
-      "imageUrl",
-      "thumbnailUrl",
-    ]),
-  );
-  push(readImageUrl(record.coverImage));
-
+function readImages(record: ApiRecord): readonly ListingImage[] {
   const arrays = [
-    record.photos,
     record.images,
+    record.photos,
     record.listingImages,
     record.listing_images,
   ];
+
   for (const arr of arrays) {
     if (!Array.isArray(arr)) continue;
-    for (const item of arr) push(readImageUrl(item));
+    const parsed = arr
+      .map((item): ListingImage | null => {
+        if (!isRecord(item)) return null;
+        const id = readString(item, ["id"]);
+        const secureUrl = readString(item, [
+          "secureUrl",
+          "secure_url",
+          "url",
+          "src",
+          "imageUrl",
+          "publicUrl",
+          "fileUrl",
+        ]);
+        if (!id || !secureUrl) return null;
+        return {
+          id,
+          secureUrl,
+          position: readNumber(item, ["position"]) ?? 0,
+          isCover: readBoolean(item, ["isCover"]) ?? false,
+        };
+      })
+      .filter((img): img is ListingImage => img !== null);
+
+    if (parsed.length > 0) return parsed;
   }
 
-  return collected;
+  return [];
 }
 
 function buildHeaderAddress(record: ApiRecord): string {
