@@ -202,17 +202,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
             />
             {listingDetailCopy.backLabel}
           </button>
-        ) : (
-          <Link href={listingDetailCopy.backHref} className={BACK_LINK_CLASS}>
-            <AppIcon
-              icon={ChevronLeft}
-              size={13}
-              strokeWidth={1.8}
-              decorative
-            />
-            {listingDetailCopy.backLabel}
-          </Link>
-        )}
+        ) : null}
 
         {fetchStatus === "loading" ? (
           <DetailLoadingSkeleton />
@@ -227,45 +217,66 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
           />
         ) : (
           <>
-            <DetailHead listing={listing} />
-
             <div className={STICKY_HEAD_CLASS}>
-              <div className="flex flex-wrap items-center justify-end gap-2 max-sm:w-full">
-                <button
-                  type="button"
-                  onClick={enterEditMode}
-                  disabled={pendingAction !== null}
-                  aria-label={listingEditCopy.edit}
+              <div className="flex flex-wrap items-center justify-between gap-2 max-sm:w-full">
+                <Link
+                  href={listingDetailCopy.backHref}
                   className={cn(
                     buttonClass("secondary"),
                     "justify-center gap-2 max-md:h-auto max-md:min-h-14 max-md:min-w-16 max-md:flex-col max-md:gap-1 max-md:px-2 max-md:py-1.5 md:min-w-42",
+                    "no-underline",
                   )}
                 >
                   <AppIcon
-                    icon={Pencil}
+                    icon={ChevronLeft}
                     size={16}
                     strokeWidth={1.7}
                     decorative
                   />
-                  <span className="font-mono text-meta font-medium tracking-normal leading-none md:hidden">
-                    {listingEditCopy.editShort}
+                  <span className="max-md:hidden">
+                    {listingDetailCopy.backLabel}
                   </span>
-                  <span className="hidden md:inline">
-                    {listingEditCopy.edit}
+                  <span className="hidden max-md:inline font-mono text-meta tracking-normal leading-none">
+                    Zurück
                   </span>
-                </button>
-                {buildActions(listing).map((config) => (
-                  <DetailActionButton
-                    key={config.action}
-                    icon={config.icon}
-                    label={config.label}
-                    shortLabel={config.shortLabel}
-                    loadingLabel={config.loadingLabel}
-                    pending={pendingAction === config.action}
+                </Link>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={enterEditMode}
                     disabled={pendingAction !== null}
-                    onClick={() => handleAction(config.action)}
-                  />
-                ))}
+                    aria-label={listingEditCopy.edit}
+                    className={cn(
+                      buttonClass("secondary"),
+                      "justify-center gap-2 max-md:h-auto max-md:min-h-14 max-md:min-w-16 max-md:flex-col max-md:gap-1 max-md:px-2 max-md:py-1.5 md:min-w-42",
+                    )}
+                  >
+                    <AppIcon
+                      icon={Pencil}
+                      size={16}
+                      strokeWidth={1.7}
+                      decorative
+                    />
+                    <span className="font-mono text-meta font-medium tracking-normal leading-none md:hidden">
+                      {listingEditCopy.editShort}
+                    </span>
+                    <span className="hidden md:inline">
+                      {listingEditCopy.edit}
+                    </span>
+                  </button>
+                  {buildActions(listing).map((config) => (
+                    <DetailActionButton
+                      key={config.action}
+                      icon={config.icon}
+                      label={config.label}
+                      shortLabel={config.shortLabel}
+                      loadingLabel={config.loadingLabel}
+                      pending={pendingAction === config.action}
+                      disabled={pendingAction !== null}
+                      onClick={() => handleAction(config.action)}
+                    />
+                  ))}
+                </div>
               </div>
 
               {actionError ? (
@@ -274,6 +285,8 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                 </div>
               ) : null}
             </div>
+
+            <DetailHead listing={listing} />
 
             <div className={COLUMN_CONTAINER}>
               <div className={LEFT_COLUMN}>
