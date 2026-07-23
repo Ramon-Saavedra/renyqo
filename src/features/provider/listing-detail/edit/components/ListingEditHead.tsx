@@ -1,12 +1,12 @@
-import { Building2, DoorOpen, Home } from "lucide-react";
+import { Building2, DoorOpen, Home, MapPin } from "lucide-react";
 import type { ObjectTypeBackend } from "@/lib/api/listings";
-import { buttonClass } from "@/components/ui/button/Button";
+import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { FormField } from "@/components/ui/form/FormField";
 import { Input } from "@/components/ui/form/Input";
-import { LoadingButton } from "@/components/ui/loading/LoadingButton";
 import { Segmented } from "@/components/ui/form/Segmented";
-import { cn } from "@/lib/utils/cn";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { StatusPill } from "../../../listings-overview/components/StatusPill";
+import { formatDateTime } from "../../../listings-overview/utils/format";
 import type { ChangedFields } from "../changed-fields";
 import { listingEditCopy, OBJECT_TYPE_OPTIONS } from "../copy";
 import type {
@@ -21,18 +21,11 @@ interface ListingEditHeadProps {
   status: ListingStatus;
   setField: EditFieldSetter;
   errors: ListingEditErrors;
-  saving: boolean;
-  saved: boolean;
   savedFields: ChangedFields;
-  onSave: () => void;
-  onCancel: () => void;
+  publishedAt: string | null;
+  updatedAt: string | null;
+  headerAddress: string;
 }
-
-const HEAD_CLASS =
-  "flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6";
-const KICKER_CLASS = "mb-2 flex flex-wrap items-center gap-2";
-const ACTIONS_CLASS = "flex flex-wrap items-center gap-2 max-sm:w-full";
-const ACTION_BUTTON_CLASS = "min-w-32 justify-center max-sm:flex-1";
 
 const OBJECT_TYPE_ICONS = {
   APARTMENT: Building2,
@@ -45,70 +38,68 @@ export function ListingEditHead({
   status,
   setField,
   errors,
-  saving,
-  saved,
   savedFields,
-  onSave,
-  onCancel,
+  publishedAt,
+  updatedAt,
+  headerAddress,
 }: ListingEditHeadProps) {
+  const timestamp = publishedAt ?? updatedAt;
+  const timestampLabel = timestamp ? formatDateTime(timestamp) : null;
+  const timestampTitle = publishedAt
+    ? `Veröffentlicht am ${timestampLabel}`
+    : `Aktualisiert am ${timestampLabel}`;
+
   return (
-    <div className={HEAD_CLASS}>
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
-        <div className={KICKER_CLASS}>
-          <StatusPill status={status} />
-        </div>
-
-        <FormField label={listingEditCopy.fields.objectType}>
-          <Segmented<ObjectTypeBackend>
-            value={form.objectType}
-            onChange={(value) => setField("objectType", value)}
-            options={OBJECT_TYPE_OPTIONS.map((option) => ({
-              value: option.value,
-              label: option.label,
-              icon: OBJECT_TYPE_ICONS[option.value],
-            }))}
-            ariaLabel={listingEditCopy.fields.objectType}
-            saved={savedFields.has("objectType")}
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusPill status={status} />
+        {timestampLabel ? (
+          <DateTimeBadge
+            value={timestampLabel}
+            title={timestampTitle}
+            className="h-7 px-2 text-meta"
           />
-        </FormField>
-
-        <FormField
-          label={listingEditCopy.fields.title}
-          htmlFor="edit-title"
-          error={errors.title}
-        >
-          <Input
-            id="edit-title"
-            value={form.title}
-            placeholder={listingEditCopy.fields.titlePlaceholder}
-            saved={savedFields.has("title")}
-            onChange={(e) => setField("title", e.target.value)}
-          />
-        </FormField>
+        ) : null}
       </div>
 
-      <div className={ACTIONS_CLASS}>
-        <LoadingButton
-          variant="primary"
-          onClick={onSave}
-          loading={saving}
-          loadingLabel={listingEditCopy.saving}
-          success={saved}
-          successLabel={listingEditCopy.saved}
-          disabled={saving || saved}
-          className={cn(ACTION_BUTTON_CLASS, saving && "cursor-progress")}
-        >
-          {listingEditCopy.save}
-        </LoadingButton>
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={saving || saved}
-          className={cn(buttonClass("secondary"), ACTION_BUTTON_CLASS)}
-        >
-          {listingEditCopy.cancel}
-        </button>
-      </div>
+      <FormField label={listingEditCopy.fields.objectType}>
+        <Segmented<ObjectTypeBackend>
+          value={form.objectType}
+          onChange={(value) => setField("objectType", value)}
+          options={OBJECT_TYPE_OPTIONS.map((option) => ({
+            value: option.value,
+            label: option.label,
+            icon: OBJECT_TYPE_ICONS[option.value],
+          }))}
+          ariaLabel={listingEditCopy.fields.objectType}
+          saved={savedFields.has("objectType")}
+        />
+      </FormField>
+
+      <FormField
+        label={listingEditCopy.fields.title}
+        htmlFor="edit-title"
+        error={errors.title}
+      >
+        <Input
+          id="edit-title"
+          value={form.title}
+          placeholder={listingEditCopy.fields.titlePlaceholder}
+          saved={savedFields.has("title")}
+          onChange={(e) => setField("title", e.target.value)}
+        />
+      </FormField>
+
+      <span className="flex items-center gap-1.5 text-body text-foreground-secondary">
+        <AppIcon
+          icon={MapPin}
+          size={13}
+          strokeWidth={1.6}
+          decorative
+          className="text-foreground-tertiary"
+        />
+        {headerAddress}
+      </span>
     </div>
   );
 }

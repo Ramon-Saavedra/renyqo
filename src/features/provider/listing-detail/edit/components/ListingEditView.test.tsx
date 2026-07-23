@@ -5,10 +5,15 @@ import { ApiError } from "@/lib/api/client";
 import { updateListing } from "@/lib/api/listings";
 import type { ListingDetail } from "../../types";
 import { listingEditCopy } from "../copy";
+import { getProviderListing } from "../../api/provider-listing-detail";
 import { ListingEditView } from "./ListingEditView";
 
 vi.mock("@/lib/api/listings", () => ({
   updateListing: vi.fn(),
+}));
+
+vi.mock("../../api/provider-listing-detail", () => ({
+  getProviderListing: vi.fn(),
 }));
 
 const LISTING: ListingDetail = {
@@ -57,6 +62,7 @@ describe("ListingEditView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(updateListing).mockResolvedValue(undefined);
+    vi.mocked(getProviderListing).mockResolvedValue(LISTING);
   });
 
   it("saves changed fields and shows the saved notice", async () => {

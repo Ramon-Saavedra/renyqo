@@ -32,7 +32,14 @@ const LISTING: ListingDetail = {
   suitableForPeopleCount: 2,
   petsPolicy: "BY_ARRANGEMENT",
   smokingPolicy: "NON_SMOKERS_PREFERRED",
-  images: ["https://example.com/photo.jpg"],
+  images: [
+    {
+      id: "img-1",
+      secureUrl: "https://example.com/photo.jpg",
+      position: 0,
+      isCover: true,
+    },
+  ],
   createdAt: "2026-07-01T10:00:00.000Z",
   updatedAt: "2026-07-02T10:00:00.000Z",
   publishedAt: "2026-07-03T10:00:00.000Z",

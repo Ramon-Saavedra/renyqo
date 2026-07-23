@@ -8,9 +8,13 @@ import {
   useState,
 } from "react";
 import { Pencil } from "lucide-react";
-import type { ListingDetail } from "../../types";
+import type { ListingDetail, ListingImage } from "../../types";
+import { getProviderListing } from "../../api/provider-listing-detail";
+import { buttonClass } from "@/components/ui/button/Button";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { FormAlert } from "@/components/ui/form/FormAlert";
+import { LoadingButton } from "@/components/ui/loading/LoadingButton";
+import { cn } from "@/lib/utils/cn";
 import { STICKY_HEAD_CLASS } from "../../sticky-head";
 import { listingEditCopy } from "../copy";
 import { useListingEdit } from "../useListingEdit";
@@ -43,11 +47,10 @@ export function ListingEditView({
   onSaved,
   onDirtyChange,
 }: ListingEditViewProps) {
-  const [currentImages, setCurrentImages] = useState<readonly string[]>(
+  const [currentImages, setCurrentImages] = useState<readonly ListingImage[]>(
     () => listing.images,
   );
   const [photosModified, setPhotosModified] = useState(false);
-  const [photoSaved, setPhotoSaved] = useState(false);
 
   const onSavedRef = useRef(onSaved);
 
@@ -66,7 +69,7 @@ export function ListingEditView({
 
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const saving = status === "saving";
-  const saved = status === "saved" || photoSaved;
+  const saved = status === "saved";
   const totalDirty = isDirty || photosModified;
 
   useLayoutEffect(() => {
@@ -88,37 +91,49 @@ export function ListingEditView({
     onCancel();
   }, [onCancel]);
 
-  const handleImagesChange = useCallback((urls: readonly string[]) => {
-    setCurrentImages(urls);
-    setPhotosModified(true);
-  }, []);
+  const handleImagesChange = useCallback(
+    (images: readonly ListingImage[]) => {
+      setCurrentImages(images);
+      setPhotosModified(true);
+      getProviderListing(listing.id).then((updated) => {
+        setCurrentImages(updated.images);
+      });
+    },
+    [listing.id],
+  );
 
   const handleSave = useCallback(async () => {
     if (status !== "idle") return;
-    if (photosModified && !isDirty) {
-      setPhotoSaved(true);
-      setTimeout(() => {
-        onSavedRef.current({ ...listing, images: [...currentImages] });
-      }, 800);
-    } else {
-      await save();
-    }
-  }, [status, photosModified, isDirty, listing, currentImages, save]);
+    await save();
+  }, [status, save]);
+
+  const ACTION_BUTTON_CLASS = "min-w-32 justify-center max-sm:flex-1";
 
   return (
     <>
       <div className={STICKY_HEAD_CLASS}>
-        <ListingEditHead
-          form={form}
-          status={listing.status}
-          setField={setField}
-          errors={errors}
-          saving={saving}
-          saved={saved}
-          savedFields={savedFields}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <LoadingButton
+            variant="primary"
+            onClick={handleSave}
+            loading={saving}
+            loadingLabel={listingEditCopy.saving}
+            success={saved}
+            successLabel={listingEditCopy.saved}
+            disabled={saving || saved}
+            className={cn(ACTION_BUTTON_CLASS, saving && "cursor-progress")}
+          >
+            {listingEditCopy.save}
+          </LoadingButton>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={saving || saved}
+            className={cn(buttonClass("secondary"), ACTION_BUTTON_CLASS)}
+          >
+            {listingEditCopy.cancel}
+          </button>
+        </div>
 
         {error ? (
           <div className={ERROR_CLASS} role="alert">
@@ -139,11 +154,24 @@ export function ListingEditView({
         ) : null}
       </div>
 
+      <section className="mb-6 rounded-md border border-border px-5.5 py-5">
+        <ListingEditHead
+          form={form}
+          status={listing.status}
+          setField={setField}
+          errors={errors}
+          savedFields={savedFields}
+          publishedAt={listing.publishedAt}
+          updatedAt={listing.updatedAt}
+          headerAddress={listing.headerAddress}
+        />
+      </section>
+
       <div className={COLUMN_CONTAINER}>
         <div className={LEFT_COLUMN}>
           <EditableGallery
             listingId={listing.id}
-            images={listing.images}
+            images={currentImages}
             onImagesChange={handleImagesChange}
             className="order-1 lg:order-0"
           />
