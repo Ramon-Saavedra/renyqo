@@ -168,7 +168,7 @@ export const createListingCopy = {
       },
     },
   },
-  anforderungen: {
+  requirements: {
     num: "02 · Anforderungen",
     title: "Wer würde gut zu deinem Objekt passen?",
     description:
