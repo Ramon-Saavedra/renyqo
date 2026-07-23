@@ -12,18 +12,18 @@ import {
 } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
-import { deleteListingImage, uploadListingImage } from "@/lib/api/listings";
+import {
+  deleteListingImage,
+  reorderListingImages,
+  uploadListingImage,
+} from "@/lib/api/listings";
+import type { ListingImage } from "@/lib/api/listings";
 import { listingDetailCopy } from "../../copy/listing-detail";
-
-interface EditablePhoto {
-  readonly id: string;
-  readonly src: string;
-}
 
 interface EditableGalleryProps {
   listingId: string;
-  images: readonly string[];
-  onImagesChange?: (urls: readonly string[]) => void;
+  images: readonly ListingImage[];
+  onImagesChange?: (images: readonly ListingImage[]) => void;
   className?: string;
 }
 
@@ -40,22 +40,17 @@ const ROOT_CLASS = "flex flex-col gap-2.5";
 const MAIN_WRAP_CLASS = "relative group";
 const MAIN_CLASS =
   "relative aspect-[16/10] w-full overflow-hidden rounded-md bg-background-muted";
-const THUMBS_VIEWPORT_CLASS = "w-full overflow-x-auto pb-1 scrollbar-slim";
-const THUMBS_LIST_CLASS = "flex gap-1";
+const THUMBS_VIEWPORT_CLASS = "w-full";
+const THUMBS_LIST_CLASS = "grid grid-cols-5 gap-1";
 const MAIN_CLICK_CLASS = "cursor-pointer";
-const THUMB_WRAP = "relative aspect-square basis-1/5 shrink-0";
+const THUMB_WRAP = "relative aspect-square";
 const THUMB_BUTTON =
   "block h-full w-full cursor-pointer rounded-sm focus-visible:outline-none focus-visible:shadow-focus";
 const THUMB_FRAME =
   "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted transition-colors";
 const THUMB_ACTIVE = "border-primary";
 const THUMB_DRAG_OVER = "border-primary border-dashed";
-
-let photoIdCounter = 0;
-function nextPhotoId(): string {
-  photoIdCounter += 1;
-  return `ep-${photoIdCounter}`;
-}
+const MAX_PHOTOS = 12;
 
 export function EditableGallery({
   listingId,
@@ -63,9 +58,7 @@ export function EditableGallery({
   onImagesChange,
   className,
 }: EditableGalleryProps) {
-  const [photos, setPhotos] = useState<EditablePhoto[]>(() =>
-    images.map((src) => ({ id: nextPhotoId(), src })),
-  );
+  const [photos, setPhotos] = useState<ListingImage[]>(() => [...images]);
   const [active, setActive] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
@@ -74,6 +67,11 @@ export function EditableGallery({
   const [feedback, setFeedback] = useState<string | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewUrlsRef = useRef<Map<string, string>>(new Map());
+  const photosRef = useRef<ListingImage[]>(photos);
+  useEffect(() => {
+    photosRef.current = photos;
+  }, [photos]);
 
   const showFeedback = useCallback((msg: string) => {
     setFeedback(msg);
@@ -81,18 +79,19 @@ export function EditableGallery({
     feedbackTimerRef.current = setTimeout(() => setFeedback(null), 2000);
   }, []);
 
-  const isInitialRef = useRef(true);
-  useEffect(() => {
-    if (isInitialRef.current) {
-      isInitialRef.current = false;
-      return;
+  const revokePreviewUrl = useCallback((tempId: string) => {
+    const url = previewUrlsRef.current.get(tempId);
+    if (url) {
+      URL.revokeObjectURL(url);
+      previewUrlsRef.current.delete(tempId);
     }
-    onImagesChange?.(photos.map((p) => p.src));
-  }, [photos, onImagesChange]);
+  }, []);
 
   useEffect(
     () => () => {
       if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.clear();
     },
     [],
   );
@@ -106,53 +105,96 @@ export function EditableGallery({
   }, [photos.length]);
 
   const handleRemove = useCallback(
-    async (photo: EditablePhoto) => {
+    async (photo: ListingImage) => {
       setDeletingIds((prev) => new Set(prev).add(photo.id));
       try {
-        if (!photo.id.startsWith("ep-")) {
-          await deleteListingImage(listingId, photo.id);
-        }
-      } catch {
-        // keep local removal even if the API call fails
-      }
+        await deleteListingImage(listingId, photo.id);
+      } catch {}
       setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(photo.id);
         return next;
       });
-      setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
-      if (active > 0) {
-        setActive((prev) => Math.min(prev, photos.length - 2));
+      const next = photosRef.current.filter((p) => p.id !== photo.id);
+      setPhotos(next);
+      onImagesChange?.(next);
+      if (active >= next.length && active > 0) {
+        setActive(next.length - 1);
       }
       showFeedback("Bild entfernt");
     },
-    [listingId, active, photos.length, showFeedback],
+    [listingId, active, showFeedback, onImagesChange],
   );
 
   const handleFiles = useCallback(
     async (files: FileList) => {
-      setUploading(true);
-      const file = files[0];
-      if (!file) {
-        setUploading(false);
+      const selected = Array.from(files);
+      if (selected.length === 0) return;
+
+      const remaining = MAX_PHOTOS - photosRef.current.length;
+      if (remaining <= 0) {
+        showFeedback(`Maximal ${MAX_PHOTOS} Fotos erlaubt`);
         return;
       }
-      try {
-        const result = await uploadListingImage(listingId, file);
-        const newPhoto: EditablePhoto = {
-          id: result.id,
-          src: URL.createObjectURL(file),
-        };
-        setPhotos((prev) => [...prev, newPhoto]);
-        setActive((prev) => prev + 1);
-        showFeedback("Foto hinzugefügt");
-      } catch {
-        // silently fail — the user can retry
-      } finally {
-        setUploading(false);
+
+      const toUpload = selected.slice(0, remaining);
+      setUploading(true);
+
+      const provisionals = toUpload.map((f) => {
+        const id = `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const url = URL.createObjectURL(f);
+        previewUrlsRef.current.set(id, url);
+        return { id, url, file: f };
+      });
+
+      const provisionalImages: ListingImage[] = provisionals.map((p) => ({
+        id: p.id,
+        secureUrl: p.url,
+        position: photosRef.current.length,
+        isCover: false,
+      }));
+
+      const updated = [...photosRef.current, ...provisionalImages];
+      setPhotos(updated);
+      setActive(updated.length - 1);
+
+      let successCount = 0;
+
+      for (const p of provisionals) {
+        try {
+          const result = await uploadListingImage(listingId, p.file);
+          const idx = updated.findIndex((img) => img.id === p.id);
+          if (idx !== -1) {
+            updated[idx] = result;
+            setPhotos([...updated]);
+          }
+          successCount += 1;
+        } catch {
+          const idx = updated.findIndex((img) => img.id === p.id);
+          if (idx !== -1) {
+            updated.splice(idx, 1);
+            setPhotos([...updated]);
+          }
+        } finally {
+          revokePreviewUrl(p.id);
+        }
+      }
+
+      onImagesChange?.(updated);
+      setUploading(false);
+
+      if (successCount > 0) {
+        showFeedback(
+          `${successCount} Foto${successCount !== 1 ? "s" : ""} hinzugefügt`,
+        );
+      }
+      if (toUpload.length < selected.length) {
+        showFeedback(
+          `${toUpload.length} Foto${toUpload.length !== 1 ? "s" : ""} hochgeladen, ${selected.length - toUpload.length} übersprungen (max. ${MAX_PHOTOS})`,
+        );
       }
     },
-    [listingId, showFeedback],
+    [listingId, showFeedback, onImagesChange, revokePreviewUrl],
   );
 
   const handleDragStart = useCallback(
@@ -182,22 +224,34 @@ export function EditableGallery({
       e.preventDefault();
       setDragOverIndex(null);
       if (dragIndex === null || dragIndex === index) return;
-      setPhotos((prev) => {
-        if (dragIndex < 0 || dragIndex >= prev.length) return prev;
-        const next = [...prev];
-        const [moved] = next.splice(dragIndex, 1);
-        if (!moved) return prev;
-        next.splice(index, 0, moved);
-        return next;
-      });
+      const prev = photosRef.current;
+      if (dragIndex < 0 || dragIndex >= prev.length) {
+        setDragIndex(null);
+        return;
+      }
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      if (!moved) {
+        setDragIndex(null);
+        return;
+      }
+      next.splice(index, 0, moved);
+      setPhotos(next);
+      onImagesChange?.(next);
+      reorderListingImages(
+        listingId,
+        next.map((p) => p.id),
+      ).catch(() => {});
       setDragIndex(null);
       setActive(index);
       showFeedback("Reihenfolge geändert");
     },
-    [dragIndex, showFeedback],
+    [dragIndex, listingId, showFeedback, onImagesChange],
   );
 
-  if (photos.length === 0) {
+  const hasImages = photos.length > 0;
+
+  if (!hasImages) {
     return (
       <div className={cn(className)}>
         <div className={EMPTY_CLASS}>
@@ -208,6 +262,7 @@ export function EditableGallery({
           <input
             ref={inputRef}
             type="file"
+            multiple
             accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
             className="sr-only"
             onChange={(e) => {
@@ -235,7 +290,8 @@ export function EditableGallery({
     );
   }
 
-  const activeSrc = photos[Math.min(active, photos.length - 1)] ?? photos[0];
+  const safeIndex = Math.min(active, photos.length - 1);
+  const activePhoto = photos[safeIndex] ?? photos[0];
 
   return (
     <div className={cn(ROOT_CLASS, className)}>
@@ -254,9 +310,9 @@ export function EditableGallery({
               : undefined
           }
         >
-          {activeSrc ? (
+          {activePhoto ? (
             <Image
-              src={activeSrc.src}
+              src={activePhoto.secureUrl}
               alt=""
               fill
               sizes="(max-width: 1024px) 100vw, 60vw"
@@ -301,10 +357,7 @@ export function EditableGallery({
         ) : null}
 
         <span className={COUNTER_CLASS}>
-          {listingDetailCopy.gallery.counter(
-            Math.min(active, photos.length - 1) + 1,
-            photos.length,
-          )}
+          {listingDetailCopy.gallery.counter(safeIndex + 1, photos.length)}
         </span>
       </div>
 
@@ -313,6 +366,10 @@ export function EditableGallery({
           {feedback}
         </div>
       ) : null}
+
+      <p className="text-caption text-foreground-tertiary">
+        Fotos per Drag &amp; Drop sortieren. Das erste Foto ist das Titelbild.
+      </p>
 
       <div className={THUMBS_VIEWPORT_CLASS}>
         <div className={THUMBS_LIST_CLASS}>
@@ -333,24 +390,24 @@ export function EditableGallery({
               <button
                 type="button"
                 aria-label={`Bild ${index + 1}`}
-                aria-pressed={index === active}
+                aria-pressed={index === safeIndex}
                 className={THUMB_BUTTON}
                 onClick={() => setActive(index)}
               >
                 <span
                   className={cn(
                     THUMB_FRAME,
-                    index === active && THUMB_ACTIVE,
+                    index === safeIndex && THUMB_ACTIVE,
                     dragOverIndex === index && THUMB_DRAG_OVER,
                   )}
                 >
                   <Image
-                    src={photo.src}
+                    src={photo.secureUrl}
                     alt=""
                     aria-hidden="true"
                     fill
                     sizes="(max-width: 640px) 20vw, 200px"
-                    loading={index === active ? "eager" : "lazy"}
+                    loading={index === safeIndex ? "eager" : "lazy"}
                     quality={90}
                     className="object-cover"
                   />
@@ -364,7 +421,7 @@ export function EditableGallery({
                   handleRemove(photo);
                 }}
                 disabled={uploading || deletingIds.has(photo.id)}
-                className="absolute top-0.5 right-0.5 grid h-4.5 w-4.5 cursor-pointer place-items-center rounded-sm border-0 bg-black/55 text-white opacity-0 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-30"
+                className="absolute top-0.5 right-0.5 grid h-4.5 w-4.5 cursor-pointer place-items-center rounded-sm border-0 bg-black/55 text-white focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-30"
               >
                 <AppIcon
                   icon={deletingIds.has(photo.id) ? Loader : X}
@@ -376,27 +433,30 @@ export function EditableGallery({
               </button>
             </div>
           ))}
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => inputRef.current?.click()}
-            aria-label="Foto hinzufügen"
-            className="flex aspect-square basis-1/5 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-dashed border-border-strong bg-background-muted text-foreground-tertiary transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-50"
-          >
-            <AppIcon
-              icon={uploading ? Loader : Upload}
-              size={18}
-              strokeWidth={1.6}
-              className={uploading ? "animate-spin" : ""}
-              decorative
-            />
-          </button>
+          {photos.length < MAX_PHOTOS ? (
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => inputRef.current?.click()}
+              aria-label="Foto hinzufügen"
+              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm border border-dashed border-border-strong bg-background-muted text-foreground-tertiary transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-50"
+            >
+              <AppIcon
+                icon={uploading ? Loader : Upload}
+                size={18}
+                strokeWidth={1.6}
+                className={uploading ? "animate-spin" : ""}
+                decorative
+              />
+            </button>
+          ) : null}
         </div>
       </div>
 
       <input
         ref={inputRef}
         type="file"
+        multiple
         accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
         className="sr-only"
         onChange={(e) => {
