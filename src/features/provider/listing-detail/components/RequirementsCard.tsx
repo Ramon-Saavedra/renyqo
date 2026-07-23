@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Check } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import {
   PET_POLICY_LABEL,
@@ -97,7 +98,10 @@ export function RequirementsCard({
   const rows = buildRequirements(listing);
 
   return (
-    <DetailCard title={requirements.title} className={className}>
+    <DetailCard
+      title={requirements.title}
+      className={cn("bg-background-subtle", className)}
+    >
       <ul className={LIST_CLASS}>
         {rows.map((row) => (
           <li key={row.label} className={ITEM_CLASS}>

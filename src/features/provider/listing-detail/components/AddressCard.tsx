@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils/cn";
 import { Eye } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { VISIBILITY_NOTE, listingDetailCopy } from "../copy/listing-detail";
@@ -20,7 +21,10 @@ export function AddressCard({ listing, className }: AddressCardProps) {
   const hasAddress = Boolean(listing.street || zipCity);
 
   return (
-    <DetailCard title={listingDetailCopy.address.title} className={className}>
+    <DetailCard
+      title={listingDetailCopy.address.title}
+      className={cn("bg-background-subtle", className)}
+    >
       <p className={ADDRESS_CLASS}>
         {hasAddress ? (
           <>
