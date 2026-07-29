@@ -1,3 +1,5 @@
+import type { ObjectTypeBackend } from "@/lib/api/listings";
+
 export const LISTING_STATUS = [
   "published",
   "draft",
@@ -16,6 +18,7 @@ export type AttentionReason =
 export interface ListingOverviewItem {
   readonly id: string;
   readonly title: string;
+  readonly objectType: ObjectTypeBackend | null;
   readonly displayAddress: string;
   readonly coverImageUrl?: string | null;
 

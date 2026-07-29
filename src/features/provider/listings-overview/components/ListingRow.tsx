@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Home } from "lucide-react";
+import type { Ref } from "react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { cn } from "@/lib/utils/cn";
@@ -22,6 +23,7 @@ interface ListingRowProps {
   actionStatus?: string | undefined;
   now?: Date | null;
   selected?: boolean;
+  selectedRowRef?: Ref<HTMLElement>;
 }
 
 const ROW_BASE_CLASS =
@@ -77,6 +79,7 @@ export function ListingRow({
   actionStatus,
   now,
   selected = false,
+  selectedRowRef,
 }: ListingRowProps) {
   const isInactive = listing.status === "archived";
   const visibleCount = Math.min(listing.applicationsTotal, 5);
@@ -95,6 +98,7 @@ export function ListingRow({
         selected ? ROW_SELECTED_CLASS : ROW_DEFAULT_CLASS,
         isInactive && ROW_INACTIVE_CLASS,
       )}
+      ref={selectedRowRef}
       data-status={listing.status}
       role="button"
       tabIndex={0}

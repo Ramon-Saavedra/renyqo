@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -112,6 +113,8 @@ export function ListingsView({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilterKey>("alle");
   const [sort, setSort] = useState<SortKey>("updated");
+  const selectedRowRef = useRef<HTMLElement | null>(null);
+  const lastScrolledIdRef = useRef<string | null>(null);
   const activityTick = useSyncExternalStore(
     subscribeActivityClock,
     getActivityTick,
@@ -161,6 +164,30 @@ export function ListingsView({
     );
     return [...base].sort(SORTERS[sort]);
   }, [listings, statusFilter, search, sort]);
+
+  useEffect(() => {
+    if (
+      fetchStatus !== "idle" ||
+      !selectedListingId ||
+      lastScrolledIdRef.current === selectedListingId
+    )
+      return;
+
+    const frame = window.requestAnimationFrame(() => {
+      if (selectedRowRef.current) {
+        selectedRowRef.current.scrollIntoView({
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+            .matches
+            ? "auto"
+            : "smooth",
+          block: "center",
+        });
+        lastScrolledIdRef.current = selectedListingId;
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [fetchStatus, selectedListingId]);
 
   const handleAction = useCallback<
     (action: RowAction, listing: ListingOverviewItem) => Promise<void>
@@ -307,6 +334,9 @@ export function ListingsView({
                 actionStatus={actionStatusById[listing.id]}
                 now={renderNow}
                 selected={listing.id === selectedListingId}
+                {...(listing.id === selectedListingId
+                  ? { selectedRowRef }
+                  : {})}
               />
             ))}
           </div>

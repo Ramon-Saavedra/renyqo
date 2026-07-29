@@ -1,9 +1,12 @@
+import type { ObjectTypeBackend } from "@/lib/api/listings";
+
 export type DashboardObjectStatus = "published" | "draft";
 
 export interface DashboardObject {
   readonly id: string;
   readonly title: string;
   readonly fullTitle: string;
+  readonly objectType: ObjectTypeBackend | null;
   readonly district: string;
   readonly address: string;
   readonly coldRent: number;

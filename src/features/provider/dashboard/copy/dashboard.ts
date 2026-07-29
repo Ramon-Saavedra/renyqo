@@ -2,15 +2,14 @@ import type { CandidateBadge, DashboardObjectStatus } from "../types";
 
 export const ACCENTS = [
   { id: "schiefer", label: "Schiefer" },
-  { id: "pastellblau", label: "Stahlblau" },
-  { id: "salbei", label: "Salbei" },
-  { id: "sand", label: "Honig" },
-  { id: "apricot", label: "Koralle" },
-  { id: "altrosa", label: "Altrosa" },
-  { id: "flieder", label: "Lavendel" },
-  { id: "eisblau", label: "Fjord" },
-  { id: "stein", label: "Stein" },
-  { id: "eukalyptus", label: "Eukalyptus" },
+  { id: "pastellblau", label: "Tiefes Petrol" },
+  { id: "salbei", label: "Salbeigrün" },
+  { id: "sand", label: "Burgunder" },
+  { id: "apricot", label: "Tiefes Indigo" },
+  { id: "altrosa", label: "Kakaobraun" },
+  { id: "flieder", label: "Ocker" },
+  { id: "eisblau", label: "Graphit" },
+  { id: "stein", label: "Waldgrün" },
 ] as const;
 
 export type AccentId = (typeof ACCENTS)[number]["id"];
@@ -87,7 +86,7 @@ export const dashboardCopy = {
     },
   },
   accent: {
-    label: "Dashboard-Akzent",
+    label: "Akzentfarbe anpassen",
     ariaLabel: "Akzentfarbe wählen",
   },
   stats: {

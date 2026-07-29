@@ -185,7 +185,7 @@ export function DashboardView({
               onSelect={setStoredSelectedObjectId}
             />
 
-            <div className="mt-6 flex">
+            <div className="flex justify-end">
               <AccentPicker value={accent} onChange={setStoredAccent} />
             </div>
 

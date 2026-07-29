@@ -31,6 +31,7 @@ describe("getProviderListings", () => {
       {
         id: "listing-1",
         title: "Wohnung in Berlin",
+        objectType: "HOUSE",
         photos: ["https://example.com/cover.jpg"],
         street: "Musterstraße 1",
         zip: "10115",
@@ -54,6 +55,7 @@ describe("getProviderListings", () => {
       {
         id: "listing-1",
         title: "Wohnung in Berlin",
+        objectType: "HOUSE",
         displayAddress: "Musterstraße 1 · Berlin · 10115",
         coverImageUrl: "https://example.com/cover.jpg",
         coldRent: 1200,
@@ -90,6 +92,7 @@ describe("getProviderListings", () => {
       {
         id: "listing-2",
         title: "Unbenanntes Objekt",
+        objectType: null,
         displayAddress: "Direkte Adresse",
         coverImageUrl: null,
         coldRent: 0,
