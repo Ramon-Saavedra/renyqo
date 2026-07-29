@@ -17,6 +17,7 @@ describe("getProviderDashboardObjects", () => {
       {
         id: "listing-1",
         title: "Wohnung am Park",
+        objectType: "APARTMENT",
         displayAddress: "Parkstraße 1 · Berlin",
         coverImageUrl: "https://res.cloudinary.com/demo/image/upload/flat.jpg",
         coldRent: 980,
@@ -35,6 +36,7 @@ describe("getProviderDashboardObjects", () => {
       {
         id: "listing-2",
         title: "Entwurf",
+        objectType: null,
         displayAddress: "Adresse offen",
         coverImageUrl: null,
         coldRent: 0,
@@ -53,6 +55,7 @@ describe("getProviderDashboardObjects", () => {
       {
         id: "listing-3",
         title: "Archiviert",
+        objectType: null,
         displayAddress: "Archivstraße 3 · Berlin",
         coverImageUrl: null,
         coldRent: 1200,
@@ -75,6 +78,7 @@ describe("getProviderDashboardObjects", () => {
         id: "listing-1",
         title: "Wohnung am Park",
         fullTitle: "Wohnung am Park",
+        objectType: "APARTMENT",
         district: "Parkstraße 1 · Berlin",
         address: "Parkstraße 1 · Berlin",
         coldRent: 980,
@@ -91,6 +95,7 @@ describe("getProviderDashboardObjects", () => {
         id: "listing-2",
         title: "Entwurf",
         fullTitle: "Entwurf",
+        objectType: null,
         district: "Adresse offen",
         address: "Adresse offen",
         coldRent: 0,

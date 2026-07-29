@@ -1,5 +1,9 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nodeTestFiles = [
   "src/lib/api/**/*.test.ts",
@@ -14,6 +18,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     tsconfigPaths: true,
+    alias: {
+      "next/image": path.resolve(__dirname, "src/tests/mocks/next-image.tsx"),
+    },
   },
   test: {
     pool: "threads",

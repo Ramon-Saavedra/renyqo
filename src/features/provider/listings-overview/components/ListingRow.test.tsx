@@ -9,6 +9,7 @@ const NOW = new Date("2026-05-22T12:00:00");
 const BASE: ListingOverviewItem = {
   id: "row-1",
   title: "Helle Wohnung am Park",
+  objectType: null,
   displayAddress: "Parkstraße 12 · Berlin, Mitte · 10115",
   coldRent: 1200,
   deposit: 2400,

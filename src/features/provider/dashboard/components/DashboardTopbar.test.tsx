@@ -65,6 +65,6 @@ describe("DashboardTopbar", () => {
 
     await screen.findByText("Mara Lehmann");
 
-    expect(screen.queryByText("Dashboard-Akzent")).toBeNull();
+    expect(screen.queryByText("Akzentfarbe anpassen")).toBeNull();
   });
 });

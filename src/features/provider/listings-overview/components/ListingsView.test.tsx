@@ -30,6 +30,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
   {
     id: "a",
     title: "Helle 3-Zimmer Altbauwohnung",
+    objectType: null,
     displayAddress: "Schönhauser Allee 142 · Berlin, Prenzlauer Berg · 10437",
     coldRent: 1480,
     deposit: 2960,
@@ -49,6 +50,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
   {
     id: "b",
     title: "Modernes Loft",
+    objectType: null,
     displayAddress: "Friedrichstraße 88 · Hamburg, Altona · 22765",
     coldRent: 2150,
     deposit: 4300,
@@ -68,6 +70,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
   {
     id: "c",
     title: "Entwurf Studio",
+    objectType: null,
     displayAddress: "Brüderstraße 8 · Leipzig, Zentrum-Süd · 04103",
     coldRent: 680,
     deposit: 1360,
@@ -87,6 +90,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
   {
     id: "d",
     title: "Penthouse mit Rheinblick",
+    objectType: null,
     displayAddress: "Konrad-Adenauer-Ufer 22 · Düsseldorf, Altstadt · 40213",
     coldRent: 3450,
     deposit: 10350,
@@ -310,5 +314,165 @@ describe("ListingsView", () => {
     await user.click(screen.getByRole("menuitem", { name: /Details ansehen/ }));
 
     expect(mockPush).toHaveBeenCalledWith("/provider/listings/a");
+  });
+
+  it("scrolls to the selected listing once on mount", () => {
+    const scrollIntoView = vi.fn();
+    const originalScroll = HTMLElement.prototype.scrollIntoView;
+    const originalRAF = window.requestAnimationFrame;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    };
+
+    try {
+      render(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="a"
+        />,
+      );
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScroll;
+      window.requestAnimationFrame = originalRAF;
+    }
+  });
+
+  it("does not re-scroll when search text changes", async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    const originalScroll = HTMLElement.prototype.scrollIntoView;
+    const originalRAF = window.requestAnimationFrame;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    };
+
+    try {
+      render(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="a"
+        />,
+      );
+
+      await screen.findByText("Helle 3-Zimmer Altbauwohnung");
+
+      const initialCalls = scrollIntoView.mock.calls.length;
+
+      const input = screen.getByLabelText("Mietobjekte durchsuchen");
+      await user.type(input, "Berlin");
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(initialCalls);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScroll;
+      window.requestAnimationFrame = originalRAF;
+    }
+  });
+
+  it("does not re-scroll for the same selected listing id across re-renders", () => {
+    const scrollIntoView = vi.fn();
+    const originalScroll = HTMLElement.prototype.scrollIntoView;
+    const originalRAF = window.requestAnimationFrame;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    };
+
+    try {
+      const { rerender } = render(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="a"
+        />,
+      );
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+      rerender(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="a"
+        />,
+      );
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScroll;
+      window.requestAnimationFrame = originalRAF;
+    }
+  });
+
+  it("scrolls again when the selected listing id changes", () => {
+    const scrollIntoView = vi.fn();
+    const originalScroll = HTMLElement.prototype.scrollIntoView;
+    const originalRAF = window.requestAnimationFrame;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    };
+
+    try {
+      const { rerender } = render(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="a"
+        />,
+      );
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+      rerender(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="b"
+        />,
+      );
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(2);
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScroll;
+      window.requestAnimationFrame = originalRAF;
+    }
+  });
+
+  it("does not mark the scroll as done when the row is not in the filtered list", () => {
+    const scrollIntoView = vi.fn();
+    const originalScroll = HTMLElement.prototype.scrollIntoView;
+    const originalRAF = window.requestAnimationFrame;
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+      cb(0);
+      return 0;
+    };
+
+    try {
+      // Select an ID that does not exist — the row ref stays null,
+      // so the scroll guard must not be updated.
+      render(
+        <ListingsView
+          initialListings={SAMPLE}
+          now={NOW}
+          selectedListingId="nonexistent"
+        />,
+      );
+
+      expect(scrollIntoView).not.toHaveBeenCalled();
+    } finally {
+      HTMLElement.prototype.scrollIntoView = originalScroll;
+      window.requestAnimationFrame = originalRAF;
+    }
   });
 });

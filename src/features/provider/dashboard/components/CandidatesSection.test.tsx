@@ -8,6 +8,7 @@ const publishedObject: DashboardObject = {
   id: "object-1",
   title: "Wohnung Mitte",
   fullTitle: "Wohnung Mitte",
+  objectType: null,
   district: "Berlin-Mitte",
   address: "Torstraße 1, 10119 Berlin",
   coldRent: 900,

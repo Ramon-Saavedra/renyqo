@@ -25,7 +25,7 @@ export function DashboardTopbar() {
 
   return (
     <header className={BAR_CLASS}>
-      <Link href="/" aria-label="Renyqo">
+      <Link href="/provider/dashboard" aria-label="Renyqo">
         <Logo />
       </Link>
 

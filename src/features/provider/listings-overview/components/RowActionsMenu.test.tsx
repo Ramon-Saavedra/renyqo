@@ -8,6 +8,7 @@ import { RowActionsMenu } from "./RowActionsMenu";
 const BASE: ListingOverviewItem = {
   id: "test-1",
   title: "Testobject",
+  objectType: null,
   displayAddress: "Teststraße 1 · Berlin · 10000",
   coldRent: 900,
   deposit: 1800,

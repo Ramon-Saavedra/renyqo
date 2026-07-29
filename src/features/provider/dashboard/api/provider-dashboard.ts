@@ -48,6 +48,7 @@ function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
     id: listing.id,
     title: listing.title,
     fullTitle: listing.title,
+    objectType: listing.objectType ?? null,
     district: listing.displayAddress,
     address: listing.displayAddress,
     coldRent: listing.coldRent,

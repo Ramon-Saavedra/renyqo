@@ -21,20 +21,20 @@ const SELECT_CLASS =
   "relative block min-h-0 w-full cursor-pointer rounded-sm text-left focus-visible:outline-none focus-visible:shadow-focus";
 
 const TITLE_BASE =
-  "min-w-0 truncate font-display text-caption font-medium text-primary-foreground";
+  "min-w-0 truncate font-display text-caption font-normal text-primary-foreground/90";
 
 const STATUS_BASE =
-  "shrink-0 rounded-sm bg-primary-foreground/20 px-1.5 py-0.5 text-xs font-medium whitespace-nowrap text-primary-foreground";
+  "shrink-0 rounded-sm bg-primary-foreground/15 px-1.5 py-0.5 text-xs font-normal whitespace-nowrap text-primary-foreground/80";
 
 const META_BASE =
-  "block min-w-0 truncate text-caption text-primary-foreground/80";
+  "block min-w-0 truncate text-caption text-primary-foreground/70";
 
 const CAND_BASE =
-  "flex min-w-0 flex-1 items-center gap-1.5 text-caption text-primary-foreground/90";
+  "flex min-w-0 flex-1 items-center gap-1.5 text-caption text-primary-foreground/80";
 const DETAIL_BAR_BASE =
   "flex items-center gap-2 border-t border-primary-foreground/20 pt-2";
 const PRICE_CLASS =
-  "shrink-0 font-display text-caption font-medium text-primary-foreground";
+  "shrink-0 font-display text-caption font-normal text-primary-foreground/90";
 const SHARE_WRAP_CLASS = "ml-auto flex shrink-0 justify-end";
 const SHARE_BUTTON_BASE =
   "inline-flex h-6.5 w-6.5 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/40 bg-primary-foreground/15 text-primary-foreground hover:border-primary-foreground/60 hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
@@ -86,14 +86,14 @@ export function ObjectSidebarItem({
           {formatEUR(object.coldRent)} {sidebar.rentSuffix}
         </span>
         {isDraft ? (
-          <span className="min-w-0 flex-1 truncate text-caption text-primary-foreground/90">
+          <span className="min-w-0 flex-1 truncate text-caption text-primary-foreground/80">
             {sidebar.draftNotice}
           </span>
         ) : (
           <span className={CAND_BASE}>
             <span
               aria-hidden="true"
-              className="h-1.5 w-1.5 rounded-full bg-primary-foreground"
+              className="h-1.5 w-1.5 rounded-full bg-primary-foreground/70"
             />
             <span className="min-w-0 truncate">
               {sidebar.applicationsLabel(object.activeApplications)}

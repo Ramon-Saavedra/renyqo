@@ -1,9 +1,9 @@
 import { apiGet } from "@/lib/api/client";
-import type {
-  ListingImage,
-  ObjectTypeBackend,
-  PetPolicyBackend,
-  SmokingPolicyBackend,
+import {
+  normalizeObjectType,
+  type ListingImage,
+  type PetPolicyBackend,
+  type SmokingPolicyBackend,
 } from "@/lib/api/listings";
 import type { ListingDetail, ListingStatus } from "../types";
 
@@ -60,19 +60,6 @@ function normalizeStatus(value: string | null): ListingStatus {
       return "archived";
     default:
       return "draft";
-  }
-}
-
-function normalizeObjectType(value: string | null): ObjectTypeBackend | null {
-  switch (value?.toUpperCase()) {
-    case "APARTMENT":
-      return "APARTMENT";
-    case "HOUSE":
-      return "HOUSE";
-    case "ROOM":
-      return "ROOM";
-    default:
-      return null;
   }
 }
 

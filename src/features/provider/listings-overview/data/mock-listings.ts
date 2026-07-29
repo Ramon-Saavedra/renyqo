@@ -4,6 +4,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-001",
     title: "Helle 3-Zimmer Altbauwohnung mit Balkon",
+    objectType: null,
     displayAddress: "Schönhauser Allee 142 · Berlin, Prenzlauer Berg · 10437",
     coldRent: 1480,
     livingArea: 84,
@@ -20,6 +21,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-002",
     title: "Modernes Loft mit Dachterrasse",
+    objectType: null,
     displayAddress: "Friedrichstraße 88 · Hamburg, Altona · 22765",
     coldRent: 2150,
     livingArea: 112,
@@ -36,6 +38,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-003",
     title: "Charmante 2-Zimmer Wohnung im Glockenbachviertel",
+    objectType: null,
     displayAddress: "Holzstraße 24 · München, Isarvorstadt · 80469",
     coldRent: 1620,
     livingArea: 58,
@@ -52,6 +55,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-004",
     title: "Familienfreundliche Maisonette nahe Park",
+    objectType: null,
     displayAddress: "Bismarckstraße 17 · Köln, Lindenthal · 50931",
     coldRent: 1890,
     livingArea: 124,
@@ -68,6 +72,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-005",
     title: "Sanierte Altbauwohnung im Belgischen Viertel",
+    objectType: null,
     displayAddress: "Aachener Straße 56 · Köln, Innenstadt · 50674",
     coldRent: 1340,
     livingArea: 76,
@@ -84,6 +89,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-006",
     title: "Stilvolle 1-Zimmer Wohnung mit Einbauküche",
+    objectType: null,
     displayAddress: "Reichenberger Straße 99 · Berlin, Kreuzberg · 10999",
     coldRent: 920,
     livingArea: 38,
@@ -100,6 +106,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-007",
     title: "Geräumige 4-Zimmer Wohnung mit Südbalkon",
+    objectType: null,
     displayAddress: "Wielandstraße 32 · Stuttgart, West · 70195",
     coldRent: 1720,
     livingArea: 108,
@@ -116,6 +123,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-008",
     title: "Erstbezug nach Sanierung — 2 Zimmer",
+    objectType: null,
     displayAddress: "Eppendorfer Landstraße 67 · Hamburg, Eppendorf · 20249",
     coldRent: 1380,
     livingArea: 62,
@@ -132,6 +140,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-009",
     title: "Kompakte Studiowohnung — möbliert",
+    objectType: null,
     displayAddress: "Brüderstraße 8 · Leipzig, Zentrum-Süd · 04103",
     coldRent: 680,
     livingArea: 32,
@@ -148,6 +157,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-010",
     title: "Reihenhaus mit kleinem Garten",
+    objectType: null,
     displayAddress: "Tannenweg 11 · Frankfurt, Bornheim · 60385",
     coldRent: 2380,
     livingArea: 142,
@@ -164,6 +174,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-011",
     title: "Gemütliche 3-Zimmer Wohnung im Glockenbach",
+    objectType: null,
     displayAddress: "Müllerstraße 41 · München, Ludwigsvorstadt · 80469",
     coldRent: 1780,
     livingArea: 78,
@@ -180,6 +191,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-012",
     title: "Penthouse mit Rheinblick",
+    objectType: null,
     displayAddress: "Konrad-Adenauer-Ufer 22 · Düsseldorf, Altstadt · 40213",
     coldRent: 3450,
     livingArea: 168,
@@ -196,6 +208,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-013",
     title: "Helle 2-Zimmer Wohnung am Volkspark",
+    objectType: null,
     displayAddress: "Hermannplatz 4 · Berlin, Neukölln · 10967",
     coldRent: 1080,
     livingArea: 54,
@@ -212,6 +225,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-014",
     title: "Großzügige Galeriewohnung mit offenem Wohnbereich",
+    objectType: null,
     displayAddress: "Karolinenplatz 9 · Nürnberg, Altstadt · 90402",
     coldRent: 1560,
     livingArea: 96,
@@ -228,6 +242,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-015",
     title: "Ruhige Hinterhof-Wohnung mit Terrasse",
+    objectType: null,
     displayAddress: "Linienstraße 156 · Berlin, Mitte · 10115",
     coldRent: 1290,
     livingArea: 68,
@@ -244,6 +259,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-016",
     title: "Townhouse-Charakter — 4 Zimmer auf 2 Etagen",
+    objectType: null,
     displayAddress: "Hafenstraße 75 · Bremen, Schwachhausen · 28209",
     coldRent: 1980,
     livingArea: 132,
@@ -260,6 +276,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-017",
     title: "Single-Apartment im Hipster-Kiez",
+    objectType: null,
     displayAddress: "Weserstraße 184 · Berlin, Neukölln · 12045",
     coldRent: 760,
     livingArea: 36,
@@ -276,6 +293,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-018",
     title: "Familienhaus mit Garage & Garten",
+    objectType: null,
     displayAddress: "Lindenallee 28 · Hannover, Kirchrode · 30559",
     coldRent: 2240,
     livingArea: 158,
@@ -292,6 +310,7 @@ export const MOCK_LISTINGS: readonly ListingOverviewItem[] = [
   {
     id: "obj-019",
     title: "Moderne Etagenwohnung mit Tiefgarage",
+    objectType: null,
     displayAddress: "Goethestraße 12 · Karlsruhe, Innenstadt · 76135",
     coldRent: 1450,
     livingArea: 82,
