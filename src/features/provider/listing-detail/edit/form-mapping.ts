@@ -115,7 +115,9 @@ export function applyEditFormToListing(
     depositMonths: form.depositMonths,
     livingArea: stringToNumber(form.livingArea),
     rooms: stringToNumber(form.rooms),
-    bedrooms: stringToNumber(form.bedrooms),
+    bedrooms: form.bedrooms.trim()
+      ? (stringToNumber(form.bedrooms) ?? listing.bedrooms)
+      : listing.bedrooms,
     availableFrom: form.availableFrom || null,
     shortDescription: form.shortDescription.trim() || null,
     minimumHouseholdNetIncome: stringToNumber(form.minimumHouseholdNetIncome),

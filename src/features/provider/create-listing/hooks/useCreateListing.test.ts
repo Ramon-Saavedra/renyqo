@@ -4,7 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { INITIAL_DRAFT } from "./useListingDraft";
 import type { ListingDraft, ListingPhoto } from "./useListingDraft";
+import type { RoomOption } from "../copy/create-listing";
 import { useCreateListing, type DraftSaveResult } from "./useCreateListing";
+import { createListingCopy } from "../copy/create-listing";
 
 const mockPush = vi.hoisted(() => vi.fn());
 
@@ -191,6 +193,48 @@ describe("useCreateListing", () => {
           availableFrom: "2026-07-01T00:00:00.000Z",
         }),
       );
+    });
+  });
+
+  describe("saveDraft — cross-field validation", () => {
+    it("blocks saveDraft when bedrooms exceeds rooms", async () => {
+      const { result } = renderHook(() => useCreateListing());
+
+      let outcome: string | undefined;
+      await act(async () => {
+        outcome = await result.current.saveDraft(
+          {
+            ...VALID_DRAFT,
+            rooms: "2" as RoomOption,
+            bedrooms: "3",
+          },
+          "Titel",
+        );
+      });
+
+      expect(outcome).toBe("error");
+      expect(result.current.fieldErrors.bedrooms).toBe(
+        createListingCopy.validation.bedroomsTooMany,
+      );
+      expect(createListingDraft).not.toHaveBeenCalled();
+    });
+
+    it("allows saveDraft when bedrooms equals rooms", async () => {
+      vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.saveDraft(
+          {
+            ...VALID_DRAFT,
+            rooms: "3" as RoomOption,
+            bedrooms: "3",
+          },
+          "Titel",
+        );
+      });
+
+      expect(createListingDraft).toHaveBeenCalled();
     });
   });
 
@@ -478,6 +522,20 @@ describe("useCreateListing", () => {
         PHOTO_FILE,
       );
       expect(publishListing).toHaveBeenCalledWith("draft-1");
+    });
+
+    it("blocks publish when bedrooms exceeds rooms", async () => {
+      const { result } = renderHook(() => useCreateListing());
+
+      await act(async () => {
+        await result.current.publish(
+          { ...VALID_DRAFT, rooms: "2" as RoomOption, bedrooms: "3" },
+          "Titel",
+        );
+      });
+
+      expect(result.current.fieldErrors.bedrooms).toBeTruthy();
+      expect(createListingDraft).not.toHaveBeenCalled();
     });
   });
 

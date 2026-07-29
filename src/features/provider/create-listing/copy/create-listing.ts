@@ -287,6 +287,8 @@ export const createListingCopy = {
     area: "Bitte gib die Wohnfläche an",
     rooms: "Bitte wähle die Zimmeranzahl",
     bedrooms: "Bitte gib die Anzahl der Schlafzimmer an",
+    bedroomsTooMany:
+      "Die Anzahl der Schlafzimmer darf die Zimmeranzahl nicht überschreiten.",
     price: "Bitte gib die Kaltmiete an",
     additionalCosts: "Bitte gib einen gültigen Betrag an",
     deposit: "Bitte gib einen gültigen Betrag an",

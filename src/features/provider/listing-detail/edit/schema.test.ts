@@ -58,4 +58,58 @@ describe("validateEditForm", () => {
       }),
     ).toEqual({});
   });
+
+  describe("bedrooms ≤ rooms relationship", () => {
+    it("accepts bedrooms equal to rooms", () => {
+      expect(validateEditForm({ ...VALID, rooms: "3", bedrooms: "3" })).toEqual(
+        {},
+      );
+    });
+
+    it("accepts bedrooms less than rooms", () => {
+      expect(validateEditForm({ ...VALID, rooms: "3", bedrooms: "2" })).toEqual(
+        {},
+      );
+    });
+
+    it("accepts bedrooms with decimal rooms", () => {
+      expect(
+        validateEditForm({ ...VALID, rooms: "2.5", bedrooms: "2" }),
+      ).toEqual({});
+    });
+
+    it("accepts bedrooms of 0", () => {
+      expect(validateEditForm({ ...VALID, rooms: "1", bedrooms: "0" })).toEqual(
+        {},
+      );
+    });
+
+    it("rejects bedrooms greater than rooms", () => {
+      const errors = validateEditForm({
+        ...VALID,
+        rooms: "2",
+        bedrooms: "3",
+      });
+      expect(errors.bedrooms).toBe(listingEditCopy.validation.bedroomsTooMany);
+    });
+
+    it("rejects bedrooms greater than decimal rooms", () => {
+      const errors = validateEditForm({
+        ...VALID,
+        rooms: "2.5",
+        bedrooms: "3",
+      });
+      expect(errors.bedrooms).toBe(listingEditCopy.validation.bedroomsTooMany);
+    });
+
+    it("does not double-report when rooms is invalid", () => {
+      const errors = validateEditForm({
+        ...VALID,
+        rooms: "abc",
+        bedrooms: "3",
+      });
+      expect(errors.rooms).toBe(listingEditCopy.validation.rooms);
+      expect(errors.bedrooms).toBeUndefined(); // individual rooms error, not relationship
+    });
+  });
 });

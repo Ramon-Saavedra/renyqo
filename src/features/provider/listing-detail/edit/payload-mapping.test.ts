@@ -159,4 +159,20 @@ describe("mapEditFormToUpdatePayload", () => {
       expect(payload).not.toHaveProperty("suitableForPeopleCount");
     });
   });
+
+  it("omits bedrooms from the payload when cleared (empty string)", () => {
+    const payload = mapEditFormToUpdatePayload(
+      { ...INITIAL, bedrooms: "" },
+      { ...INITIAL, bedrooms: "1" },
+    );
+    expect(payload).not.toHaveProperty("bedrooms");
+  });
+
+  it("sends bedrooms 0 in the payload", () => {
+    const payload = mapEditFormToUpdatePayload(
+      { ...INITIAL, bedrooms: "0" },
+      { ...INITIAL, bedrooms: "1" },
+    );
+    expect(payload.bedrooms).toBe(0);
+  });
 });

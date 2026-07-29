@@ -259,4 +259,30 @@ describe("useListingValidation", () => {
       expect(result.current.completedSteps).not.toContain("sec-03");
     });
   });
+
+  describe("bedrooms ≤ rooms relationship", () => {
+    it("accepts bedrooms equal to rooms", () => {
+      const draft = { ...VALID_DRAFT, rooms: "3" as RoomOption, bedrooms: "3" };
+      const { result } = renderHook(() => useListingValidation(draft));
+      expect(result.current.missing).not.toContain("Schlafzimmer");
+      expect(result.current.completedSteps).toContain("sec-01");
+    });
+
+    it("blocks canPublish when bedrooms exceeds rooms", () => {
+      const draft = { ...VALID_DRAFT, rooms: "2" as RoomOption, bedrooms: "3" };
+      const { result } = renderHook(() => useListingValidation(draft));
+      expect(result.current.canPublish).toBe(false);
+      expect(result.current.missing).toContain("Schlafzimmer");
+    });
+
+    it("excludes sec-01 when bedrooms exceeds rooms", () => {
+      const draft = {
+        ...VALID_DRAFT,
+        rooms: "2.5" as RoomOption,
+        bedrooms: "3",
+      };
+      const { result } = renderHook(() => useListingValidation(draft));
+      expect(result.current.completedSteps).not.toContain("sec-01");
+    });
+  });
 });
