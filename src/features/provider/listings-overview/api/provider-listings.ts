@@ -1,4 +1,5 @@
 import { apiGet, apiPatchVoid } from "@/lib/api/client";
+import { normalizeObjectType } from "@/lib/api/listings";
 import type {
   AttentionReason,
   ListingOverviewItem,
@@ -172,6 +173,7 @@ function mapProviderListing(value: unknown): ListingOverviewItem | null {
   return {
     id,
     title: readString(value, ["title"]) ?? "Unbenanntes Objekt",
+    objectType: normalizeObjectType(readString(value, ["objectType", "type"])),
     displayAddress: buildDisplayAddress(value),
     coverImageUrl: readCoverImageUrl(value),
     coldRent: readNumber(value, ["coldRent", "rent", "price"]) ?? 0,

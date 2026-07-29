@@ -7,6 +7,28 @@ import {
 } from "./client";
 
 export type ObjectTypeBackend = "APARTMENT" | "HOUSE" | "ROOM";
+
+export function normalizeObjectType(
+  value: string | null,
+): ObjectTypeBackend | null {
+  switch (value?.toUpperCase()) {
+    case "APARTMENT":
+      return "APARTMENT";
+    case "HOUSE":
+      return "HOUSE";
+    case "ROOM":
+      return "ROOM";
+    default:
+      return null;
+  }
+}
+
+export const OBJECT_TYPE_LABEL: Record<ObjectTypeBackend, string> = {
+  APARTMENT: "Wohnung",
+  HOUSE: "Haus",
+  ROOM: "Zimmer",
+};
+
 export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
 export type SmokingPolicyBackend =
   | "ALLOWED"

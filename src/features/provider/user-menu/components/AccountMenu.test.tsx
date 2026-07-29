@@ -98,7 +98,7 @@ describe("AccountMenu", () => {
       await screen.findByRole("button", { name: "Konto & Profil" }),
     );
 
-    expect(screen.queryByText("Dashboard-Akzent")).toBeNull();
+    expect(screen.queryByText("Akzentfarbe anpassen")).toBeNull();
     expect(
       screen.queryByRole("radiogroup", { name: "Akzentfarbe wählen" }),
     ).toBeNull();

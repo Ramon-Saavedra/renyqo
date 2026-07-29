@@ -1,5 +1,5 @@
 import type { ObjectTypeBackend } from "@/lib/api/listings";
-import { OBJECT_TYPE_LABEL } from "../copy/listing-detail";
+import { OBJECT_TYPE_LABEL } from "@/lib/api/listings";
 
 interface TypeChipProps {
   objectType: ObjectTypeBackend;

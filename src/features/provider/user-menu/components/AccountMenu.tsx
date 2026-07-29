@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar/Avatar";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
+import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { getCurrentUser, logout } from "@/lib/api/auth";
 import type { SafeUser } from "@/lib/api/auth";
-import { cn } from "@/lib/utils/cn";
 import { getInitials, toTitleCase } from "@/lib/utils/user-name";
 import { userMenuCopy } from "../copy/user-menu";
 
@@ -19,7 +19,6 @@ interface AccountMenuProps {
   className?: string;
 }
 
-const WRAP_CLASS = "relative";
 const TRIGGER_COMPACT_CLASS =
   "flex cursor-pointer items-center rounded-md border-0 bg-transparent p-0 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 const TRIGGER_FULL_CLASS =
@@ -29,8 +28,7 @@ const META_CLASS = "hidden max-w-36 flex-col leading-tight 2xl:flex";
 const NAME_CLASS = "truncate text-caption font-medium text-foreground";
 const COMPANY_CLASS = "truncate text-caption text-foreground-tertiary";
 
-const PANEL_CLASS =
-  "absolute right-0 top-full z-40 w-72 rounded-md border border-border bg-background p-3 shadow-card";
+const PANEL_CLASS = "w-72 p-3";
 const PANEL_HEAD_CLASS = "mb-3 flex items-center justify-between gap-3";
 const PANEL_TITLE_CLASS =
   "font-mono text-meta uppercase text-foreground-tertiary";
@@ -52,11 +50,8 @@ export function AccountMenu({
   const router = useRouter();
   const [user, setUser] = useState<SafeUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const panelId = useId();
 
   useEffect(() => {
     let active = true;
@@ -76,26 +71,6 @@ export function AccountMenu({
       active = false;
     };
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-
-    function handlePointerDown(event: PointerEvent) {
-      if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open]);
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -118,72 +93,60 @@ export function AccountMenu({
   const avatarClass = isFull ? AVATAR_FULL_CLASS : undefined;
 
   return (
-    <div ref={wrapRef} className={cn(WRAP_CLASS, className)}>
+    <PopoverPanel
+      ariaLabel={userMenuCopy.settings}
+      {...(className ? { className } : {})}
+      panelClassName={PANEL_CLASS}
+      trigger={({ triggerProps, triggerRef }) => (
+        <button
+          {...triggerProps}
+          ref={triggerRef}
+          className={isFull ? TRIGGER_FULL_CLASS : TRIGGER_COMPACT_CLASS}
+        >
+          {loading ? (
+            <RenyqoSkeleton variant="circle" width={32} height={32} />
+          ) : (
+            <Avatar
+              initials={initials}
+              label={name || userMenuCopy.fallbackLabel}
+              {...(avatarClass ? { className: avatarClass } : {})}
+            />
+          )}
+          {isFull && name && (
+            <span className={META_CLASS}>
+              <span className={NAME_CLASS}>{name}</span>
+              {company && <span className={COMPANY_CLASS}>{company}</span>}
+            </span>
+          )}
+        </button>
+      )}
+    >
+      <div className={PANEL_HEAD_CLASS}>
+        <span className={PANEL_TITLE_CLASS}>{userMenuCopy.settings}</span>
+      </div>
+
+      <div className={THEME_ROW_CLASS}>
+        <span className={THEME_LABEL_CLASS}>{userMenuCopy.appearance}</span>
+        <ThemeToggle showLabel iconSize={14} className={THEME_TOGGLE_CLASS} />
+      </div>
+
+      {logoutError ? (
+        <FormAlert variant="error" message={logoutError} className="mt-3" />
+      ) : null}
+
       <button
         type="button"
-        className={isFull ? TRIGGER_FULL_CLASS : TRIGGER_COMPACT_CLASS}
-        aria-label={userMenuCopy.settings}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={open ? panelId : undefined}
-        onClick={() => setOpen((current) => !current)}
+        className={LOGOUT_BUTTON_CLASS}
+        onClick={handleLogout}
+        disabled={loggingOut}
       >
-        {loading ? (
-          <RenyqoSkeleton variant="circle" width={32} height={32} />
-        ) : (
-          <Avatar
-            initials={initials}
-            label={name || userMenuCopy.fallbackLabel}
-            {...(avatarClass ? { className: avatarClass } : {})}
-          />
-        )}
-        {isFull && name && (
-          <span className={META_CLASS}>
-            <span className={NAME_CLASS}>{name}</span>
-            {company && <span className={COMPANY_CLASS}>{company}</span>}
-          </span>
-        )}
+        <AppIcon icon={LogOut} size={14} decorative />
+        <span>
+          {loggingOut ? userMenuCopy.loggingOut : userMenuCopy.logout}
+        </span>
       </button>
 
-      {open && (
-        <div
-          id={panelId}
-          role="dialog"
-          aria-label={userMenuCopy.settings}
-          className={PANEL_CLASS}
-        >
-          <div className={PANEL_HEAD_CLASS}>
-            <span className={PANEL_TITLE_CLASS}>{userMenuCopy.settings}</span>
-          </div>
-
-          <div className={THEME_ROW_CLASS}>
-            <span className={THEME_LABEL_CLASS}>{userMenuCopy.appearance}</span>
-            <ThemeToggle
-              showLabel
-              iconSize={14}
-              className={THEME_TOGGLE_CLASS}
-            />
-          </div>
-
-          {logoutError ? (
-            <FormAlert variant="error" message={logoutError} className="mt-3" />
-          ) : null}
-
-          <button
-            type="button"
-            className={LOGOUT_BUTTON_CLASS}
-            onClick={handleLogout}
-            disabled={loggingOut}
-          >
-            <AppIcon icon={LogOut} size={14} decorative />
-            <span>
-              {loggingOut ? userMenuCopy.loggingOut : userMenuCopy.logout}
-            </span>
-          </button>
-
-          {user?.email && <p className={EMAIL_CLASS}>{user.email}</p>}
-        </div>
-      )}
-    </div>
+      {user?.email && <p className={EMAIL_CLASS}>{user.email}</p>}
+    </PopoverPanel>
   );
 }

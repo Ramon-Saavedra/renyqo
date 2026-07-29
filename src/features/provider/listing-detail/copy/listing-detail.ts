@@ -1,15 +1,8 @@
 import type {
-  ObjectTypeBackend,
   PetPolicyBackend,
   SmokingPolicyBackend,
 } from "@/lib/api/listings";
 import type { ListingStatus } from "../types";
-
-export const OBJECT_TYPE_LABEL: Record<ObjectTypeBackend, string> = {
-  APARTMENT: "Wohnung",
-  HOUSE: "Haus",
-  ROOM: "Zimmer",
-};
 
 export const PET_POLICY_LABEL: Record<PetPolicyBackend, string> = {
   ALLOWED: "Erlaubt",

@@ -24,6 +24,7 @@ const publishedObject: DashboardObject = {
   id: "object-1",
   title: "Wohnung Mitte",
   fullTitle: "Wohnung Mitte Berlin",
+  objectType: "APARTMENT",
   district: "Berlin-Mitte",
   address: "Torstraße 1, 10119 Berlin",
   coldRent: 900,
@@ -40,6 +41,9 @@ describe("SelectedObjectCard", () => {
   it("renders selected object details and actions", () => {
     render(<SelectedObjectCard object={publishedObject} />);
 
+    const typeChip = screen.getByText("Wohnung");
+    expect(typeChip).not.toBeNull();
+    expect(typeChip.closest("section")).toBeNull();
     expect(screen.getByText("Aktuell ausgewählt")).not.toBeNull();
     expect(screen.getByText("Wohnung Mitte Berlin")).not.toBeNull();
     expect(screen.getByText("Torstraße 1, 10119 Berlin")).not.toBeNull();

@@ -6,7 +6,7 @@ import { StatusPill } from "../../listings-overview/components/StatusPill";
 import { formatDateTime } from "../../listings-overview/utils/format";
 import { listingDetailCopy } from "../copy/listing-detail";
 import type { DetailAction, ListingDetail } from "../types";
-import { TypeChip } from "./TypeChip";
+import { TypeChip } from "@/components/ui/type-chip/TypeChip";
 
 interface DetailHeadProps {
   listing: ListingDetail;
