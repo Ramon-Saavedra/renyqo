@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { createListingCopy } from "../copy/create-listing";
 import {
+  isBedroomRoomRelationshipValid,
   isPositiveListingNumber,
   isValidListingDate,
 } from "../utils/listing-validation";
@@ -35,6 +36,15 @@ export function useListingValidation(
     }
     if (!draft.legalAccepted) missing.push(labels.legal);
 
+    // Cross-field: bedrooms must not exceed rooms when both are valid numbers.
+    const bedroomsRelationValid = isBedroomRoomRelationshipValid(
+      draft.rooms,
+      draft.bedrooms,
+    );
+    if (!bedroomsRelationValid) {
+      missing.push(labels.bedrooms);
+    }
+
     const canPublish = missing.length === 0;
     const completedSteps: string[] = [];
     if (
@@ -44,6 +54,7 @@ export function useListingValidation(
       isPositiveListingNumber(draft.area) &&
       isPositiveListingNumber(draft.rooms) &&
       draft.bedrooms !== "" &&
+      bedroomsRelationValid &&
       isPositiveListingNumber(draft.price) &&
       isValidListingDate(draft.availableFrom)
     ) {

@@ -3,7 +3,10 @@ import {
   parseMinimumHouseholdNetIncome,
   parseSuitableForPeopleCount,
 } from "@/lib/validators/eligibility-criteria";
-import { toNonNegativeInteger } from "@/features/provider/create-listing/utils/listing-validation";
+import {
+  isBedroomRoomRelationshipValid,
+  toNonNegativeInteger,
+} from "@/features/provider/create-listing/utils/listing-validation";
 import { listingEditCopy } from "./copy";
 import type { ListingEditErrors, ListingEditForm } from "./types";
 
@@ -26,28 +29,38 @@ function isValidBedrooms(value: string): boolean {
   return toNonNegativeInteger(value) !== null;
 }
 
-export const editListingSchema = z.object({
-  title: z.string().trim().min(1, v.title),
-  coldRent: z.string().refine(isNonNegativeAmount, { message: v.amount }),
-  additionalCosts: z
-    .string()
-    .refine(isNonNegativeAmount, { message: v.amount }),
-  deposit: z.string().refine(isNonNegativeAmount, { message: v.amount }),
-  livingArea: z.string().refine(isPositiveAmount, { message: v.area }),
-  rooms: z.string().refine(isPositiveAmount, { message: v.rooms }),
-  bedrooms: z.string().refine(isValidBedrooms, { message: v.rooms }),
-  minimumHouseholdNetIncome: z
-    .string()
-    .refine((value) => parseMinimumHouseholdNetIncome(value) !== null, {
-      message: v.amount,
-    }),
-  suitableForPeopleCount: z
-    .number()
-    .nullable()
-    .refine((value) => parseSuitableForPeopleCount(value) !== null, {
-      message: v.peopleCount,
-    }),
-});
+export const editListingSchema = z
+  .object({
+    title: z.string().trim().min(1, v.title),
+    coldRent: z.string().refine(isNonNegativeAmount, { message: v.amount }),
+    additionalCosts: z
+      .string()
+      .refine(isNonNegativeAmount, { message: v.amount }),
+    deposit: z.string().refine(isNonNegativeAmount, { message: v.amount }),
+    livingArea: z.string().refine(isPositiveAmount, { message: v.area }),
+    rooms: z.string().refine(isPositiveAmount, { message: v.rooms }),
+    bedrooms: z.string().refine(isValidBedrooms, { message: v.bedrooms }),
+    minimumHouseholdNetIncome: z
+      .string()
+      .refine((value) => parseMinimumHouseholdNetIncome(value) !== null, {
+        message: v.amount,
+      }),
+    suitableForPeopleCount: z
+      .number()
+      .nullable()
+      .refine((value) => parseSuitableForPeopleCount(value) !== null, {
+        message: v.peopleCount,
+      }),
+  })
+  .superRefine((data, ctx) => {
+    if (!isBedroomRoomRelationshipValid(data.rooms, data.bedrooms)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["bedrooms"],
+        message: v.bedroomsTooMany,
+      });
+    }
+  });
 
 /**
  * Validates the editable subset of the form. Returns a keyed error map (empty

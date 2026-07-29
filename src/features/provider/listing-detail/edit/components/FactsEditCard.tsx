@@ -184,7 +184,11 @@ export function FactsEditCard({
             ))}
           </Select>
         </FormField>
-        <FormField label={fields.bedrooms} htmlFor="edit-bedrooms">
+        <FormField
+          label={fields.bedrooms}
+          htmlFor="edit-bedrooms"
+          error={errors.bedrooms}
+        >
           <Select
             id="edit-bedrooms"
             value={form.bedrooms}

@@ -9,6 +9,8 @@ import {
   updateListing,
 } from "@/lib/api/listings";
 import { publishSchema } from "../schemas/listing-schemas";
+import { createListingCopy } from "../copy/create-listing";
+import { isBedroomRoomRelationshipValid } from "../utils/listing-validation";
 import {
   hasErrors,
   mapBackendMessage,
@@ -88,6 +90,15 @@ export function useCreateListing(): UseCreateListingResult {
   const saveDraft = useCallback(
     async (draft: ListingDraft, title: string, options?: SaveDraftOptions) => {
       const redirectTo = options?.redirectTo ?? "/provider/listings";
+
+      // Cross-field: block the save when bedrooms exceeds rooms.
+      if (!isBedroomRoomRelationshipValid(draft.rooms, draft.bedrooms)) {
+        setFieldErrors({
+          bedrooms: createListingCopy.validation.bedroomsTooMany,
+        });
+        return "error";
+      }
+
       if (draftIdRef.current) {
         setError(null);
         setFieldErrors({});

@@ -80,6 +80,9 @@ export const listingEditCopy = {
     amount: "Bitte gib einen gültigen Betrag an",
     area: "Bitte gib eine gültige Wohnfläche an",
     rooms: "Bitte gib eine gültige Zimmeranzahl an",
+    bedrooms: "Bitte gib eine gültige Schlafzimmeranzahl an",
+    bedroomsTooMany:
+      "Die Anzahl der Schlafzimmer darf die Zimmeranzahl nicht überschreiten.",
     peopleCount: "Bitte gib eine gültige Personenanzahl an",
   },
   error: {

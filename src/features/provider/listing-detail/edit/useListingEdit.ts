@@ -69,9 +69,12 @@ export function useListingEdit(
       setForm((prev) => ({ ...prev, [field]: value }));
       setError(null);
       setErrors((prev) => {
-        if (!(field in prev)) return prev;
+        if (!(field in prev) && field !== "rooms") return prev;
         const next = { ...prev };
         delete next[field as keyof ListingEditErrors];
+        // Changing rooms may fix a cross-field bedrooms-too-many error.
+        if (field === "rooms")
+          delete next["bedrooms" as keyof ListingEditErrors];
         return next;
       });
     },

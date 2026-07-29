@@ -118,6 +118,10 @@ export function CreateListingForm() {
     setField(field, value);
     setHasSaveError(false);
     clearFieldError(field as keyof ListingDraftErrors);
+    // Changing rooms may fix a cross-field bedrooms-too-many error.
+    if (field === "rooms") {
+      clearFieldError("bedrooms");
+    }
   };
 
   const handleSetPhotos = useCallback(

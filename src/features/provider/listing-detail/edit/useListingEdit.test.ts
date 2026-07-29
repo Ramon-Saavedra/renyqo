@@ -143,6 +143,25 @@ describe("useListingEdit", () => {
     expect(onSaved).not.toHaveBeenCalled();
   });
 
+  it("blocks save when bedrooms exceeds rooms", async () => {
+    const onSaved = vi.fn();
+    const { result } = renderHook(() => useListingEdit(LISTING, { onSaved }));
+
+    act(() => {
+      result.current.setField("rooms", "2");
+      result.current.setField("bedrooms", "3");
+    });
+    await act(async () => {
+      await result.current.save();
+    });
+
+    expect(result.current.errors.bedrooms).toBe(
+      listingEditCopy.validation.bedroomsTooMany,
+    );
+    expect(updateListing).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
   it("surfaces a save error when the request fails", async () => {
     vi.mocked(updateListing).mockRejectedValue(new ApiError(500, "boom"));
     const onSaved = vi.fn();
