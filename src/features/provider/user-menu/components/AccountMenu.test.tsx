@@ -66,7 +66,9 @@ describe("AccountMenu", () => {
       name: "Konto & Profil",
     });
 
-    expect(trigger.textContent).toContain("ML");
+    await vi.waitFor(() => {
+      expect(trigger.textContent).toContain("ML");
+    });
     expect(trigger.textContent).toContain("Mara Lehmann");
   });
 
