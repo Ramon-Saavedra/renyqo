@@ -50,10 +50,7 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
  * Composes a button class string from a variant and optional extra classes.
  * Use `buttonClassWithSize` when an explicit size is required.
  */
-export function buttonClass(
-  variant: ButtonVariant,
-  extra?: string,
-): string {
+export function buttonClass(variant: ButtonVariant, extra?: string): string {
   return [
     BASE_CLASS,
     VARIANT_CLASS[variant],

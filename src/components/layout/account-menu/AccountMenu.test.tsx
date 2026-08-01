@@ -152,7 +152,9 @@ describe("AccountMenu", () => {
     expect(
       screen.getByText("Abmeldung fehlgeschlagen. Bitte versuche es erneut."),
     ).not.toBeNull();
-    expect(screen.getByRole("dialog", { name: "Konto & Profil" })).not.toBeNull();
+    expect(
+      screen.getByRole("dialog", { name: "Konto & Profil" }),
+    ).not.toBeNull();
     expect(replace).not.toHaveBeenCalled();
   });
 

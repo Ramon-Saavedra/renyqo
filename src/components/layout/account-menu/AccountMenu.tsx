@@ -41,8 +41,10 @@ const THEME_TOGGLE_CLASS =
   "inline-flex items-center gap-2 rounded-sm border border-border-strong bg-background px-3 py-2 text-caption font-medium text-foreground-secondary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 const EMAIL_CLASS =
   "mt-3 truncate border-t border-border pt-3 text-caption text-foreground-tertiary";
-const LOGOUT_BUTTON_CLASS =
-  cn(buttonClassWithSize("danger", "sm"), "mt-3 w-full text-left");
+const LOGOUT_BUTTON_CLASS = cn(
+  buttonClassWithSize("danger", "sm"),
+  "mt-3 w-full text-left",
+);
 
 export function AccountMenu({
   variant = "compact",
