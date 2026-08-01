@@ -7,7 +7,8 @@ import { ChevronLeft, Pencil } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ApiError } from "@/lib/api/client";
-import { buttonClass } from "@/components/ui/button/Button";
+import { Button } from "@/components/ui/button/Button";
+import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { ListingsTopbarActions } from "../../listings-overview/components/ListingsTopbarActions";
@@ -24,8 +25,8 @@ import { ListingEditView } from "../edit/components/ListingEditView";
 import type { DetailAction, ListingDetail } from "../types";
 import { AddressCard } from "./AddressCard";
 import { DescriptionCard } from "./DescriptionCard";
-import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
-import { DetailActionButton } from "./DetailActionButton";
+import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
+import { DetailActionButton, ACTION_BUTTON_LAYOUT } from "./DetailActionButton";
 import { DetailErrorState } from "./DetailErrorState";
 import { DetailHead, buildActions } from "./DetailHead";
 import { DetailLoadingSkeleton } from "./DetailLoadingSkeleton";
@@ -41,7 +42,7 @@ type FetchStatus = "loading" | "loaded" | "error";
 
 const BODY_CLASS = "px-gutter pt-7 pb-12";
 const BACK_LINK_CLASS =
-  "mb-4.5 inline-flex items-center gap-1.5 cursor-pointer text-caption font-medium text-foreground-tertiary transition-colors hover:text-foreground";
+  "mb-4.5 inline-flex items-center gap-1.5 cursor-pointer text-caption font-medium text-foreground-tertiary hover:text-foreground";
 const COLUMN_CONTAINER = "flex flex-col gap-5 lg:flex-row lg:items-start";
 const LEFT_COLUMN = "contents lg:flex lg:w-3/5 lg:min-w-0 lg:flex-col lg:gap-5";
 const RIGHT_COLUMN =
@@ -222,8 +223,8 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                 <Link
                   href={listingDetailCopy.backHref}
                   className={cn(
-                    buttonClass("secondary"),
-                    "justify-center gap-2 max-md:h-auto max-md:min-h-14 max-md:min-w-16 max-md:flex-col max-md:gap-1 max-md:px-2 max-md:py-1.5 md:min-w-42",
+                    buttonClassWithSize("secondary", "md"),
+                    ACTION_BUTTON_LAYOUT,
                     "no-underline",
                   )}
                 >
@@ -241,15 +242,12 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                   </span>
                 </Link>
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
                     onClick={enterEditMode}
                     disabled={pendingAction !== null}
                     aria-label={listingEditCopy.edit}
-                    className={cn(
-                      buttonClass("secondary"),
-                      "justify-center gap-2 max-md:h-auto max-md:min-h-14 max-md:min-w-16 max-md:flex-col max-md:gap-1 max-md:px-2 max-md:py-1.5 md:min-w-42",
-                    )}
+                    className={ACTION_BUTTON_LAYOUT}
                   >
                     <AppIcon
                       icon={Pencil}
@@ -263,7 +261,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                     <span className="hidden md:inline">
                       {listingEditCopy.edit}
                     </span>
-                  </button>
+                  </Button>
                   {buildActions(listing).map((config) => (
                     <DetailActionButton
                       key={config.action}
