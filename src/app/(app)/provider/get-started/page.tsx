@@ -8,7 +8,7 @@ import { EmptyStateHero } from "@/features/provider/empty-state/components/Empty
 import { FlowStepsCard } from "@/features/provider/empty-state/components/FlowStepsCard";
 import { WelcomeGreeting } from "@/features/provider/empty-state/components/WelcomeGreeting";
 import { providerEmptyStateCopy } from "@/features/provider/empty-state/copy/empty-state";
-import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
+import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 
 export default function ProviderGetStartedPage() {
   const copy = providerEmptyStateCopy;

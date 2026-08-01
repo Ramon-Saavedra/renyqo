@@ -5,7 +5,6 @@ import type { LucideIcon } from "lucide-react";
 import { Info, X } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { cn } from "@/lib/utils/cn";
 
 interface ConfirmationModalProps {
   readonly open: boolean;
@@ -184,11 +183,7 @@ export function ConfirmationModal({
           </button>
           <button
             type="button"
-            className={cn(
-              buttonClass("ghost"),
-              ACTION_BUTTON_CLASS,
-              "border border-primary-soft bg-primary-tint text-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
-            )}
+            className={buttonClass("secondary", ACTION_BUTTON_CLASS)}
             onClick={onSecondary}
             disabled={tertiaryPending}
           >

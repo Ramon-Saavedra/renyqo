@@ -86,7 +86,9 @@ describe("AccountMenu", () => {
       screen.getByRole("dialog", { name: "Konto & Profil" }),
     ).not.toBeNull();
     expect(screen.getByText("Darstellung")).not.toBeNull();
-    expect(screen.getByRole("button", { name: "Abmelden" })).not.toBeNull();
+    const logoutButton = screen.getByRole("button", { name: "Abmelden" });
+    expect(logoutButton.className).toContain("text-danger");
+    expect(logoutButton.className).toContain("h-8");
     expect(screen.getByText("mara@example.com")).not.toBeNull();
   });
 
@@ -133,5 +135,50 @@ describe("AccountMenu", () => {
 
     expect(logout).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenCalledWith("/login");
+  });
+
+  it("shows an error and stays open when logout fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getCurrentUser).mockResolvedValue(PRIVATE_USER);
+    vi.mocked(logout).mockRejectedValue(new Error("network error"));
+
+    render(<AccountMenu />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Konto & Profil" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Abmelden" }));
+
+    expect(
+      screen.getByText("Abmeldung fehlgeschlagen. Bitte versuche es erneut."),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole("dialog", { name: "Konto & Profil" }),
+    ).not.toBeNull();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("prevents a second logout while the first request is pending", async () => {
+    const user = userEvent.setup();
+    let resolveLogout: () => void = () => undefined;
+    const pendingLogout = new Promise<void>((resolve) => {
+      resolveLogout = resolve;
+    });
+    vi.mocked(getCurrentUser).mockResolvedValue(PRIVATE_USER);
+    vi.mocked(logout).mockReturnValue(pendingLogout);
+
+    render(<AccountMenu />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Konto & Profil" }),
+    );
+    const logoutButton = screen.getByRole("button", { name: "Abmelden" });
+    await user.click(logoutButton);
+    await user.click(logoutButton);
+
+    expect(logout).toHaveBeenCalledTimes(1);
+
+    resolveLogout();
+    await pendingLogout;
   });
 });

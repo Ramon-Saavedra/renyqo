@@ -27,7 +27,7 @@ import type {
 import { ListingRow } from "./ListingRow";
 import { ListingsEmptyState } from "./ListingsEmptyState";
 import { ListingsLoadingSkeleton } from "./ListingsLoadingSkeleton";
-import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
+import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { ListingsHero } from "./ListingsHero";
 import { ListingsToolbar } from "./ListingsToolbar";
 import { ListingsTopbarActions } from "./ListingsTopbarActions";

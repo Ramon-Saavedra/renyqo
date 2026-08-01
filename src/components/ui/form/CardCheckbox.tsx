@@ -15,9 +15,9 @@ interface CardCheckboxProps {
 }
 
 const WRAPPER_CLASS =
-  "flex cursor-pointer items-start gap-3 rounded-md border bg-background-subtle px-3 py-3 transition-colors";
+  "flex cursor-pointer items-start gap-3 rounded-md border bg-background-subtle px-3 py-3";
 const BOX_CLASS =
-  "mt-0.25 grid h-4 w-4 shrink-0 place-items-center rounded-sm border transition-colors";
+  "mt-0.25 grid h-4 w-4 shrink-0 place-items-center rounded-sm border";
 
 export function CardCheckbox({
   id,

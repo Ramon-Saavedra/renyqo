@@ -31,7 +31,7 @@ const COUNTER_CLASS =
   "absolute bottom-3 right-3 rounded-sm bg-foreground/55 px-2 py-1 font-mono text-meta tracking-normal text-background";
 
 const ARROW_BASE =
-  "absolute top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-foreground/20 text-background transition-colors hover:bg-foreground/55 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-focus";
+  "absolute top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-foreground/20 text-background hover:bg-foreground/55 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-focus";
 
 const EMPTY_CLASS =
   "flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong px-6 text-center text-foreground-tertiary";
@@ -47,7 +47,7 @@ const THUMB_WRAP = "relative aspect-square";
 const THUMB_BUTTON =
   "block h-full w-full cursor-pointer rounded-sm focus-visible:outline-none focus-visible:shadow-focus";
 const THUMB_FRAME =
-  "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted transition-colors";
+  "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted";
 const THUMB_ACTIVE = "border-primary";
 const THUMB_DRAG_OVER = "border-primary border-dashed";
 const MAX_PHOTOS = 12;
@@ -274,7 +274,7 @@ export function EditableGallery({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-action font-medium text-primary-foreground transition-colors hover:bg-primary-hover disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-action font-medium text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
           >
             <AppIcon
               icon={uploading ? Loader : Upload}
@@ -439,7 +439,7 @@ export function EditableGallery({
               disabled={uploading}
               onClick={() => inputRef.current?.click()}
               aria-label="Foto hinzufügen"
-              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm border border-dashed border-border-strong bg-background-muted text-foreground-tertiary transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-50"
+              className="flex aspect-square cursor-pointer items-center justify-center rounded-sm border border-dashed border-border-strong bg-background-muted text-foreground-tertiary hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-50"
             >
               <AppIcon
                 icon={uploading ? Loader : Upload}

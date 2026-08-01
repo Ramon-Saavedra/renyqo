@@ -3,7 +3,7 @@ import { LayoutGrid, Plus } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { Logo } from "@/components/ui/logo/Logo";
-import { AccountMenu } from "@/features/provider/user-menu/components/AccountMenu";
+import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { dashboardCopy } from "../copy/dashboard";
 
 const ICON_SIZE = 15;
@@ -16,7 +16,7 @@ const ACTIONS_CLASS = "ml-auto flex items-center gap-2";
 const TOPBAR_ICON_ACTION_CLASS =
   "h-6.5 w-6.5 justify-center rounded-sm px-0 sm:h-11 sm:w-auto sm:rounded-md";
 const GHOST_LINK_CLASS = `${buttonClass("ghost")} ${TOPBAR_ICON_ACTION_CLASS} border border-border-strong text-body sm:gap-2 sm:px-4.5`;
-const PRIMARY_LINK_CLASS = `${TOPBAR_ICON_ACTION_CLASS} inline-flex cursor-pointer items-center border border-primary bg-primary text-action font-medium text-primary-foreground transition-colors hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-focus sm:gap-2 sm:px-4.5`;
+const PRIMARY_LINK_CLASS = `${TOPBAR_ICON_ACTION_CLASS} inline-flex cursor-pointer items-center border border-primary bg-primary text-action font-medium text-primary-foreground hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-focus sm:gap-2 sm:px-4.5`;
 
 const PROFILE_CLASS = "ml-1 border-l border-border pl-3 sm:pl-4";
 

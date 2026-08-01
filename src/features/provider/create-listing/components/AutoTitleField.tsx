@@ -8,7 +8,7 @@ interface AutoTitleFieldProps {
 }
 
 const OVERRIDE_BASE =
-  "mb-0 flex flex-col gap-2 rounded-md border bg-background px-4 py-3.5 transition-colors";
+  "mb-0 flex flex-col gap-2 rounded-md border bg-background px-4 py-3.5";
 const OVERRIDE_ACTIVE = "border-primary-soft bg-primary-tint";
 const OVERRIDE_IDLE = "border-border";
 

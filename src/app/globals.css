@@ -126,8 +126,8 @@ html {
 
   --primary: #566582;
   --primary-hover: #455269;
-  --primary-soft: #e5e9f0;
-  --primary-tint: #eef1f6;
+  --primary-soft: #d2d9eb;
+  --primary-tint: #e1e7f4;
   --primary-foreground: #ffffff;
 
   --success: #4f7a56;
@@ -169,8 +169,8 @@ html {
 
   --primary: #8b9cbe;
   --primary-hover: #a2b1cd;
-  --primary-soft: #1f2532;
-  --primary-tint: #181d27;
+  --primary-soft: #2e384f;
+  --primary-tint: #232b3c;
 
   --success: #8fb59a;
   --success-vivid: #3ecf62;
@@ -268,10 +268,6 @@ body {
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition:
-    border-color 220ms ease,
-    background 220ms ease,
-    box-shadow 320ms ease;
 }
 .photo-drop:hover {
   border-color: color-mix(in srgb, var(--primary) 55%, var(--border-strong));
@@ -299,7 +295,6 @@ body {
   border-radius: 50%;
   border: 1px solid var(--border);
   background: var(--background-subtle);
-  transition: border-color 260ms ease;
 }
 .photo-drop:hover .photo-drop-ring {
   border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
@@ -317,7 +312,6 @@ body {
     transparent 360deg
   );
   opacity: 0;
-  transition: opacity 400ms ease;
   animation: photoRingSpin 7s linear infinite;
   animation-play-state: paused;
 }
@@ -343,7 +337,6 @@ body {
   border-radius: 50%;
   background: var(--background-subtle);
   color: var(--foreground-secondary);
-  transition: color 220ms ease;
 }
 .photo-drop:hover .photo-drop-icon,
 .photo-drop.is-active .photo-drop-icon {
@@ -373,7 +366,6 @@ body {
   background-repeat: no-repeat;
   background-position: 0 100%;
   background-size: 0% 1px;
-  transition: background-size 260ms ease;
 }
 .photo-drop:hover .photo-drop-link,
 .photo-drop.is-active .photo-drop-link {
@@ -565,9 +557,6 @@ body {
   overflow: hidden;
   opacity: 1;
   transform: translateY(0) scale(1);
-  transition:
-    opacity 620ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 620ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .is-loaded .veil {
   opacity: 0;
@@ -833,8 +822,5 @@ body {
   }
   .veil::before {
     display: none;
-  }
-  .veil {
-    transition: opacity 120ms linear;
   }
 }

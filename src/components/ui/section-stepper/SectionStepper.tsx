@@ -19,7 +19,7 @@ interface SectionStepperProps {
 const NAV_BASE = "flex items-center gap-0 border-y border-border py-3.5";
 
 const STEP_BASE =
-  "flex flex-1 min-w-0 items-center gap-2.5 font-mono text-meta uppercase text-foreground-tertiary no-underline transition-colors";
+  "flex flex-1 min-w-0 items-center gap-2.5 font-mono text-meta uppercase text-foreground-tertiary no-underline";
 const STEP_ACTIVE = "text-foreground";
 const STEP_DONE = "text-foreground-secondary";
 

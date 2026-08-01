@@ -62,7 +62,7 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
         onKeyDown={handleKeyDown}
         tabIndex={tabIndex}
         className={cn(
-          "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-background-subtle p-4 text-left shadow-card transition-colors focus-visible:outline-none focus-visible:shadow-focus",
+          "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-background-subtle p-4 text-left shadow-card focus-visible:outline-none focus-visible:shadow-focus",
           active
             ? "border-primary"
             : "border-border hover:border-border-strong",
@@ -82,13 +82,13 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
           <span
             aria-hidden="true"
             className={cn(
-              "inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border transition-colors",
+              "inline-flex h-4.5 w-4.5 items-center justify-center rounded-full border",
               active ? "border-primary" : "border-border-strong",
             )}
           >
             <span
               className={cn(
-                "h-2 w-2 rounded-full bg-primary transition-opacity",
+                "h-2 w-2 rounded-full bg-primary",
                 active ? "opacity-100" : "opacity-0",
               )}
             />
@@ -98,7 +98,7 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
         <span
           aria-hidden="true"
           className={cn(
-            "mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm transition-colors",
+            "mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm",
             active
               ? "bg-primary text-primary-foreground"
               : "bg-background-muted text-foreground",
