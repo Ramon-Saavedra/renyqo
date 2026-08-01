@@ -15,7 +15,7 @@ interface NumberStepperProps {
 const GROUP_CLASS =
   "flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-input";
 const BTN_CLASS =
-  "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg transition-colors hover:bg-background-muted disabled:cursor-not-allowed disabled:bg-transparent";
+  "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg hover:bg-background-muted disabled:cursor-not-allowed disabled:bg-transparent";
 const BTN_COLOR_CLASS =
   "text-foreground-secondary hover:text-foreground disabled:text-foreground-tertiary";
 const VAL_CLASS = "flex-1 text-center text-action";

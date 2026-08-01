@@ -36,7 +36,7 @@ export function ScrollToTop() {
       type="button"
       aria-label="Nach oben"
       onClick={handleClick}
-      className="fixed bottom-4 right-4 z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-primary bg-primary text-primary-foreground shadow-card transition-colors hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-focus sm:bottom-6 sm:right-6"
+      className="fixed bottom-4 right-4 z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-primary bg-primary text-primary-foreground shadow-card hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-focus sm:bottom-6 sm:right-6"
     >
       <AppIcon icon={ArrowUp} size={18} strokeWidth={1.8} decorative />
     </button>

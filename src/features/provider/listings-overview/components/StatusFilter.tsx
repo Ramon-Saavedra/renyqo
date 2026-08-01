@@ -14,7 +14,7 @@ const GROUP_CLASS =
   "flex flex-wrap items-center gap-1 rounded-md border border-border/50 bg-background-subtle p-1";
 
 const BUTTON_BASE =
-  "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-transparent bg-transparent px-2.5 font-mono text-meta uppercase text-foreground-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus whitespace-nowrap";
+  "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-transparent bg-transparent px-2.5 font-mono text-meta uppercase text-foreground-secondary hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus whitespace-nowrap";
 const BUTTON_ACTIVE =
   "border-border/50 bg-background-subtle text-foreground hover:text-foreground";
 
@@ -24,7 +24,7 @@ const COUNT_ACTIVE = "text-foreground-secondary";
 const DIVIDER_CLASS = "h-4 w-px bg-border/40 shrink-0";
 
 const ATTENTION_BASE =
-  "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-transparent bg-transparent px-2.5 font-mono text-meta uppercase text-foreground-tertiary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus whitespace-nowrap";
+  "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-sm border border-transparent bg-transparent px-2.5 font-mono text-meta uppercase text-foreground-tertiary hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus whitespace-nowrap";
 const ATTENTION_ACTIVE =
   "border-border/50 bg-background-subtle text-foreground-secondary hover:text-foreground";
 

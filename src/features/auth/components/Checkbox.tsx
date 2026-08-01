@@ -29,7 +29,7 @@ export function Checkbox({
         <input
           id={id}
           type="checkbox"
-          className="peer absolute inset-0 h-4 w-4 cursor-pointer appearance-none rounded-sm border border-border-strong bg-background transition-colors hover:border-foreground-tertiary checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:shadow-focus"
+          className="peer absolute inset-0 h-4 w-4 cursor-pointer appearance-none rounded-sm border border-border-strong bg-background hover:border-foreground-tertiary checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:shadow-focus"
           {...inputProps}
         />
         <span

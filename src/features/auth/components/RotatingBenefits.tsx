@@ -43,7 +43,7 @@ export function RotatingBenefits({
           <p
             key={benefit}
             aria-hidden={i !== index}
-            className={`absolute inset-x-0 top-0 text-caption leading-5 text-foreground-tertiary transition-all duration-700 ease-out motion-reduce:transition-none ${
+            className={`absolute inset-x-0 top-0 text-caption leading-5 text-foreground-tertiary ${
               i === index
                 ? "translate-y-0 opacity-100"
                 : "translate-y-1 opacity-0"

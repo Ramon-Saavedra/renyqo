@@ -16,7 +16,7 @@ const ICON_LEFT_CLASS =
   "pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-tertiary";
 
 const CLEAR_CLASS =
-  "absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary transition-colors hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 export function ListingsToolbar({ value, onChange }: ListingsToolbarProps) {
   return (

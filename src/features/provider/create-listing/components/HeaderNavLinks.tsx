@@ -12,7 +12,7 @@ interface HeaderNavLinksProps {
 
 const NAV_CLASS = "mb-6 flex items-center justify-end gap-5";
 const LINK_CLASS =
-  "inline-flex items-center gap-1.5 text-caption text-foreground-tertiary transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none";
+  "inline-flex items-center gap-1.5 text-caption text-foreground-tertiary hover:text-foreground focus-visible:text-foreground focus-visible:outline-none";
 
 export function HeaderNavLinks({ onNavigate }: HeaderNavLinksProps) {
   const copy = createListingCopy.headerNav;

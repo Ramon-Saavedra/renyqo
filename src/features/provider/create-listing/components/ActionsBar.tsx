@@ -59,7 +59,7 @@ const CHECKLIST_LIST_CLASS: Record<ChecklistVariant, string> = {
   rail: "flex flex-col items-start gap-1.5",
 };
 const MISSING_BUTTON_CLASS =
-  "inline-flex items-center gap-2 py-0.5 text-left text-caption text-foreground-secondary transition-colors hover:text-foreground focus-visible:text-foreground focus-visible:outline-none disabled:cursor-default disabled:text-foreground-tertiary";
+  "inline-flex items-center gap-2 py-0.5 text-left text-caption text-foreground-secondary hover:text-foreground focus-visible:text-foreground focus-visible:outline-none disabled:cursor-default disabled:text-foreground-tertiary";
 const CHECK_ICON_CLASS = "text-success";
 const PENDING_ICON_CLASS = "text-foreground-tertiary";
 const MISSING_BUTTON_VARIANT_CLASS: Record<ChecklistVariant, string> = {

@@ -13,11 +13,11 @@ interface AccentPickerProps {
 }
 
 const TRIGGER_CLASS =
-  "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-primary transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-primary hover:text-primary-hover focus-visible:outline-none focus-visible:shadow-focus";
 const PANEL_CLASS = "w-32 p-3";
 const SWATCHES_CLASS = "grid grid-cols-3 gap-2";
 const SWATCH_BASE =
-  "h-5 w-5 cursor-pointer rounded bg-primary transition-transform hover:scale-110 focus-visible:outline-none focus-visible:shadow-focus";
+  "h-5 w-5 cursor-pointer rounded bg-primary hover:scale-110 focus-visible:outline-none focus-visible:shadow-focus";
 const SWATCH_ACTIVE =
   "scale-110 ring-1 ring-foreground ring-offset-2 ring-offset-background";
 

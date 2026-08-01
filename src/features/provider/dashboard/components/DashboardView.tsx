@@ -32,7 +32,7 @@ const CONTENT_CLASS =
   "px-3 pt-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-gutter";
 
 const REOPEN_CLASS =
-  "sticky top-0 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center self-start border-r border-b border-border bg-background text-foreground-secondary transition-colors hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
+  "sticky top-0 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center self-start border-r border-b border-border bg-background text-foreground-secondary hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
 
 function getStoredSelectedObjectId() {
   return window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY);

@@ -22,7 +22,7 @@ const MAIN_WRAP_CLASS = "relative group";
 const MAIN_CLASS =
   "relative aspect-[16/10] w-full overflow-hidden rounded-md bg-background-muted";
 const ARROW_BASE =
-  "absolute top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-foreground/20 text-background transition-colors hover:bg-foreground/55 focus-visible:outline-none focus-visible:shadow-focus";
+  "absolute top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-foreground/20 text-background hover:bg-foreground/55 focus-visible:outline-none focus-visible:shadow-focus";
 const COUNTER_CLASS =
   "absolute bottom-3 right-3 rounded-sm bg-foreground/55 px-2 py-1 font-mono text-meta tracking-normal text-background";
 const THUMBS_VIEWPORT_CLASS = "w-full overflow-x-auto pb-1 scrollbar-slim";
@@ -30,7 +30,7 @@ const THUMBS_LIST_CLASS = "flex";
 const THUMB_BUTTON =
   "aspect-square basis-1/5 shrink-0 rounded-sm focus-visible:outline-none focus-visible:shadow-focus";
 const THUMB_FRAME =
-  "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted transition-colors";
+  "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted";
 const THUMB_ACTIVE = "border-primary";
 const MAIN_CLICK_CLASS = "cursor-pointer";
 

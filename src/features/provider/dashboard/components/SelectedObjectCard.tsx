@@ -33,7 +33,7 @@ const KICKER_PIP_CLASS = "h-1.5 w-1.5 rounded-full bg-primary-foreground";
 const KICKER_ROW_CLASS = "relative flex items-center justify-between gap-3";
 const MOBILE_SHARE_WRAP_CLASS = "relative lg:hidden";
 const MOBILE_SHARE_BUTTON_CLASS =
-  "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
 const MOBILE_SHARE_PANEL_CLASS = "absolute right-0 top-full z-20 pt-1.5";
 const OBJ_TITLE_CLASS =
   "mb-1 pt-2 font-display text-heading-md font-medium text-primary-foreground xl:text-title";
@@ -41,7 +41,7 @@ const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-primary-foreground/80";
 const ACTIONS_CLASS = "flex shrink-0 items-start gap-2";
 const ACTION_CLASS =
-  "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground transition-colors hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
 const ACTION_ICON_SIZE = 15;
 const ACTION_ICON_STROKE = 1.7;
 const TIMESTAMP_WRAP_CLASS = "flex items-center gap-2";

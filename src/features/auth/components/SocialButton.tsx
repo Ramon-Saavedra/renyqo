@@ -7,7 +7,7 @@ interface SocialButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const BASE_CLASS =
-  "inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md border border-border-strong bg-background text-action font-medium text-foreground transition-colors hover:border-foreground-tertiary hover:bg-background-subtle focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md border border-border-strong bg-background text-action font-medium text-foreground hover:border-foreground-tertiary hover:bg-background-subtle focus-visible:outline-none focus-visible:shadow-focus";
 
 export function SocialButton({
   icon,

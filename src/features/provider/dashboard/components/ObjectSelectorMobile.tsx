@@ -18,7 +18,7 @@ const HEAD_CLASS =
 const SCROLLER_CLASS = "scrollbar-slim flex gap-2 overflow-x-auto pb-1";
 
 const CARD_BASE =
-  "w-56 shrink-0 cursor-pointer rounded-md border px-3.5 py-3 text-left transition-colors focus-visible:outline-none focus-visible:shadow-focus";
+  "w-56 shrink-0 cursor-pointer rounded-md border px-3.5 py-3 text-left focus-visible:outline-none focus-visible:shadow-focus";
 const CARD_INACTIVE =
   "border-border bg-background hover:border-border-strong hover:bg-background-subtle";
 const CARD_ACTIVE = "border-primary bg-primary";

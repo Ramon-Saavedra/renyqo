@@ -341,7 +341,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
                 <div
                   key={i}
                   className={cn(
-                    "h-1 flex-1 rounded-full transition-colors",
+                    "h-1 flex-1 rounded-full",
                     i <= STRENGTH_LEVELS[strength]
                       ? strength === "stark"
                         ? "bg-success"
