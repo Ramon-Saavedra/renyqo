@@ -8,11 +8,13 @@ import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
+import { buttonClassWithSize } from "@/components/ui/button/Button";
+import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { getCurrentUser, logout } from "@/lib/api/auth";
 import type { SafeUser } from "@/lib/api/auth";
 import { getInitials, toTitleCase } from "@/lib/utils/user-name";
-import { userMenuCopy } from "../copy/user-menu";
+import { userMenuCopy } from "./copy/user-menu";
 
 interface AccountMenuProps {
   variant?: "compact" | "full";
@@ -20,14 +22,13 @@ interface AccountMenuProps {
 }
 
 const TRIGGER_COMPACT_CLASS =
-  "flex cursor-pointer items-center rounded-md border-0 bg-transparent p-0 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "flex cursor-pointer items-center rounded-md border-0 bg-transparent p-0 hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 const TRIGGER_FULL_CLASS =
-  "flex h-6.5 max-w-48 cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent p-0 text-left transition-colors hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus sm:h-11 sm:max-w-64 sm:gap-3";
+  "flex h-6.5 max-w-48 cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent p-0 text-left hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus sm:h-11 sm:max-w-64 sm:gap-3";
 const AVATAR_FULL_CLASS = "h-7 w-7 sm:h-8 sm:w-8";
 const META_CLASS = "hidden max-w-36 flex-col leading-tight 2xl:flex";
 const NAME_CLASS = "truncate text-caption font-medium text-foreground";
 const COMPANY_CLASS = "truncate text-caption text-foreground-tertiary";
-
 const PANEL_CLASS = "w-72 p-3";
 const PANEL_HEAD_CLASS = "mb-3 flex items-center justify-between gap-3";
 const PANEL_TITLE_CLASS =
@@ -37,11 +38,11 @@ const THEME_ROW_CLASS =
 const THEME_LABEL_CLASS =
   "font-mono text-meta uppercase text-foreground-tertiary";
 const THEME_TOGGLE_CLASS =
-  "inline-flex items-center gap-2 rounded-sm border border-border-strong bg-background px-3 py-2 text-caption font-medium text-foreground-secondary transition-colors hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex items-center gap-2 rounded-sm border border-border-strong bg-background px-3 py-2 text-caption font-medium text-foreground-secondary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 const EMAIL_CLASS =
   "mt-3 truncate border-t border-border pt-3 text-caption text-foreground-tertiary";
 const LOGOUT_BUTTON_CLASS =
-  "mt-3 inline-flex w-full cursor-pointer items-center gap-2 rounded-sm border border-danger/20 bg-background px-3 py-2 text-left text-caption font-medium text-danger hover:bg-danger/10 focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-60";
+  cn(buttonClassWithSize("danger", "sm"), "mt-3 w-full text-left");
 
 export function AccountMenu({
   variant = "compact",
