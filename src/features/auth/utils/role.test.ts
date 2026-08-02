@@ -1,7 +1,12 @@
 import { Building, Lock } from "lucide-react";
 import { describe, expect, it } from "vitest";
 
-import { ROLE_GLYPHS, resolveRole } from "./role";
+import {
+  isApplicantRole,
+  isProviderRole,
+  ROLE_GLYPHS,
+  resolveRole,
+} from "./role";
 
 describe("resolveRole", () => {
   it('returns "provider" for "provider"', () => {
@@ -28,5 +33,17 @@ describe("ROLE_GLYPHS", () => {
 
   it("maps provider to Building icon", () => {
     expect(ROLE_GLYPHS.provider).toBe(Building);
+  });
+});
+
+describe("role predicates", () => {
+  it("accept uppercase and whitespace around roles", () => {
+    expect(isApplicantRole(" APPLICANT ")).toBe(true);
+    expect(isProviderRole(" PROVIDER ")).toBe(true);
+  });
+
+  it("reject unknown and missing roles", () => {
+    expect(isApplicantRole("admin")).toBe(false);
+    expect(isProviderRole(undefined)).toBe(false);
   });
 });
