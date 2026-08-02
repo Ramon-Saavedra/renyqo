@@ -7,6 +7,7 @@ import { InputAffix } from "@/components/ui/form/InputAffix";
 import { Note } from "@/components/ui/form/Note";
 import { NumberStepper } from "@/components/ui/form/NumberStepper";
 import { Segmented } from "@/components/ui/form/Segmented";
+import { SectionCard } from "@/components/ui/section-card/SectionCard";
 import {
   createListingCopy,
   type PetOption,
@@ -17,7 +18,6 @@ import type {
   ListingDraft,
   ListingDraftErrors,
 } from "../hooks/useListingDraft";
-import { SectionCard } from "./SectionCard";
 
 interface RequirementsSectionProps {
   draft: ListingDraft;

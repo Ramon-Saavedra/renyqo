@@ -9,6 +9,7 @@ import { InputAffix } from "@/components/ui/form/InputAffix";
 import { Segmented } from "@/components/ui/form/Segmented";
 import { Select } from "@/components/ui/form/Select";
 import { Textarea } from "@/components/ui/form/Textarea";
+import { SectionCard } from "@/components/ui/section-card/SectionCard";
 import {
   createListingCopy,
   type ObjectType,
@@ -25,7 +26,6 @@ import type {
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { AutoTitleField } from "./AutoTitleField";
 import { PhotoGrid } from "./PhotoGrid";
-import { SectionCard } from "./SectionCard";
 
 interface ObjektdatenSectionProps {
   draft: ListingDraft;

@@ -24,12 +24,8 @@ import type {
 } from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
-import {
-  ActionsBar,
-  CHECKLIST_ITEMS,
-  MissingChecklist,
-  scrollToMissingField,
-} from "./ActionsBar";
+import { scrollToMissingField } from "@/components/ui/checklist/CompletionChecklist";
+import { ActionsBar, CHECKLIST_ITEMS, MissingChecklist } from "./ActionsBar";
 import { RequirementsSection } from "./RequirementsSection";
 import { CreateListingHero } from "./CreateListingHero";
 import { HeaderNavLinks } from "./HeaderNavLinks";
