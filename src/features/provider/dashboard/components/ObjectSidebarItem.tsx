@@ -10,10 +10,11 @@ interface ObjectSidebarItemProps {
   selected: boolean;
   shareUrl: string;
   onSelect: (id: string) => void;
+  fillAvailableSpace?: boolean;
 }
 
 const ITEM_CLASS =
-  "flex min-h-0 flex-1 cursor-pointer flex-col rounded-md border bg-primary px-3 py-2 focus-within:shadow-focus";
+  "flex min-h-0 cursor-pointer flex-col rounded-md border bg-primary px-3 py-2 focus-within:shadow-focus";
 const INACTIVE_CLASS = "border-transparent";
 const ACTIVE_CLASS = "border-foreground bg-primary-hover";
 
@@ -44,6 +45,7 @@ export function ObjectSidebarItem({
   selected,
   shareUrl,
   onSelect,
+  fillAvailableSpace = true,
 }: ObjectSidebarItemProps) {
   const { sidebar } = dashboardCopy;
   const isDraft = object.status === "draft";
@@ -65,7 +67,11 @@ export function ObjectSidebarItem({
 
   return (
     <li
-      className={cn(ITEM_CLASS, selected ? ACTIVE_CLASS : INACTIVE_CLASS)}
+      className={cn(
+        ITEM_CLASS,
+        fillAvailableSpace ? "flex-1" : "shrink-0",
+        selected ? ACTIVE_CLASS : INACTIVE_CLASS,
+      )}
       onClick={() => onSelect(object.id)}
     >
       <button type="button" aria-pressed={selected} className={SELECT_CLASS}>

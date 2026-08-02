@@ -27,7 +27,7 @@ const COLLAPSE_CLASS =
   "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 const LIST_CLASS =
-  "flex flex-1 flex-col gap-2 overflow-hidden px-3 pt-0 pb-4 lg:min-h-0";
+  "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-3 pt-0 pb-4";
 const SLOT_CLASS =
   "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background px-3 text-center text-caption text-foreground-secondary";
 const SLOT_LOGO_CLASS =
@@ -42,7 +42,8 @@ export function ObjectSidebar({
   onCollapse,
 }: ObjectSidebarProps) {
   const { sidebar } = dashboardCopy;
-  const visibleObjects = objects.slice(0, SIDEBAR_OBJECT_SLOTS);
+  const hasOverflow = objects.length > SIDEBAR_OBJECT_SLOTS;
+  const visibleObjects = objects;
   const emptySlots = Math.max(0, SIDEBAR_OBJECT_SLOTS - visibleObjects.length);
 
   return (
@@ -70,6 +71,7 @@ export function ObjectSidebar({
             selected={object.id === selectedId}
             shareUrl={`${siteConfig.url}/objekt/${object.id}`}
             onSelect={onSelect}
+            fillAvailableSpace={!hasOverflow}
           />
         ))}
         {Array.from({ length: emptySlots }).map((_, index) => (
