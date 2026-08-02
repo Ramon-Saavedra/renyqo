@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import type { MouseEventHandler } from "react";
 import { Logo } from "@/components/ui/logo/Logo";
+import { useCurrentUser } from "@/lib/api/use-current-user";
+import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
 import { cn } from "@/lib/utils/cn";
 
 interface AppTopbarProps {
@@ -19,9 +23,22 @@ export function AppTopbar({
   logoHref = "/",
   onLogoClick,
 }: AppTopbarProps) {
+  const { user } = useCurrentUser();
+  const resolvedLogoHref =
+    logoHref !== "/"
+      ? logoHref
+      : isApplicantRole(user?.role)
+        ? "/listings"
+        : isProviderRole(user?.role)
+          ? "/provider/dashboard"
+          : logoHref;
+
   return (
     <header className={cn(BASE_CLASS, className)}>
-      <Link href={logoHref} {...(onLogoClick ? { onClick: onLogoClick } : {})}>
+      <Link
+        href={resolvedLogoHref}
+        {...(onLogoClick ? { onClick: onLogoClick } : {})}
+      >
         <Logo />
       </Link>
       {children && <div className="flex items-center gap-3.5">{children}</div>}

@@ -3,11 +3,11 @@
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
 import { createListingCopy } from "../copy/create-listing";
 import { FieldError } from "@/components/ui/form/FieldError";
+import { SectionCard } from "@/components/ui/section-card/SectionCard";
 import type {
   ListingDraft,
   ListingDraftErrors,
 } from "../hooks/useListingDraft";
-import { SectionCard } from "./SectionCard";
 
 interface AbschlussSectionProps {
   draft: ListingDraft;

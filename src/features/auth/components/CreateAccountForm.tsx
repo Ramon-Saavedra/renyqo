@@ -19,6 +19,7 @@ import {
   type ProviderType,
   type UserRole,
 } from "@/lib/api/auth";
+import { setCurrentUser } from "@/lib/api/use-current-user";
 import {
   getPasswordStrength,
   generateSecurePassword,
@@ -169,7 +170,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
     setLoading(true);
 
     try {
-      await register({
+      const user = await register({
         name,
         email,
         password,
@@ -180,6 +181,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
         acceptedTerms: true,
         acceptedPrivacy: true,
       });
+      setCurrentUser(user);
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setFieldErrors({ email: createAccountCopy.validation.emailTaken });

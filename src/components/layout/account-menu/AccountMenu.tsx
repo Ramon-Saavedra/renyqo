@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar/Avatar";
@@ -11,9 +11,15 @@ import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
-import { getCurrentUser, logout } from "@/lib/api/auth";
-import type { SafeUser } from "@/lib/api/auth";
+import { ProfileMenuLink } from "@/features/applicant/profile/components/ProfileMenuLink";
+import { invalidateApplicantProfile } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { logout } from "@/lib/api/auth";
+import {
+  invalidateCurrentUser,
+  useCurrentUser,
+} from "@/lib/api/use-current-user";
 import { getInitials, toTitleCase } from "@/lib/utils/user-name";
+import { isApplicantRole } from "@/features/auth/utils/role";
 import { userMenuCopy } from "./copy/user-menu";
 
 interface AccountMenuProps {
@@ -51,29 +57,9 @@ export function AccountMenu({
   className,
 }: AccountMenuProps) {
   const router = useRouter();
-  const [user, setUser] = useState<SafeUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useCurrentUser();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-
-    void getCurrentUser()
-      .then((currentUser) => {
-        if (active) setUser(currentUser);
-      })
-      .catch(() => {
-        if (active) setUser(null);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   async function handleLogout() {
     if (loggingOut) return;
@@ -82,6 +68,8 @@ export function AccountMenu({
     setLoggingOut(true);
     try {
       await logout();
+      invalidateCurrentUser();
+      invalidateApplicantProfile();
       router.replace("/login");
     } catch {
       setLoggingOut(false);
@@ -92,6 +80,7 @@ export function AccountMenu({
   const name = user ? toTitleCase(user.name) : "";
   const initials = getInitials(name);
   const company = user?.companyName ?? null;
+  const isApplicant = isApplicantRole(user?.role);
   const isFull = variant === "full";
   const avatarClass = isFull ? AVATAR_FULL_CLASS : undefined;
 
@@ -132,6 +121,8 @@ export function AccountMenu({
         <span className={THEME_LABEL_CLASS}>{userMenuCopy.appearance}</span>
         <ThemeToggle showLabel iconSize={14} className={THEME_TOGGLE_CLASS} />
       </div>
+
+      {isApplicant && <ProfileMenuLink />}
 
       {logoutError ? (
         <FormAlert variant="error" message={logoutError} className="mt-3" />

@@ -7,5 +7,13 @@ export const ROLE_GLYPHS = {
 } as const;
 
 export function resolveRole(value: string | undefined): Role {
-  return value === "provider" ? "provider" : "applicant";
+  return value?.trim().toLowerCase() === "provider" ? "provider" : "applicant";
+}
+
+export function isApplicantRole(role: string | undefined): boolean {
+  return role?.trim().toLowerCase() === "applicant";
+}
+
+export function isProviderRole(role: string | undefined): boolean {
+  return role?.trim().toLowerCase() === "provider";
 }

@@ -3,12 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getCurrentUser, logout } from "@/lib/api/auth";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { AccountMenu } from "./AccountMenu";
 
 const replace = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
+  usePathname: () => "/listings",
 }));
 
 vi.mock("@/lib/api/auth", () => ({
@@ -37,6 +39,7 @@ const PRIVATE_USER = {
 describe("AccountMenu", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    invalidateCurrentUser();
   });
 
   it("renders the authenticated name and company in the full variant", async () => {

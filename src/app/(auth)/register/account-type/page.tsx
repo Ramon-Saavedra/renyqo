@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { AuthenticatedPublicRedirect } from "@/components/auth/AuthenticatedPublicRedirect";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { withBrand } from "@/components/ui/brand/BrandName";
@@ -22,34 +23,36 @@ export default async function AccountTypePage({
   const initialRole = resolveRole(roleParam);
 
   return (
-    <PageShell>
-      <AppTopbar className="mb-section">
-        <Link href="/" className={buttonClass("ghost")}>
-          <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
-          {accountTypeCopy.back}
-        </Link>
-      </AppTopbar>
+    <AuthenticatedPublicRedirect>
+      <PageShell>
+        <AppTopbar className="mb-section">
+          <Link href="/" className={buttonClass("ghost")}>
+            <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
+            {accountTypeCopy.back}
+          </Link>
+        </AppTopbar>
 
-      <div className="flex flex-1 flex-col px-gutter">
-        <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
+        <div className="flex flex-1 flex-col px-gutter">
+          <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
 
-        <div className="mb-9 flex max-w-3xl flex-col gap-3">
-          <h1
-            id="account-type-title"
-            className="font-display text-display font-medium text-balance text-foreground"
-          >
-            {withBrand(accountTypeCopy.title)}
-          </h1>
-          <p className="max-w-xl text-lead text-foreground-secondary">
-            {accountTypeCopy.subtitle}
-          </p>
+          <div className="mb-9 flex max-w-3xl flex-col gap-3">
+            <h1
+              id="account-type-title"
+              className="font-display text-display font-medium text-balance text-foreground"
+            >
+              {withBrand(accountTypeCopy.title)}
+            </h1>
+            <p className="max-w-xl text-lead text-foreground-secondary">
+              {accountTypeCopy.subtitle}
+            </p>
+          </div>
+
+          <RoleSelector
+            initialRole={initialRole}
+            ariaLabelledBy="account-type-title"
+          />
         </div>
-
-        <RoleSelector
-          initialRole={initialRole}
-          ariaLabelledBy="account-type-title"
-        />
-      </div>
-    </PageShell>
+      </PageShell>
+    </AuthenticatedPublicRedirect>
   );
 }

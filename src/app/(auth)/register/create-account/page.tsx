@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
+import { AuthenticatedPublicRedirect } from "@/components/auth/AuthenticatedPublicRedirect";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { buttonClass } from "@/components/ui/button/Button";
@@ -44,67 +45,69 @@ export default async function CreateAccountPage({ searchParams }: PageProps) {
   const roleCopy = createAccountRoleCopy[role];
 
   return (
-    <PageShell className="flex-1 lg:pb-0">
-      <AppTopbar className="mb-section lg:mb-7">
-        <Link
-          href={`/register/account-type?role=${role}`}
-          className={buttonClass("ghost")}
-        >
-          <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
-          {createAccountCopy.back}
-        </Link>
-      </AppTopbar>
+    <AuthenticatedPublicRedirect>
+      <PageShell className="flex-1 lg:pb-0">
+        <AppTopbar className="mb-section lg:mb-7">
+          <Link
+            href={`/register/account-type?role=${role}`}
+            className={buttonClass("ghost")}
+          >
+            <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
+            {createAccountCopy.back}
+          </Link>
+        </AppTopbar>
 
-      <div className="flex flex-1 flex-col px-gutter">
-        <Stepper
-          steps={REGISTER_STEPS}
-          currentIndex={1}
-          className="mb-7 lg:mb-6"
-        />
+        <div className="flex flex-1 flex-col px-gutter">
+          <Stepper
+            steps={REGISTER_STEPS}
+            currentIndex={1}
+            className="mb-7 lg:mb-6"
+          />
 
-        <div className="grid flex-1 items-start gap-20 lg:grid-cols-2">
-          <div>
-            <InfoPill withPip className="mb-5">
-              {roleCopy.tag}
-            </InfoPill>
-            <h1 className="mb-3.5 font-display text-display font-medium text-balance text-foreground">
-              {roleCopy.title}
-            </h1>
-            <p className="mb-9 max-w-md text-lead text-foreground-secondary">
-              {roleCopy.subtitle}
-            </p>
+          <div className="grid flex-1 items-start gap-20 lg:grid-cols-2">
+            <div>
+              <InfoPill withPip className="mb-5">
+                {roleCopy.tag}
+              </InfoPill>
+              <h1 className="mb-3.5 font-display text-display font-medium text-balance text-foreground">
+                {roleCopy.title}
+              </h1>
+              <p className="mb-9 max-w-md text-lead text-foreground-secondary">
+                {roleCopy.subtitle}
+              </p>
 
-            <div className="grid max-w-sm gap-3.5 border-t border-border pt-7">
-              <ReassureItem
-                icon={
-                  <AppIcon
-                    icon={ROLE_GLYPHS[role]}
-                    size={14}
-                    strokeWidth={1.6}
-                    decorative
-                  />
-                }
-                title={roleCopy.reassure[0].title}
-                description={roleCopy.reassure[0].description}
-              />
-              <ReassureItem
-                icon={
-                  <AppIcon
-                    icon={Shield}
-                    size={14}
-                    strokeWidth={1.6}
-                    decorative
-                  />
-                }
-                title={roleCopy.reassure[1].title}
-                description={roleCopy.reassure[1].description}
-              />
+              <div className="grid max-w-sm gap-3.5 border-t border-border pt-7">
+                <ReassureItem
+                  icon={
+                    <AppIcon
+                      icon={ROLE_GLYPHS[role]}
+                      size={14}
+                      strokeWidth={1.6}
+                      decorative
+                    />
+                  }
+                  title={roleCopy.reassure[0].title}
+                  description={roleCopy.reassure[0].description}
+                />
+                <ReassureItem
+                  icon={
+                    <AppIcon
+                      icon={Shield}
+                      size={14}
+                      strokeWidth={1.6}
+                      decorative
+                    />
+                  }
+                  title={roleCopy.reassure[1].title}
+                  description={roleCopy.reassure[1].description}
+                />
+              </div>
             </div>
-          </div>
 
-          <CreateAccountForm idPrefix={role} role={role} />
+            <CreateAccountForm idPrefix={role} role={role} />
+          </div>
         </div>
-      </div>
-    </PageShell>
+      </PageShell>
+    </AuthenticatedPublicRedirect>
   );
 }

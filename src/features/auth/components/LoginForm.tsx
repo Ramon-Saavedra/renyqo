@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button/Button";
 import { BrandIcon } from "@/components/ui/icon/BrandIcon";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { getOnboardingState, login, resolveRedirectPath } from "@/lib/api/auth";
+import { setCurrentUser } from "@/lib/api/use-current-user";
 import { resolveAuthErrorCategory } from "@/features/auth/utils/api-error";
 import {
   type LoginFieldErrors,
@@ -60,7 +61,8 @@ export function LoginForm({ initialSuccessMessage }: LoginFormProps) {
     setLoading(true);
 
     try {
-      await login({ email, password });
+      const user = await login({ email, password });
+      setCurrentUser(user);
 
       let nextStep: Awaited<ReturnType<typeof getOnboardingState>>["nextStep"];
       try {
