@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
 import { useCurrentUser } from "@/lib/api/use-current-user";
@@ -15,16 +15,11 @@ export function AuthenticatedPublicRedirect({
 }: AuthenticatedPublicRedirectProps) {
   const router = useRouter();
   const { user, loading } = useCurrentUser();
-  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (loading || !user) {
-      setRedirecting(false);
-      return;
-    }
+    if (loading || !user) return;
 
     let active = true;
-    setRedirecting(true);
 
     if (isApplicantRole(user.role)) {
       if (active) router.replace("/listings");
@@ -46,6 +41,6 @@ export function AuthenticatedPublicRedirect({
     };
   }, [loading, router, user]);
 
-  if (loading || redirecting) return null;
+  if (loading || user) return null;
   return <>{children}</>;
 }
