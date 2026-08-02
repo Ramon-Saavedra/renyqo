@@ -124,8 +124,11 @@ export function DashboardView({
   }, [objects, search]);
 
   const selected = useMemo(
-    () => objects.find((o) => o.id === selectedId) ?? objects[0] ?? null,
-    [objects, selectedId],
+    () =>
+      filteredObjects.find((o) => o.id === selectedId) ??
+      filteredObjects[0] ??
+      null,
+    [filteredObjects, selectedId],
   );
 
   const selectedCandidates = useMemo(

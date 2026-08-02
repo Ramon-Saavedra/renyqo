@@ -163,6 +163,20 @@ describe("DashboardView", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("keeps the selected object inside the filtered results", async () => {
+    const user = userEvent.setup();
+    render(<DashboardView objects={objects} candidates={candidates} />);
+
+    await screen.findByText("Ramon Saavedra");
+    await user.type(
+      screen.getByRole("searchbox", { name: "Mietobjekte durchsuchen" }),
+      "Zweite",
+    );
+
+    expect(screen.getByText("Zweite Wohnung in Hamburg")).not.toBeNull();
+    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+  });
+
   it("keeps the dashboard layout when there is no backend data", async () => {
     render(<DashboardView />);
 
