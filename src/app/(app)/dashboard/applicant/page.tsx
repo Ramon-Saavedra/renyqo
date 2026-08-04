@@ -1,3 +1,5 @@
-export default function ApplicantDashboardPage() {
-  return <main />;
+import { redirect } from "next/navigation";
+
+export default function ApplicantDashboardRedirect() {
+  redirect("/listings");
 }

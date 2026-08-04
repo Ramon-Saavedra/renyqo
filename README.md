@@ -100,7 +100,16 @@ Internal/app routes are in **English**:
 - `/login`
 - `/register/account-type`
 - `/register/create-account`
-- `/dashboard`
+- `/listings` — public rental search (accessible to anonymous users and applicants)
+- `/listings/:id` — public listing detail (future)
+- `/applicant/profile` — protected applicant profile
+- `/provider/dashboard`
+- `/provider/get-started`
+- `/provider/listings`
+- `/provider/listings/new`
+- `/provider/listings/:id`
+
+`/dashboard/applicant` is a legacy route that redirects to `/listings`.
 
 German routes are reserved for public SEO pages and are only introduced when explicitly agreed.
 

@@ -1,10 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Shield } from "lucide-react";
+import { CheckCircle2, Shield } from "lucide-react";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
-import { buttonClass } from "@/components/ui/button/Button";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { Note } from "@/components/ui/form/Note";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -53,10 +51,6 @@ export function ApplicantProfileForm() {
             <span className="sr-only lg:not-sr-only">{copy.topbar.saved}</span>
           </span>
         )}
-        <Link href={copy.topbar.backHref} className={buttonClass("ghost")}>
-          <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
-          {copy.topbar.back}
-        </Link>
         <AccountMenu />
       </AppTopbar>
 

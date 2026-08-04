@@ -91,6 +91,30 @@ describe("AuthenticatedPublicRedirect", () => {
     expect(screen.queryByText("public content")).toBeNull();
   });
 
+  it("stays on the public page for users with an invalid role", async () => {
+    currentUser.mockReturnValue({
+      user: {
+        id: "u1",
+        name: "X",
+        email: "x@x.de",
+        role: "admin",
+        providerType: null,
+        companyName: null,
+      } as never,
+      loading: false,
+    });
+
+    render(
+      <AuthenticatedPublicRedirect>
+        <span>public content</span>
+      </AuthenticatedPublicRedirect>,
+    );
+
+    await waitFor(() => expect(onboarding).not.toHaveBeenCalled());
+    expect(screen.getByText("public content")).not.toBeNull();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it("renders public content for unauthenticated users", () => {
     currentUser.mockReturnValue({ user: null, loading: false });
 

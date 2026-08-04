@@ -11,8 +11,8 @@ import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
-import { ProfileMenuLink } from "@/features/applicant/profile/components/ProfileMenuLink";
 import { invalidateApplicantProfile } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { ProfileMenuLink } from "@/features/applicant/profile/components/ProfileMenuLink";
 import { logout } from "@/lib/api/auth";
 import {
   invalidateCurrentUser,
