@@ -1,13 +1,13 @@
 import { apiGet, apiPost, apiPostJsonVoid, apiPostVoid } from "./client";
+import {
+  resolveOnboardingPath as resolveRedirectPath,
+  type OnboardingNextStep,
+} from "@/lib/onboarding";
+
+export { type OnboardingNextStep, resolveRedirectPath };
 
 export type UserRole = "applicant" | "provider";
 export type ProviderType = "private" | "company";
-
-export type OnboardingNextStep =
-  | "applicant_area_pending"
-  | "browse_listings"
-  | "create_first_listing"
-  | "dashboard";
 
 export interface SafeUser {
   readonly id: string;
@@ -45,19 +45,6 @@ export interface ForgotPasswordPayload {
 export interface ResetPasswordPayload {
   readonly token: string;
   readonly newPassword: string;
-}
-
-export function resolveRedirectPath(nextStep: OnboardingNextStep): string {
-  switch (nextStep) {
-    case "applicant_area_pending":
-      return "/dashboard";
-    case "browse_listings":
-      return "/listings";
-    case "create_first_listing":
-      return "/provider/get-started";
-    case "dashboard":
-      return "/provider/dashboard";
-  }
 }
 
 export async function register(payload: RegisterPayload): Promise<SafeUser> {

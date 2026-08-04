@@ -100,7 +100,7 @@ describe("LoginForm", () => {
       vi.mocked(getOnboardingState).mockResolvedValue({
         nextStep: "applicant_area_pending",
       } as never);
-      vi.mocked(resolveRedirectPath).mockReturnValue("/dashboard/applicant");
+      vi.mocked(resolveRedirectPath).mockReturnValue("/listings");
 
       renderForm();
       await user.type(
@@ -118,7 +118,7 @@ describe("LoginForm", () => {
         password: "password123",
       });
       expect(getOnboardingState).toHaveBeenCalled();
-      expect(mockReplace).toHaveBeenCalledWith("/dashboard/applicant");
+      expect(mockReplace).toHaveBeenCalledWith("/listings");
     });
 
     it("disables the submit button and shows submitting copy while loading", async () => {

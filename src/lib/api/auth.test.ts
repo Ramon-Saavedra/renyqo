@@ -20,13 +20,12 @@ vi.mock("./client", () => ({
 }));
 
 describe("resolveRedirectPath", () => {
-  it("maps applicant_area_pending to /dashboard", () => {
-    expect(resolveRedirectPath("applicant_area_pending")).toBe("/dashboard");
-  });
-
-  it("maps browse_listings to /listings", () => {
-    expect(resolveRedirectPath("browse_listings")).toBe("/listings");
-  });
+  it.each(["applicant_area_pending", "browse_listings"] as const)(
+    "maps %s to /listings",
+    (nextStep) => {
+      expect(resolveRedirectPath(nextStep)).toBe("/listings");
+    },
+  );
 
   it("maps create_first_listing to /provider/get-started", () => {
     expect(resolveRedirectPath("create_first_listing")).toBe(

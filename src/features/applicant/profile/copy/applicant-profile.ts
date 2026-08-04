@@ -18,8 +18,6 @@ export const applicantProfileCopy = {
   },
   topbar: {
     saved: "Gespeichert",
-    back: "Zurück zu Wohnungen",
-    backHref: "/listings",
   },
   hero: {
     kicker: "Bewerbungsprofil",
