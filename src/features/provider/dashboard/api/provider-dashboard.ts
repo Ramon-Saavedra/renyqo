@@ -1,6 +1,10 @@
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
 import type { ListingOverviewItem } from "@/features/provider/listings-overview/types";
-import type { DashboardObject, DashboardObjectStatus } from "../types";
+import {
+  MAX_ACTIVE_APPLICATIONS,
+  type DashboardObject,
+  type DashboardObjectStatus,
+} from "../types";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
   day: "2-digit",
@@ -42,7 +46,10 @@ function formatDateTime(value: string | null): string | null {
 }
 
 function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
-  const activeApplications = Math.min(listing.applicationsTotal, 5);
+  const activeApplications = Math.min(
+    Math.max(listing.applicationsTotal, 0),
+    MAX_ACTIVE_APPLICATIONS,
+  );
 
   return {
     id: listing.id,

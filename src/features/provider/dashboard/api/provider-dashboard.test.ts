@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
+import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import { getProviderDashboardObjects } from "./provider-dashboard";
 
 vi.mock("@/features/provider/listings-overview/api/provider-listings", () => ({
@@ -12,7 +13,7 @@ describe("getProviderDashboardObjects", () => {
     vi.clearAllMocks();
   });
 
-  it("maps backend listings to dashboard objects", async () => {
+  it("maps listings and clamps application totals to dashboard limits", async () => {
     vi.mocked(getProviderListings).mockResolvedValue([
       {
         id: "listing-1",
@@ -43,7 +44,7 @@ describe("getProviderDashboardObjects", () => {
         livingArea: 0,
         rooms: 0,
         status: "draft",
-        applicationsTotal: 0,
+        applicationsTotal: -2,
         needsAttention: false,
         attentionReason: null,
         openQuestionsCount: 0,
@@ -71,6 +72,25 @@ describe("getProviderDashboardObjects", () => {
         publishedAt: "2026-07-02T11:00:00.000Z",
         availableFrom: "2026-08-01",
       },
+      {
+        id: "listing-4",
+        title: "Am Bewerbungslimit",
+        objectType: null,
+        displayAddress: "Grenzstraße 5 · Berlin",
+        coverImageUrl: null,
+        coldRent: 1100,
+        livingArea: 65,
+        rooms: 3,
+        status: "published",
+        applicationsTotal: MAX_ACTIVE_APPLICATIONS,
+        needsAttention: false,
+        attentionReason: null,
+        openQuestionsCount: 0,
+        createdAt: "2026-07-01T10:00:00.000Z",
+        updatedAt: "2026-07-02T10:00:00.000Z",
+        publishedAt: "2026-07-02T11:00:00.000Z",
+        availableFrom: "2026-08-01",
+      },
     ]);
 
     await expect(getProviderDashboardObjects()).resolves.toEqual([
@@ -88,7 +108,7 @@ describe("getProviderDashboardObjects", () => {
         publishedAt: "02.07.2026, 13:00",
         updatedAt: "02.07.2026, 12:00",
         status: "published",
-        activeApplications: 5,
+        activeApplications: MAX_ACTIVE_APPLICATIONS,
         coverImageUrl: "https://res.cloudinary.com/demo/image/upload/flat.jpg",
       },
       {
@@ -106,6 +126,23 @@ describe("getProviderDashboardObjects", () => {
         updatedAt: "01.01.1970, 01:00",
         status: "draft",
         activeApplications: 0,
+        coverImageUrl: null,
+      },
+      {
+        id: "listing-4",
+        title: "Am Bewerbungslimit",
+        fullTitle: "Am Bewerbungslimit",
+        objectType: null,
+        district: "Grenzstraße 5 · Berlin",
+        address: "Grenzstraße 5 · Berlin",
+        coldRent: 1100,
+        livingArea: 65,
+        rooms: "3",
+        availableFrom: "01.08.2026",
+        publishedAt: "02.07.2026, 13:00",
+        updatedAt: "02.07.2026, 12:00",
+        status: "published",
+        activeApplications: MAX_ACTIVE_APPLICATIONS,
         coverImageUrl: null,
       },
     ]);

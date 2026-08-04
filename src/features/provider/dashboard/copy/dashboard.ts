@@ -1,4 +1,8 @@
-import type { CandidateBadge, DashboardObjectStatus } from "../types";
+import {
+  MAX_ACTIVE_APPLICATIONS,
+  type CandidateBadge,
+  type DashboardObjectStatus,
+} from "../types";
 
 export const ACCENTS = [
   { id: "schiefer", label: "Schiefer" },
@@ -74,7 +78,12 @@ export const dashboardCopy = {
     searchClear: "Filter leeren",
     empty: "Keine Objekte gefunden.",
     rentSuffix: "kalt",
-    applicationsLabel: (active: number) => `${active} / 5 aktive Bewerbungen`,
+    rentLabel: "Kaltmiete",
+    applications: "Bewerbungen",
+    applicationsCount: (active: number) =>
+      `${active} / ${MAX_ACTIVE_APPLICATIONS}`,
+    applicationsLabel: (active: number) =>
+      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktive Bewerbungen`,
     draftNotice: "Noch nicht veröffentlicht",
     share: {
       aria: "Objekt teilen",
@@ -111,14 +120,15 @@ export const dashboardCopy = {
     coldRent: "Kaltmiete",
     availableFrom: "Frei ab",
     applications: "Bewerbungen",
-    applicationsValue: (active: number) => `${active} / 5 aktiv`,
+    applicationsValue: (active: number) =>
+      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktiv`,
     availableFromEmpty: "Offen",
     status: "Status",
   },
   candidates: {
     title: "Passende Kandidaten",
-    lead: "Nur passende Bewerbungen werden aktiv angezeigt — höchstens fünf pro Objekt.",
-    counterSuffix: "von 5 Plätzen belegt",
+    lead: `Nur passende Bewerbungen werden aktiv angezeigt — höchstens ${MAX_ACTIVE_APPLICATIONS} pro Objekt.`,
+    counterSuffix: `von ${MAX_ACTIVE_APPLICATIONS} Plätzen belegt`,
     profile: "Profil",
     chat: "Chat öffnen",
     emptySlot: "Platz frei für passende Bewerbung",
