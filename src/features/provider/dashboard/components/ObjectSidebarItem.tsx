@@ -183,9 +183,7 @@ export function ObjectSidebarItem({
         <span
           className={cn(
             BOTTOM_BLOCK_CLASS,
-            selected
-              ? BOTTOM_BLOCK_ACTIVE_CLASS
-              : BOTTOM_BLOCK_INACTIVE_CLASS,
+            selected ? BOTTOM_BLOCK_ACTIVE_CLASS : BOTTOM_BLOCK_INACTIVE_CLASS,
           )}
         >
           {isDraft ? (

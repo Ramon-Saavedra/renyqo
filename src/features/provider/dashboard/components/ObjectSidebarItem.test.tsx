@@ -61,9 +61,7 @@ describe("ObjectSidebarItem", () => {
     expect(screen.getByText("900 €")).not.toBeNull();
     expect(screen.getByText("Veröffentlicht")).not.toBeNull();
     expect(screen.getByText("Bewerbungen")).not.toBeNull();
-    expect(
-      screen.getByText(`3 / ${MAX_ACTIVE_APPLICATIONS}`),
-    ).not.toBeNull();
+    expect(screen.getByText(`3 / ${MAX_ACTIVE_APPLICATIONS}`)).not.toBeNull();
     expect(
       screen.getByRole("button", { name: "Objekt teilen" }),
     ).not.toBeNull();
@@ -80,17 +78,15 @@ describe("ObjectSidebarItem", () => {
     expect(progress.getAttribute("aria-valuemax")).toBe(
       String(MAX_ACTIVE_APPLICATIONS),
     );
-    expect((progress.firstElementChild as HTMLElement | null)?.style.width).toBe(
-      `${(3 / MAX_ACTIVE_APPLICATIONS) * 100}%`,
-    );
+    expect(
+      (progress.firstElementChild as HTMLElement | null)?.style.width,
+    ).toBe(`${(3 / MAX_ACTIVE_APPLICATIONS) * 100}%`);
   });
 
   it("renders an empty progress bar without applications", () => {
     renderItem({ ...publishedObject, activeApplications: 0 });
 
-    expect(
-      screen.getByText(`0 / ${MAX_ACTIVE_APPLICATIONS}`),
-    ).not.toBeNull();
+    expect(screen.getByText(`0 / ${MAX_ACTIVE_APPLICATIONS}`)).not.toBeNull();
     expect(
       screen
         .getByRole("progressbar", {
@@ -105,7 +101,9 @@ describe("ObjectSidebarItem", () => {
       "Sehr lange Wohnungsbezeichnung für ein außergewöhnlich großes Mietobjekt";
     renderItem({ ...publishedObject, title: longTitle });
 
-    expect(screen.getByText(longTitle).classList.contains("truncate")).toBe(true);
+    expect(screen.getByText(longTitle).classList.contains("truncate")).toBe(
+      true,
+    );
   });
 
   it("marks the selected object with aria-pressed", () => {
