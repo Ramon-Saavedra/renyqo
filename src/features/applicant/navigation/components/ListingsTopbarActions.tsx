@@ -32,8 +32,7 @@ function ProviderRedirect() {
   return null;
 }
 
-const SKELETON_CLASS =
-  "flex items-center gap-3.5";
+const SKELETON_CLASS = "flex items-center gap-3.5";
 
 export function ListingsTopbarActions() {
   const { user, loading } = useCurrentUser();

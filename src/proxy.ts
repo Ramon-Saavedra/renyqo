@@ -63,10 +63,13 @@ async function fetchOnboardingStep(
   cookie: string,
 ): Promise<OnboardingNextStep | null> {
   try {
-    const res = await fetchWithTimeout(`${API_URL}/api/v1/me/onboarding-state`, {
-      headers: { cookie },
-      cache: "no-store",
-    });
+    const res = await fetchWithTimeout(
+      `${API_URL}/api/v1/me/onboarding-state`,
+      {
+        headers: { cookie },
+        cache: "no-store",
+      },
+    );
 
     if (!res.ok) return null;
 
@@ -153,13 +156,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(new URL(target, request.url));
     }
 
-    if (
-      pathname === "/provider/get-started" &&
-      data.nextStep === "dashboard"
-    ) {
-      return NextResponse.redirect(
-        new URL("/provider/dashboard", request.url),
-      );
+    if (pathname === "/provider/get-started" && data.nextStep === "dashboard") {
+      return NextResponse.redirect(new URL("/provider/dashboard", request.url));
     }
   } catch {
     if (pathname === "/login") return NextResponse.next();

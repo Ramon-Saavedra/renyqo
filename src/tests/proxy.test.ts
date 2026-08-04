@@ -50,9 +50,7 @@ describe("applicant route proxy", () => {
   it("redirects anonymous users from /applicant/profile to /login", async () => {
     fetchMock.mockResolvedValueOnce(unauthenticatedResponse());
 
-    const response = await proxy(
-      createRequest("/applicant/profile", ""),
-    );
+    const response = await proxy(createRequest("/applicant/profile", ""));
 
     expect(response.status).toBe(307);
     expect(getRedirectPath(response)).toBe("/login");
@@ -256,9 +254,7 @@ describe("provider route proxy", () => {
     expect(response.status).toBe(307);
     expect(getRedirectPath(response)).toBe("/provider/dashboard");
 
-    const dashboardResponse = await proxy(
-      createRequest("/provider/dashboard"),
-    );
+    const dashboardResponse = await proxy(createRequest("/provider/dashboard"));
 
     expect(dashboardResponse.status).toBe(200);
     expect(dashboardResponse.headers.get("x-middleware-next")).toBe("1");
