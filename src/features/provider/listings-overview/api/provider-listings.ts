@@ -1,63 +1,21 @@
 import { apiGet, apiPatchVoid } from "@/lib/api/client";
 import { normalizeObjectType } from "@/lib/api/listings";
+import {
+  isRecord,
+  readBoolean,
+  readCoverImageUrl,
+  readItems,
+  readNullableString,
+  readNumber,
+  readString,
+} from "@/lib/api/response-mappers";
 import type {
   AttentionReason,
   ListingOverviewItem,
   ListingStatus,
 } from "../types";
 
-type ApiRecord = Record<string, unknown>;
-
 const FALLBACK_DATE = "1970-01-01T00:00:00.000Z";
-
-function isRecord(value: unknown): value is ApiRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function readString(record: ApiRecord, keys: readonly string[]): string | null {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string" && value.trim().length > 0) {
-      return value;
-    }
-  }
-  return null;
-}
-
-function readNullableString(
-  record: ApiRecord,
-  keys: readonly string[],
-): string | null {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string") return value;
-    if (value === null) return null;
-  }
-  return null;
-}
-
-function readNumber(record: ApiRecord, keys: readonly string[]): number | null {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string") {
-      const parsed = Number(value);
-      if (Number.isFinite(parsed)) return parsed;
-    }
-  }
-  return null;
-}
-
-function readBoolean(
-  record: ApiRecord,
-  keys: readonly string[],
-): boolean | null {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "boolean") return value;
-  }
-  return null;
-}
 
 function normalizeStatus(value: string | null): ListingStatus {
   const normalized = value?.toLowerCase();
@@ -79,7 +37,7 @@ function normalizeAttentionReason(value: string | null): AttentionReason {
   return null;
 }
 
-function buildDisplayAddress(record: ApiRecord): string {
+function buildDisplayAddress(record: Record<string, unknown>): string {
   const existing = readString(record, ["displayAddress", "address"]);
   if (existing) return existing;
 
@@ -91,64 +49,6 @@ function buildDisplayAddress(record: ApiRecord): string {
   const zipPlace = [place, zip].filter(Boolean).join(" · ");
 
   return [street, zipPlace].filter(Boolean).join(" · ") || "Adresse offen";
-}
-
-function readRows(response: unknown): readonly unknown[] {
-  if (Array.isArray(response)) return response;
-  if (!isRecord(response)) return [];
-
-  const candidates = [response.listings, response.data, response.items];
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) return candidate;
-  }
-  return [];
-}
-
-function readCoverImageUrl(record: ApiRecord): string | null {
-  const direct = readString(record, [
-    "coverImageUrl",
-    "coverUrl",
-    "imageUrl",
-    "thumbnailUrl",
-  ]);
-  if (direct) return direct;
-
-  const coverImage = record.coverImage;
-  if (isRecord(coverImage)) {
-    const nested = readString(coverImage, [
-      "url",
-      "src",
-      "imageUrl",
-      "publicUrl",
-      "fileUrl",
-    ]);
-    if (nested) return nested;
-  }
-
-  const images =
-    record.images ??
-    record.photos ??
-    record.listingImages ??
-    record.listing_images;
-  if (!Array.isArray(images)) return null;
-
-  const firstImage = images[0];
-  if (typeof firstImage === "string" && firstImage.trim().length > 0) {
-    return firstImage;
-  }
-  if (!isRecord(firstImage)) return null;
-
-  return (
-    readString(firstImage, [
-      "secureUrl",
-      "secure_url",
-      "url",
-      "src",
-      "imageUrl",
-      "publicUrl",
-      "fileUrl",
-    ]) ?? null
-  );
 }
 
 function mapProviderListing(value: unknown): ListingOverviewItem | null {
@@ -213,7 +113,7 @@ export async function getProviderListings(): Promise<
   readonly ListingOverviewItem[]
 > {
   const response = await apiGet<unknown>("/api/v1/provider/listings");
-  return readRows(response)
+  return readItems(response)
     .map(mapProviderListing)
     .filter(isListingOverviewItem);
 }
