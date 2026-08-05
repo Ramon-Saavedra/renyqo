@@ -33,17 +33,17 @@ const QUERY_DEBOUNCE_MS = 300;
  * Shared abort + generation guard for page and load-more fetches.
  * Returns a cleanup function and a stale-checking predicate.
  */
-function startFetch(
-  generationRef: React.MutableRefObject<number>,
-): { controller: AbortController; isStale: () => boolean } {
+function startFetch(generationRef: React.MutableRefObject<number>): {
+  controller: AbortController;
+  isStale: () => boolean;
+} {
   generationRef.current += 1;
   const generation = generationRef.current;
-  let active = true;
   const controller = new AbortController();
 
   return {
     controller,
-    isStale: () => !active || generation !== generationRef.current,
+    isStale: () => generation !== generationRef.current,
   };
 }
 
@@ -170,7 +170,10 @@ export function usePublicListings(
   }, [nextCursor, buildParams]);
 
   const loadMoreRef = useRef(handleLoadMore);
-  loadMoreRef.current = handleLoadMore;
+
+  useEffect(() => {
+    loadMoreRef.current = handleLoadMore;
+  });
 
   const handleRetry = useCallback(() => {
     setRetryCount((current) => current + 1);

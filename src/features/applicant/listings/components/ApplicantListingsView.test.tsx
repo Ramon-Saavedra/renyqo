@@ -101,13 +101,25 @@ describe("ApplicantListingsView", () => {
       mockResult({
         fetchStatus: "idle",
         listings: [
-          buildListing({ id: "c0" }),                                                // no image
-          buildListing({ id: "c1", coverImageUrl: "https://res.cloudinary.com/1.jpg" }), // image #1 → eager
-          buildListing({ id: "c2" }),                                                // no image
-          buildListing({ id: "c3", coverImageUrl: "https://res.cloudinary.com/2.jpg" }), // image #2 → eager
-          buildListing({ id: "c4", coverImageUrl: "https://res.cloudinary.com/3.jpg" }), // image #3 → eager
-          buildListing({ id: "c5" }),                                                // no image
-          buildListing({ id: "c6", coverImageUrl: "https://res.cloudinary.com/4.jpg" }), // image #4 → lazy
+          buildListing({ id: "c0" }), // no image
+          buildListing({
+            id: "c1",
+            coverImageUrl: "https://res.cloudinary.com/1.jpg",
+          }), // image #1 → eager
+          buildListing({ id: "c2" }), // no image
+          buildListing({
+            id: "c3",
+            coverImageUrl: "https://res.cloudinary.com/2.jpg",
+          }), // image #2 → eager
+          buildListing({
+            id: "c4",
+            coverImageUrl: "https://res.cloudinary.com/3.jpg",
+          }), // image #3 → eager
+          buildListing({ id: "c5" }), // no image
+          buildListing({
+            id: "c6",
+            coverImageUrl: "https://res.cloudinary.com/4.jpg",
+          }), // image #4 → lazy
         ],
         total: 7,
       }),
@@ -133,9 +145,9 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(
-      screen.getByText("Keine Wohnungen gefunden"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Keine Wohnungen gefunden")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows error banner on error-page and calls retry", async () => {
@@ -167,9 +179,9 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(
-      screen.getByText("Mehr Wohnungen anzeigen"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Mehr Wohnungen anzeigen")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("does not show load-more while loading-more is in progress", () => {
@@ -185,12 +197,10 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(
-      screen.queryByText("Mehr Wohnungen anzeigen"),
-    ).toBeNull();
-    expect(
-      screen.getByText("Wohnungen werden geladen …"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Mehr Wohnungen anzeigen")).toBeNull();
+    expect(screen.getByText("Wohnungen werden geladen …")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows error banner and keeps listings on error-more, calls retryMore on retry", async () => {
@@ -230,9 +240,9 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(
-      screen.getByText("42 Wohnungen gefunden"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("42 Wohnungen gefunden")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows MatchBadge only when user has a profile and listing has match info", () => {
@@ -257,12 +267,8 @@ describe("ApplicantListingsView", () => {
     // The third card should NOT show any badge (null means unknown/unavailable).
     const cards = screen.getAllByRole("listitem");
     const thirdCard = cards[2]!;
-    expect(
-      within(thirdCard).queryByText("Passt"),
-    ).toBeNull();
-    expect(
-      within(thirdCard).queryByText("Passt nicht"),
-    ).toBeNull();
+    expect(within(thirdCard).queryByText("Passt")).toBeNull();
+    expect(within(thirdCard).queryByText("Passt nicht")).toBeNull();
   });
 
   it("does not show match badges when user has no profile", () => {

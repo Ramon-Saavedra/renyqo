@@ -42,8 +42,15 @@ export function ApplicantListingsView() {
   const profileStatus = useApplicantProfileStatus();
   const hasProfile = profileStatus === "exists";
 
-  const { listings, total, nextCursor, fetchStatus, loadMore, retry, retryMore } =
-    usePublicListings(filters, sort, hasProfile);
+  const {
+    listings,
+    total,
+    nextCursor,
+    fetchStatus,
+    loadMore,
+    retry,
+    retryMore,
+  } = usePublicListings(filters, sort, hasProfile);
 
   const updateFilters = useCallback((patch: Partial<ListingFilters>) => {
     setFilters((current) => ({ ...current, ...patch }));
@@ -53,8 +60,7 @@ export function ApplicantListingsView() {
     setFilters(EMPTY_FILTERS);
   }, []);
 
-  const isError =
-    fetchStatus === "error-page" || fetchStatus === "error-more";
+  const isError = fetchStatus === "error-page" || fetchStatus === "error-more";
   const isInitialLoading = fetchStatus === "loading-page";
   const isLoadingMore = fetchStatus === "loading-more";
   const hasMore = nextCursor !== null;

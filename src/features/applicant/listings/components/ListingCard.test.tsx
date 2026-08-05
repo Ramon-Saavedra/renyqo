@@ -23,16 +23,12 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
 
 describe("ListingCard", () => {
   it("renders the listing title", () => {
-    render(
-      <ListingCard listing={buildListing()} href="/listings/l1" />,
-    );
+    render(<ListingCard listing={buildListing()} href="/listings/l1" />);
     expect(screen.getByText("Testwohnung")).toBeInstanceOf(HTMLElement);
   });
 
   it("renders the location", () => {
-    render(
-      <ListingCard listing={buildListing()} href="/listings/l1" />,
-    );
+    render(<ListingCard listing={buildListing()} href="/listings/l1" />);
     expect(screen.getByText("Berlin, Mitte")).toBeInstanceOf(HTMLElement);
   });
 
@@ -72,9 +68,7 @@ describe("ListingCard", () => {
         href="/listings/l1"
       />,
     );
-    const img = document.querySelector(
-      'img[src*="res.cloudinary.com"]',
-    );
+    const img = document.querySelector('img[src*="res.cloudinary.com"]');
     expect(img).not.toBeNull();
   });
 
@@ -85,9 +79,7 @@ describe("ListingCard", () => {
         href="/listings/l1"
       />,
     );
-    expect(screen.getByText("Kein Foto vorhanden")).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(screen.getByText("Kein Foto vorhanden")).toBeInstanceOf(HTMLElement);
   });
 
   it("shows the 'Neu' badge when isNew is true", () => {
@@ -189,9 +181,7 @@ describe("ListingCard", () => {
   });
 
   it("links to the correct href", () => {
-    render(
-      <ListingCard listing={buildListing()} href="/listings/l1" />,
-    );
+    render(<ListingCard listing={buildListing()} href="/listings/l1" />);
     const link = screen.getByRole("link");
     expect(link.getAttribute("href")).toBe("/listings/l1");
   });

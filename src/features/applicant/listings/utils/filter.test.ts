@@ -2,10 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { EMPTY_FILTERS } from "../types";
 import type { ListingFilters } from "../types";
-import {
-  countActiveFilters,
-  hasActiveFilters,
-} from "./filter";
+import { countActiveFilters, hasActiveFilters } from "./filter";
 
 function withFilters(patch: Partial<ListingFilters>): ListingFilters {
   return { ...EMPTY_FILTERS, ...patch };

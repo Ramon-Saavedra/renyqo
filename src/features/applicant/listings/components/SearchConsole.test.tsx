@@ -36,24 +36,22 @@ describe("SearchConsole", () => {
 
   it("renders filter select buttons", () => {
     renderConsole();
-    expect(
-      screen.getByRole("button", { name: "Kaltmiete" }),
-    ).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.getByRole("button", { name: "Zimmer" }),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("button", { name: "Kaltmiete" })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByRole("button", { name: "Zimmer" })).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows the match toggle only when showMatchToggle is true", () => {
     renderConsole(EMPTY_FILTERS, false);
-    expect(
-      screen.queryByText("Nur passende Wohnungen"),
-    ).toBeNull();
+    expect(screen.queryByText("Nur passende Wohnungen")).toBeNull();
 
     renderConsole(EMPTY_FILTERS, true);
-    expect(
-      screen.getByText("Nur passende Wohnungen"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Nur passende Wohnungen")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("match toggle aria-pressed reflects filters.onlyMatching", () => {

@@ -87,7 +87,9 @@ export function SearchConsole({
             decorative
           />
           {listingsCopy.filters.mobileTrigger}
-          {drawerCount > 0 && <span className={COUNT_CLASS}>{drawerCount}</span>}
+          {drawerCount > 0 && (
+            <span className={COUNT_CLASS}>{drawerCount}</span>
+          )}
         </button>
 
         {showMatchToggle && (

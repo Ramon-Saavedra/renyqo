@@ -13,7 +13,8 @@ const BASE_CLASS =
 
 const TONE_CLASS: Record<MatchBadgeTone, string> = {
   new: "bg-input text-foreground-secondary",
-  match: "bg-success/30 text-success-vivid shadow-[0_0_6px_var(--success-vivid)]",
+  match:
+    "bg-success/30 text-success-vivid shadow-[0_0_6px_var(--success-vivid)]",
   "no-match": "bg-foreground-tertiary/15 text-foreground-secondary",
 };
 

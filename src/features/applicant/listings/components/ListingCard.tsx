@@ -120,7 +120,9 @@ export function ListingCard({
 
         <div className={PRICE_ROW_CLASS}>
           <span className={PRICE_CLASS}>{formatEUR(listing.coldRent)}</span>
-          <span className={PRICE_LABEL_CLASS}>{listingsCopy.card.coldRent}</span>
+          <span className={PRICE_LABEL_CLASS}>
+            {listingsCopy.card.coldRent}
+          </span>
           <span className={SERVICE_CHARGE_CLASS}>
             {listingsCopy.card.serviceCharge(formatEUR(listing.serviceCharge))}
           </span>

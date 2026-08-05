@@ -115,8 +115,7 @@ export const listingsCopy = {
   detail: {
     loading: "Objekt wird geladen …",
     notFoundTitle: "Objekt nicht gefunden",
-    notFoundLead:
-      "Dieses Objekt existiert nicht oder wurde entfernt.",
+    notFoundLead: "Dieses Objekt existiert nicht oder wurde entfernt.",
     backLink: "Zurück zur Suche",
     errorDefault: "Objekt konnte nicht geladen werden",
     errorNetwork: "Netzwerkfehler — bitte versuche es erneut",

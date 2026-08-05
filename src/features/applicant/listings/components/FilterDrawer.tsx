@@ -74,11 +74,7 @@ export function FilterDrawer({
 
   return (
     <>
-      <div
-        aria-hidden="true"
-        className={SCRIM_CLASS}
-        onClick={onClose}
-      />
+      <div aria-hidden="true" className={SCRIM_CLASS} onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
@@ -111,7 +107,9 @@ export function FilterDrawer({
                 key={option.label}
                 type="button"
                 aria-pressed={filters.maxColdRent === option.value}
-                className={filterChipClass(filters.maxColdRent === option.value)}
+                className={filterChipClass(
+                  filters.maxColdRent === option.value,
+                )}
                 onClick={() => onChange({ maxColdRent: option.value })}
               >
                 {option.label}

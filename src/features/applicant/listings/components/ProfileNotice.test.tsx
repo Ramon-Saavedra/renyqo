@@ -36,12 +36,8 @@ describe("ProfileNotice", () => {
     mockProfileStatus.mockReturnValue("missing");
     render(<ProfileNotice returnTo="/listings" />);
 
-    expect(
-      screen.getByText(/Erstelle dein/),
-    ).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.getByText("Bewerbungsprofil"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText(/Erstelle dein/)).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Bewerbungsprofil")).toBeInstanceOf(HTMLElement);
   });
 
   it("links to the profile page with returnTo param", () => {

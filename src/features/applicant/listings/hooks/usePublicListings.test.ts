@@ -301,8 +301,7 @@ describe("usePublicListings", () => {
   });
 
   it("discards stale responses when filters change mid-flight", async () => {
-    let resolveFirst: (value: PublicListingsResponse) => void =
-      () => undefined;
+    let resolveFirst: (value: PublicListingsResponse) => void = () => undefined;
     const firstPromise = new Promise<PublicListingsResponse>((res) => {
       resolveFirst = res;
     });
@@ -334,7 +333,9 @@ describe("usePublicListings", () => {
     const { result, rerender } = renderHook(
       ({ filters }) => usePublicListings(filters, "newest", false),
       {
-        initialProps: { filters: EMPTY_FILTERS as Parameters<typeof usePublicListings>[0] },
+        initialProps: {
+          filters: EMPTY_FILTERS as Parameters<typeof usePublicListings>[0],
+        },
       },
     );
 

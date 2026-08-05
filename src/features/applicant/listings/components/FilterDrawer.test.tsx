@@ -108,23 +108,19 @@ describe("FilterDrawer", () => {
     const user = userEvent.setup();
     const { onClose } = renderDrawer();
 
-    await user.click(
-      screen.getByRole("button", { name: "Filter schließen" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Filter schließen" }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("shows result count in the apply button", () => {
     renderDrawer({ resultCount: 5 });
-    expect(
-      screen.getByText("5 Ergebnisse anzeigen"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("5 Ergebnisse anzeigen")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows singular label for 1 result", () => {
     renderDrawer({ resultCount: 1 });
-    expect(
-      screen.getByText("1 Ergebnis anzeigen"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("1 Ergebnis anzeigen")).toBeInstanceOf(HTMLElement);
   });
 });

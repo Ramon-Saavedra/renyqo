@@ -8,7 +8,11 @@ import {
   readNumber,
   readString,
 } from "@/lib/api/response-mappers";
-import type { PublicListing, PublicListingsParams, PublicListingsResponse } from "../types";
+import type {
+  PublicListing,
+  PublicListingsParams,
+  PublicListingsResponse,
+} from "../types";
 
 function normalizeProfileMatch(value: string | null): boolean | null {
   const upper = value?.toUpperCase();
@@ -64,9 +68,7 @@ function mapPublicListing(value: unknown): PublicListing | null {
   };
 }
 
-function isPublicListing(
-  item: PublicListing | null,
-): item is PublicListing {
+function isPublicListing(item: PublicListing | null): item is PublicListing {
   return item !== null;
 }
 
@@ -94,7 +96,11 @@ function buildQueryString(params: PublicListingsParams): string {
 
 function readTotal(response: unknown): number {
   if (!isRecord(response)) return 0;
-  const total = readNumber(response, ["total", "totalResults", "total_results"]);
+  const total = readNumber(response, [
+    "total",
+    "totalResults",
+    "total_results",
+  ]);
   return total ?? 0;
 }
 
@@ -112,9 +118,7 @@ export async function getPublicListings(
   const response = await apiGet<unknown>(path, options);
 
   return {
-    listings: readItems(response)
-      .map(mapPublicListing)
-      .filter(isPublicListing),
+    listings: readItems(response).map(mapPublicListing).filter(isPublicListing),
     total: readTotal(response),
     nextCursor: readNextCursor(response),
   };

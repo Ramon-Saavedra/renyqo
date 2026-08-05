@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiGet } from "@/lib/api/client";
-import {
-  getPublicListingDetail,
-  getPublicListings,
-} from "./public-listings";
+import { getPublicListingDetail, getPublicListings } from "./public-listings";
 
 vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
@@ -16,7 +13,11 @@ describe("getPublicListings", () => {
   });
 
   it("calls the public listings endpoint without query params when no filters are set", async () => {
-    vi.mocked(apiGet).mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [],
+      nextCursor: null,
+      total: 0,
+    });
 
     await getPublicListings({});
 
@@ -24,7 +25,11 @@ describe("getPublicListings", () => {
   });
 
   it("builds query params from filter values", async () => {
-    vi.mocked(apiGet).mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [],
+      nextCursor: null,
+      total: 0,
+    });
 
     await getPublicListings({
       query: "Freiburg",
@@ -57,7 +62,11 @@ describe("getPublicListings", () => {
   });
 
   it("omits null and undefined filter values", async () => {
-    vi.mocked(apiGet).mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [],
+      nextCursor: null,
+      total: 0,
+    });
 
     await getPublicListings({
       maxRent: null,
@@ -73,7 +82,11 @@ describe("getPublicListings", () => {
   });
 
   it("passes AbortSignal when options are provided", async () => {
-    vi.mocked(apiGet).mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [],
+      nextCursor: null,
+      total: 0,
+    });
     const controller = new AbortController();
 
     await getPublicListings({}, { signal: controller.signal });
@@ -142,9 +155,7 @@ describe("getPublicListings", () => {
     });
 
     const { listings } = await getPublicListings({});
-    expect(listings[0]?.coverImageUrl).toBe(
-      "https://res.cloudinary.com/a.jpg",
-    );
+    expect(listings[0]?.coverImageUrl).toBe("https://res.cloudinary.com/a.jpg");
     expect(listings[1]?.coverImageUrl).toBeNull();
   });
 
@@ -272,10 +283,7 @@ describe("getPublicListingDetail", () => {
 
     await getPublicListingDetail("abc-123");
 
-    expect(apiGet).toHaveBeenCalledWith(
-      "/api/v1/listings/abc-123",
-      undefined,
-    );
+    expect(apiGet).toHaveBeenCalledWith("/api/v1/listings/abc-123", undefined);
   });
 
   it("maps a single listing record", async () => {
