@@ -14,8 +14,8 @@ interface PopoverPanelProps {
   ariaLabel: string;
   children: ReactNode;
   trigger: (props: PopoverRenderProps) => ReactNode;
-  className?: string;
-  panelClassName?: string;
+  className?: string | undefined;
+  panelClassName?: string | undefined;
   align?: "left" | "right";
 }
 
