@@ -1,0 +1,84 @@
+schema_version: 1
+
+project:
+  id: "renyqo-frontend"
+  name: "Renyqo Frontend"
+  type: "frontend"
+
+repository:
+  provider: "github"
+  owner: "Ramon-Saavedra"
+  name: "renyqo"
+  default_branch: "main"
+
+instructions:
+  root: "AGENTS.md"
+  nested: []
+  documentation:
+    - "README.md"
+
+runtime:
+  node: "20"
+
+package:
+  manager: "npm"
+  lockfile: "package-lock.json"
+
+commands:
+  install: "npm ci"
+  format_check: "npm run format:check"
+  lint: "npm run lint"
+  typecheck: "npm run typecheck"
+  unit_tests: "npm test"
+  integration_tests: null
+  build: "npm run build"
+  security_scan: "npm audit --audit-level=high"
+
+docker:
+  enabled: true
+  dockerfile: "Dockerfile"
+  compose_file: null
+  build_command: "docker build -t renyqo:automation ."
+  smoke_command: null
+
+e2e:
+  enabled: false
+  command: null
+  database_service: null
+
+git:
+  branch_prefix: "automation/"
+  allow_default_branch_writes: false
+  allow_force_push: false
+
+protected_paths:
+  - ".env"
+  - ".env.*"
+  - "*.pem"
+  - "*.key"
+  - "secrets/"
+  - "credentials/"
+
+automation:
+  allow_dependency_changes: false
+  allow_database_changes: false
+  allow_architecture_changes: false
+  require_plan_approval: true
+  require_validation_approval: true
+  require_reviewer_approval: true
+  require_delivery_approval: true
+
+reviewers:
+  architecture: true
+  domain_api: true
+  security: true
+  database: true
+  tests_reliability: true
+
+delivery:
+  pull_request_template: ".github/pull_request_template.md"
+  auto_merge: false
+  auto_cleanup: false
+
+related_repositories:
+  - "Ramon-Saavedra/renyqo-app"
