@@ -145,4 +145,23 @@ describe("ListingEditView", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
     expect(updateListing).not.toHaveBeenCalled();
   });
+
+  it("updates the address visibility hint when the setting changes", async () => {
+    const user = userEvent.setup();
+    renderEditView();
+
+    expect(
+      screen.getByText(listingEditCopy.fields.showExactAddressHiddenHint),
+    ).toBeInstanceOf(HTMLElement);
+
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: new RegExp(`^${listingEditCopy.fields.showExactAddress}`),
+      }),
+    );
+
+    expect(
+      screen.getByText(listingEditCopy.fields.showExactAddressVisibleHint),
+    ).toBeInstanceOf(HTMLElement);
+  });
 });

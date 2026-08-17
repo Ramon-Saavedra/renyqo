@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils/cn";
 import { Eye } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { VISIBILITY_NOTE, listingDetailCopy } from "../copy/listing-detail";
+import { getVisibilityNote, listingDetailCopy } from "../copy/listing-detail";
 import type { ListingDetail } from "../types";
 import { DetailCard } from "./DetailCard";
 
@@ -48,7 +48,9 @@ export function AddressCard({ listing, className }: AddressCardProps) {
           decorative
           className="mt-0.5 text-primary"
         />
-        <p className={NOTE_TEXT_CLASS}>{VISIBILITY_NOTE[listing.status]}</p>
+        <p className={NOTE_TEXT_CLASS}>
+          {getVisibilityNote(listing.status, listing.showExactAddress)}
+        </p>
       </div>
     </DetailCard>
   );

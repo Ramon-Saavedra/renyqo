@@ -94,7 +94,7 @@ export function useApplicantProfile(): UseApplicantProfileResult {
         setSaveStatus("saved");
         setApplicantProfileCache(draft, user?.id);
         setFlash(applicantProfileCopy.actions.savedFlash);
-        router.push(safeListingsReturnTo(searchParams.get("returnTo")));
+        router.replace(safeListingsReturnTo(searchParams.get("returnTo")));
       })
       .catch(() => {
         savingRef.current = false;

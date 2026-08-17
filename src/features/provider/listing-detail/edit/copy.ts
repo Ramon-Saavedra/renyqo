@@ -49,7 +49,9 @@ export const listingEditCopy = {
     zip: "PLZ",
     city: "Stadt",
     showExactAddress: "Genaue Adresse öffentlich anzeigen",
-    showExactAddressHint:
+    showExactAddressVisibleHint:
+      "Bewerbende sehen die genaue Adresse in der Suche und in der Objektansicht.",
+    showExactAddressHiddenHint:
       "Ist dies deaktiviert, sehen Bewerbende zunächst nur Stadt und ungefähre Lage.",
     coldRent: "Kaltmiete",
     additionalCosts: "Nebenkosten",
