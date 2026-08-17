@@ -16,14 +16,26 @@ export const SMOKING_POLICY_LABEL: Record<SmokingPolicyBackend, string> = {
   NON_SMOKERS_PREFERRED: "Nicht erlaubt",
 };
 
-export const VISIBILITY_NOTE: Record<ListingStatus, string> = {
-  published:
-    "Die genaue Adresse ist nur für dich sichtbar. Bewerbende sehen zunächst nur Stadtteil und Postleitzahl — die vollständige Adresse wird erst nach Zusage freigegeben.",
+const VISIBILITY_NOTE: Record<Exclude<ListingStatus, "published">, string> = {
   paused:
     "Dieses Objekt ist pausiert. Bewerbende sehen es aktuell nicht in der Suche.",
   draft: "Als Entwurf ist dieses Objekt für niemanden außer dir sichtbar.",
   archived: "Archivierte Objekte sind für Bewerbende nicht sichtbar.",
 };
+
+export function getVisibilityNote(
+  status: ListingStatus,
+  showExactAddress: boolean | null,
+): string {
+  if (status !== "published") return VISIBILITY_NOTE[status];
+  if (showExactAddress === true) {
+    return "Die genaue Adresse ist öffentlich sichtbar. Bewerbende sehen sie in der Suche und in der Objektansicht. Du kannst die Sichtbarkeit jederzeit unter „Bearbeiten“ ändern.";
+  }
+  if (showExactAddress === false) {
+    return "Die genaue Adresse ist nur für dich sichtbar. Bewerbende sehen zunächst nur Stadt und ungefähre Lage. Du kannst die vollständige Adresse jederzeit unter „Bearbeiten“ freigeben.";
+  }
+  return "Die Sichtbarkeit der genauen Adresse konnte nicht ermittelt werden. Bitte prüfe die Einstellung unter „Bearbeiten“.";
+}
 
 export const listingDetailCopy = {
   backLabel: "Zurück zu Meine Objekte",

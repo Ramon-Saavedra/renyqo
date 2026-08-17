@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { INITIAL_PROFILE } from "../utils/profile-validation";
 import { useApplicantProfile } from "./useApplicantProfile";
 
-const push = vi.fn();
+const replace = vi.fn();
 let searchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
+  useRouter: () => ({ replace }),
   useSearchParams: () => searchParams,
 }));
 
@@ -60,7 +60,7 @@ describe("useApplicantProfile save flow", () => {
 
     await user.click(button);
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/listings"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/listings"));
   });
 
   it("redirects to a safe returnTo below the listings root", async () => {
@@ -70,7 +70,9 @@ describe("useApplicantProfile save flow", () => {
 
     await user.click(button);
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/listings/abc-123"));
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/listings/abc-123"),
+    );
   });
 
   it("falls back to the listings root for an external returnTo", async () => {
@@ -80,7 +82,7 @@ describe("useApplicantProfile save flow", () => {
 
     await user.click(button);
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/listings"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/listings"));
   });
 
   it("leaves a one-time confirmation for the destination page", async () => {
@@ -119,7 +121,7 @@ describe("useApplicantProfile save flow", () => {
       resolveSave();
     });
 
-    await waitFor(() => expect(push).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(replace).toHaveBeenCalledTimes(1));
   });
 
   it("does not save when the initial profile load fails", async () => {
@@ -140,13 +142,13 @@ describe("useApplicantProfile save flow", () => {
     await user.click(button);
 
     await waitFor(() => expect(status()).toBe("error"));
-    expect(push).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
     expect(sessionStorage.getItem("renyqo.flash")).toBeNull();
 
     saveApplicantProfile.mockResolvedValueOnce(undefined);
     await user.click(button);
 
     await waitFor(() => expect(saveApplicantProfile).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/listings"));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/listings"));
   });
 });

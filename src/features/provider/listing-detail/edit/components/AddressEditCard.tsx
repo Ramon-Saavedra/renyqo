@@ -68,7 +68,11 @@ export function AddressEditCard({
           id="edit-show-exact-address"
           checked={form.showExactAddress}
           onChange={(value) => setField("showExactAddress", value)}
-          description={fields.showExactAddressHint}
+          description={
+            form.showExactAddress
+              ? fields.showExactAddressVisibleHint
+              : fields.showExactAddressHiddenHint
+          }
           saved={savedFields.has("showExactAddress")}
         >
           {fields.showExactAddress}
