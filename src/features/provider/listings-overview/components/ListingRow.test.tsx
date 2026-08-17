@@ -60,6 +60,16 @@ describe("ListingRow", () => {
     );
   });
 
+  it("uses the media placeholder when no cover image is available", () => {
+    const { container } = render(
+      <ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />,
+    );
+
+    expect(container.querySelector(".bg-media-placeholder")).toBeInstanceOf(
+      HTMLDivElement,
+    );
+  });
+
   it("renders the waiting application label when applications exceed the visible limit", () => {
     render(
       <ListingRow

@@ -34,7 +34,7 @@ const ARROW_BASE =
   "absolute top-1/2 z-10 grid h-9 w-9 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-foreground/20 text-background hover:bg-foreground/55 focus-visible:opacity-100 focus-visible:outline-none focus-visible:shadow-focus";
 
 const EMPTY_CLASS =
-  "flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong px-6 text-center text-foreground-tertiary";
+  "flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong bg-media-placeholder px-6 text-center text-foreground-tertiary";
 
 const ROOT_CLASS = "flex flex-col gap-2.5";
 const MAIN_WRAP_CLASS = "relative group";

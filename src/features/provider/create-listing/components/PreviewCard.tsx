@@ -17,7 +17,7 @@ const CARD_CLASS =
   "overflow-hidden rounded-md border border-border bg-background";
 
 const PHOTO_CLASS =
-  "relative grid aspect-[4/3] place-items-center border-b border-border bg-background-subtle bg-cover bg-center font-mono text-meta uppercase text-foreground-tertiary";
+  "relative grid aspect-[4/3] place-items-center border-b border-border bg-media-placeholder bg-cover bg-center font-mono text-meta uppercase text-foreground-tertiary";
 
 const BADGE_CLASS =
   "absolute top-2.5 left-2.5 inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-2 py-1 font-mono text-meta uppercase text-foreground-secondary";

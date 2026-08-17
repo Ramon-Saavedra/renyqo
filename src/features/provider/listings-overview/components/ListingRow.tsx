@@ -38,7 +38,7 @@ const THUMBNAIL_CLASS =
   "aspect-[4/3] w-full shrink-0 rounded object-cover sm:h-24 sm:w-24 sm:aspect-auto";
 
 const THUMBNAIL_FALLBACK_CLASS =
-  "flex aspect-[4/3] w-full shrink-0 items-center justify-center rounded-md bg-background-subtle text-primary sm:h-24 sm:w-24 sm:aspect-auto";
+  "flex aspect-[4/3] w-full shrink-0 items-center justify-center rounded-md bg-media-placeholder text-primary sm:h-24 sm:w-24 sm:aspect-auto";
 
 const DETAILS_CLASS = "min-w-0 flex-1";
 
