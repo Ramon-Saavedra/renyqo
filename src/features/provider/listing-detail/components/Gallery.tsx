@@ -15,7 +15,7 @@ interface GalleryProps {
 }
 
 const EMPTY_CLASS =
-  "flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong px-6 text-center text-foreground-tertiary";
+  "flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-md border border-dashed border-border-strong bg-media-placeholder px-6 text-center text-foreground-tertiary";
 
 const ROOT_CLASS = "flex flex-col gap-2.5";
 const MAIN_WRAP_CLASS = "relative group";

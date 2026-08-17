@@ -80,6 +80,9 @@ describe("ListingCard", () => {
       />,
     );
     expect(screen.getByText("Kein Foto vorhanden")).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByText("Kein Foto vorhanden").closest(".bg-media-placeholder"),
+    ).toBeInstanceOf(HTMLDivElement);
   });
 
   it("shows the 'Neu' badge when isNew is true", () => {

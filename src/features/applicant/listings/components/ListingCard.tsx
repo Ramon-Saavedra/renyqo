@@ -23,7 +23,7 @@ const CARD_CLASS =
   "flex h-full flex-col gap-2.5 rounded-md focus-visible:outline-none focus-visible:shadow-focus";
 
 const MEDIA_CLASS =
-  "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-background-subtle";
+  "relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md bg-media-placeholder";
 
 const MEDIA_IMAGE_CLASS = "h-full w-full object-cover";
 
