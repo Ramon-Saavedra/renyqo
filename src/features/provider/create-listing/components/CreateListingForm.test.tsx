@@ -88,8 +88,6 @@ describe("CreateListingForm", () => {
   });
 
   it("shows unsaved changes after editing without autosave copy", async () => {
-    const user = userEvent.setup();
-
     render(<CreateListingForm />);
 
     const topbar = document.querySelector("header");
@@ -102,7 +100,9 @@ describe("CreateListingForm", () => {
       within(topbar as HTMLElement).queryByText("Wird gespeichert"),
     ).toBeNull();
 
-    await user.type(screen.getByPlaceholderText("Berlin"), "Berlin");
+    fireEvent.change(screen.getByPlaceholderText("Berlin"), {
+      target: { value: "Berlin" },
+    });
 
     expect(screen.getByText("Ungespeicherte Änderungen")).toBeInstanceOf(
       HTMLElement,

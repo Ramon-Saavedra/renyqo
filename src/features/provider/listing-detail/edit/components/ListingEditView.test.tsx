@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
@@ -72,8 +72,7 @@ describe("ListingEditView", () => {
     const title = screen.getByRole("textbox", {
       name: listingEditCopy.fields.title,
     });
-    await user.clear(title);
-    await user.type(title, "Renovierte Wohnung");
+    fireEvent.change(title, { target: { value: "Renovierte Wohnung" } });
     await user.click(
       screen.getByRole("button", { name: listingEditCopy.save }),
     );

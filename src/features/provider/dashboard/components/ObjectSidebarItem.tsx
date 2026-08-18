@@ -30,7 +30,7 @@ const STATUS_ACTIVE_CLASS = "text-primary-foreground";
 const DOT_CLASS = "h-1.5 w-1.5 rounded-full bg-current";
 
 const SHARE_BUTTON_CLASS =
-  "absolute top-2 right-3.5 z-10 inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-sm border focus-visible:outline-none focus-visible:shadow-focus";
+  "absolute top-1 right-3 z-10 inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-sm border focus-visible:outline-none focus-visible:shadow-focus";
 const SHARE_INACTIVE_CLASS =
   "border-primary-soft bg-background text-primary hover:bg-primary-tint";
 const SHARE_ACTIVE_CLASS =
@@ -42,7 +42,7 @@ const SELECT_CLASS =
   "absolute inset-0 z-0 w-full cursor-pointer rounded-md focus-visible:outline-none";
 
 const TITLE_CLASS =
-  "block min-w-0 truncate font-display text-brand font-semibold";
+  "block min-w-0 truncate font-display text-caption font-semibold";
 const TITLE_INACTIVE_CLASS = "text-foreground";
 const TITLE_ACTIVE_CLASS = "text-primary-foreground";
 
@@ -54,7 +54,7 @@ const RENT_ROW_CLASS = "mt-3 flex items-baseline justify-between gap-2";
 const RENT_LABEL_CLASS = "font-mono text-meta uppercase";
 const RENT_LABEL_INACTIVE_CLASS = "text-foreground-tertiary";
 const RENT_LABEL_ACTIVE_CLASS = "text-primary-foreground/65";
-const RENT_CLASS = "shrink-0 font-display text-body font-semibold";
+const RENT_CLASS = "shrink-0 font-display text-caption font-semibold";
 const RENT_INACTIVE_CLASS = "text-foreground";
 const RENT_ACTIVE_CLASS = "text-primary-foreground";
 
@@ -67,7 +67,7 @@ const PROGRESS_LABEL_CLASS = "text-caption";
 const PROGRESS_LABEL_INACTIVE_CLASS = "text-foreground-secondary";
 const PROGRESS_LABEL_ACTIVE_CLASS = "text-primary-foreground/80";
 const PROGRESS_COUNT_CLASS =
-  "shrink-0 font-mono text-caption font-bold whitespace-nowrap";
+  "shrink-0 font-mono text-meta font-bold whitespace-nowrap";
 const PROGRESS_COUNT_INACTIVE_CLASS = "text-primary";
 const PROGRESS_COUNT_ACTIVE_CLASS = "text-primary-foreground";
 const TRACK_CLASS = "block h-1.5 overflow-hidden rounded-full";
@@ -255,7 +255,7 @@ export function ObjectSidebarItem({
           )}
           aria-label={sidebar.share.aria}
         >
-          <AppIcon icon={Share2} size={14} strokeWidth={1.8} decorative />
+          <AppIcon icon={Share2} size={12} strokeWidth={1.8} decorative />
         </button>
       )}
     </li>
