@@ -22,7 +22,7 @@ const listingExtractionValuesSchema = z.object({
   schufaRequired: z.boolean().optional(),
   incomeProofRequired: z.boolean().optional(),
   suitableForPeopleCount: z.number().nullable().optional(),
-  petsPolicy: z.enum(["ALLOWED", "BY_ARRANGEMENT", "PREFER_NOT"]).optional(),
+  petsPolicy: z.enum(["ALLOWED", "BY_ARRANGEMENT", "NOT_ALLOWED"]).optional(),
   smokingPolicy: z
     .enum(["ALLOWED", "BY_ARRANGEMENT", "NON_SMOKERS_PREFERRED"])
     .optional(),
@@ -31,7 +31,8 @@ const listingExtractionValuesSchema = z.object({
 
 const listingExtractionResultSchema = z.object({
   values: listingExtractionValuesSchema,
-  missingFields: z.array(z.string()),
+  requiredMissingFields: z.array(z.string()),
+  recommendedMissingFields: z.array(z.string()),
   inconsistencies: z.array(
     z.object({ field: z.string(), message: z.string() }),
   ),

@@ -11,15 +11,34 @@ vi.mock("./client", () => ({
 describe("extractListingFromText", () => {
   it("returns a validated extraction result", async () => {
     vi.mocked(apiPost).mockResolvedValue({
-      values: { city: "Berlin" },
-      missingFields: [],
+      values: {
+        objectType: "HOUSE",
+        city: "Berlin",
+        zip: "44444",
+        street: "Rabenstraße",
+        livingArea: 100,
+        rooms: 5,
+        bedrooms: 3,
+        coldRent: 1000,
+        availableFrom: "2027-01-20",
+        minimumHouseholdNetIncome: 3000,
+        incomeProofRequired: true,
+        suitableForPeopleCount: 2,
+        petsPolicy: "NOT_ALLOWED",
+        smokingPolicy: "NON_SMOKERS_PREFERRED",
+      },
+      requiredMissingFields: [],
+      recommendedMissingFields: ["schufaRequired"],
       inconsistencies: [],
       warnings: [],
     });
 
-    await expect(extractListingFromText("Wohnung in Berlin")).resolves.toEqual(
-      expect.objectContaining({ values: { city: "Berlin" } }),
-    );
+    await expect(
+      extractListingFromText("Haus in Berlin"),
+    ).resolves.toMatchObject({
+      values: { city: "Berlin", petsPolicy: "NOT_ALLOWED" },
+      recommendedMissingFields: ["schufaRequired"],
+    });
   });
 
   it("rejects malformed extraction results", async () => {

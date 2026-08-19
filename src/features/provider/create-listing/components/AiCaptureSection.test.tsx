@@ -110,7 +110,8 @@ describe("AiCaptureSection", () => {
     const setField = vi.fn();
     const response: ListingExtractionResult = {
       values: { city: "Berlin", zip: "10115", coldRent: 1200 },
-      missingFields: ["street"],
+      requiredMissingFields: ["street"],
+      recommendedMissingFields: [],
       inconsistencies: [],
       warnings: [],
     };
@@ -134,6 +135,85 @@ describe("AiCaptureSection", () => {
     expect(setField).toHaveBeenCalledWith("zip", "10115");
     expect(setField).toHaveBeenCalledWith("price", "1200");
     expect(screen.getByText("Angaben übertragen")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("renders the current backend contract and maps NOT_ALLOWED when applied", async () => {
+    const user = userEvent.setup();
+    const setField = vi.fn();
+    vi.mocked(extractListingFromPdf).mockResolvedValue({
+      values: {
+        objectType: "HOUSE",
+        city: "Berlin",
+        zip: "44444",
+        street: "Rabenstraße",
+        livingArea: 100,
+        rooms: 5,
+        bedrooms: 3,
+        coldRent: 1000,
+        availableFrom: "2027-01-20",
+        minimumHouseholdNetIncome: 3000,
+        incomeProofRequired: true,
+        suitableForPeopleCount: 2,
+        petsPolicy: "NOT_ALLOWED",
+        smokingPolicy: "NON_SMOKERS_PREFERRED",
+      },
+      requiredMissingFields: [],
+      recommendedMissingFields: ["schufaRequired"],
+      inconsistencies: [],
+      warnings: [],
+    });
+
+    render(<AiCaptureSection setField={setField} />);
+    await openPanel(user);
+    await user.upload(getPdfInput(), pdfFile());
+    await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
+
+    expect(await screen.findByText("SCHUFA-Anforderung")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(
+      screen.getByText(/Alle Pflichtangaben sind vollständig/),
+    ).toBeInstanceOf(HTMLElement);
+
+    await user.click(
+      screen.getByRole("button", { name: "Ins Formular übernehmen" }),
+    );
+
+    expect(setField).toHaveBeenCalledWith("pets", "keine");
+  });
+
+  it("renders required and recommended gaps together", async () => {
+    const user = userEvent.setup();
+    vi.mocked(extractListingFromPdf).mockResolvedValue({
+      values: {
+        objectType: "HOUSE",
+        city: "Berlin",
+        zip: "44444",
+        street: "Rabenstraße",
+        livingArea: 100,
+        rooms: 5,
+        bedrooms: 3,
+        coldRent: 1000,
+        availableFrom: "2027-01-20",
+        minimumHouseholdNetIncome: 3000,
+        incomeProofRequired: true,
+        suitableForPeopleCount: 2,
+        petsPolicy: "NOT_ALLOWED",
+        smokingPolicy: "NON_SMOKERS_PREFERRED",
+      },
+      requiredMissingFields: ["title"],
+      recommendedMissingFields: ["schufaRequired"],
+      inconsistencies: [],
+      warnings: [],
+    });
+
+    render(<AiCaptureSection setField={vi.fn()} />);
+    await openPanel(user);
+    await user.upload(getPdfInput(), pdfFile());
+    await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
+
+    expect(await screen.findByText("Objekttitel")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("SCHUFA-Anforderung")).toBeInstanceOf(HTMLElement);
   });
 
   it("surfaces a rate-limit message and allows retrying", async () => {
