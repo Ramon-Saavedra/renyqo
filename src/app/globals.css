@@ -815,6 +815,22 @@ body {
   }
 }
 
+.ai-glow {
+  box-shadow: 0 0 0 0 transparent;
+}
+.ai-glow:hover,
+.ai-glow:focus-visible {
+  animation: ai-glow-pulse 6s ease-in-out infinite;
+}
+@keyframes ai-glow-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 12px 0 color-mix(in srgb, var(--primary) 38%, transparent),
+      0 0 24px 3px color-mix(in srgb, var(--primary) 24%, transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-wrap,
   .align-dots i,
@@ -825,5 +841,9 @@ body {
   }
   .veil::before {
     display: none;
+  }
+  .ai-glow:hover,
+  .ai-glow:focus-visible {
+    animation: none !important;
   }
 }

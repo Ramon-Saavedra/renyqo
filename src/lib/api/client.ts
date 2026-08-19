@@ -1,4 +1,5 @@
 import { API_URL } from "@/lib/env";
+import { clearCsrfToken, csrfTokenPath, getCsrfToken } from "./csrf";
 
 export type ApiErrorKind = "http" | "network" | "timeout" | "cancelled";
 
@@ -12,23 +13,37 @@ const DEFAULT_TIMEOUT_MS = 10_000;
 export class ApiError extends Error {
   readonly status: number;
   readonly kind: ApiErrorKind;
+  readonly code: string | null;
 
-  constructor(status: number, message: string, kind: ApiErrorKind = "http") {
+  constructor(
+    status: number,
+    message: string,
+    kind: ApiErrorKind = "http",
+    code: string | null = null,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.kind = kind;
+    this.code = code;
     Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
-async function parseErrorMessage(res: Response): Promise<string> {
+async function parseErrorDetails(
+  res: Response,
+): Promise<{ message: string; code: string | null }> {
   try {
-    const data = (await res.json()) as { message?: string | string[] };
-    if (Array.isArray(data.message)) return data.message[0] ?? "";
-    return data.message ?? "";
+    const data = (await res.json()) as {
+      message?: string | string[];
+      code?: string;
+    };
+    const message = Array.isArray(data.message)
+      ? (data.message[0] ?? "")
+      : (data.message ?? "");
+    return { message, code: data.code ?? null };
   } catch {
-    return "";
+    return { message: "", code: null };
   }
 }
 
@@ -82,14 +97,26 @@ async function apiRequest<T>(
   init: RequestInit,
   options: ApiRequestOptions | undefined,
   parse: (response: Response) => Promise<T>,
+  csrfRetryAttempt = 0,
 ): Promise<T> {
   const context = createRequestContext(options);
 
   try {
+    const method = init.method?.toUpperCase() ?? "GET";
+    const isMutating = !["GET", "HEAD", "OPTIONS"].includes(method);
+    const isCsrfRequest = path === csrfTokenPath;
+    const csrfToken =
+      isMutating && !isCsrfRequest ? await getCsrfToken() : null;
+    if (context.signal.aborted) {
+      throw new ApiError(0, "Anfrage abgebrochen", "cancelled");
+    }
+    const headers = new Headers(init.headers);
+    if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
     let res: Response;
     try {
       res = await fetch(`${API_URL}${path}`, {
         ...init,
+        headers,
         signal: context.signal,
       });
     } catch {
@@ -104,8 +131,19 @@ async function apiRequest<T>(
     }
 
     if (!res.ok) {
-      const message = await parseErrorMessage(res);
-      throw new ApiError(res.status, message, "http");
+      const details = await parseErrorDetails(res);
+      if (
+        res.status === 403 &&
+        details.code === "CSRF_TOKEN_INVALID" &&
+        csrfRetryAttempt === 0 &&
+        isMutating &&
+        !isCsrfRequest
+      ) {
+        clearCsrfToken();
+        await getCsrfToken(true);
+        return apiRequest(path, init, options, parse, 1);
+      }
+      throw new ApiError(res.status, details.message, "http", details.code);
     }
 
     return parse(res);

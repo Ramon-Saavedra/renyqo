@@ -19,6 +19,10 @@ vi.mock("./client", () => ({
   apiGet: vi.fn(),
 }));
 
+vi.mock("./csrf", () => ({
+  getCsrfToken: vi.fn().mockResolvedValue("test-csrf-token"),
+}));
+
 describe("resolveRedirectPath", () => {
   it.each(["applicant_area_pending", "browse_listings"] as const)(
     "maps %s to /listings",

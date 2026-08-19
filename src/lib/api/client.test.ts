@@ -10,6 +10,13 @@ import {
   apiPostFormData,
   apiPostVoid,
 } from "./client";
+import { getCsrfToken } from "./csrf";
+
+vi.mock("./csrf", () => ({
+  csrfTokenPath: "/api/v1/auth/csrf-token",
+  clearCsrfToken: vi.fn(),
+  getCsrfToken: vi.fn().mockResolvedValue("test-csrf-token"),
+}));
 
 function makeMockResponse(status: number, body: unknown): Response {
   return {
@@ -31,6 +38,8 @@ function makeTextResponse(status: number, body: string): Response {
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.mocked(getCsrfToken).mockReset();
+  vi.mocked(getCsrfToken).mockResolvedValue("test-csrf-token");
 });
 
 describe("ApiError", () => {
@@ -114,14 +123,17 @@ describe("apiPost", () => {
 
     await apiPost("/test", { key: "value" });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/test"),
-      expect.objectContaining({
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "value" }),
-      }),
+    const [, request] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(request).toMatchObject({
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ key: "value" }),
+    });
+    expect(new Headers(request.headers).get("Content-Type")).toBe(
+      "application/json",
+    );
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "test-csrf-token",
     );
   });
 
@@ -192,6 +204,87 @@ describe("apiPost", () => {
   });
 });
 
+describe("CSRF retry", () => {
+  beforeEach(() => {
+    vi.mocked(getCsrfToken).mockReset();
+    vi.mocked(getCsrfToken).mockResolvedValue("refreshed-token");
+  });
+
+  it("refreshes and retries JSON once after CSRF token invalid", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        makeMockResponse(403, { code: "CSRF_TOKEN_INVALID" }),
+      )
+      .mockResolvedValueOnce(makeMockResponse(200, { ok: true }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPost("/mutate", { value: 1 })).resolves.toEqual({
+      ok: true,
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(
+      new Headers(mockFetch.mock.calls[1]?.[1].headers).get("X-CSRF-Token"),
+    ).toBe("refreshed-token");
+    expect(getCsrfToken).toHaveBeenCalledWith(true);
+  });
+
+  it.each([
+    ["CSRF_ORIGIN_INVALID", "does not retry origin errors"],
+    ["FORBIDDEN", "does not retry normal forbidden errors"],
+  ])("%s: %s", async (code) => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(makeMockResponse(403, { code }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPost("/mutate", {})).rejects.toMatchObject({
+      status: 403,
+      code,
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(getCsrfToken).not.toHaveBeenCalledWith(true);
+  });
+
+  it("does not retry a second invalid CSRF token", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(makeMockResponse(403, { code: "CSRF_TOKEN_INVALID" }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPost("/mutate", {})).rejects.toMatchObject({
+      status: 403,
+      code: "CSRF_TOKEN_INVALID",
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(getCsrfToken).toHaveBeenCalledTimes(3);
+    expect(getCsrfToken).toHaveBeenLastCalledWith();
+  });
+
+  it("retries FormData with the refreshed token", async () => {
+    const formData = new FormData();
+    formData.append("file", new File(["data"], "file.pdf"));
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        makeMockResponse(403, { code: "CSRF_TOKEN_INVALID" }),
+      )
+      .mockResolvedValueOnce(makeMockResponse(200, { ok: true }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPostFormData("/upload", formData)).resolves.toEqual({
+      ok: true,
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    const request = mockFetch.mock.calls[1]?.[1] as RequestInit;
+    expect(request.body).toBe(formData);
+    expect(new Headers(request.headers).get("Content-Type")).toBeNull();
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "refreshed-token",
+    );
+  });
+});
+
 describe("apiPostFormData", () => {
   beforeEach(() => {
     vi.unstubAllGlobals();
@@ -240,7 +333,11 @@ describe("apiPostFormData", () => {
         body: formData,
       }),
     );
-    expect(mockFetch.mock.calls[0]?.[1]).not.toHaveProperty("headers");
+    const request = mockFetch.mock.calls[0]?.[1] as RequestInit;
+    expect(new Headers(request.headers).get("Content-Type")).toBeNull();
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "test-csrf-token",
+    );
   });
 });
 
@@ -292,14 +389,17 @@ describe("apiPostJsonVoid", () => {
       apiPostJsonVoid("/password-reset", { token: "token" }),
     ).resolves.toBeUndefined();
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/password-reset"),
-      expect.objectContaining({
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: "token" }),
-      }),
+    const [, request] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(request).toMatchObject({
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify({ token: "token" }),
+    });
+    expect(new Headers(request.headers).get("Content-Type")).toBe(
+      "application/json",
+    );
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "test-csrf-token",
     );
   });
 });
@@ -319,14 +419,17 @@ describe("apiPatch", () => {
       ok: true,
     });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/profile"),
-      expect.objectContaining({
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Ramon" }),
-      }),
+    const [, request] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(request).toMatchObject({
+      method: "PATCH",
+      credentials: "include",
+      body: JSON.stringify({ name: "Ramon" }),
+    });
+    expect(new Headers(request.headers).get("Content-Type")).toBe(
+      "application/json",
+    );
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "test-csrf-token",
     );
   });
 

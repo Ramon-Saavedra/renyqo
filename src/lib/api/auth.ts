@@ -1,4 +1,5 @@
 import { apiGet, apiPost, apiPostJsonVoid, apiPostVoid } from "./client";
+import { getCsrfToken } from "./csrf";
 import {
   resolveOnboardingPath as resolveRedirectPath,
   type OnboardingNextStep,
@@ -48,11 +49,15 @@ export interface ResetPasswordPayload {
 }
 
 export async function register(payload: RegisterPayload): Promise<SafeUser> {
-  return apiPost<SafeUser>("/api/v1/auth/register", payload);
+  const user = await apiPost<SafeUser>("/api/v1/auth/register", payload);
+  await getCsrfToken(true);
+  return user;
 }
 
 export async function login(payload: LoginPayload): Promise<SafeUser> {
-  return apiPost<SafeUser>("/api/v1/auth/login", payload);
+  const user = await apiPost<SafeUser>("/api/v1/auth/login", payload);
+  await getCsrfToken(true);
+  return user;
 }
 
 export async function forgotPassword(
@@ -78,5 +83,6 @@ export async function getCurrentUser(): Promise<SafeUser> {
 }
 
 export async function logout(): Promise<void> {
-  return apiPostVoid("/api/v1/auth/logout");
+  await apiPostVoid("/api/v1/auth/logout");
+  await getCsrfToken(true);
 }
