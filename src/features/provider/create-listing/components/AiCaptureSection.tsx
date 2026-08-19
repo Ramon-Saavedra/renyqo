@@ -35,7 +35,6 @@ import type {
 import { useAiCapture } from "../hooks/useAiCapture";
 import type { ExtractionFieldDescriptor } from "../hooks/listingExtractionMapping";
 import {
-  findMissingRecommendedLabels,
   mapInconsistencyLabel,
   mapMissingFieldLabel,
 } from "../hooks/listingExtractionMapping";
@@ -671,8 +670,9 @@ function ResultPane({
   onReset: () => void;
 }) {
   const foundLabels = descriptors.map((d) => d.label);
-  const missingLabels = result.missingFields.map(mapMissingFieldLabel);
-  const recommendedMissing = findMissingRecommendedLabels(descriptors);
+  const missingLabels = result.requiredMissingFields.map(mapMissingFieldLabel);
+  const recommendedMissing =
+    result.recommendedMissingFields.map(mapMissingFieldLabel);
   const checkLabels = Array.from(
     new Set(result.inconsistencies.map(mapInconsistencyLabel)),
   );

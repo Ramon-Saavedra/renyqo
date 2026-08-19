@@ -213,7 +213,7 @@ export function buildExtractionFieldDescriptors(
         ? "erlaubt"
         : values.petsPolicy === "BY_ARRANGEMENT"
           ? "absprache"
-          : values.petsPolicy === "PREFER_NOT"
+          : values.petsPolicy === "NOT_ALLOWED"
             ? "keine"
             : undefined;
     if (pets) {
