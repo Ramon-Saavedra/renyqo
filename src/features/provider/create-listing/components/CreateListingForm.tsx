@@ -24,6 +24,7 @@ import type {
 } from "../hooks/useListingDraft";
 import { useListingValidation } from "../hooks/useListingValidation";
 import { AbschlussSection } from "./AbschlussSection";
+import { AiCaptureSection } from "./AiCaptureSection";
 import { scrollToMissingField } from "@/components/ui/checklist/CompletionChecklist";
 import { ActionsBar, CHECKLIST_ITEMS, MissingChecklist } from "./ActionsBar";
 import { RequirementsSection } from "./RequirementsSection";
@@ -297,6 +298,8 @@ export function CreateListingForm() {
           ariaLabel={createListingCopy.stepper.ariaLabel}
           className="mb-6"
         />
+
+        <AiCaptureSection setField={handleSetField} className="mb-6" />
 
         <div className="listing-grid">
           <MissingChecklist
