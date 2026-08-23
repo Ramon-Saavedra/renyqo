@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import { getPublicListingDetail } from "../api/public-listings";
-import type { PublicListing } from "../types";
+import { listingDetailCopy } from "../copy/listing-detail";
+import type { PublicListingDetail } from "../types";
 
 export type DetailStatus = "loading" | "loaded" | "error" | "not-found";
 
 export interface UsePublicListingDetailResult {
-  readonly listing: PublicListing | null;
+  readonly listing: PublicListingDetail | null;
   readonly error: string | null;
   readonly status: DetailStatus;
 }
@@ -16,7 +17,7 @@ export interface UsePublicListingDetailResult {
 export function usePublicListingDetail(
   id: string,
 ): UsePublicListingDetailResult {
-  const [listing, setListing] = useState<PublicListing | null>(null);
+  const [listing, setListing] = useState<PublicListingDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<DetailStatus>("loading");
 
@@ -56,8 +57,8 @@ export function usePublicListingDetail(
 
         setError(
           err instanceof ApiError && err.status === 0
-            ? "Netzwerkfehler — bitte versuche es erneut"
-            : "Objekt konnte nicht geladen werden",
+            ? listingDetailCopy.errorNetwork
+            : listingDetailCopy.errorDefault,
         );
         setStatus("error");
       }

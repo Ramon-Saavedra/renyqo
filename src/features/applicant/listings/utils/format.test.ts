@@ -28,6 +28,10 @@ describe("formatArea", () => {
   it("handles zero", () => {
     expect(formatArea(0)).toBe("0 m²");
   });
+
+  it("groups thousands in German locale", () => {
+    expect(formatArea(22222)).toBe("22.222 m²");
+  });
 });
 
 describe("formatRooms", () => {
@@ -39,8 +43,8 @@ describe("formatRooms", () => {
     expect(formatRooms(3)).toBe("3 Zimmer");
   });
 
-  it("handles half rooms", () => {
-    expect(formatRooms(2.5)).toBe("2.5 Zimmer");
+  it("uses the German decimal comma for half rooms", () => {
+    expect(formatRooms(2.5)).toBe("2,5 Zimmer");
   });
 });
 

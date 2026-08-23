@@ -44,6 +44,7 @@ export default defineConfig({
             "src/lib/**/*.test.{ts,tsx}",
             "src/components/**/*.test.{ts,tsx}",
             "src/features/**/*.test.{ts,tsx}",
+            "src/app/**/*.test.{ts,tsx}",
           ],
           exclude: nodeTestFiles,
           setupFiles: ["./src/tests/setup.ts"],
