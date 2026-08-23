@@ -826,7 +826,7 @@ describe("useCreateListing", () => {
     it.each([
       ["erlaubt", "ALLOWED"],
       ["absprache", "BY_ARRANGEMENT"],
-      ["keine", "PREFER_NOT"],
+      ["keine", "NOT_ALLOWED"],
     ] as const)(
       "maps pets '%s' to petsPolicy '%s'",
       async (input, expected) => {

@@ -51,7 +51,7 @@ function toObjectType(value: string): ObjectTypeBackend {
 function toPetsPolicy(value: string): PetPolicyBackend | undefined {
   if (value === "erlaubt") return "ALLOWED";
   if (value === "absprache") return "BY_ARRANGEMENT";
-  if (value === "keine") return "PREFER_NOT";
+  if (value === "keine") return "NOT_ALLOWED";
   return undefined;
 }
 
