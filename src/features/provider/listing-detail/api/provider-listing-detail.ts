@@ -69,8 +69,8 @@ function normalizePolicy(value: string | null): PetPolicyBackend | null {
       return "ALLOWED";
     case "BY_ARRANGEMENT":
       return "BY_ARRANGEMENT";
-    case "PREFER_NOT":
-      return "PREFER_NOT";
+    case "NOT_ALLOWED":
+      return "NOT_ALLOWED";
     default:
       return null;
   }

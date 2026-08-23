@@ -29,7 +29,7 @@ export const OBJECT_TYPE_LABEL: Record<ObjectTypeBackend, string> = {
   ROOM: "Zimmer",
 };
 
-export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "PREFER_NOT";
+export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "NOT_ALLOWED";
 export type SmokingPolicyBackend =
   | "ALLOWED"
   | "BY_ARRANGEMENT"

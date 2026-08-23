@@ -19,7 +19,7 @@ export const PET_POLICY_OPTIONS: ReadonlyArray<{
 }> = [
   { value: "ALLOWED", label: "Erlaubt" },
   { value: "BY_ARRANGEMENT", label: "Auf Anfrage" },
-  { value: "PREFER_NOT", label: "Nicht erlaubt" },
+  { value: "NOT_ALLOWED", label: "Nicht erlaubt" },
 ];
 
 export const SMOKING_POLICY_OPTIONS: ReadonlyArray<{

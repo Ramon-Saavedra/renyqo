@@ -14,25 +14,28 @@ export class ApiError extends Error {
   readonly status: number;
   readonly kind: ApiErrorKind;
   readonly code: string | null;
+  readonly details: unknown;
 
   constructor(
     status: number,
     message: string,
     kind: ApiErrorKind = "http",
     code: string | null = null,
+    details: unknown = null,
   ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.kind = kind;
     this.code = code;
+    this.details = details;
     Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
 async function parseErrorDetails(
   res: Response,
-): Promise<{ message: string; code: string | null }> {
+): Promise<{ message: string; code: string | null; details: unknown }> {
   try {
     const data = (await res.json()) as {
       message?: string | string[];
@@ -41,9 +44,9 @@ async function parseErrorDetails(
     const message = Array.isArray(data.message)
       ? (data.message[0] ?? "")
       : (data.message ?? "");
-    return { message, code: data.code ?? null };
+    return { message, code: data.code ?? null, details: data };
   } catch {
-    return { message: "", code: null };
+    return { message: "", code: null, details: null };
   }
 }
 
@@ -143,7 +146,13 @@ async function apiRequest<T>(
         await getCsrfToken(true);
         return apiRequest(path, init, options, parse, 1);
       }
-      throw new ApiError(res.status, details.message, "http", details.code);
+      throw new ApiError(
+        res.status,
+        details.message,
+        "http",
+        details.code,
+        details.details,
+      );
     }
 
     return parse(res);

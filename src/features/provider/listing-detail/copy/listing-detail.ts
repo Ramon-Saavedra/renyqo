@@ -7,7 +7,7 @@ import type { ListingStatus } from "../types";
 export const PET_POLICY_LABEL: Record<PetPolicyBackend, string> = {
   ALLOWED: "Erlaubt",
   BY_ARRANGEMENT: "Auf Anfrage",
-  PREFER_NOT: "Nicht erlaubt",
+  NOT_ALLOWED: "Nicht erlaubt",
 };
 
 export const SMOKING_POLICY_LABEL: Record<SmokingPolicyBackend, string> = {
