@@ -159,7 +159,7 @@ describe("getPublicListings", () => {
     expect(listings[1]?.coverImageUrl).toBeNull();
   });
 
-  it("normalizes profileMatch values", async () => {
+  it("normalizes listing profileMatch values", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
         { id: "match", profileMatch: "MATCH" },
@@ -278,8 +278,42 @@ describe("getPublicListingDetail", () => {
     vi.clearAllMocks();
   });
 
+  function detailResponse(overrides: Record<string, unknown> = {}) {
+    return {
+      id: "detail-1",
+      title: "Einzelwohnung",
+      city: "Köln",
+      zip: "50667",
+      district: "Altstadt-Nord",
+      street: null,
+      objectType: "APARTMENT",
+      livingArea: 65,
+      rooms: 2,
+      bedrooms: 1,
+      coldRent: 900,
+      additionalCosts: 120,
+      deposit: 1800,
+      depositMonths: 2,
+      availableFrom: "2026-09-01",
+      shortDescription: "Helle Wohnung",
+      publishedAt: "2026-08-01",
+      isNew: true,
+      images: [],
+      profileMatch: "MATCH",
+      requirements: {
+        minimumHouseholdNetIncome: null,
+        schufaRequired: true,
+        incomeProofRequired: true,
+        suitableForPeopleCount: null,
+        petsPolicy: null,
+        smokingPolicy: null,
+      },
+      ...overrides,
+    };
+  }
+
   it("calls the detail endpoint with an encoded id", async () => {
-    vi.mocked(apiGet).mockResolvedValue({ id: "abc" });
+    vi.mocked(apiGet).mockResolvedValue(detailResponse());
 
     await getPublicListingDetail("abc-123");
 
@@ -287,26 +321,167 @@ describe("getPublicListingDetail", () => {
   });
 
   it("maps a single listing record", async () => {
-    vi.mocked(apiGet).mockResolvedValue({
-      id: "detail-1",
-      title: "Einzelwohnung",
-      city: "Köln",
-    });
+    vi.mocked(apiGet).mockResolvedValue(detailResponse());
 
     const listing = await getPublicListingDetail("detail-1");
     expect(listing?.id).toBe("detail-1");
     expect(listing?.title).toBe("Einzelwohnung");
   });
 
-  it("returns null for a non-record response", async () => {
+  it.each([
+    ["MATCH", "match"],
+    ["NO_MATCH", "no-match"],
+    ["PROFILE_INCOMPLETE", "incomplete"],
+    ["UNKNOWN", "unknown"],
+  ] as const)("maps detail profileMatch %s", async (profileMatch, expected) => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ id: "detail-match", profileMatch }),
+    );
+
+    const listing = await getPublicListingDetail("detail-match");
+
+    expect(listing?.matchesProfile).toBe(expected);
+  });
+
+  it("rejects a malformed detail response", async () => {
     vi.mocked(apiGet).mockResolvedValue("not a record");
 
-    const result = await getPublicListingDetail("x");
-    expect(result).toBeNull();
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it.each([
+    ["requirements", undefined],
+    ["schufaRequired", null],
+    ["incomeProofRequired", "true"],
+  ] as const)(
+    "rejects a missing or malformed required %s",
+    async (key, value) => {
+      const requirements = {
+        minimumHouseholdNetIncome: null,
+        schufaRequired: true,
+        incomeProofRequired: true,
+        suitableForPeopleCount: null,
+        petsPolicy: null,
+        smokingPolicy: null,
+      };
+
+      vi.mocked(apiGet).mockResolvedValue(
+        key === "requirements"
+          ? { ...detailResponse(), requirements: value }
+          : detailResponse({ requirements: { ...requirements, [key]: value } }),
+      );
+
+      await expect(getPublicListingDetail("detail-invalid")).rejects.toThrow(
+        "Invalid applicant listing detail response",
+      );
+    },
+  );
+
+  it("rejects an invalid profileMatch instead of treating it as UNKNOWN", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ profileMatch: "UNRECOGNIZED" }),
+    );
+
+    await expect(
+      getPublicListingDetail("detail-invalid-match"),
+    ).rejects.toThrow("Invalid applicant listing detail response");
+  });
+
+  it.each([
+    ["petsPolicy", "PREFER_NOT"],
+    ["smokingPolicy", "NOT_ALLOWED"],
+  ] as const)("rejects an invalid %s enum value", async (key, value) => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        requirements: {
+          minimumHouseholdNetIncome: null,
+          schufaRequired: true,
+          incomeProofRequired: true,
+          suitableForPeopleCount: null,
+          petsPolicy: null,
+          smokingPolicy: null,
+          [key]: value,
+        },
+      }),
+    );
+
+    await expect(
+      getPublicListingDetail("detail-invalid-policy"),
+    ).rejects.toThrow("Invalid applicant listing detail response");
+  });
+
+  it("maps the nested requirements object the API returns", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        id: "detail-2",
+        title: "Haus in Maracaibo",
+        street: "Calle 7",
+        city: "Maracaibo",
+        district: "El Milagro",
+        zip: "2001",
+        objectType: "HOUSE",
+        rooms: 4.5,
+        bedrooms: 2,
+        livingArea: 120,
+        shortDescription: "Helles Haus",
+        requirements: {
+          minimumHouseholdNetIncome: 3000,
+          schufaRequired: true,
+          incomeProofRequired: true,
+          suitableForPeopleCount: 2,
+          petsPolicy: "NOT_ALLOWED",
+          smokingPolicy: "NON_SMOKERS_PREFERRED",
+        },
+      }),
+    );
+
+    const listing = await getPublicListingDetail("detail-2");
+
+    expect(listing?.street).toBe("Calle 7");
+    expect(listing?.zip).toBe("2001");
+    expect(listing?.location).toBe("El Milagro · 2001 · Maracaibo");
+    expect(listing?.objectType).toBe("HOUSE");
+    expect(listing?.bedrooms).toBe(2);
+    expect(listing?.shortDescription).toBe("Helles Haus");
+    expect(listing?.minimumHouseholdNetIncome).toBe(3000);
+    expect(listing?.schufaRequired).toBe(true);
+    expect(listing?.incomeProofRequired).toBe(true);
+    expect(listing?.suitableForPeopleCount).toBe(2);
+    expect(listing?.petsPolicy).toBe("NOT_ALLOWED");
+    expect(listing?.smokingPolicy).toBe("NON_SMOKERS_PREFERRED");
+  });
+
+  it("maps images from the detail payload and orders them by position", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        id: "detail-4",
+        images: [
+          {
+            secureUrl: "https://res.cloudinary.com/b.jpg",
+            position: 2,
+            isCover: false,
+          },
+          {
+            secureUrl: "https://res.cloudinary.com/a.jpg",
+            position: 1,
+            isCover: true,
+          },
+        ],
+      }),
+    );
+
+    const listing = await getPublicListingDetail("detail-4");
+
+    expect(listing?.images.map((image) => image.secureUrl)).toEqual([
+      "https://res.cloudinary.com/a.jpg",
+      "https://res.cloudinary.com/b.jpg",
+    ]);
   });
 
   it("passes AbortSignal when options are provided", async () => {
-    vi.mocked(apiGet).mockResolvedValue({ id: "x" });
+    vi.mocked(apiGet).mockResolvedValue(detailResponse({ id: "x" }));
     const controller = new AbortController();
 
     await getPublicListingDetail("x", { signal: controller.signal });

@@ -35,6 +35,12 @@ export type SmokingPolicyBackend =
   | "BY_ARRANGEMENT"
   | "NON_SMOKERS_PREFERRED";
 
+export const SMOKING_POLICY_LABEL: Record<SmokingPolicyBackend, string> = {
+  ALLOWED: "Erlaubt",
+  BY_ARRANGEMENT: "Auf Anfrage",
+  NON_SMOKERS_PREFERRED: "Nicht erlaubt",
+};
+
 export interface CreateListingPayload {
   readonly city?: string | undefined;
   readonly zip?: string | undefined;

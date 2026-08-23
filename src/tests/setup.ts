@@ -14,6 +14,16 @@ if (!window.matchMedia) {
   }));
 }
 
+if (!window.ResizeObserver) {
+  window.ResizeObserver = vi.fn(function ResizeObserver() {
+    return {
+      observe: vi.fn(),
+      unobserve: vi.fn(),
+      disconnect: vi.fn(),
+    };
+  });
+}
+
 afterEach(() => {
   cleanup();
 });

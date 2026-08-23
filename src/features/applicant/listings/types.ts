@@ -1,3 +1,17 @@
+import type {
+  ListingImage,
+  ObjectTypeBackend,
+  SmokingPolicyBackend,
+} from "@/lib/api/listings";
+
+export type ProfileMatchResult =
+  | "match"
+  | "no-match"
+  | "incomplete"
+  | "unknown";
+
+export type ApplicantPetPolicy = "ALLOWED" | "BY_ARRANGEMENT" | "NOT_ALLOWED";
+
 export type SortKey = "newest" | "price-asc" | "price-desc" | "area-desc";
 
 export type FilterKey = "coldRent" | "rooms" | "livingArea" | "availableFrom";
@@ -15,6 +29,37 @@ export interface PublicListing {
   readonly isNew: boolean;
   readonly coverImageUrl: string | null;
   readonly publishedAt: string;
+}
+
+export interface PublicListingDetail {
+  readonly id: string;
+  readonly title: string | null;
+  readonly location: string | null;
+  readonly matchesProfile: ProfileMatchResult;
+  readonly street: string | null;
+  readonly zip: string | null;
+  readonly city: string | null;
+  readonly district: string | null;
+  readonly objectType: ObjectTypeBackend | null;
+  readonly livingArea: number | null;
+  readonly rooms: number | null;
+  readonly bedrooms: number | null;
+  readonly coldRent: number | null;
+  readonly additionalCosts: number | null;
+  readonly deposit: number | null;
+  readonly depositMonths: number | null;
+  readonly availableFrom: string | null;
+  readonly shortDescription: string | null;
+  readonly publishedAt: string | null;
+  readonly isNew: boolean;
+  readonly images: readonly ListingImage[];
+
+  readonly minimumHouseholdNetIncome: number | null;
+  readonly schufaRequired: boolean;
+  readonly incomeProofRequired: boolean;
+  readonly suitableForPeopleCount: number | null;
+  readonly petsPolicy: ApplicantPetPolicy | null;
+  readonly smokingPolicy: SmokingPolicyBackend | null;
 }
 
 export interface ListingFilters {

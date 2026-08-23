@@ -2,13 +2,14 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { getPublicListingDetail } from "../api/public-listings";
+import type { PublicListingDetail } from "../types";
 import { usePublicListingDetail } from "./usePublicListingDetail";
 
 vi.mock("../api/public-listings", () => ({
   getPublicListingDetail: vi.fn(),
 }));
 
-function mockListing() {
+function mockListing(): PublicListingDetail {
   return {
     id: "d1",
     title: "Detail Listing",
@@ -17,11 +18,26 @@ function mockListing() {
     livingArea: 50,
     availableFrom: null,
     coldRent: 900,
-    serviceCharge: 100,
-    matchesProfile: null,
+    additionalCosts: 100,
+    matchesProfile: "unknown",
     isNew: false,
-    coverImageUrl: null,
     publishedAt: "2026-01-01T00:00:00.000Z",
+    street: null,
+    zip: null,
+    city: null,
+    district: null,
+    objectType: null,
+    bedrooms: null,
+    deposit: null,
+    depositMonths: null,
+    shortDescription: null,
+    images: [],
+    minimumHouseholdNetIncome: null,
+    schufaRequired: false,
+    incomeProofRequired: false,
+    suitableForPeopleCount: null,
+    petsPolicy: null,
+    smokingPolicy: null,
   };
 }
 
@@ -88,6 +104,20 @@ describe("usePublicListingDetail", () => {
   it("transitions to error with generic message on server error", async () => {
     vi.mocked(getPublicListingDetail).mockRejectedValue(
       new ApiError(500, "Internal Error"),
+    );
+
+    const { result } = renderHook(() => usePublicListingDetail("d1"));
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("error");
+    });
+
+    expect(result.current.error).toBe("Objekt konnte nicht geladen werden");
+  });
+
+  it("transitions to a controlled error on a detail contract error", async () => {
+    vi.mocked(getPublicListingDetail).mockRejectedValue(
+      new Error("Invalid applicant listing detail response"),
     );
 
     const { result } = renderHook(() => usePublicListingDetail("d1"));

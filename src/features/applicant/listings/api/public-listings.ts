@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import {
   isRecord,
@@ -9,12 +10,22 @@ import {
   readString,
 } from "@/lib/api/response-mappers";
 import type {
+  ProfileMatchResult,
   PublicListing,
+  PublicListingDetail,
   PublicListingsParams,
   PublicListingsResponse,
 } from "../types";
 
-function normalizeProfileMatch(value: string | null): boolean | null {
+function normalizeDetailProfileMatch(value: string | null): ProfileMatchResult {
+  const upper = value?.toUpperCase();
+  if (upper === "MATCH") return "match";
+  if (upper === "NO_MATCH") return "no-match";
+  if (upper === "PROFILE_INCOMPLETE") return "incomplete";
+  return "unknown";
+}
+
+function normalizeListingProfileMatch(value: string | null): boolean | null {
   const upper = value?.toUpperCase();
   if (upper === "MATCH") return true;
   if (upper === "NO_MATCH") return false;
@@ -28,6 +39,21 @@ function buildDisplayLocation(record: Record<string, unknown>): string {
   const city = readString(record, ["city"]);
   const district = readString(record, ["district", "neighborhood"]);
   return [city, district].filter(Boolean).join(", ") || "Adresse folgt";
+}
+
+function buildDetailLocation({
+  city,
+  district,
+  zip,
+}: {
+  readonly city: string | null;
+  readonly district: string | null;
+  readonly zip: string | null;
+}): string | null {
+  const location = [district, zip, city].filter(
+    (value): value is string => value !== null,
+  );
+  return location.length > 0 ? location.join(" · ") : null;
 }
 
 function mapPublicListing(value: unknown): PublicListing | null {
@@ -61,7 +87,7 @@ function mapPublicListing(value: unknown): PublicListing | null {
         "additionalCosts",
         "additional_costs",
       ]) ?? 0,
-    matchesProfile: normalizeProfileMatch(profileMatchValue),
+    matchesProfile: normalizeListingProfileMatch(profileMatchValue),
     isNew: readBoolean(value, ["isNew", "is_new"]) ?? false,
     coverImageUrl: readCoverImageUrl(value),
     publishedAt: readString(value, ["publishedAt", "published_at"]) ?? "",
@@ -70,6 +96,98 @@ function mapPublicListing(value: unknown): PublicListing | null {
 
 function isPublicListing(item: PublicListing | null): item is PublicListing {
   return item !== null;
+}
+
+const nullableString = z.string().nullable();
+const nullableNumber = z.number().finite().nullable();
+
+const applicantListingDetailSchema = z.object({
+  id: z.string().min(1),
+  title: nullableString,
+  city: nullableString,
+  zip: nullableString,
+  district: nullableString,
+  street: nullableString,
+  objectType: z.enum(["APARTMENT", "HOUSE", "ROOM"]).nullable(),
+  livingArea: nullableNumber,
+  rooms: nullableNumber,
+  bedrooms: nullableNumber,
+  coldRent: nullableNumber,
+  additionalCosts: nullableNumber,
+  deposit: nullableNumber,
+  depositMonths: nullableNumber,
+  availableFrom: nullableString,
+  shortDescription: nullableString,
+  publishedAt: nullableString,
+  isNew: z.boolean(),
+  images: z.array(
+    z.object({
+      secureUrl: z.string().min(1),
+      position: z.number().finite(),
+      isCover: z.boolean(),
+    }),
+  ),
+  profileMatch: z.enum(["MATCH", "NO_MATCH", "PROFILE_INCOMPLETE", "UNKNOWN"]),
+  requirements: z.object({
+    minimumHouseholdNetIncome: nullableNumber,
+    schufaRequired: z.boolean(),
+    incomeProofRequired: z.boolean(),
+    suitableForPeopleCount: nullableNumber,
+    petsPolicy: z.enum(["ALLOWED", "BY_ARRANGEMENT", "NOT_ALLOWED"]).nullable(),
+    smokingPolicy: z
+      .enum(["ALLOWED", "BY_ARRANGEMENT", "NON_SMOKERS_PREFERRED"])
+      .nullable(),
+  }),
+});
+
+class ApplicantListingDetailContractError extends Error {
+  constructor() {
+    super("Invalid applicant listing detail response");
+    this.name = "ApplicantListingDetailContractError";
+  }
+}
+
+function mapPublicListingDetail(
+  value: z.infer<typeof applicantListingDetailSchema>,
+): PublicListingDetail {
+  const images = value.images
+    .map((image, index) => ({
+      id: `${image.position}-${index}`,
+      secureUrl: image.secureUrl,
+      position: image.position,
+      isCover: image.isCover,
+    }))
+    .sort((first, second) => first.position - second.position);
+
+  return {
+    id: value.id,
+    title: value.title,
+    location: buildDetailLocation(value),
+    matchesProfile: normalizeDetailProfileMatch(value.profileMatch),
+    street: value.street,
+    zip: value.zip,
+    city: value.city,
+    district: value.district,
+    objectType: value.objectType,
+    livingArea: value.livingArea,
+    rooms: value.rooms,
+    bedrooms: value.bedrooms,
+    coldRent: value.coldRent,
+    additionalCosts: value.additionalCosts,
+    deposit: value.deposit,
+    depositMonths: value.depositMonths,
+    availableFrom: value.availableFrom,
+    shortDescription: value.shortDescription,
+    publishedAt: value.publishedAt,
+    isNew: value.isNew,
+    images,
+    minimumHouseholdNetIncome: value.requirements.minimumHouseholdNetIncome,
+    schufaRequired: value.requirements.schufaRequired,
+    incomeProofRequired: value.requirements.incomeProofRequired,
+    suitableForPeopleCount: value.requirements.suitableForPeopleCount,
+    petsPolicy: value.requirements.petsPolicy,
+    smokingPolicy: value.requirements.smokingPolicy,
+  };
 }
 
 function buildQueryString(params: PublicListingsParams): string {
@@ -127,13 +245,14 @@ export async function getPublicListings(
 export async function getPublicListingDetail(
   id: string,
   options?: ApiRequestOptions,
-): Promise<PublicListing | null> {
+): Promise<PublicListingDetail | null> {
   const response = await apiGet<unknown>(
     `/api/v1/listings/${encodeURIComponent(id)}`,
     options,
   );
-  if (isRecord(response)) {
-    return mapPublicListing(response);
+  const parsed = applicantListingDetailSchema.safeParse(response);
+  if (!parsed.success) {
+    throw new ApplicantListingDetailContractError();
   }
-  return null;
+  return mapPublicListingDetail(parsed.data);
 }
