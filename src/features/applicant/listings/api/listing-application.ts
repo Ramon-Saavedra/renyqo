@@ -1,6 +1,9 @@
 import { z } from "zod";
 import { ApiError, apiPost } from "@/lib/api/client";
-import { listingEligibilitySchema, type ListingEligibility } from "./listing-eligibility";
+import {
+  listingEligibilitySchema,
+  type ListingEligibility,
+} from "./listing-eligibility";
 
 const applicationSchema = z.object({
   id: z.string().min(1),

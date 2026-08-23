@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  findCurrentApplicantListingApplication,
-} from "./useApplicantListingApplication";
+import { findCurrentApplicantListingApplication } from "./useApplicantListingApplication";
 
 const application = (id: string, listingId: string) => ({
   id,
@@ -29,7 +27,10 @@ describe("findCurrentApplicantListingApplication", () => {
 
   it("returns null when the listing has no application", () => {
     expect(
-      findCurrentApplicantListingApplication([application("other", "listing-2")], "listing-1"),
+      findCurrentApplicantListingApplication(
+        [application("other", "listing-2")],
+        "listing-1",
+      ),
     ).toBeNull();
   });
 });

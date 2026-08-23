@@ -19,7 +19,9 @@ const applicantApplicationSchema = z.object({
 
 const applicantApplicationsSchema = z.array(applicantApplicationSchema);
 
-export type ApplicantListingApplication = z.infer<typeof applicantApplicationSchema>;
+export type ApplicantListingApplication = z.infer<
+  typeof applicantApplicationSchema
+>;
 
 export class ApplicantApplicationsContractError extends Error {
   constructor() {
@@ -31,7 +33,10 @@ export class ApplicantApplicationsContractError extends Error {
 export async function getApplicantApplications(
   options?: ApiRequestOptions,
 ): Promise<readonly ApplicantListingApplication[]> {
-  const response = await apiGet<unknown>("/api/v1/applicant/applications", options);
+  const response = await apiGet<unknown>(
+    "/api/v1/applicant/applications",
+    options,
+  );
   const parsed = applicantApplicationsSchema.safeParse(response);
   if (!parsed.success) throw new ApplicantApplicationsContractError();
   return parsed.data;

@@ -11,7 +11,9 @@ const withdrawnApplicationSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-export type WithdrawnListingApplication = z.infer<typeof withdrawnApplicationSchema>;
+export type WithdrawnListingApplication = z.infer<
+  typeof withdrawnApplicationSchema
+>;
 
 export class ListingWithdrawalContractError extends Error {
   constructor() {

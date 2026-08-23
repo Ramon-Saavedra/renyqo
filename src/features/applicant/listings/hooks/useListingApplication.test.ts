@@ -18,9 +18,11 @@ describe("useListingApplication", () => {
       updatedAt: "2026-08-23T10:00:00.000Z",
     };
     let resolveRequest: (() => void) | undefined;
-    vi.mocked(applyToListing).mockReturnValue(new Promise((resolve) => {
-      resolveRequest = () => resolve(response);
-    }));
+    vi.mocked(applyToListing).mockReturnValue(
+      new Promise((resolve) => {
+        resolveRequest = () => resolve(response);
+      }),
+    );
     const { result } = renderHook(() => useListingApplication("listing"));
 
     await act(async () => {

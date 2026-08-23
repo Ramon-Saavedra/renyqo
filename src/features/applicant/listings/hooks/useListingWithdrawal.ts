@@ -10,10 +10,13 @@ export type ListingWithdrawalState =
   | { readonly status: "error" };
 
 export function useListingWithdrawal(applicationId: string | null) {
-  const [state, setState] = useState<ListingWithdrawalState>({ status: "idle" });
+  const [state, setState] = useState<ListingWithdrawalState>({
+    status: "idle",
+  });
   const isSubmittingRef = useRef(false);
   const withdraw = async (): Promise<boolean> => {
-    if (!applicationId || isSubmittingRef.current || state.status === "success") return false;
+    if (!applicationId || isSubmittingRef.current || state.status === "success")
+      return false;
     isSubmittingRef.current = true;
     setState({ status: "submitting" });
     try {

@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { withdrawListingApplication } from "../api/listing-withdrawal";
 import { useListingWithdrawal } from "./useListingWithdrawal";
 
-vi.mock("../api/listing-withdrawal", () => ({ withdrawListingApplication: vi.fn() }));
+vi.mock("../api/listing-withdrawal", () => ({
+  withdrawListingApplication: vi.fn(),
+}));
 
 describe("useListingWithdrawal", () => {
   it("prevents concurrent withdrawals for the live application", async () => {
@@ -17,9 +19,11 @@ describe("useListingWithdrawal", () => {
       updatedAt: "2026-08-23T10:00:00.000Z",
     };
     let resolveRequest: (() => void) | undefined;
-    vi.mocked(withdrawListingApplication).mockReturnValue(new Promise((resolve) => {
-      resolveRequest = () => resolve(response);
-    }));
+    vi.mocked(withdrawListingApplication).mockReturnValue(
+      new Promise((resolve) => {
+        resolveRequest = () => resolve(response);
+      }),
+    );
     const { result } = renderHook(() => useListingWithdrawal("live-id"));
 
     await act(async () => {
