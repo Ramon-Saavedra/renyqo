@@ -64,7 +64,7 @@ export function ListingDetailHeader({ listing }: ListingDetailHeaderProps) {
         )}
       </div>
 
-      <ListingApplyBox matchesProfile={listing.matchesProfile} />
+      <ListingApplyBox listingId={listing.id} matchesProfile={listing.matchesProfile} />
     </div>
   );
 }
