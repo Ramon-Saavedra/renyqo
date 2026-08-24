@@ -154,7 +154,9 @@ export function buildExtractionChecklistState(
   result: ListingExtractionResult,
   descriptors: readonly ExtractionFieldDescriptor[],
 ): ExtractionChecklistState {
-  const recognizedKeys = new Set(descriptors.map((descriptor) => descriptor.key));
+  const recognizedKeys = new Set(
+    descriptors.map((descriptor) => descriptor.key),
+  );
   const requiredMissing = missingLabelsForRecognizedFields(
     EXTRACTION_REQUIRED_CHECKLIST_ITEMS,
     recognizedKeys,

@@ -7,10 +7,7 @@ import {
 } from "./aiExtractionChecklist";
 import type { ExtractionFieldDescriptor } from "./listingExtractionMapping";
 
-function descriptor(
-  key: string,
-  label: string,
-): ExtractionFieldDescriptor {
+function descriptor(key: string, label: string): ExtractionFieldDescriptor {
   return { key, label, apply: vi.fn() };
 }
 
