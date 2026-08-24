@@ -270,6 +270,7 @@ export function ObjektdatenSection({
           error={fieldErrors?.depositMonths ?? fieldErrors?.deposit}
         >
           <div
+            id="deposit-months"
             role="group"
             aria-label={fields.deposit.label}
             className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-background-subtle"
@@ -327,6 +328,7 @@ export function ObjektdatenSection({
         hint={fields.description.hint}
       >
         <Textarea
+          id="listing-description"
           rows={4}
           value={draft.description}
           placeholder={fields.description.placeholder}
@@ -339,8 +341,10 @@ export function ObjektdatenSection({
         />
       </FormField>
 
-      <FormField label={fields.photos.label}>
-        <PhotoGrid photos={draft.photos} setPhotos={setPhotos} />
+      <FormField label={fields.photos.label} htmlFor="listing-photos">
+        <div id="listing-photos">
+          <PhotoGrid photos={draft.photos} setPhotos={setPhotos} />
+        </div>
       </FormField>
     </SectionCard>
   );

@@ -70,6 +70,7 @@ export function RequirementsSection({
         </FormField>
         <FormField label={fields.schufa.label}>
           <Segmented<RequirementOption>
+            id="schufa-required"
             value={draft.schufa}
             onChange={(value) => setField("schufa", value)}
             options={fields.schufa.options.map((o) => ({
@@ -80,6 +81,7 @@ export function RequirementsSection({
         </FormField>
         <FormField label={fields.income.label} className="sm:col-span-2">
           <Segmented<RequirementOption>
+            id="income-proof-required"
             value={draft.income}
             onChange={(value) => setField("income", value)}
             options={fields.income.options.map((o) => ({
@@ -98,6 +100,7 @@ export function RequirementsSection({
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label={fields.pets.label}>
           <Segmented<PetOption>
+            id="pets-policy"
             value={draft.pets}
             onChange={(value) => setField("pets", value)}
             options={fields.pets.options.map((o) => ({
@@ -108,6 +111,7 @@ export function RequirementsSection({
         </FormField>
         <FormField label={fields.smoking.label}>
           <Segmented<SmokingOption>
+            id="smoking-policy"
             value={draft.smoking}
             onChange={(value) => setField("smoking", value)}
             options={fields.smoking.options.map((o) => ({
@@ -124,6 +128,7 @@ export function RequirementsSection({
           error={fieldErrors?.peopleCount}
         >
           <NumberStepper
+            id="people-count"
             value={draft.peopleCount}
             onChange={(value) => setField("peopleCount", value)}
             min={1}

@@ -297,7 +297,8 @@ const RECOMMENDED_LABELS: Record<(typeof RECOMMENDED_KEYS)[number], string> = {
   minimumHouseholdNetIncome: FIELD_LABELS.minIncome,
   schufaRequired: FIELD_LABELS.schufa,
   incomeProofRequired: FIELD_LABELS.income,
-  suitableForPeopleCount: FIELD_LABELS.peopleCount,
+  suitableForPeopleCount:
+    createListingCopy.requirements.fields.peopleCount.label,
   petsPolicy: FIELD_LABELS.pets,
   smokingPolicy: FIELD_LABELS.smoking,
 };
@@ -309,4 +310,45 @@ export function findMissingRecommendedLabels(
   return RECOMMENDED_KEYS.filter((key) => !present.has(key)).map(
     (key) => RECOMMENDED_LABELS[key],
   );
+}
+
+export const BACKEND_FIELD_TARGET_IDS: Readonly<Record<string, string>> = {
+  city: "city",
+  zip: "zip",
+  street: "street",
+  livingArea: "area",
+  rooms: "rooms",
+  bedrooms: "bedrooms",
+  coldRent: "price",
+  availableFrom: "available-from",
+  additionalCosts: "additional-costs",
+  title: "title-override",
+  shortDescription: "listing-description",
+  minimumHouseholdNetIncome: "min-income",
+  schufaRequired: "schufa-required",
+  incomeProofRequired: "income-proof-required",
+  suitableForPeopleCount: "people-count",
+  petsPolicy: "pets-policy",
+  smokingPolicy: "smoking-policy",
+  deposit: "deposit-months",
+  depositMonths: "deposit-months",
+  objectType: "sec-01",
+  district: "city",
+  listing: "rooms",
+  showExactAddress: "hide-address",
+};
+
+export function mapBackendFieldToTargetId(field: string): string | null {
+  return BACKEND_FIELD_TARGET_IDS[field] ?? null;
+}
+
+export function mapExtractionWarning(warning: string): string {
+  const normalized = warning.toLowerCase();
+  if (normalized.includes("availablefrom")) {
+    return createListingCopy.aiCapture.warnings.uncertainAvailableFrom;
+  }
+  if (normalized.includes("bedrooms")) {
+    return createListingCopy.aiCapture.warnings.uncertainBedrooms;
+  }
+  return createListingCopy.aiCapture.warnings.generic;
 }

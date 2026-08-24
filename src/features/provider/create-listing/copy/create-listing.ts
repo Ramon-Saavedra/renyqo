@@ -285,9 +285,19 @@ export const createListingCopy = {
       label: "Diese Angaben erkennt Renyqo",
       hide: "Ausblenden",
       show: "Anzeigen",
-      note: "Du kannst die Angaben frei beschreiben. Renyqo erkennt die Informationen automatisch.",
+      note: "Je mehr du von diesen Punkten nennst, desto weniger musst du später im Formular ergänzen — und desto passender werden die Bewerbungen.",
       requiredLabel: "Für die Veröffentlichung erforderlich",
-      recommendedLabel: "Für passende Bewerbungen empfohlen",
+      requiredHint:
+        "Ohne diese Angaben kann das Inserat nicht veröffentlicht werden.",
+      recommendedLabel: "Für passende Bewerbungen wichtig",
+      recommendedHint:
+        "Nenne diese Punkte mit — ohne sie erhältst du deutlich weniger passende Bewerbungen.",
+      optionalLabel: "Weitere Angaben (optional)",
+      optionalHint:
+        "Nur übernehmen, wenn du sie erwähnst (z. B. Nebenkosten oder Kaution).",
+      priorityCritical: "Sehr wichtig",
+      priorityImportant: "Wichtig",
+      priorityOptional: "Optional",
     },
     tabs: { pdf: "PDF", text: "Text", voice: "Sprache" },
     pdf: {
@@ -305,15 +315,15 @@ export const createListingCopy = {
       },
     },
     text: {
-      lead: "Beschreibe die Immobilie einfach in deinen eigenen Worten. Nenne dabei möglichst Lage, Objektart, Wohnfläche, Zimmer, Kaltmiete und Verfügbarkeit.",
+      lead: "Beschreibe die Immobilie möglichst vollständig: Objektdaten (Lage, Fläche, Zimmer, Miete) und Anforderungen an Bewerber (SCHUFA, Einkommen, Haustiere, Personenzahl).",
       placeholder:
-        "3-Zimmer-Wohnung in Freiburg, 82 m², Balkon, Einbauküche, 1.450 € Kaltmiete ...",
+        "3-Zimmer-Wohnung, 2 Schlafzimmer, Freiburg, Musterstraße 12, 82 m², 1.450 € Kaltmiete, 200 € Nebenkosten, 2 Monate Kaution, frei ab 01.09.2026. SCHUFA erforderlich, Haustiere nach Absprache, passend für 2 Personen.",
       counterSuffix: "Zeichen",
       minHint: "Mindestens 20 Zeichen.",
       submit: "Angaben erkennen",
     },
     voice: {
-      lead: "Sprich die wichtigsten Eckdaten ein: Lage, Objektart, Wohnfläche, Zimmer, Kaltmiete, Verfügbarkeit.",
+      lead: "Sprich Objektdaten und Bewerberanforderungen ein: Lage, Fläche, Zimmer, Miete, Nebenkosten, Kaution, Verfügbarkeit, SCHUFA, Haustiere und Personenzahl.",
       start: "Aufnahme starten",
       maxDuration: "max. 3 Minuten",
       micActive: "Mikrofon aktiv",
@@ -333,6 +343,21 @@ export const createListingCopy = {
       label: "Angaben werden analysiert",
       cancel: "Abbrechen",
     },
+    submittedInput: {
+      label: "Deine Eingabe",
+      textMode: "Beschreibungstext",
+      pdfMode: "PDF-Datei",
+      voiceMode: "Sprachaufnahme",
+    },
+    warnings: {
+      title: "Hinweise zur Eingabe",
+      uncertainAvailableFrom:
+        "Das Verfügbarkeitsdatum konnte nicht sicher erkannt werden. Bitte trage es im Formular manuell ein.",
+      uncertainBedrooms:
+        "Die Anzahl der Schlafzimmer konnte nicht sicher erkannt werden. Bitte wähle den Wert im Formular.",
+      generic:
+        "Einige Angaben konnten nicht sicher übernommen werden. Bitte prüfe die markierten Felder im Formular.",
+    },
     result: {
       title: "Angaben erkannt",
       summarySingular: "Angabe erkannt.",
@@ -340,6 +365,8 @@ export const createListingCopy = {
       missingRequiredSingular: "Pflichtangabe fehlt noch.",
       missingRequiredPlural: "Pflichtangaben fehlen noch.",
       allRequiredComplete: "Alle Pflichtangaben sind vollständig.",
+      requiredComplete:
+        "Alle Pflichtangaben für die Veröffentlichung sind erkannt.",
       transferredSingular: "Angabe wurde ins Formular übertragen.",
       transferredPlural: "Angaben wurden ins Formular übertragen.",
       foundLabel: "Erkannt",
@@ -350,10 +377,19 @@ export const createListingCopy = {
         "Ohne diese Angaben erhältst du weniger passende Bewerbungen.",
       checkHint: "Diese Werte konnten nicht sicher übernommen werden.",
       apply: "Ins Formular übernehmen",
+      editInput: "Eingabe bearbeiten",
+      reanalyze: "Erneut analysieren",
       newInput: "Neue Eingabe",
       appliedTitle: "Angaben übertragen",
       closePanel: "Panel schließen",
       addMore: "Weitere Angaben ergänzen",
+      recommendedComplete:
+        "Alle wichtigen Angaben für passende Bewerbungen sind erkannt.",
+      optionalLabel: "Optional, wenn angegeben",
+      optionalComplete: "Optionale Angaben sind ergänzt.",
+      checkComplete: "Keine Angaben müssen geprüft werden.",
+      nextStepsLabel: "Als Nächstes im Formular",
+      nextStepsComplete: "Fotos und Kurzbeschreibung sind ergänzt.",
     },
     error: {
       genericTitle: "Verarbeitung fehlgeschlagen",
@@ -388,7 +424,7 @@ export const createListingCopy = {
       minIncome: "Haushaltsnettoeinkommen",
       schufa: "SCHUFA-Anforderung",
       income: "Einkommensnachweis",
-      peopleCount: "Personenzahl",
+      peopleCount: "Passend für insgesamt",
       pets: "Haustiere",
       smoking: "Rauchen",
     },

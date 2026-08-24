@@ -9,6 +9,7 @@ interface NumberStepperProps {
   allowNull?: boolean;
   nullLabel?: string;
   ariaLabel?: string;
+  id?: string;
   saved?: boolean;
 }
 
@@ -29,6 +30,7 @@ export function NumberStepper({
   allowNull = false,
   nullLabel = "—",
   ariaLabel,
+  id,
   saved = false,
 }: NumberStepperProps) {
   const isNull = value === null;
@@ -61,6 +63,7 @@ export function NumberStepper({
 
   return (
     <div
+      id={id}
       className={cn(GROUP_CLASS, saved && SAVED_FIELD_CLASS)}
       role="group"
       aria-label={ariaLabel}

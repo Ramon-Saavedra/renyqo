@@ -33,6 +33,12 @@ async function openPanel(user: ReturnType<typeof userEvent.setup>) {
   );
 }
 
+const EMPTY_DRAFT = { photos: [], description: "" } as const;
+
+function renderSection(setField = vi.fn()) {
+  return render(<AiCaptureSection draft={EMPTY_DRAFT} setField={setField} />);
+}
+
 describe("AiCaptureSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -40,7 +46,7 @@ describe("AiCaptureSection", () => {
 
   it("starts closed and opens the panel on click, with the PDF tab active", async () => {
     const user = userEvent.setup();
-    render(<AiCaptureSection setField={vi.fn()} />);
+    renderSection();
 
     expect(
       screen.queryByRole("heading", { name: "Immobilie mit KI erfassen" }),
@@ -51,6 +57,9 @@ describe("AiCaptureSection", () => {
     expect(
       screen.getByRole("heading", { name: "Immobilie mit KI erfassen" }),
     ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Sehr wichtig")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Wichtig")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Optional")).toBeInstanceOf(HTMLElement);
     expect(
       screen.getByRole("radio", { name: "PDF" }).getAttribute("aria-checked"),
     ).toBe("true");
@@ -58,7 +67,7 @@ describe("AiCaptureSection", () => {
 
   it("closes the panel and resets to input state", async () => {
     const user = userEvent.setup();
-    render(<AiCaptureSection setField={vi.fn()} />);
+    renderSection();
 
     await openPanel(user);
     await user.click(
@@ -72,7 +81,7 @@ describe("AiCaptureSection", () => {
 
   it("disables the PDF submit action until a valid file is picked", async () => {
     const user = userEvent.setup();
-    render(<AiCaptureSection setField={vi.fn()} />);
+    renderSection();
     await openPanel(user);
 
     expect(
@@ -89,7 +98,7 @@ describe("AiCaptureSection", () => {
 
   it("shows an inline error for a non-PDF file without calling the API", async () => {
     const user = userEvent.setup();
-    render(<AiCaptureSection setField={vi.fn()} />);
+    renderSection();
     await openPanel(user);
 
     const textFile = new File(["hi"], "notes.txt", { type: "text/plain" });
@@ -117,7 +126,7 @@ describe("AiCaptureSection", () => {
     };
     vi.mocked(extractListingFromPdf).mockResolvedValue(response);
 
-    render(<AiCaptureSection setField={setField} />);
+    renderSection(setField);
     await openPanel(user);
     await user.upload(getPdfInput(), pdfFile());
     await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
@@ -126,6 +135,7 @@ describe("AiCaptureSection", () => {
       HTMLElement,
     );
     expect(screen.getByText("Straße")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Deine Eingabe")).toBeInstanceOf(HTMLElement);
 
     await user.click(
       screen.getByRole("button", { name: "Ins Formular übernehmen" }),
@@ -163,12 +173,12 @@ describe("AiCaptureSection", () => {
       warnings: [],
     });
 
-    render(<AiCaptureSection setField={setField} />);
+    renderSection(setField);
     await openPanel(user);
     await user.upload(getPdfInput(), pdfFile());
     await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
 
-    expect(await screen.findByText("SCHUFA-Anforderung")).toBeInstanceOf(
+    expect(await screen.findByText("SCHUFA-Auskunft")).toBeInstanceOf(
       HTMLElement,
     );
     expect(
@@ -207,13 +217,17 @@ describe("AiCaptureSection", () => {
       warnings: [],
     });
 
-    render(<AiCaptureSection setField={vi.fn()} />);
+    renderSection();
     await openPanel(user);
     await user.upload(getPdfInput(), pdfFile());
     await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
 
-    expect(await screen.findByText("Objekttitel")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("SCHUFA-Anforderung")).toBeInstanceOf(HTMLElement);
+    expect(await screen.findByText("SCHUFA-Auskunft")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.getByText("Für passende Bewerbungen wichtig")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("surfaces a rate-limit message and allows retrying", async () => {
@@ -222,11 +236,13 @@ describe("AiCaptureSection", () => {
       new ApiError(429, "Too Many Requests"),
     );
 
-    render(<AiCaptureSection setField={vi.fn()} />);
+    renderSection();
     await openPanel(user);
     await user.click(screen.getByRole("radio", { name: "Text" }));
     await user.type(
-      screen.getByPlaceholderText(/Zimmer-Wohnung in Freiburg/i),
+      screen.getByPlaceholderText(
+        /3-Zimmer-Wohnung, 2 Schlafzimmer, Freiburg/i,
+      ),
       "3-Zimmer-Wohnung in Freiburg, 82 m², 1.450 € Kaltmiete, verfügbar sofort.",
     );
     await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
@@ -236,6 +252,62 @@ describe("AiCaptureSection", () => {
     });
 
     await user.click(screen.getByRole("button", { name: "Erneut versuchen" }));
+    expect(
+      screen.getByRole("button", { name: "Angaben erkennen" }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
+  it("shows warnings, navigates to missing fields, and preserves text when editing input", async () => {
+    const user = userEvent.setup();
+    vi.mocked(extractListingFromText).mockResolvedValue({
+      values: { city: "Freiburg", rooms: 3, coldRent: 1450 },
+      requiredMissingFields: ["bedrooms"],
+      recommendedMissingFields: [],
+      inconsistencies: [],
+      warnings: ["The source contains an uncertain value for availableFrom"],
+    });
+
+    renderSection();
+    await openPanel(user);
+    await user.click(screen.getByRole("radio", { name: "Text" }));
+
+    const textarea = screen.getByRole("textbox");
+    await user.type(
+      textarea,
+      "3-Zimmer-Wohnung in Freiburg mit 1.450 € Kaltmiete",
+    );
+    await user.click(screen.getByRole("button", { name: "Angaben erkennen" }));
+
+    expect(
+      await screen.findByText(
+        /Verfügbarkeitsdatum konnte nicht sicher erkannt/i,
+      ),
+    ).toBeInstanceOf(HTMLElement);
+
+    expect(screen.getByText("Fehlt noch")).toBeInstanceOf(HTMLElement);
+
+    const bedroomField = document.createElement("input");
+    bedroomField.id = "bedrooms";
+    bedroomField.scrollIntoView = vi.fn();
+    document.body.appendChild(bedroomField);
+
+    await user.click(screen.getByRole("button", { name: "Schlafzimmer" }));
+    expect(bedroomField.scrollIntoView).toHaveBeenCalledWith({
+      behavior: "smooth",
+      block: "center",
+    });
+    bedroomField.remove();
+
+    await user.click(
+      screen.getByRole("button", { name: "Eingabe bearbeiten" }),
+    );
+
+    const restoredTextarea = screen.getByPlaceholderText(
+      /3-Zimmer-Wohnung, 2 Schlafzimmer, Freiburg/i,
+    ) as HTMLTextAreaElement;
+    expect(restoredTextarea.value).toBe(
+      "3-Zimmer-Wohnung in Freiburg mit 1.450 € Kaltmiete",
+    );
     expect(
       screen.getByRole("button", { name: "Angaben erkennen" }),
     ).toBeInstanceOf(HTMLElement);
