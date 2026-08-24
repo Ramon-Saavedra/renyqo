@@ -14,6 +14,7 @@ interface SegmentedProps<T extends string> {
   onChange: (value: T) => void;
   options: ReadonlyArray<SegmentedOption<T>>;
   ariaLabel?: string;
+  id?: string;
   saved?: boolean;
 }
 
@@ -29,10 +30,12 @@ export function Segmented<T extends string>({
   onChange,
   options,
   ariaLabel,
+  id,
   saved = false,
 }: SegmentedProps<T>) {
   return (
     <div
+      id={id}
       className={cn(GROUP_CLASS, saved && SAVED_FIELD_CLASS)}
       role="radiogroup"
       aria-label={ariaLabel}

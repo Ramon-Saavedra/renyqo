@@ -5,6 +5,8 @@ import {
   applyExtractionResult,
   buildExtractionFieldDescriptors,
   findMissingRecommendedLabels,
+  mapBackendFieldToTargetId,
+  mapExtractionWarning,
   mapInconsistencyLabel,
   mapMissingFieldLabel,
 } from "./listingExtractionMapping";
@@ -45,6 +47,8 @@ describe("buildExtractionFieldDescriptors", () => {
     expect(byKey.get("livingArea")?.label).toBe("Wohnfläche");
     expect(byKey.get("rooms")?.label).toBe("Zimmer");
     expect(byKey.get("coldRent")?.label).toBe("Kaltmiete");
+    expect(byKey.get("additionalCosts")?.label).toBe("Nebenkosten");
+    expect(byKey.get("depositMonths")?.label).toBe("Kaution");
     expect(byKey.get("availableFrom")?.label).toBe("Verfügbar ab");
     expect(byKey.has("title")).toBe(true);
     expect(byKey.has("shortDescription")).toBe(true);
@@ -195,13 +199,46 @@ describe("mapInconsistencyLabel", () => {
   });
 });
 
+describe("mapBackendFieldToTargetId", () => {
+  it("maps backend extraction fields to form target ids", () => {
+    expect(mapBackendFieldToTargetId("bedrooms")).toBe("bedrooms");
+    expect(mapBackendFieldToTargetId("availableFrom")).toBe("available-from");
+    expect(mapBackendFieldToTargetId("coldRent")).toBe("price");
+    expect(mapBackendFieldToTargetId("additionalCosts")).toBe(
+      "additional-costs",
+    );
+    expect(mapBackendFieldToTargetId("depositMonths")).toBe("deposit-months");
+    expect(mapBackendFieldToTargetId("schufaRequired")).toBe("schufa-required");
+  });
+
+  it("returns null for unknown backend fields", () => {
+    expect(mapBackendFieldToTargetId("unknown-field")).toBeNull();
+  });
+});
+
+describe("mapExtractionWarning", () => {
+  it("maps uncertain availableFrom warnings to controlled German copy", () => {
+    expect(
+      mapExtractionWarning(
+        "The source contains an uncertain value for availableFrom",
+      ),
+    ).toContain("Verfügbarkeitsdatum");
+  });
+
+  it("maps unknown warnings to the generic German copy", () => {
+    expect(mapExtractionWarning("unexpected parser issue")).toContain(
+      "nicht sicher übernommen",
+    );
+  });
+});
+
 describe("findMissingRecommendedLabels", () => {
   it("returns all recommended labels when nothing was recognized", () => {
     expect(findMissingRecommendedLabels([])).toEqual([
       "Haushaltsnettoeinkommen",
       "SCHUFA-Anforderung",
       "Einkommensnachweis",
-      "Personenzahl",
+      "Passend für insgesamt",
       "Haustiere",
       "Rauchen",
     ]);
@@ -215,7 +252,7 @@ describe("findMissingRecommendedLabels", () => {
     expect(findMissingRecommendedLabels(descriptors)).toEqual([
       "Haushaltsnettoeinkommen",
       "Einkommensnachweis",
-      "Personenzahl",
+      "Passend für insgesamt",
       "Rauchen",
     ]);
   });
