@@ -33,7 +33,7 @@ export function AutoTitleField({
   );
 
   return (
-    <div className={overrideClass}>
+    <div id="title-override" className={overrideClass}>
       <div className={overrideLabelClass}>
         {hasOverride ? copy.overrideLabelActive : copy.overrideLabelIdle}
       </div>

@@ -4,20 +4,14 @@ import { useId, useRef, useState } from "react";
 import type { DragEvent } from "react";
 import {
   AlertCircle,
-  AlertTriangle,
   AlignLeft,
-  Check,
-  CheckCircle2,
   ChevronRight,
-  CircleDashed,
   FileText,
   FileUp,
-  Info,
   Mic,
   Sparkles,
   X,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { FormAlert } from "@/components/ui/form/FormAlert";
@@ -25,22 +19,21 @@ import { Segmented } from "@/components/ui/form/Segmented";
 import { Textarea } from "@/components/ui/form/Textarea";
 import { RenyqoLoadingDots } from "@/components/ui/loading/RenyqoLoadingDots";
 import { cn } from "@/lib/utils/cn";
-import type { ListingExtractionResult } from "@/lib/api/listing-assistance";
 import { createListingCopy } from "../copy/create-listing";
+import {
+  AiCaptureAppliedPane,
+  AiCaptureResultPane,
+} from "./AiCaptureResultViews";
 import type {
   AiCaptureErrorKind,
   AiCaptureMode,
   UseAiCaptureResult,
 } from "../hooks/useAiCapture";
 import { useAiCapture } from "../hooks/useAiCapture";
-import type { ExtractionFieldDescriptor } from "../hooks/listingExtractionMapping";
-import {
-  mapInconsistencyLabel,
-  mapMissingFieldLabel,
-} from "../hooks/listingExtractionMapping";
 import type { ListingDraft } from "../hooks/useListingDraft";
 
 interface AiCaptureSectionProps {
+  draft: Pick<ListingDraft, "photos" | "description">;
   setField: <K extends keyof ListingDraft>(
     field: K,
     value: ListingDraft[K],
@@ -63,13 +56,120 @@ const REQUIRED_GUIDE_FIELDS = [
 ];
 
 const RECOMMENDED_GUIDE_FIELDS = [
-  copy.fieldLabels.minIncome,
-  copy.fieldLabels.schufa,
-  copy.fieldLabels.income,
-  copy.fieldLabels.peopleCount,
-  copy.fieldLabels.pets,
-  copy.fieldLabels.smoking,
+  createListingCopy.requirements.fields.minIncome.label,
+  createListingCopy.requirements.fields.schufa.label,
+  createListingCopy.requirements.fields.income.label,
+  createListingCopy.requirements.fields.peopleCount.label,
+  createListingCopy.requirements.fields.pets.label,
+  createListingCopy.requirements.fields.smoking.label,
 ];
+
+const OPTIONAL_GUIDE_FIELDS = [
+  copy.fieldLabels.additionalCosts,
+  createListingCopy.objektdaten.fields.deposit.label,
+];
+
+type GuideChipPriority = "critical" | "important" | "optional";
+
+const GUIDE_PRIORITY_LEGEND: ReadonlyArray<{
+  priority: GuideChipPriority;
+  label: string;
+  swatch: string;
+}> = [
+  {
+    priority: "critical",
+    label: copy.guide.priorityCritical,
+    swatch: "bg-danger",
+  },
+  {
+    priority: "important",
+    label: copy.guide.priorityImportant,
+    swatch: "bg-warning-vivid",
+  },
+  {
+    priority: "optional",
+    label: copy.guide.priorityOptional,
+    swatch: "bg-primary",
+  },
+];
+
+const GUIDE_CHIP_PIP_CLASS: Record<GuideChipPriority, string> = {
+  critical: "h-1.25 w-1.25 shrink-0 rounded-full bg-danger",
+  important: "h-1.25 w-1.25 shrink-0 rounded-full bg-warning-vivid",
+  optional: "h-1.25 w-1.25 shrink-0 rounded-full bg-primary",
+};
+
+function GuidePriorityLegend() {
+  return (
+    <div
+      className="mb-4 flex flex-wrap gap-x-4 gap-y-2"
+      aria-label={copy.guide.label}
+    >
+      {GUIDE_PRIORITY_LEGEND.map(({ priority, label, swatch }) => (
+        <span
+          key={priority}
+          className="inline-flex items-center gap-1.5 font-mono text-meta uppercase text-foreground-tertiary"
+        >
+          <span
+            aria-hidden="true"
+            className={cn("h-2 w-2 shrink-0 rounded-sm", swatch)}
+          />
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+const GUIDE_CHIP_CLASS =
+  "inline-flex items-center gap-1.5 rounded-sm border border-border-strong bg-background-subtle px-2 py-1 text-caption text-foreground";
+
+function GuideFieldChips({
+  items,
+  priority,
+}: {
+  items: readonly string[];
+  priority: GuideChipPriority;
+}) {
+  return (
+    <ul className="flex flex-wrap gap-1.5">
+      {items.map((item) => (
+        <li key={item} className={GUIDE_CHIP_CLASS}>
+          <span aria-hidden="true" className={GUIDE_CHIP_PIP_CLASS[priority]} />
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function GuideSection({
+  title,
+  hint,
+  items,
+  priority,
+  className,
+}: {
+  title: string;
+  hint: string;
+  items: readonly string[];
+  priority: GuideChipPriority;
+  className?: string;
+}) {
+  return (
+    <section className={className}>
+      <header className="mb-3">
+        <h3 className="mb-1 font-display text-action font-medium text-foreground">
+          {title}
+        </h3>
+        <p className="text-caption leading-normal text-foreground-tertiary">
+          {hint}
+        </p>
+      </header>
+      <GuideFieldChips items={items} priority={priority} />
+    </section>
+  );
+}
 
 function formatSeconds(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -80,6 +180,7 @@ function hasDraggedFiles(event: DragEvent<HTMLElement>): boolean {
 }
 
 export function AiCaptureSection({
+  draft,
   setField,
   className,
 }: AiCaptureSectionProps) {
@@ -106,18 +207,24 @@ export function AiCaptureSection({
             <ProcessingPane onCancel={capture.cancelProcessing} />
           )}
           {capture.stage === "result" && capture.result && (
-            <ResultPane
+            <AiCaptureResultPane
               result={capture.result}
               descriptors={capture.descriptors}
+              submittedInput={capture.submittedInput}
               onApply={capture.apply}
+              onEditInput={capture.editInput}
+              onReanalyze={capture.reanalyze}
               onReset={capture.reset}
             />
           )}
           {capture.stage === "applied" && (
-            <AppliedPane
+            <AiCaptureAppliedPane
               appliedCount={capture.appliedCount}
+              submittedInput={capture.submittedInput}
+              hasPhotos={draft.photos.length > 0}
+              hasDescription={draft.description.trim().length > 0}
               onClose={capture.close}
-              onAddMore={capture.reset}
+              onAddMore={capture.editInput}
             />
           )}
           {capture.stage === "error" && (
@@ -210,34 +317,6 @@ function PanelHeader({ onClose }: { onClose: () => void }) {
   );
 }
 
-function GuideFieldChips({
-  items,
-  variant,
-}: {
-  items: readonly string[];
-  variant: "required" | "recommended";
-}) {
-  const itemClass =
-    variant === "required"
-      ? "inline-flex items-center gap-1.5 rounded-sm border border-border-strong bg-background-subtle px-2 py-1 text-caption text-foreground"
-      : "inline-flex items-center gap-1.5 rounded-sm border border-dashed border-border-strong bg-transparent px-2 py-1 text-caption text-foreground-secondary";
-  const pipClass =
-    variant === "required"
-      ? "h-1.25 w-1.25 rounded-full bg-primary"
-      : "h-1.25 w-1.25 rounded-full border border-border-strong";
-
-  return (
-    <ul className="flex flex-wrap gap-1.5">
-      {items.map((item) => (
-        <li key={item} className={itemClass}>
-          <span aria-hidden="true" className={pipClass} />
-          {item}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function GuideBlock({
   open,
   onToggle,
@@ -248,8 +327,8 @@ function GuideBlock({
   const bodyId = useId();
   return (
     <div className="mb-3.5 rounded-md border border-border bg-background">
-      <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-        <span className="font-mono text-meta uppercase text-foreground-secondary">
+      <div className="flex items-center justify-between gap-3 px-3 py-2.5 sm:px-4">
+        <span className="font-display text-action font-medium text-foreground">
           {copy.guide.label}
         </span>
         <button
@@ -263,23 +342,31 @@ function GuideBlock({
         </button>
       </div>
       {open && (
-        <div id={bodyId} className="border-t border-border px-3 py-3">
-          <p className="mb-3 text-caption leading-normal text-foreground-tertiary">
+        <div id={bodyId} className="border-t border-border px-3 py-4 sm:px-4">
+          <GuidePriorityLegend />
+          <p className="mb-5 max-w-prose text-caption leading-normal text-foreground-secondary">
             {copy.guide.note}
           </p>
-          <div className="mb-1.5 text-caption text-foreground-secondary">
-            {copy.guide.requiredLabel}
-          </div>
-          <GuideFieldChips items={REQUIRED_GUIDE_FIELDS} variant="required" />
-          <div className="mt-3 border-t border-border pt-3">
-            <div className="mb-1.5 text-caption text-foreground-tertiary">
-              {copy.guide.recommendedLabel}
-            </div>
-            <GuideFieldChips
-              items={RECOMMENDED_GUIDE_FIELDS}
-              variant="recommended"
-            />
-          </div>
+          <GuideSection
+            title={copy.guide.requiredLabel}
+            hint={copy.guide.requiredHint}
+            items={REQUIRED_GUIDE_FIELDS}
+            priority="critical"
+          />
+          <GuideSection
+            title={copy.guide.recommendedLabel}
+            hint={copy.guide.recommendedHint}
+            items={RECOMMENDED_GUIDE_FIELDS}
+            priority="important"
+            className="mt-5 border-t border-border pt-5"
+          />
+          <GuideSection
+            title={copy.guide.optionalLabel}
+            hint={copy.guide.optionalHint}
+            items={OPTIONAL_GUIDE_FIELDS}
+            priority="optional"
+            className="mt-5 border-t border-border pt-5"
+          />
         </div>
       )}
     </div>
@@ -577,230 +664,6 @@ function ProcessingPane({ onCancel }: { onCancel: () => void }) {
       >
         {copy.processing.cancel}
       </button>
-    </div>
-  );
-}
-
-type ChipTone = "found" | "gap" | "check";
-
-const CHIP_TONE_CLASS: Record<ChipTone, string> = {
-  found: "border-border bg-background text-foreground",
-  gap: "border-dashed border-border-strong bg-transparent text-foreground-secondary",
-  check: "border-border-strong bg-background text-foreground",
-};
-const CHIP_ICON: Record<ChipTone, LucideIcon> = {
-  found: CheckCircle2,
-  gap: CircleDashed,
-  check: AlertTriangle,
-};
-const CHIP_ICON_CLASS: Record<ChipTone, string> = {
-  found: "text-success",
-  gap: "text-foreground-tertiary",
-  check: "text-warning",
-};
-
-function ResultChipSection({
-  label,
-  hint,
-  items,
-  tone,
-}: {
-  label: string;
-  hint?: string;
-  items: readonly string[];
-  tone: ChipTone;
-}) {
-  if (items.length === 0) return null;
-
-  return (
-    <div className="border-t border-border py-3 first:border-t-0 first:pt-0">
-      <div className="mb-2 flex items-center gap-2">
-        <span className="font-mono text-meta uppercase text-foreground-secondary">
-          {label}
-        </span>
-        <span className="rounded-sm border border-border bg-background px-1.25 py-0.25 font-mono text-meta text-foreground-tertiary">
-          {items.length}
-        </span>
-      </div>
-      {hint && (
-        <p className="mb-2 flex items-start gap-1.5 text-caption leading-normal text-foreground-secondary">
-          <AppIcon
-            icon={Info}
-            size={13}
-            strokeWidth={1.4}
-            decorative
-            className="mt-0.5 shrink-0 text-foreground-tertiary"
-          />
-          {hint}
-        </p>
-      )}
-      <ul className="flex flex-wrap gap-1.5">
-        {items.map((item) => (
-          <li
-            key={item}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-sm border px-2 py-1 text-caption",
-              CHIP_TONE_CLASS[tone],
-            )}
-          >
-            <AppIcon
-              icon={CHIP_ICON[tone]}
-              size={12}
-              strokeWidth={1.6}
-              decorative
-              className={CHIP_ICON_CLASS[tone]}
-            />
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function ResultPane({
-  result,
-  descriptors,
-  onApply,
-  onReset,
-}: {
-  result: ListingExtractionResult;
-  descriptors: readonly ExtractionFieldDescriptor[];
-  onApply: () => void;
-  onReset: () => void;
-}) {
-  const foundLabels = descriptors.map((d) => d.label);
-  const missingLabels = result.requiredMissingFields.map(mapMissingFieldLabel);
-  const recommendedMissing =
-    result.recommendedMissingFields.map(mapMissingFieldLabel);
-  const checkLabels = Array.from(
-    new Set(result.inconsistencies.map(mapInconsistencyLabel)),
-  );
-  const totalFound = foundLabels.length;
-
-  return (
-    <div>
-      <div className="mb-1 flex items-start gap-3">
-        <span
-          className={cn(
-            "mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border",
-            missingLabels.length > 0
-              ? "border-warning text-warning"
-              : "border-success text-success",
-          )}
-        >
-          <AppIcon
-            icon={missingLabels.length > 0 ? AlertTriangle : Check}
-            size={14}
-            strokeWidth={1.7}
-            decorative
-          />
-        </span>
-        <div>
-          <h4 className="font-display text-body font-medium text-foreground">
-            {copy.result.title}
-          </h4>
-          <p className="text-caption text-foreground-secondary">
-            {totalFound}{" "}
-            {totalFound === 1
-              ? copy.result.summarySingular
-              : copy.result.summaryPlural}{" "}
-            {missingLabels.length > 0
-              ? missingLabels.length === 1
-                ? copy.result.missingRequiredSingular
-                : copy.result.missingRequiredPlural
-              : copy.result.allRequiredComplete}
-          </p>
-        </div>
-      </div>
-
-      <ResultChipSection
-        label={copy.result.foundLabel}
-        items={foundLabels}
-        tone="found"
-      />
-      <ResultChipSection
-        label={copy.result.missingLabel}
-        items={missingLabels}
-        tone="gap"
-      />
-      <ResultChipSection
-        label={copy.result.recommendedLabel}
-        hint={copy.result.recommendedHint}
-        items={recommendedMissing}
-        tone="gap"
-      />
-      <ResultChipSection
-        label={copy.result.checkLabel}
-        hint={copy.result.checkHint}
-        items={checkLabels}
-        tone="check"
-      />
-
-      <div className="mt-4 flex flex-wrap items-center gap-2.5">
-        <button
-          type="button"
-          onClick={onApply}
-          disabled={totalFound === 0}
-          className={buttonClass("primary")}
-        >
-          {copy.result.apply}
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className={buttonClass("ghost")}
-        >
-          {copy.result.newInput}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function AppliedPane({
-  appliedCount,
-  onClose,
-  onAddMore,
-}: {
-  appliedCount: number;
-  onClose: () => void;
-  onAddMore: () => void;
-}) {
-  return (
-    <div>
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border border-success text-success">
-          <AppIcon icon={Check} size={14} strokeWidth={1.7} decorative />
-        </span>
-        <div>
-          <h4 className="font-display text-body font-medium text-foreground">
-            {copy.result.appliedTitle}
-          </h4>
-          <p className="text-caption text-foreground-secondary">
-            {appliedCount}{" "}
-            {appliedCount === 1
-              ? copy.result.transferredSingular
-              : copy.result.transferredPlural}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4 flex flex-wrap gap-2.5">
-        <button
-          type="button"
-          onClick={onClose}
-          className={buttonClass("primary")}
-        >
-          {copy.result.closePanel}
-        </button>
-        <button
-          type="button"
-          onClick={onAddMore}
-          className={buttonClass("ghost")}
-        >
-          {copy.result.addMore}
-        </button>
-      </div>
     </div>
   );
 }

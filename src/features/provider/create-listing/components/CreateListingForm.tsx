@@ -299,7 +299,11 @@ export function CreateListingForm() {
           className="mb-6"
         />
 
-        <AiCaptureSection setField={handleSetField} className="mb-6" />
+        <AiCaptureSection
+          draft={draft}
+          setField={handleSetField}
+          className="mb-6"
+        />
 
         <div className="listing-grid">
           <MissingChecklist

@@ -105,6 +105,13 @@ function getVoiceSupportServerSnapshot(): boolean {
   return false;
 }
 
+export interface AiCaptureSubmittedInput {
+  readonly mode: AiCaptureMode;
+  readonly text: string | null;
+  readonly pdfFileName: string | null;
+  readonly voiceDurationLabel: string | null;
+}
+
 export interface UseAiCaptureResult {
   readonly isOpen: boolean;
   readonly open: () => void;
@@ -130,12 +137,19 @@ export interface UseAiCaptureResult {
   readonly cancelProcessing: () => void;
   readonly result: ListingExtractionResult | null;
   readonly descriptors: readonly ExtractionFieldDescriptor[];
+  readonly submittedInput: AiCaptureSubmittedInput | null;
   readonly errorKind: AiCaptureErrorKind | null;
   readonly errorMessage: string | null;
   readonly retry: () => void;
   readonly reset: () => void;
+  readonly editInput: () => void;
+  readonly reanalyze: () => void;
   readonly apply: () => void;
   readonly appliedCount: number;
+}
+
+function formatVoiceDuration(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
 export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
@@ -155,6 +169,8 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
   const [descriptors, setDescriptors] = useState<
     readonly ExtractionFieldDescriptor[]
   >([]);
+  const [submittedInput, setSubmittedInput] =
+    useState<AiCaptureSubmittedInput | null>(null);
   const [errorKind, setErrorKind] = useState<AiCaptureErrorKind | null>(null);
   const [appliedCount, setAppliedCount] = useState(0);
   const voiceSupported = useSyncExternalStore(
@@ -208,6 +224,7 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     setVoice({ status: "idle", seconds: 0, blob: null, error: null });
     setResult(null);
     setDescriptors([]);
+    setSubmittedInput(null);
     setErrorKind(null);
     setAppliedCount(0);
   }, []);
@@ -349,9 +366,13 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
   }, []);
 
   const runExtraction = useCallback(
-    (task: (signal: AbortSignal) => Promise<ListingExtractionResult>) => {
+    (
+      task: (signal: AbortSignal) => Promise<ListingExtractionResult>,
+      inputSnapshot: AiCaptureSubmittedInput,
+    ) => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
+      setSubmittedInput(inputSnapshot);
       setStage("processing");
       task(controller.signal)
         .then((response) => {
@@ -369,17 +390,49 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     [handleError],
   );
 
-  const submit = useCallback(() => {
-    if (!canSubmit) return;
+  const buildSubmittedInputSnapshot =
+    useCallback((): AiCaptureSubmittedInput => {
+      if (mode === "text") {
+        return {
+          mode,
+          text: text.trim(),
+          pdfFileName: null,
+          voiceDurationLabel: null,
+        };
+      }
+      if (mode === "pdf") {
+        return {
+          mode,
+          text: null,
+          pdfFileName: pdf.file?.name ?? null,
+          voiceDurationLabel: null,
+        };
+      }
+      return {
+        mode: "voice",
+        text: null,
+        pdfFileName: null,
+        voiceDurationLabel: formatVoiceDuration(voice.seconds),
+      };
+    }, [mode, pdf.file, text, voice.seconds]);
+
+  const dispatchExtraction = useCallback(() => {
+    const snapshot = buildSubmittedInputSnapshot();
 
     if (mode === "pdf" && pdf.file) {
       const file = pdf.file;
-      runExtraction((signal) => extractListingFromPdf(file, { signal }));
+      runExtraction(
+        (signal) => extractListingFromPdf(file, { signal }),
+        snapshot,
+      );
       return;
     }
-    if (mode === "text") {
+    if (mode === "text" && text.trim().length >= TEXT_MIN_LENGTH) {
       const value = text.trim();
-      runExtraction((signal) => extractListingFromText(value, { signal }));
+      runExtraction(
+        (signal) => extractListingFromText(value, { signal }),
+        snapshot,
+      );
       return;
     }
     if (mode === "voice" && voice.blob) {
@@ -387,9 +440,24 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
       const file = new File([voice.blob], audioFileNameFor(mimeType), {
         type: mimeType,
       });
-      runExtraction((signal) => extractListingFromAudio(file, { signal }));
+      runExtraction(
+        (signal) => extractListingFromAudio(file, { signal }),
+        snapshot,
+      );
     }
-  }, [canSubmit, mode, pdf.file, runExtraction, text, voice.blob]);
+  }, [
+    buildSubmittedInputSnapshot,
+    mode,
+    pdf.file,
+    runExtraction,
+    text,
+    voice.blob,
+  ]);
+
+  const submit = useCallback(() => {
+    if (!canSubmit) return;
+    dispatchExtraction();
+  }, [canSubmit, dispatchExtraction]);
 
   const cancelProcessing = useCallback(() => {
     abortControllerRef.current?.abort();
@@ -407,6 +475,20 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     abortControllerRef.current = null;
     resetInputs();
   }, [resetInputs]);
+
+  const editInput = useCallback(() => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    setStage("input");
+    setResult(null);
+    setDescriptors([]);
+    setErrorKind(null);
+    setAppliedCount(0);
+  }, []);
+
+  const reanalyze = useCallback(() => {
+    dispatchExtraction();
+  }, [dispatchExtraction]);
 
   const apply = useCallback(() => {
     if (!result) return;
@@ -440,10 +522,13 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     cancelProcessing,
     result,
     descriptors,
+    submittedInput,
     errorKind,
     errorMessage: errorKind ? aiCaptureErrorMessage(errorKind, mode) : null,
     retry,
     reset,
+    editInput,
+    reanalyze,
     apply,
     appliedCount,
   };
