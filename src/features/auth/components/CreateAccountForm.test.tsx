@@ -411,6 +411,36 @@ describe("CreateAccountForm", () => {
 
       expect(link.getAttribute("href")).toBe("#datenschutz");
     });
+
+    it("does not accept terms when a legal link is clicked", async () => {
+      const user = userEvent.setup();
+      renderForm("test");
+      const checkbox = document.getElementById(
+        "test-terms",
+      ) as HTMLInputElement;
+
+      await user.click(screen.getByRole("link", { name: consent.terms }));
+      expect(checkbox.checked).toBe(false);
+
+      await user.click(screen.getByRole("link", { name: consent.privacy }));
+      expect(checkbox.checked).toBe(false);
+    });
+
+    it("accepts terms when an acceptance label is clicked", async () => {
+      const user = userEvent.setup();
+      renderForm("test");
+      const checkbox = document.getElementById(
+        "test-terms",
+      ) as HTMLInputElement;
+      const acceptanceLabel = document.querySelector(
+        `label[for="test-terms"]`,
+      );
+
+      expect(acceptanceLabel).toBeInstanceOf(HTMLLabelElement);
+      await user.click(acceptanceLabel as HTMLLabelElement);
+
+      expect(checkbox.checked).toBe(true);
+    });
   });
 
   describe("submit button", () => {

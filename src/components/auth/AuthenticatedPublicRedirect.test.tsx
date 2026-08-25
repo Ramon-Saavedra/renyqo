@@ -39,6 +39,9 @@ describe("AuthenticatedPublicRedirect", () => {
     );
 
     expect(screen.queryByText("public content")).toBeNull();
+    expect(screen.getByRole("status").textContent).toContain(
+      "Inhalt wird geladen",
+    );
   });
 
   it("redirects applicants to listings without rendering public content", async () => {
@@ -62,6 +65,7 @@ describe("AuthenticatedPublicRedirect", () => {
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/listings"));
     expect(screen.queryByText("public content")).toBeNull();
+    expect(screen.getByRole("status")).toBeInstanceOf(HTMLElement);
     expect(onboarding).not.toHaveBeenCalled();
   });
 
@@ -89,6 +93,34 @@ describe("AuthenticatedPublicRedirect", () => {
       expect(replace).toHaveBeenCalledWith("/provider/dashboard"),
     );
     expect(screen.queryByText("public content")).toBeNull();
+    expect(screen.getByRole("status")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("falls back to the provider dashboard when onboarding lookup fails", async () => {
+    currentUser.mockReturnValue({
+      user: {
+        id: "provider-1",
+        name: "Peter Beispiel",
+        email: "peter@example.com",
+        role: "provider",
+        providerType: "private",
+        companyName: null,
+      },
+      loading: false,
+    });
+    onboarding.mockRejectedValue(new Error("onboarding unavailable"));
+
+    render(
+      <AuthenticatedPublicRedirect>
+        <span>public content</span>
+      </AuthenticatedPublicRedirect>,
+    );
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/provider/dashboard"),
+    );
+    expect(screen.queryByText("public content")).toBeNull();
+    expect(screen.getByRole("status")).toBeInstanceOf(HTMLElement);
   });
 
   it("stays on the public page for users with an invalid role", async () => {

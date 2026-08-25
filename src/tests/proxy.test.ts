@@ -318,11 +318,146 @@ describe("provider route proxy", () => {
     );
   });
 
-  it("matches every provider, login and applicant route", () => {
+  it("matches auth, recovery, register, dashboard and role routes", () => {
     expect(config.matcher).toEqual([
       "/login",
+      "/forgot-password",
+      "/reset-password",
+      "/register/:path*",
+      "/dashboard/applicant",
       "/provider/:path*",
+      "/applicant",
       "/applicant/:path*",
     ]);
+  });
+});
+
+describe("public auth route proxy", () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each([
+    "/register/account-type",
+    "/register/create-account",
+    "/forgot-password",
+    "/reset-password",
+  ])("allows unauthenticated users to access %s", async (pathname) => {
+    fetchMock.mockResolvedValueOnce(onboardingResponse("", 401));
+
+    const response = await proxy(createRequest(pathname, ""));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it.each([
+    "/register/account-type",
+    "/register/create-account",
+    "/forgot-password",
+    "/reset-password",
+  ])("redirects authenticated applicants away from %s", async (pathname) => {
+    fetchMock.mockResolvedValueOnce(onboardingResponse("browse_listings"));
+
+    const response = await proxy(createRequest(pathname, "session=applicant"));
+
+    expect(response.status).toBe(307);
+    expect(getRedirectPath(response)).toBe("/listings");
+  });
+
+  it.each([
+    "/forgot-password",
+    "/reset-password",
+    "/register/account-type",
+    "/register/create-account",
+  ])(
+    "redirects authenticated providers from %s to onboarding",
+    async (pathname) => {
+      fetchMock.mockResolvedValueOnce(onboardingResponse("dashboard"));
+
+      const response = await proxy(createRequest(pathname, "session=provider"));
+
+      expect(response.status).toBe(307);
+      expect(getRedirectPath(response)).toBe("/provider/dashboard");
+    },
+  );
+
+  it("allows public auth pages when the onboarding lookup fails", async () => {
+    fetchMock.mockRejectedValueOnce(new Error("network failure"));
+
+    const response = await proxy(createRequest("/register/account-type", ""));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
+  it("returns 503 on public auth when nextStep payload is invalid", async () => {
+    fetchMock.mockResolvedValueOnce(onboardingResponse("not-a-step"));
+
+    const response = await proxy(
+      createRequest("/forgot-password", "session=applicant"),
+    );
+
+    expect(response.status).toBe(503);
+  });
+
+  it("redirects protected routes to login when nextStep payload is invalid", async () => {
+    fetchMock.mockResolvedValueOnce(onboardingResponse("not-a-step"));
+
+    const response = await proxy(
+      createRequest("/provider/dashboard", "session=provider"),
+    );
+
+    expect(response.status).toBe(307);
+    expect(getRedirectPath(response)).toBe("/login");
+  });
+});
+
+describe("dashboard applicant proxy", () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("redirects anonymous users from /dashboard/applicant to login", async () => {
+    fetchMock.mockResolvedValueOnce(unauthenticatedResponse());
+
+    const response = await proxy(createRequest("/dashboard/applicant", ""));
+
+    expect(response.status).toBe(307);
+    expect(getRedirectPath(response)).toBe("/login");
+  });
+
+  it("redirects authenticated applicants from /dashboard/applicant to listings", async () => {
+    fetchMock.mockResolvedValueOnce(userResponse("applicant"));
+
+    const response = await proxy(
+      createRequest("/dashboard/applicant", "session=applicant"),
+    );
+
+    expect(response.status).toBe(307);
+    expect(getRedirectPath(response)).toBe("/listings");
+  });
+
+  it("redirects providers from /dashboard/applicant to the provider flow", async () => {
+    fetchMock
+      .mockResolvedValueOnce(userResponse("provider"))
+      .mockResolvedValueOnce(onboardingResponse("dashboard"));
+
+    const response = await proxy(
+      createRequest("/dashboard/applicant", "session=provider"),
+    );
+
+    expect(response.status).toBe(307);
+    expect(getRedirectPath(response)).toBe("/provider/dashboard");
   });
 });

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { normalizeRole } from "@/lib/normalize-role";
 import {
+  parseOnboardingNextStep,
   resolveOnboardingPath,
   type OnboardingNextStep,
 } from "@/lib/onboarding";
@@ -73,8 +74,18 @@ async function fetchOnboardingStep(
 
     if (!res.ok) return null;
 
-    const data = (await res.json()) as { nextStep: OnboardingNextStep };
-    return data.nextStep;
+    const data: unknown = await res.json();
+    if (
+      typeof data !== "object" ||
+      data === null ||
+      !("nextStep" in data)
+    ) {
+      return null;
+    }
+
+    return parseOnboardingNextStep(
+      (data as { nextStep: unknown }).nextStep,
+    );
   } catch {
     return null;
   }
@@ -85,15 +96,28 @@ const UNAVAILABLE = new NextResponse("Service Unavailable", {
   headers: { "Content-Type": "text/plain" },
 });
 
+function isPublicAuthPath(pathname: string): boolean {
+  return (
+    pathname === "/login" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname.startsWith("/register/")
+  );
+}
+
+function isApplicantProtectedPath(pathname: string): boolean {
+  return (
+    pathname === "/applicant" ||
+    pathname.startsWith("/applicant/") ||
+    pathname === "/dashboard/applicant"
+  );
+}
+
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const cookie = request.headers.get("cookie") ?? "";
   const { pathname } = request.nextUrl;
 
-  // ── Applicant routes — protect by role ──
-  const isApplicantRoute =
-    pathname === "/applicant" || pathname.startsWith("/applicant/");
-
-  if (isApplicantRoute) {
+  if (isApplicantProtectedPath(pathname)) {
     const result = await fetchUserRole(cookie);
 
     if ("error" in result) {
@@ -107,13 +131,15 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
 
     if (result.role === "applicant") {
-      if (pathname === "/applicant") {
+      if (
+        pathname === "/applicant" ||
+        pathname === "/dashboard/applicant"
+      ) {
         return NextResponse.redirect(new URL("/listings", request.url));
       }
       return NextResponse.next();
     }
 
-    // result.role === "provider" — redirect to provider onboarding
     const nextStep = await fetchOnboardingStep(cookie);
     if (nextStep) {
       return NextResponse.redirect(
@@ -123,7 +149,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.redirect(new URL("/provider/dashboard", request.url));
   }
 
-  // ── Existing logic for /login and /provider/:path* ──
   try {
     const res = await fetchWithTimeout(
       `${API_URL}/api/v1/me/onboarding-state`,
@@ -135,32 +160,45 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     );
 
     if (!res.ok) {
-      if (pathname === "/login") return NextResponse.next();
+      if (isPublicAuthPath(pathname)) return NextResponse.next();
       return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    const data = (await res.json()) as { nextStep: OnboardingNextStep };
+    const payload: unknown = await res.json();
+    const nextStep =
+      typeof payload === "object" &&
+      payload !== null &&
+      "nextStep" in payload
+        ? parseOnboardingNextStep(
+            (payload as { nextStep: unknown }).nextStep,
+          )
+        : null;
 
-    if (pathname === "/login") {
+    if (nextStep === null) {
+      if (isPublicAuthPath(pathname)) return UNAVAILABLE;
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    if (isPublicAuthPath(pathname)) {
       return NextResponse.redirect(
-        new URL(resolveOnboardingPath(data.nextStep), request.url),
+        new URL(resolveOnboardingPath(nextStep), request.url),
       );
     }
 
-    if (!PROVIDER_STEPS.has(data.nextStep)) {
+    if (!PROVIDER_STEPS.has(nextStep)) {
       const target =
-        data.nextStep === "applicant_area_pending" ||
-        data.nextStep === "browse_listings"
+        nextStep === "applicant_area_pending" ||
+        nextStep === "browse_listings"
           ? "/listings"
           : "/login";
       return NextResponse.redirect(new URL(target, request.url));
     }
 
-    if (pathname === "/provider/get-started" && data.nextStep === "dashboard") {
+    if (pathname === "/provider/get-started" && nextStep === "dashboard") {
       return NextResponse.redirect(new URL("/provider/dashboard", request.url));
     }
   } catch {
-    if (pathname === "/login") return NextResponse.next();
+    if (isPublicAuthPath(pathname)) return NextResponse.next();
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -168,5 +206,14 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ["/login", "/provider/:path*", "/applicant/:path*"],
+  matcher: [
+    "/login",
+    "/forgot-password",
+    "/reset-password",
+    "/register/:path*",
+    "/dashboard/applicant",
+    "/provider/:path*",
+    "/applicant",
+    "/applicant/:path*",
+  ],
 };

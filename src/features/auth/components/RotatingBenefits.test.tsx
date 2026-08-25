@@ -48,6 +48,18 @@ describe("RotatingBenefits", () => {
     expect(ariaHiddenOf(benefits[2])).toBe("true");
   });
 
+  it("keeps inactive benefits in the layout grid so taller copy is not clipped", () => {
+    const { container } = render(<RotatingBenefits benefits={benefits} />);
+    const stack = container.querySelector("div.grid");
+    const inactive = screen.getByText(benefits[1]);
+
+    expect(stack).toBeInstanceOf(HTMLElement);
+    expect(inactive.className).toContain("col-start-1");
+    expect(inactive.className).toContain("row-start-1");
+    expect(inactive.className).toContain("invisible");
+    expect(inactive.className).not.toContain("absolute");
+  });
+
   it("rotates benefits over time and wraps back to the first", () => {
     render(<RotatingBenefits benefits={benefits} />);
 

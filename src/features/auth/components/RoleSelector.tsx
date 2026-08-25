@@ -61,12 +61,12 @@ export function RoleSelector({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-7">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div
         role="radiogroup"
         aria-label={ariaLabelledBy ? undefined : accountTypeCopy.roleGroupLabel}
         aria-labelledby={ariaLabelledBy}
-        className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2"
+        className="grid min-h-0 flex-1 grid-cols-1 items-start gap-5 overflow-y-auto pb-4 lg:grid-cols-2"
       >
         {ROLE_KEYS.map((key, position) => {
           const data = accountTypeCopy.roles[key];
@@ -93,7 +93,7 @@ export function RoleSelector({
         })}
       </div>
 
-      <div className="flex items-center justify-between text-caption text-foreground-secondary">
+      <div className="flex shrink-0 items-center justify-between border-t border-border bg-background py-4 text-caption text-foreground-secondary">
         <span>
           {accountTypeCopy.alreadyAccount}{" "}
           <Link

@@ -24,18 +24,22 @@ export default async function AccountTypePage({
 
   return (
     <AuthenticatedPublicRedirect>
-      <PageShell>
-        <AppTopbar className="mb-section">
+      <PageShell className="min-h-screen pb-0">
+        <AppTopbar className="mb-section shrink-0">
           <Link href="/" className={buttonClass("ghost")}>
             <AppIcon icon={ArrowLeft} size={14} strokeWidth={1.6} decorative />
             {accountTypeCopy.back}
           </Link>
         </AppTopbar>
 
-        <div className="flex flex-1 flex-col px-gutter">
-          <Stepper steps={REGISTER_STEPS} currentIndex={0} className="mb-7" />
+        <div className="flex min-h-0 flex-1 flex-col px-gutter">
+          <Stepper
+            steps={REGISTER_STEPS}
+            currentIndex={0}
+            className="mb-7 shrink-0"
+          />
 
-          <div className="mb-9 flex max-w-3xl flex-col gap-3">
+          <div className="mb-7 flex max-w-3xl shrink-0 flex-col gap-3">
             <h1
               id="account-type-title"
               className="font-display text-display font-medium text-balance text-foreground"
