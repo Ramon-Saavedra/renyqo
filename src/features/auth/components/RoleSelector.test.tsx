@@ -79,6 +79,19 @@ describe("RoleSelector", () => {
 
       expect(getWeiterCta().className).toContain("bg-primary");
     });
+
+    it("keeps the primary action in a non-scrolling footer below the role cards", () => {
+      render(<RoleSelector />);
+
+      const footer = getWeiterCta().parentElement;
+      const radiogroup = screen.getByRole("radiogroup");
+
+      expect(footer?.className).toContain("shrink-0");
+      expect(footer?.className).not.toContain("sticky");
+      expect(radiogroup.className).toContain("overflow-y-auto");
+      expect(radiogroup.className).toContain("flex-1");
+      expect(footer?.previousElementSibling).toBe(radiogroup);
+    });
   });
 
   describe("default selection", () => {

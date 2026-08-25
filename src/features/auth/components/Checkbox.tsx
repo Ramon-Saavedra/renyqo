@@ -17,20 +17,25 @@ export function Checkbox({
   className,
   ...inputProps
 }: CheckboxProps) {
+  const copyId = `${id}-copy`;
+
   return (
-    <label
-      htmlFor={id}
+    <div
       className={cn(
-        "flex cursor-pointer items-start gap-2.5 text-caption text-foreground-secondary",
+        "flex items-start gap-2.5 text-caption text-foreground-secondary",
         className,
       )}
     >
-      <span className="relative mt-0.5 inline-flex h-4 w-4 shrink-0">
+      <label
+        htmlFor={id}
+        className="relative mt-0.5 inline-flex h-4 w-4 shrink-0 cursor-pointer"
+      >
         <input
           id={id}
           type="checkbox"
           className="peer absolute inset-0 h-4 w-4 cursor-pointer appearance-none rounded-sm border border-border-strong bg-background hover:border-foreground-tertiary checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:shadow-focus"
           {...inputProps}
+          aria-labelledby={copyId}
         />
         <span
           aria-hidden="true"
@@ -38,8 +43,8 @@ export function Checkbox({
         >
           <AppIcon icon={Check} size={12} strokeWidth={3} decorative />
         </span>
-      </span>
-      <span>{children}</span>
-    </label>
+      </label>
+      <span id={copyId}>{children}</span>
+    </div>
   );
 }

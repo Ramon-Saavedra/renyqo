@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
+import { cn } from "@/lib/utils/cn";
 
 interface RotatingBenefitsProps {
   benefits: readonly string[];
@@ -38,16 +39,17 @@ export function RotatingBenefits({
 
   return (
     <div className="border-t border-border pt-5">
-      <div className="relative min-h-12">
+      <div className="grid">
         {benefits.map((benefit, i) => (
           <p
             key={benefit}
             aria-hidden={i !== index}
-            className={`absolute inset-x-0 top-0 text-caption leading-5 text-foreground-tertiary ${
+            className={cn(
+              "col-start-1 row-start-1 text-caption leading-5 text-foreground-tertiary",
               i === index
                 ? "translate-y-0 opacity-100"
-                : "translate-y-1 opacity-0"
-            }`}
+                : "invisible translate-y-1 opacity-0",
+            )}
           >
             {benefit}
           </p>

@@ -389,21 +389,27 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
           }
           className="mb-1.5"
         >
-          {createAccountCopy.consent.prefix}
+          <label htmlFor={consentId} className="cursor-pointer">
+            {createAccountCopy.consent.prefix}
+          </label>
           <a
             href="#nutzungsbedingungen"
             className="font-medium text-primary hover:text-primary-hover"
           >
             {createAccountCopy.consent.terms}
           </a>
-          {createAccountCopy.consent.middle}
+          <label htmlFor={consentId} className="cursor-pointer">
+            {createAccountCopy.consent.middle}
+          </label>
           <a
             href="#datenschutz"
             className="font-medium text-primary hover:text-primary-hover"
           >
             {createAccountCopy.consent.privacy}
           </a>
-          {createAccountCopy.consent.suffix}
+          <label htmlFor={consentId} className="cursor-pointer">
+            {createAccountCopy.consent.suffix}
+          </label>
         </Checkbox>
         {fieldErrors.terms && (
           <FieldError id={`${consentId}-error`} message={fieldErrors.terms} />

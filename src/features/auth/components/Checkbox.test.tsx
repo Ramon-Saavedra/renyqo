@@ -16,12 +16,18 @@ describe("Checkbox", () => {
       expect(input?.getAttribute("type")).toBe("checkbox");
     });
 
-    it("renders the children inside the label", () => {
-      render(<Checkbox id="terms">Ich akzeptiere die AGB</Checkbox>);
+    it("renders the children next to the checkbox, not inside the control label", () => {
+      const { container } = render(
+        <Checkbox id="terms">Ich akzeptiere die AGB</Checkbox>,
+      );
+      const controlLabel = container.querySelector("label");
 
       expect(screen.getByText("Ich akzeptiere die AGB")).toBeInstanceOf(
         HTMLElement,
       );
+      expect(
+        controlLabel?.contains(screen.getByText("Ich akzeptiere die AGB")),
+      ).toBe(false);
     });
 
     it("supports rich children (text plus nested links)", () => {
@@ -38,6 +44,20 @@ describe("Checkbox", () => {
       expect(
         screen.getByRole("link", { name: "Datenschutzerklärung" }),
       ).toBeInstanceOf(HTMLAnchorElement);
+    });
+
+    it("does not toggle when a nested legal link is clicked", async () => {
+      const user = userEvent.setup();
+      render(
+        <Checkbox id="terms">
+          Ich akzeptiere die <a href="#agb">AGB</a>.
+        </Checkbox>,
+      );
+      const input = screen.getByLabelText(/ich akzeptiere die/i);
+
+      await user.click(screen.getByRole("link", { name: "AGB" }));
+
+      expect((input as HTMLInputElement).checked).toBe(false);
     });
   });
 
@@ -130,35 +150,34 @@ describe("Checkbox", () => {
   });
 
   describe("class composition", () => {
-    it("includes base flex classes on the label", () => {
+    it("includes base flex classes on the outer wrapper", () => {
       const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
-      const label = container.querySelector("label") as HTMLLabelElement;
+      const wrapper = container.firstElementChild as HTMLElement;
 
-      expect(label.className).toContain("flex");
-      expect(label.className).toContain("cursor-pointer");
-      expect(label.className).toContain("items-start");
+      expect(wrapper.className).toContain("flex");
+      expect(wrapper.className).toContain("items-start");
     });
 
-    it("appends a custom className to the label without dangling whitespace", () => {
+    it("appends a custom className to the wrapper without dangling whitespace", () => {
       const { container } = render(
         <Checkbox id="terms" className="mt-1.5 mb-4.5">
           Akzeptieren
         </Checkbox>,
       );
-      const label = container.querySelector("label") as HTMLLabelElement;
+      const wrapper = container.firstElementChild as HTMLElement;
 
-      expect(label.className).toContain("flex");
-      expect(label.className).toContain("mt-1.5");
-      expect(label.className).toContain("mb-4.5");
-      expect(label.className).toBe(label.className.trim());
-      expect(label.className).not.toMatch(/\s\s/);
+      expect(wrapper.className).toContain("flex");
+      expect(wrapper.className).toContain("mt-1.5");
+      expect(wrapper.className).toContain("mb-4.5");
+      expect(wrapper.className).toBe(wrapper.className.trim());
+      expect(wrapper.className).not.toMatch(/\s\s/);
     });
 
-    it("does not leave trailing whitespace on the label when className is omitted", () => {
+    it("does not leave trailing whitespace on the wrapper when className is omitted", () => {
       const { container } = render(<Checkbox id="terms">Akzeptieren</Checkbox>);
-      const label = container.querySelector("label") as HTMLLabelElement;
+      const wrapper = container.firstElementChild as HTMLElement;
 
-      expect(label.className).toBe(label.className.trim());
+      expect(wrapper.className).toBe(wrapper.className.trim());
     });
   });
 });

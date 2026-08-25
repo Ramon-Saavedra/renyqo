@@ -2,12 +2,32 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
 import { useCurrentUser } from "@/lib/api/use-current-user";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
 
 interface AuthenticatedPublicRedirectProps {
   children: React.ReactNode;
+}
+
+const AUTH_LOADING_LABEL = "Inhalt wird geladen";
+
+function AuthSessionSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="mx-auto flex w-full max-w-md flex-col gap-3 px-gutter py-section"
+    >
+      <span className="sr-only">{AUTH_LOADING_LABEL}</span>
+      <RenyqoSkeleton height={28} width="45%" />
+      <RenyqoSkeleton height={12} width="70%" />
+      <RenyqoSkeleton height={44} className="w-full rounded-md" />
+      <RenyqoSkeleton height={44} className="w-full rounded-md" />
+    </div>
+  );
 }
 
 export function AuthenticatedPublicRedirect({
@@ -38,18 +58,17 @@ export function AuthenticatedPublicRedirect({
         });
     }
 
-    // Unknown or invalid role — stay on the public page, do not redirect.
-
     return () => {
       active = false;
     };
   }, [loading, router, user]);
 
-  if (loading) return null;
+  if (loading) return <AuthSessionSkeleton />;
   if (!user) return <>{children}</>;
 
-  // Hide content only for known roles that will be redirected.
-  if (isApplicantRole(user.role) || isProviderRole(user.role)) return null;
+  if (isApplicantRole(user.role) || isProviderRole(user.role)) {
+    return <AuthSessionSkeleton />;
+  }
 
   return <>{children}</>;
 }
