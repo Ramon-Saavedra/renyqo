@@ -75,17 +75,11 @@ async function fetchOnboardingStep(
     if (!res.ok) return null;
 
     const data: unknown = await res.json();
-    if (
-      typeof data !== "object" ||
-      data === null ||
-      !("nextStep" in data)
-    ) {
+    if (typeof data !== "object" || data === null || !("nextStep" in data)) {
       return null;
     }
 
-    return parseOnboardingNextStep(
-      (data as { nextStep: unknown }).nextStep,
-    );
+    return parseOnboardingNextStep((data as { nextStep: unknown }).nextStep);
   } catch {
     return null;
   }
@@ -131,10 +125,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
 
     if (result.role === "applicant") {
-      if (
-        pathname === "/applicant" ||
-        pathname === "/dashboard/applicant"
-      ) {
+      if (pathname === "/applicant" || pathname === "/dashboard/applicant") {
         return NextResponse.redirect(new URL("/listings", request.url));
       }
       return NextResponse.next();
@@ -166,12 +157,8 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
     const payload: unknown = await res.json();
     const nextStep =
-      typeof payload === "object" &&
-      payload !== null &&
-      "nextStep" in payload
-        ? parseOnboardingNextStep(
-            (payload as { nextStep: unknown }).nextStep,
-          )
+      typeof payload === "object" && payload !== null && "nextStep" in payload
+        ? parseOnboardingNextStep((payload as { nextStep: unknown }).nextStep)
         : null;
 
     if (nextStep === null) {
@@ -187,8 +174,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 
     if (!PROVIDER_STEPS.has(nextStep)) {
       const target =
-        nextStep === "applicant_area_pending" ||
-        nextStep === "browse_listings"
+        nextStep === "applicant_area_pending" || nextStep === "browse_listings"
           ? "/listings"
           : "/login";
       return NextResponse.redirect(new URL(target, request.url));

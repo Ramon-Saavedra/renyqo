@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  parseOnboardingNextStep,
-  resolveOnboardingPath,
-} from "./onboarding";
+import { parseOnboardingNextStep, resolveOnboardingPath } from "./onboarding";
 
 describe("parseOnboardingNextStep", () => {
   it.each([

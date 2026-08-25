@@ -25,9 +25,9 @@ describe("Checkbox", () => {
       expect(screen.getByText("Ich akzeptiere die AGB")).toBeInstanceOf(
         HTMLElement,
       );
-      expect(controlLabel?.contains(screen.getByText("Ich akzeptiere die AGB"))).toBe(
-        false,
-      );
+      expect(
+        controlLabel?.contains(screen.getByText("Ich akzeptiere die AGB")),
+      ).toBe(false);
     });
 
     it("supports rich children (text plus nested links)", () => {

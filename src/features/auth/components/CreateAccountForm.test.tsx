@@ -432,9 +432,7 @@ describe("CreateAccountForm", () => {
       const checkbox = document.getElementById(
         "test-terms",
       ) as HTMLInputElement;
-      const acceptanceLabel = document.querySelector(
-        `label[for="test-terms"]`,
-      );
+      const acceptanceLabel = document.querySelector(`label[for="test-terms"]`);
 
       expect(acceptanceLabel).toBeInstanceOf(HTMLLabelElement);
       await user.click(acceptanceLabel as HTMLLabelElement);
