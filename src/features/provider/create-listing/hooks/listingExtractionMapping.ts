@@ -230,8 +230,8 @@ export function buildExtractionFieldDescriptors(
         ? "erlaubt"
         : values.smokingPolicy === "BY_ARRANGEMENT"
           ? "absprache"
-          : values.smokingPolicy === "NON_SMOKERS_PREFERRED"
-            ? "nichtraucher"
+          : values.smokingPolicy === "NOT_ALLOWED"
+            ? "keine"
             : undefined;
     if (smoking) {
       descriptors.push({

@@ -81,10 +81,7 @@ function buildRequirements(listing: PublicListingDetail): Requirement[] {
     rows.push({
       label: requirements.smoking,
       value: SMOKING_POLICY_LABEL[listing.smokingPolicy],
-      tone:
-        listing.smokingPolicy === "NON_SMOKERS_PREFERRED"
-          ? "denied"
-          : "neutral",
+      tone: listing.smokingPolicy === "NOT_ALLOWED" ? "denied" : "neutral",
     });
   }
 

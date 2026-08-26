@@ -135,7 +135,7 @@ const applicantListingDetailSchema = z.object({
     suitableForPeopleCount: nullableNumber,
     petsPolicy: z.enum(["ALLOWED", "BY_ARRANGEMENT", "NOT_ALLOWED"]).nullable(),
     smokingPolicy: z
-      .enum(["ALLOWED", "BY_ARRANGEMENT", "NON_SMOKERS_PREFERRED"])
+      .enum(["ALLOWED", "BY_ARRANGEMENT", "NOT_ALLOWED"])
       .nullable(),
   }),
 });

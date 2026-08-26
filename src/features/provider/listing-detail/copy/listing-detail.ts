@@ -13,7 +13,7 @@ export const PET_POLICY_LABEL: Record<PetPolicyBackend, string> = {
 export const SMOKING_POLICY_LABEL: Record<SmokingPolicyBackend, string> = {
   ALLOWED: "Erlaubt",
   BY_ARRANGEMENT: "Auf Anfrage",
-  NON_SMOKERS_PREFERRED: "Nicht erlaubt",
+  NOT_ALLOWED: "Nicht erlaubt",
 };
 
 const VISIBILITY_NOTE: Record<Exclude<ListingStatus, "published">, string> = {

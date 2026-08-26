@@ -26,7 +26,7 @@ const INITIAL: ListingEditForm = {
   schufaRequired: true,
   incomeProofRequired: false,
   petsPolicy: "BY_ARRANGEMENT",
-  smokingPolicy: "NON_SMOKERS_PREFERRED",
+  smokingPolicy: "NOT_ALLOWED",
 };
 
 describe("mapEditFormToUpdatePayload", () => {

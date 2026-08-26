@@ -864,7 +864,7 @@ describe("useCreateListing", () => {
     it.each([
       ["erlaubt", "ALLOWED"],
       ["absprache", "BY_ARRANGEMENT"],
-      ["nichtraucher", "NON_SMOKERS_PREFERRED"],
+      ["keine", "NOT_ALLOWED"],
     ] as const)(
       "maps smoking '%s' to smokingPolicy '%s'",
       async (input, expected) => {

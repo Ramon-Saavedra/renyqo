@@ -58,7 +58,7 @@ function toPetsPolicy(value: string): PetPolicyBackend | undefined {
 function toSmokingPolicy(value: string): SmokingPolicyBackend | undefined {
   if (value === "erlaubt") return "ALLOWED";
   if (value === "absprache") return "BY_ARRANGEMENT";
-  if (value === "nichtraucher") return "NON_SMOKERS_PREFERRED";
+  if (value === "keine") return "NOT_ALLOWED";
   return undefined;
 }
 

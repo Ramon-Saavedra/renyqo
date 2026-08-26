@@ -11,11 +11,7 @@ export type RequirementOption = (typeof REQUIREMENT_OPTIONS)[number];
 export const PET_OPTIONS = ["erlaubt", "absprache", "keine"] as const;
 export type PetOption = (typeof PET_OPTIONS)[number] | "";
 
-export const SMOKING_OPTIONS = [
-  "erlaubt",
-  "absprache",
-  "nichtraucher",
-] as const;
+export const SMOKING_OPTIONS = ["erlaubt", "absprache", "keine"] as const;
 export type SmokingOption = (typeof SMOKING_OPTIONS)[number] | "";
 
 function rangeStep(min: number, max: number, step: number): readonly string[] {
@@ -212,7 +208,7 @@ export const createListingCopy = {
         label: "Rauchen",
         options: [
           { value: "erlaubt", label: "Erlaubt" },
-          { value: "nichtraucher", label: "Nicht erlaubt" },
+          { value: "keine", label: "Nicht erlaubt" },
           { value: "absprache", label: "Auf Anfrage" },
         ],
       },

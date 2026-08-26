@@ -25,7 +25,7 @@ describe("extractListingFromText", () => {
         incomeProofRequired: true,
         suitableForPeopleCount: 2,
         petsPolicy: "NOT_ALLOWED",
-        smokingPolicy: "NON_SMOKERS_PREFERRED",
+        smokingPolicy: "NOT_ALLOWED",
       },
       requiredMissingFields: [],
       recommendedMissingFields: ["schufaRequired"],

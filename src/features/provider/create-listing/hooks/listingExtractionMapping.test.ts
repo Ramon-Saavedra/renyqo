@@ -31,7 +31,7 @@ const FULL_VALUES: ListingExtractionValues = {
   incomeProofRequired: false,
   suitableForPeopleCount: 2,
   petsPolicy: "NOT_ALLOWED",
-  smokingPolicy: "NON_SMOKERS_PREFERRED",
+  smokingPolicy: "NOT_ALLOWED",
 };
 
 describe("buildExtractionFieldDescriptors", () => {
@@ -121,7 +121,7 @@ describe("buildExtractionFieldDescriptors", () => {
   it.each([
     ["ALLOWED", "erlaubt"],
     ["BY_ARRANGEMENT", "absprache"],
-    ["NON_SMOKERS_PREFERRED", "nichtraucher"],
+    ["NOT_ALLOWED", "keine"],
   ] as const)("maps backend smokingPolicy %s to %s", (backend, frontend) => {
     const descriptors = buildExtractionFieldDescriptors({
       smokingPolicy: backend,
