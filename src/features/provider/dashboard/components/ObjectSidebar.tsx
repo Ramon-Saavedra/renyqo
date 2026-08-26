@@ -21,8 +21,8 @@ const ASIDE_CLASS =
 const HEAD_CLASS = "flex items-start justify-between gap-3 px-5 py-4";
 const HEAD_COPY_CLASS = "flex min-w-0 flex-col gap-1";
 const HEAD_TITLE_CLASS =
-  "min-w-0 truncate font-mono text-meta text-warning-vivid";
-const HEAD_COUNT_CLASS = "font-mono text-meta text-warning-vivid";
+  "min-w-0 truncate font-mono text-meta text-foreground-tertiary";
+const HEAD_COUNT_CLASS = "font-mono text-meta text-foreground-tertiary";
 const COLLAPSE_CLASS =
   "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 

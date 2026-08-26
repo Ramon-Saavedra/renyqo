@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ObjectSidebarItem } from "./ObjectSidebarItem";
-import { MAX_ACTIVE_APPLICATIONS, type DashboardObject } from "../types";
+import type { DashboardObject } from "../types";
 
 const onSelect = vi.fn();
 
@@ -21,7 +21,8 @@ const publishedObject: DashboardObject = {
   publishedAt: "02.07.2026, 13:00",
   updatedAt: "02.07.2026, 12:00",
   status: "published",
-  activeApplications: 3,
+  activeApplicationsCount: 5,
+  coverImageUrl: null,
 };
 
 const draftObject: DashboardObject = {
@@ -31,7 +32,7 @@ const draftObject: DashboardObject = {
   fullTitle: "Entwurf Hamburg Altona",
   district: "Hamburg-Altona",
   status: "draft",
-  activeApplications: 0,
+  activeApplicationsCount: 0,
 };
 
 function renderItem(object: DashboardObject, selected = false) {
@@ -52,7 +53,7 @@ describe("ObjectSidebarItem", () => {
     vi.clearAllMocks();
   });
 
-  it("renders published object details, application count, and share action", () => {
+  it("renders published object details and authoritative ACTIVE count", () => {
     renderItem(publishedObject);
 
     expect(screen.getByText("Wohnung Mitte")).not.toBeNull();
@@ -61,39 +62,22 @@ describe("ObjectSidebarItem", () => {
     expect(screen.getByText("900 €")).not.toBeNull();
     expect(screen.getByText("Veröffentlicht")).not.toBeNull();
     expect(screen.getByText("Bewerbungen")).not.toBeNull();
-    expect(screen.getByText(`3 / ${MAX_ACTIVE_APPLICATIONS}`)).not.toBeNull();
+    expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
     expect(
       screen.getByRole("button", { name: "Objekt teilen" }),
     ).not.toBeNull();
   });
 
-  it("exposes the application progress as a progressbar", () => {
+  it("does not render a progress bar for applications", () => {
     renderItem(publishedObject);
 
-    const progress = screen.getByRole("progressbar", {
-      name: `3 / ${MAX_ACTIVE_APPLICATIONS} aktive Bewerbungen`,
-    });
-
-    expect(progress.getAttribute("aria-valuenow")).toBe("3");
-    expect(progress.getAttribute("aria-valuemax")).toBe(
-      String(MAX_ACTIVE_APPLICATIONS),
-    );
-    expect(
-      (progress.firstElementChild as HTMLElement | null)?.style.width,
-    ).toBe(`${(3 / MAX_ACTIVE_APPLICATIONS) * 100}%`);
+    expect(screen.queryByRole("progressbar")).toBeNull();
   });
 
-  it("renders an empty progress bar without applications", () => {
-    renderItem({ ...publishedObject, activeApplications: 0 });
+  it("renders zero ACTIVE applications for unselected listings", () => {
+    renderItem({ ...publishedObject, activeApplicationsCount: 0 });
 
-    expect(screen.getByText(`0 / ${MAX_ACTIVE_APPLICATIONS}`)).not.toBeNull();
-    expect(
-      screen
-        .getByRole("progressbar", {
-          name: `0 / ${MAX_ACTIVE_APPLICATIONS} aktive Bewerbungen`,
-        })
-        .getAttribute("aria-valuenow"),
-    ).toBe("0");
+    expect(screen.getByText("0 / 5 aktiv")).not.toBeNull();
   });
 
   it("keeps long titles on one truncated line", () => {
@@ -106,6 +90,66 @@ describe("ObjectSidebarItem", () => {
     );
   });
 
+  it("renders the cover image inside the card without replacing application count", () => {
+    renderItem({
+      ...publishedObject,
+      coverImageUrl: "https://res.cloudinary.com/demo/image/upload/flat.jpg",
+    });
+
+    const image = document.querySelector("img");
+    expect(image).toBeInstanceOf(HTMLImageElement);
+    expect(image?.getAttribute("src")).toContain("flat.jpg");
+    expect(screen.getByText("Bewerbungen")).not.toBeNull();
+    expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
+  });
+
+  it("lets card selection receive clicks through the thumbnail layer", () => {
+    const { container } = render(
+      <ul>
+        <ObjectSidebarItem
+          object={{
+            ...publishedObject,
+            coverImageUrl:
+              "https://res.cloudinary.com/demo/image/upload/flat.jpg",
+          }}
+          selected={false}
+          shareUrl="https://renyqo.test/objekt/object-published"
+          onSelect={onSelect}
+        />
+      </ul>,
+    );
+
+    const body = container.querySelector("li > span.pointer-events-none");
+    const image = container.querySelector("img");
+
+    expect(body).toBeInstanceOf(HTMLElement);
+    expect(image).toBeInstanceOf(HTMLImageElement);
+    expect(
+      screen
+        .getByRole("button", { name: /Wohnung Mitte/i })
+        .className.includes("z-10"),
+    ).toBe(true);
+  });
+
+  it("keeps the application count from shrinking away", () => {
+    renderItem(publishedObject);
+
+    const count = screen.getByText("5 / 5 aktiv");
+    expect(count.className).toContain("shrink-0");
+    expect(count.className).toContain("whitespace-nowrap");
+  });
+
+  it("applies the elevated dark hover shadow token on the card", () => {
+    renderItem(publishedObject);
+
+    const card = screen.getByRole("button", {
+      name: /Wohnung Mitte/i,
+    }).parentElement;
+
+    expect(card?.className).toContain("hover:shadow-card-hover");
+    expect(card?.className).toContain("shadow-card");
+  });
+
   it("marks the selected object with aria-pressed", () => {
     renderItem(publishedObject, true);
 
@@ -115,6 +159,34 @@ describe("ObjectSidebarItem", () => {
         pressed: true,
       }),
     ).not.toBeNull();
+  });
+
+  it("uses the same ACTIVE source for selected and unselected cards", () => {
+    const { rerender } = render(
+      <ul>
+        <ObjectSidebarItem
+          object={publishedObject}
+          selected={false}
+          shareUrl="https://renyqo.test/objekt/object-published"
+          onSelect={onSelect}
+        />
+      </ul>,
+    );
+
+    expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
+
+    rerender(
+      <ul>
+        <ObjectSidebarItem
+          object={publishedObject}
+          selected={true}
+          shareUrl="https://renyqo.test/objekt/object-published"
+          onSelect={onSelect}
+        />
+      </ul>,
+    );
+
+    expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
   });
 
   it("emits the object id when selected", async () => {
@@ -137,12 +209,12 @@ describe("ObjectSidebarItem", () => {
     expect(onSelect).toHaveBeenCalledWith("object-published");
   });
 
-  it("renders draft state without share actions", () => {
+  it("renders draft state with ACTIVE count and without share actions", () => {
     renderItem(draftObject);
 
     expect(screen.getByText("Entwurf Hamburg")).not.toBeNull();
     expect(screen.getByText("Entwurf")).not.toBeNull();
-    expect(screen.getByText("Noch nicht veröffentlicht")).not.toBeNull();
+    expect(screen.getByText("0 / 5 aktiv")).not.toBeNull();
     expect(screen.queryByRole("progressbar")).toBeNull();
     expect(screen.queryByRole("button", { name: "Objekt teilen" })).toBeNull();
   });

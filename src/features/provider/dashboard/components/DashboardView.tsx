@@ -7,8 +7,9 @@ import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
+import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
-import type { Candidate, DashboardObject } from "../types";
+import type { DashboardObject } from "../types";
 import { AccentPicker } from "./AccentPicker";
 import { CandidatesSection } from "./CandidatesSection";
 import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
@@ -22,14 +23,13 @@ import { StatCards } from "./StatCards";
 
 interface DashboardViewProps {
   objects?: readonly DashboardObject[];
-  candidates?: readonly Candidate[];
 }
 
 const SHELL_CLASS = "flex flex-col lg:h-dvh lg:overflow-hidden lg:flex-row";
 const MAIN_CLASS =
   "min-w-0 flex-1 lg:flex lg:h-dvh lg:min-h-0 lg:flex-col lg:overflow-hidden";
 const CONTENT_CLASS =
-  "px-3 pt-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-gutter";
+  "px-3 pt-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-gutter scrollbar-slim";
 
 const REOPEN_CLASS =
   "sticky top-0 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center self-start border-r border-b border-border bg-background text-foreground-secondary hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
@@ -70,10 +70,7 @@ function useStoredSelectedObjectId() {
   );
 }
 
-export function DashboardView({
-  objects: initialObjects,
-  candidates = [],
-}: DashboardViewProps) {
+export function DashboardView({ objects: initialObjects }: DashboardViewProps) {
   const shouldLoadObjects = initialObjects === undefined;
   const [loadedObjects, setLoadedObjects] = useState<
     readonly DashboardObject[]
@@ -131,20 +128,25 @@ export function DashboardView({
     [filteredObjects, selectedId],
   );
 
-  const selectedCandidates = useMemo(
-    () =>
-      selected ? candidates.filter((c) => c.objectId === selected.id) : [],
-    [candidates, selected],
+  const {
+    candidates: selectedCandidates,
+    waitingCountState,
+    isLoading: isApplicationsLoading,
+    hasError: hasApplicationsError,
+  } = useSelectedListingApplications(
+    selected?.id ?? null,
+    selected?.status ?? null,
   );
 
   const publishedObjects = objects.filter(
     (o) => o.status === "published",
   ).length;
   const draftObjects = objects.filter((o) => o.status === "draft").length;
-  const newApplications =
-    candidates.length > 0
-      ? candidates.length
-      : objects.reduce((total, object) => total + object.activeApplications, 0);
+
+  const activeApplications = objects.reduce(
+    (total, object) => total + object.activeApplicationsCount,
+    0,
+  );
 
   if (isLoading) {
     return <DashboardLoadingSkeleton />;
@@ -207,7 +209,7 @@ export function DashboardView({
                 totalObjects={objects.length}
                 publishedObjects={publishedObjects}
                 draftObjects={draftObjects}
-                newApplications={newApplications}
+                activeApplications={activeApplications}
               />
             </div>
 
@@ -227,6 +229,9 @@ export function DashboardView({
             <CandidatesSection
               object={selected}
               candidates={selectedCandidates}
+              waitingCountState={waitingCountState}
+              isLoading={isApplicationsLoading}
+              hasError={hasApplicationsError}
             />
           </div>
         </div>

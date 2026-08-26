@@ -1,4 +1,4 @@
-import type { Candidate, DashboardObject } from "../types";
+import type { DashboardObject } from "../types";
 
 export const MOCK_OBJECTS: readonly DashboardObject[] = [
   {
@@ -15,7 +15,7 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     publishedAt: "12.05.2026, 09:30",
     updatedAt: "18.06.2026, 16:20",
     status: "published",
-    activeApplications: 3,
+    activeApplicationsCount: 3,
   },
   {
     id: "obj-prenzlberg",
@@ -31,7 +31,7 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     publishedAt: "28.06.2026, 14:15",
     updatedAt: "02.07.2026, 11:05",
     status: "published",
-    activeApplications: 5,
+    activeApplicationsCount: 5,
   },
   {
     id: "obj-maybachufer",
@@ -47,7 +47,7 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     publishedAt: "05.07.2026, 18:45",
     updatedAt: "06.07.2026, 08:10",
     status: "published",
-    activeApplications: 2,
+    activeApplicationsCount: 2,
   },
   {
     id: "obj-karlshorst",
@@ -63,139 +63,6 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     publishedAt: null,
     updatedAt: "09.07.2026, 13:40",
     status: "draft",
-    activeApplications: 0,
-  },
-];
-
-export const MOCK_CANDIDATES: readonly Candidate[] = [
-  {
-    id: "cand-kb-1",
-    objectId: "obj-kreuzberg",
-    initials: "LM",
-    name: "Lara M.",
-    household: "2 Personen",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-kb-2",
-    objectId: "obj-kreuzberg",
-    initials: "JT",
-    name: "Jonas T.",
-    household: "1 Person",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Nicht erforderlich", state: "muted" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-kb-3",
-    objectId: "obj-kreuzberg",
-    initials: "AK",
-    name: "Aylin K.",
-    household: "2 Personen",
-    badge: "askback",
-    attrs: [
-      { label: "Einkommen", value: "Offen", state: "open" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "Nach Absprache", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-pb-1",
-    objectId: "obj-prenzlberg",
-    initials: "MB",
-    name: "Marie B.",
-    household: "2 Personen",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-pb-2",
-    objectId: "obj-prenzlberg",
-    initials: "TS",
-    name: "Tobias S.",
-    household: "3 Personen",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "1 Katze", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-pb-3",
-    objectId: "obj-prenzlberg",
-    initials: "NF",
-    name: "Nora F.",
-    household: "1 Person",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Nicht erforderlich", state: "muted" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-pb-4",
-    objectId: "obj-prenzlberg",
-    initials: "DH",
-    name: "David H.",
-    household: "2 Personen",
-    badge: "askback",
-    attrs: [
-      { label: "Einkommen", value: "Offen", state: "open" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-pb-5",
-    objectId: "obj-prenzlberg",
-    initials: "EL",
-    name: "Elif L.",
-    household: "4 Personen",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-nk-1",
-    objectId: "obj-maybachufer",
-    initials: "PS",
-    name: "Paul S.",
-    household: "1 Person",
-    badge: "match",
-    attrs: [
-      { label: "Einkommen", value: "Vollständig", state: "ok" },
-      { label: "SCHUFA", value: "Nicht erforderlich", state: "muted" },
-      { label: "Haustiere", value: "Nein", state: "muted" },
-    ],
-  },
-  {
-    id: "cand-nk-2",
-    objectId: "obj-maybachufer",
-    initials: "RC",
-    name: "Rana C.",
-    household: "1 Person",
-    badge: "askback",
-    attrs: [
-      { label: "Einkommen", value: "Offen", state: "open" },
-      { label: "SCHUFA", value: "Vorhanden", state: "ok" },
-      { label: "Haustiere", value: "Nach Absprache", state: "muted" },
-    ],
+    activeApplicationsCount: 0,
   },
 ];

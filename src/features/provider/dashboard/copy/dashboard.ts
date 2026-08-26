@@ -1,8 +1,4 @@
-import {
-  MAX_ACTIVE_APPLICATIONS,
-  type CandidateBadge,
-  type DashboardObjectStatus,
-} from "../types";
+import { MAX_ACTIVE_APPLICATIONS, type DashboardObjectStatus } from "../types";
 
 export const ACCENTS = [
   { id: "schiefer", label: "Schiefer" },
@@ -31,23 +27,6 @@ export const OBJECT_STATUS_LABEL: Record<DashboardObjectStatus, string> = {
   published: "Veröffentlicht",
   draft: "Entwurf",
 };
-
-export interface CandidateBadgeMeta {
-  readonly label: string;
-  readonly className: string;
-}
-
-export const CANDIDATE_BADGE_META: Record<CandidateBadge, CandidateBadgeMeta> =
-  {
-    match: {
-      label: "Passend",
-      className: "bg-primary-tint text-primary",
-    },
-    askback: {
-      label: "Rückfrage",
-      className: "bg-background-muted text-warning",
-    },
-  };
 
 export const dashboardCopy = {
   loading: "Dashboard wird vorbereitet …",
@@ -80,10 +59,6 @@ export const dashboardCopy = {
     rentSuffix: "kalt",
     rentLabel: "Kaltmiete",
     applications: "Bewerbungen",
-    applicationsCount: (active: number) =>
-      `${active} / ${MAX_ACTIVE_APPLICATIONS}`,
-    applicationsLabel: (active: number) =>
-      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktive Bewerbungen`,
     draftNotice: "Noch nicht veröffentlicht",
     share: {
       aria: "Objekt teilen",
@@ -102,8 +77,7 @@ export const dashboardCopy = {
     objects: "Anzahl Objekte",
     objectsFoot: (published: number, drafts: number) =>
       `${published} veröffentlicht · ${drafts} Entwurf`,
-    newApplications: "Neue Bewerbungen",
-    newApplicationsFoot: "Seit gestern",
+    activeApplications: "Aktive Bewerbungen",
     drafts: "Entwürfe",
     draftsFoot: "Bereit zur Veröffentlichung",
   },
@@ -128,11 +102,22 @@ export const dashboardCopy = {
   candidates: {
     title: "Passende Kandidaten",
     lead: `Nur passende Bewerbungen werden aktiv angezeigt — höchstens ${MAX_ACTIVE_APPLICATIONS} pro Objekt.`,
-    counterSuffix: `von ${MAX_ACTIVE_APPLICATIONS} Plätzen belegt`,
-    profile: "Profil",
-    chat: "Chat öffnen",
-    emptySlot: "Platz frei für passende Bewerbung",
+    activeOccupancy: (active: number) =>
+      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktiv`,
+    emptySlotPrimary: "Freier Platz",
+    emptySlotSecondary: "für passende Bewerbung",
     draftEmpty:
       "Dieses Objekt ist noch ein Entwurf. Veröffentliche es, um passende Bewerbungen zu erhalten.",
+    loadError:
+      "Bewerbungen konnten nicht geladen werden. Bitte versuche es gleich erneut.",
+    householdOne: "1 Person",
+    householdMany: (count: number) => `${count} Personen`,
+    householdUnavailable: "Haushalt nicht angegeben",
+  },
+  waitingBanner: {
+    singular: "1 weitere passende Bewerbung wartet",
+    plural: (count: number) => `${count} weitere passende Bewerbungen warten`,
+    empty: "Aktuell keine weiteren passenden Bewerbungen in der Warteschlange",
+    loadError: "Warteschlange konnte nicht geladen werden.",
   },
 } as const;
