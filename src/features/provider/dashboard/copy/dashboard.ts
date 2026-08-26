@@ -113,6 +113,10 @@ export const dashboardCopy = {
     householdOne: "1 Person",
     householdMany: (count: number) => `${count} Personen`,
     householdUnavailable: "Haushalt nicht angegeben",
+    warningLabels: {
+      pets_by_arrangement: "Rückfrage: Haustiere",
+      smoking_by_arrangement: "Rückfrage: Rauchen",
+    },
   },
   waitingBanner: {
     singular: "1 weitere passende Bewerbung wartet",

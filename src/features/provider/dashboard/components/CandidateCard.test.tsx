@@ -10,10 +10,17 @@ const candidate: Candidate = {
   initials: "AL",
   name: "Anna Lehmann",
   household: "2 Personen",
+  warnings: [],
 };
 
+function candidateWithWarnings(
+  warnings: Candidate["warnings"],
+): Candidate {
+  return { ...candidate, warnings };
+}
+
 describe("CandidateCard", () => {
-  it("renders only the applicant identity and household size", () => {
+  it("renders only the applicant identity and household size when there are no warnings", () => {
     render(<CandidateCard candidate={candidate} />);
 
     expect(screen.getByText("Anna Lehmann")).not.toBeNull();
@@ -21,10 +28,9 @@ describe("CandidateCard", () => {
     expect(screen.queryByText("anna@example.com")).toBeNull();
     expect(screen.queryByText("3.200 €")).toBeNull();
     expect(screen.queryByText("SCHUFA")).toBeNull();
-    expect(screen.queryByText("Haustiere")).toBeNull();
-    expect(screen.queryByText("Nichtraucher")).toBeNull();
     expect(screen.queryByText("Passend")).toBeNull();
-    expect(screen.queryByText("Rückfrage")).toBeNull();
+    expect(screen.queryByText("Rückfrage: Haustiere")).toBeNull();
+    expect(screen.queryByText("Rückfrage: Rauchen")).toBeNull();
   });
 
   it("is not interactive", () => {
@@ -35,5 +41,42 @@ describe("CandidateCard", () => {
     expect(container.firstElementChild?.className).not.toContain(
       "cursor-pointer",
     );
+  });
+
+  it("renders the pets warning with an icon", () => {
+    const { container } = render(
+      <CandidateCard candidate={candidateWithWarnings(["pets_by_arrangement"])} />,
+    );
+
+    expect(screen.getByText("Rückfrage: Haustiere")).not.toBeNull();
+    expect(container.querySelector("svg")).not.toBeNull();
+    expect(screen.queryByText("pets_by_arrangement")).toBeNull();
+  });
+
+  it("renders the smoking warning with an icon", () => {
+    const { container } = render(
+      <CandidateCard
+        candidate={candidateWithWarnings(["smoking_by_arrangement"])}
+      />,
+    );
+
+    expect(screen.getByText("Rückfrage: Rauchen")).not.toBeNull();
+    expect(container.querySelector("svg")).not.toBeNull();
+    expect(screen.queryByText("smoking_by_arrangement")).toBeNull();
+  });
+
+  it("renders both warnings when present", () => {
+    const { container } = render(
+      <CandidateCard
+        candidate={candidateWithWarnings([
+          "pets_by_arrangement",
+          "smoking_by_arrangement",
+        ])}
+      />,
+    );
+
+    expect(screen.getByText("Rückfrage: Haustiere")).not.toBeNull();
+    expect(screen.getByText("Rückfrage: Rauchen")).not.toBeNull();
+    expect(container.querySelectorAll("svg")).toHaveLength(2);
   });
 });

@@ -86,6 +86,7 @@ const candidates: readonly Candidate[] = [
     initials: "AA",
     name: "Anna A.",
     household: "2 Personen",
+    warnings: [],
   },
 ];
 

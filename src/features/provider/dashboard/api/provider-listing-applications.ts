@@ -4,6 +4,7 @@ import { apiGet } from "@/lib/api/client";
 const providerApplicantSummarySchema = z.object({
   name: z.string(),
   peopleCount: z.number().int().nonnegative().nullable(),
+  warnings: z.array(z.enum(["pets_by_arrangement", "smoking_by_arrangement"])),
 });
 
 const providerActiveApplicationSchema = z.object({

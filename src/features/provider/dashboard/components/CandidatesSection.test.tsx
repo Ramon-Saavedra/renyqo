@@ -33,6 +33,7 @@ const candidates: readonly Candidate[] = [
     initials: "AL",
     name: "Anna Lehmann",
     household: "2 Personen",
+    warnings: [],
   },
 ];
 
@@ -44,6 +45,7 @@ const fiveCandidates: readonly Candidate[] = Array.from(
     initials: `C${index + 1}`,
     name: `Candidate ${index + 1}`,
     household: "2 Personen",
+    warnings: [],
   }),
 );
 
@@ -115,6 +117,7 @@ describe("CandidatesSection", () => {
         initials: `C${index + 1}`,
         name: `Candidate ${index + 1}`,
         household: "2 Personen",
+        warnings: [],
       }),
     );
 
