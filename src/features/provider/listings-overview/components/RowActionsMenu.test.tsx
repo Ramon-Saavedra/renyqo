@@ -15,7 +15,7 @@ const BASE: ListingOverviewItem = {
   depositMonths: 2,
   livingArea: 55,
   rooms: 2,
-  applicationsTotal: 1,
+  activeApplicationsCount: 1,
   openQuestionsCount: 0,
   status: "published",
   needsAttention: false,

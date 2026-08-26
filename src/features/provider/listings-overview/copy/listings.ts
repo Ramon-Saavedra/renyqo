@@ -1,4 +1,5 @@
 import type { ListingStatus, SortKey, StatusFilterKey } from "../types";
+import { MAX_ACTIVE_APPLICATIONS } from "../types";
 
 export interface StatusFilterEntry {
   readonly id: StatusFilterKey;
@@ -92,11 +93,10 @@ export const listingsCopy = {
     livingArea: "Fläche",
     rooms: "Zimmer",
     applications: "Bewerbungen",
-    applicationsAria: (active: number) => `${active} von 5 aktiven Bewerbungen`,
-    applicationsLabel: (visible: number, waiting: number) =>
-      waiting > 0
-        ? `${visible} sichtbar · ${waiting} wartend`
-        : `${visible} sichtbar`,
+    applicationsAria: (active: number) =>
+      `${active} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen`,
+    applicationsLabel: (active: number) =>
+      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktiv`,
     activity: "Letzte Aktivität",
     editLabel: "Bearbeiten",
     moreLabel: "Aktionen",
