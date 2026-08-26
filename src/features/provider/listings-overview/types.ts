@@ -15,6 +15,8 @@ export type AttentionReason =
   | "missing_data"
   | null;
 
+export const MAX_ACTIVE_APPLICATIONS = 5;
+
 export interface ListingOverviewItem {
   readonly id: string;
   readonly title: string;
@@ -30,7 +32,7 @@ export interface ListingOverviewItem {
 
   readonly status: ListingStatus;
 
-  readonly applicationsTotal: number;
+  readonly activeApplicationsCount: number;
 
   readonly needsAttention: boolean;
   readonly attentionReason: AttentionReason;

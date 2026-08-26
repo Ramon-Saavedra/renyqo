@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentUser } from "@/lib/api/auth";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
+import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
 import { DashboardView } from "./DashboardView";
 import type { Candidate, DashboardObject } from "../types";
 
@@ -39,6 +40,10 @@ vi.mock("../api/provider-dashboard", () => ({
   getProviderDashboardObjects: vi.fn(),
 }));
 
+vi.mock("../hooks/useSelectedListingApplications", () => ({
+  useSelectedListingApplications: vi.fn(),
+}));
+
 const objects: readonly DashboardObject[] = [
   {
     id: "first-object",
@@ -54,7 +59,7 @@ const objects: readonly DashboardObject[] = [
     publishedAt: "02.07.2026, 13:00",
     updatedAt: "02.07.2026, 12:00",
     status: "published",
-    activeApplications: 1,
+    activeApplicationsCount: 1,
   },
   {
     id: "second-object",
@@ -70,7 +75,7 @@ const objects: readonly DashboardObject[] = [
     publishedAt: null,
     updatedAt: "10.07.2026, 09:00",
     status: "draft",
-    activeApplications: 0,
+    activeApplicationsCount: 0,
   },
 ];
 
@@ -81,19 +86,20 @@ const candidates: readonly Candidate[] = [
     initials: "AA",
     name: "Anna A.",
     household: "2 Personen",
-    badge: "match",
-    attrs: [{ label: "Einkommen", value: "Vollständig", state: "ok" }],
-  },
-  {
-    id: "candidate-second",
-    objectId: "second-object",
-    initials: "BB",
-    name: "Ben B.",
-    household: "1 Person",
-    badge: "askback",
-    attrs: [{ label: "Einkommen", value: "Offen", state: "open" }],
   },
 ];
+
+function mockApplicationsState(
+  overrides: Partial<ReturnType<typeof useSelectedListingApplications>> = {},
+) {
+  vi.mocked(useSelectedListingApplications).mockReturnValue({
+    candidates: [],
+    waitingCountState: { status: "idle" },
+    isLoading: false,
+    hasError: false,
+    ...overrides,
+  });
+}
 
 describe("DashboardView", () => {
   beforeEach(() => {
@@ -108,20 +114,40 @@ describe("DashboardView", () => {
       providerType: "company",
       companyName: "Renyqo Immobilien",
     });
+    mockApplicationsState();
   });
 
   it("renders dashboard stats, the selected object, and matching candidates", async () => {
-    render(<DashboardView objects={objects} candidates={candidates} />);
+    mockApplicationsState({ candidates });
+
+    render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
     expect(screen.getByText("Anzahl Objekte")).not.toBeNull();
+    expect(screen.getByText("Aktive Bewerbungen")).not.toBeNull();
+    expect(screen.queryByText("Neue Bewerbungen")).toBeNull();
+    expect(screen.queryByText("Seit gestern")).toBeNull();
     expect(screen.getByText("Erste Wohnung in Berlin")).not.toBeNull();
     expect(screen.getByText("Anna A.")).not.toBeNull();
+    expect(useSelectedListingApplications).toHaveBeenCalledWith(
+      "first-object",
+      "published",
+    );
+  });
+
+  it("shows authoritative ACTIVE counts without progressive selection cache", async () => {
+    render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(screen.getAllByText("1 / 5 aktiv").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("0 / 5 aktiv").length).toBeGreaterThan(0);
   });
 
   it("changes the selected object from the object selector", async () => {
     const user = userEvent.setup();
-    render(<DashboardView objects={objects} candidates={candidates} />);
+    mockApplicationsState({ candidates: [] });
+
+    render(<DashboardView objects={objects} />);
 
     await screen.findByText("Ramon Saavedra");
     const secondObjectButton = screen.getAllByRole("button", {
@@ -136,12 +162,17 @@ describe("DashboardView", () => {
         "Dieses Objekt ist noch ein Entwurf. Veröffentliche es, um passende Bewerbungen zu erhalten.",
       ),
     ).not.toBeNull();
+    expect(useSelectedListingApplications).toHaveBeenCalledWith(
+      "second-object",
+      "draft",
+    );
   });
 
   it("restores the previously selected object", async () => {
     window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, "second-object");
+    mockApplicationsState({ candidates: [] });
 
-    render(<DashboardView objects={objects} candidates={candidates} />);
+    render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
     expect(screen.getByText("Zweite Wohnung in Hamburg")).not.toBeNull();
@@ -150,7 +181,7 @@ describe("DashboardView", () => {
 
   it("shows empty object selectors when the search has no matches", async () => {
     const user = userEvent.setup();
-    render(<DashboardView objects={objects} candidates={candidates} />);
+    render(<DashboardView objects={objects} />);
 
     await screen.findByText("Ramon Saavedra");
     await user.type(
@@ -165,7 +196,7 @@ describe("DashboardView", () => {
 
   it("keeps the selected object inside the filtered results", async () => {
     const user = userEvent.setup();
-    render(<DashboardView objects={objects} candidates={candidates} />);
+    render(<DashboardView objects={objects} />);
 
     await screen.findByText("Ramon Saavedra");
     await user.type(
@@ -187,12 +218,7 @@ describe("DashboardView", () => {
     );
     expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
     expect(screen.getByText("Passende Kandidaten")).not.toBeNull();
-    expect(
-      screen.getAllByText("Platz frei für passende Bewerbung"),
-    ).toHaveLength(5);
-    expect(
-      screen.getAllByText("Keine Objekte gefunden.").length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText("Freier Platz")).toHaveLength(5);
     expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
   });
 
@@ -222,9 +248,26 @@ describe("DashboardView", () => {
     expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
   });
 
+  it("shows an application loading and error state for the selected listing", async () => {
+    mockApplicationsState({ isLoading: true });
+    const { rerender } = render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(screen.queryByText("Anna A.")).toBeNull();
+
+    mockApplicationsState({ hasError: true });
+    rerender(<DashboardView objects={objects} />);
+
+    expect(
+      screen.getByText(
+        "Bewerbungen konnten nicht geladen werden. Bitte versuche es gleich erneut.",
+      ),
+    ).not.toBeNull();
+  });
+
   it("collapses and reopens the desktop sidebar", async () => {
     const user = userEvent.setup();
-    render(<DashboardView objects={objects} candidates={candidates} />);
+    render(<DashboardView objects={objects} />);
 
     await screen.findByText("Ramon Saavedra");
     await user.click(screen.getByRole("button", { name: /Ausblenden/i }));

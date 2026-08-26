@@ -34,7 +34,7 @@ const publishedObject: DashboardObject = {
   publishedAt: "02.07.2026, 13:00",
   updatedAt: "01.07.2026, 09:15",
   status: "published",
-  activeApplications: 3,
+  activeApplicationsCount: 3,
 };
 
 describe("SelectedObjectCard", () => {
@@ -64,6 +64,7 @@ describe("SelectedObjectCard", () => {
           status: "draft",
           publishedAt: null,
           updatedAt: "05.07.2026, 14:30",
+          activeApplicationsCount: 0,
         }}
       />,
     );
@@ -73,6 +74,16 @@ describe("SelectedObjectCard", () => {
     expect(screen.getByText("Zuletzt bearbeitet am")).not.toBeNull();
   });
 
+  it("uses selectedObject.activeApplicationsCount for the ACTIVE display", () => {
+    render(
+      <SelectedObjectCard
+        object={{ ...publishedObject, activeApplicationsCount: 1 }}
+      />,
+    );
+
+    expect(screen.getByText("1 / 5 aktiv")).not.toBeNull();
+  });
+
   it("renders draft status and an empty availability label", () => {
     render(
       <SelectedObjectCard
@@ -80,12 +91,13 @@ describe("SelectedObjectCard", () => {
           ...publishedObject,
           availableFrom: null,
           status: "draft",
-          activeApplications: 0,
+          activeApplicationsCount: 0,
         }}
       />,
     );
 
     expect(screen.getByText("Offen")).not.toBeNull();
     expect(screen.getByText("Entwurf")).not.toBeNull();
+    expect(screen.getByText("0 / 5 aktiv")).not.toBeNull();
   });
 });

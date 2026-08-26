@@ -50,7 +50,7 @@ export function ObjectSelectorMobile({
   selectedId,
   onSelect,
 }: ObjectSelectorMobileProps) {
-  const { sidebar } = dashboardCopy;
+  const { sidebar, object: objectCopy } = dashboardCopy;
   const visibleObjects = objects.slice(0, MOBILE_OBJECT_SLOTS);
   const emptySlots = Math.max(0, MOBILE_OBJECT_SLOTS - visibleObjects.length);
 
@@ -62,7 +62,6 @@ export function ObjectSelectorMobile({
       <div className={SCROLLER_CLASS}>
         {visibleObjects.map((object) => {
           const selected = object.id === selectedId;
-          const isDraft = object.status === "draft";
           return (
             <button
               key={object.id}
@@ -93,9 +92,7 @@ export function ObjectSelectorMobile({
                 {sidebar.rentSuffix}
               </span>
               <span className={cn(CAND_BASE, selected && CAND_ACTIVE, "block")}>
-                {isDraft
-                  ? sidebar.draftNotice
-                  : sidebar.applicationsLabel(object.activeApplications)}
+                {objectCopy.applicationsValue(object.activeApplicationsCount)}
               </span>
             </button>
           );

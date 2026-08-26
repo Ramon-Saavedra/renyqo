@@ -34,6 +34,15 @@ describe("ObjectSidebar", () => {
     expect(screen.getByText("Studio am Maybachufer")).not.toBeNull();
   });
 
+  it("shows authoritative ACTIVE counts for unselected listings", () => {
+    renderSidebar();
+
+    expect(screen.getByText("3 / 5 aktiv")).not.toBeNull();
+    expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
+    expect(screen.getByText("2 / 5 aktiv")).not.toBeNull();
+    expect(screen.getByText("0 / 5 aktiv")).not.toBeNull();
+  });
+
   it("renders the header without a search input", () => {
     renderSidebar();
 
@@ -68,5 +77,21 @@ describe("ObjectSidebar", () => {
     renderSidebar([]);
 
     expect(screen.getByText("Keine Objekte gefunden.")).not.toBeNull();
+  });
+
+  it("keeps the fixed desktop sidebar width", () => {
+    const { container } = render(
+      <ObjectSidebar
+        objects={MOCK_OBJECTS}
+        totalCount={MOCK_OBJECTS.length}
+        selectedId="obj-kreuzberg"
+        onSelect={onSelect}
+        onCollapse={onCollapse}
+      />,
+    );
+    const aside = container.querySelector("aside");
+
+    expect(aside?.className).toContain("lg:w-72");
+    expect(aside?.className).toContain("lg:shrink-0");
   });
 });

@@ -1,10 +1,6 @@
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
 import type { ListingOverviewItem } from "@/features/provider/listings-overview/types";
-import {
-  MAX_ACTIVE_APPLICATIONS,
-  type DashboardObject,
-  type DashboardObjectStatus,
-} from "../types";
+import { type DashboardObject, type DashboardObjectStatus } from "../types";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
   day: "2-digit",
@@ -46,11 +42,6 @@ function formatDateTime(value: string | null): string | null {
 }
 
 function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
-  const activeApplications = Math.min(
-    Math.max(listing.applicationsTotal, 0),
-    MAX_ACTIVE_APPLICATIONS,
-  );
-
   return {
     id: listing.id,
     title: listing.title,
@@ -65,7 +56,7 @@ function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
     publishedAt: formatDateTime(listing.publishedAt),
     updatedAt: formatDateTime(listing.updatedAt),
     status: normalizeStatus(listing.status),
-    activeApplications,
+    activeApplicationsCount: listing.activeApplicationsCount,
     coverImageUrl: listing.coverImageUrl ?? null,
   };
 }

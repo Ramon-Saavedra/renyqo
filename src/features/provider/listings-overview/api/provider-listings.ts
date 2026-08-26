@@ -14,6 +14,7 @@ import type {
   ListingOverviewItem,
   ListingStatus,
 } from "../types";
+import { parseActiveApplicationsCount } from "./parse-active-applications-count";
 
 const FALLBACK_DATE = "1970-01-01T00:00:00.000Z";
 
@@ -70,6 +71,10 @@ function mapProviderListing(value: unknown): ListingOverviewItem | null {
       readNullableString(value, ["attentionReason", "attention_reason"]),
     ) ?? (needsAttention ? "open_questions" : null);
 
+  const activeApplicationsCount = parseActiveApplicationsCount(
+    value.activeApplicationsCount,
+  );
+
   return {
     id,
     title: readString(value, ["title"]) ?? "Unbenanntes Objekt",
@@ -81,12 +86,7 @@ function mapProviderListing(value: unknown): ListingOverviewItem | null {
     depositMonths: readNumber(value, ["depositMonths"]) ?? 0,
     livingArea: readNumber(value, ["livingArea", "area"]) ?? 0,
     rooms: readNumber(value, ["rooms"]) ?? 0,
-    applicationsTotal:
-      readNumber(value, [
-        "applicationsTotal",
-        "applicationsCount",
-        "applicationCount",
-      ]) ?? 0,
+    activeApplicationsCount,
     openQuestionsCount,
     status: normalizeStatus(readString(value, ["status"])),
     needsAttention,

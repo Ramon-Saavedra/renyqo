@@ -44,6 +44,7 @@ html {
 
   --shadow-focus: var(--focus-ring);
   --shadow-card: var(--card-shadow);
+  --shadow-card-hover: var(--card-shadow-hover);
   --shadow-tint-ring: 0 0 0 3px var(--primary-tint);
   --shadow-cover-ring: inset 0 0 0 1.5px var(--primary);
 
@@ -147,6 +148,8 @@ html {
   --focus-ring: 0 0 0 3px rgb(86 101 130 / 0.18);
   --card-shadow:
     0 1px 2px rgb(14 14 14 / 0.04), 0 4px 12px rgb(14 14 14 / 0.05);
+  --card-shadow-hover:
+    0 8px 18px rgb(14 14 14 / 0.1), 0 20px 44px rgb(14 14 14 / 0.14);
 
   --typeface-display:
     var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
@@ -188,6 +191,8 @@ html {
 
   --focus-ring: 0 0 0 3px rgb(139 156 190 / 0.25);
   --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
+  --card-shadow-hover:
+    0 8px 18px rgb(0 0 0 / 0.7), 0 22px 48px rgb(0 0 0 / 0.85);
 }
 
 [data-accent="schiefer"] {

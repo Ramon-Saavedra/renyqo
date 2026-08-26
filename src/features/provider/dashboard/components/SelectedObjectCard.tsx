@@ -19,14 +19,14 @@ interface SelectedObjectCardProps {
 }
 
 const CARD_CLASS =
-  "mb-7 overflow-hidden rounded-md border border-primary bg-primary shadow-card";
+  "mb-6 overflow-hidden rounded-md border border-primary bg-primary shadow-card";
 const HEAD_CLASS =
-  "flex flex-col gap-4 border-b border-primary-foreground/20 px-6 py-5 xl:flex-row xl:items-start xl:justify-between";
-const HEAD_LEFT_CLASS = "flex w-full min-w-0 gap-5 xl:flex-1";
+  "flex flex-col gap-3 border-b border-primary-foreground/20 px-5 py-4 xl:flex-row xl:items-start xl:justify-between";
+const HEAD_LEFT_CLASS = "flex w-full min-w-0 gap-4 xl:flex-1";
 const THUMB_CLASS =
-  "hidden h-23 w-23 shrink-0 items-center justify-center rounded-md bg-primary-foreground/15 text-primary-foreground/70 sm:flex";
+  "hidden h-20 w-20 shrink-0 items-center justify-center rounded-md bg-primary-foreground/15 text-primary-foreground/70 sm:flex";
 const THUMB_IMAGE_CLASS =
-  "hidden h-23 w-23 shrink-0 rounded-md border border-primary-foreground/20 object-cover sm:block";
+  "hidden h-20 w-20 shrink-0 rounded-md border border-primary-foreground/20 object-cover sm:block";
 const KICKER_CLASS =
   "inline-flex items-center gap-2 font-mono text-meta uppercase text-primary-foreground/80";
 const KICKER_PIP_CLASS = "h-1.5 w-1.5 rounded-full bg-primary-foreground";
@@ -36,7 +36,7 @@ const MOBILE_SHARE_BUTTON_CLASS =
   "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25 focus-visible:outline-none focus-visible:shadow-focus";
 const MOBILE_SHARE_PANEL_CLASS = "absolute right-0 top-full z-20 pt-1.5";
 const OBJ_TITLE_CLASS =
-  "mb-1 pt-2 font-display text-heading-md font-medium text-primary-foreground xl:text-title";
+  "mb-1 pt-1.5 font-display text-heading-md font-medium text-primary-foreground xl:text-title";
 const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-primary-foreground/80";
 const ACTIONS_CLASS = "flex shrink-0 items-start gap-2";
@@ -51,7 +51,7 @@ const TIMESTAMP_CAPTION_CLASS =
   "text-xs leading-tight text-primary-foreground/75";
 
 const GRID_CLASS =
-  "grid grid-cols-2 gap-x-4 gap-y-3 px-6 py-4 sm:grid-cols-3 xl:grid-cols-6";
+  "grid grid-cols-2 gap-x-4 gap-y-2.5 px-5 py-3 sm:grid-cols-3 xl:grid-cols-6";
 const CELL_CLASS =
   "flex flex-col gap-1 xl:border-r xl:border-primary-foreground/20 xl:pr-4 xl:last:border-r-0 xl:last:pr-0";
 const DT_CLASS = "font-mono text-meta uppercase text-primary-foreground/75";
@@ -59,6 +59,10 @@ const DD_CLASS = "font-display text-brand font-medium text-primary-foreground";
 const STATUS_CLASS =
   "inline-flex items-center gap-1.5 font-display text-brand font-medium text-primary-foreground";
 const STATUS_PIP_CLASS = "h-1.5 w-1.5 rounded-full bg-primary-foreground";
+
+function resolveApplicationsDisplay(object: DashboardObject): string {
+  return dashboardCopy.object.applicationsValue(object.activeApplicationsCount);
+}
 
 export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   const { object: copy } = dashboardCopy;
@@ -85,7 +89,7 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
     {
       id: "apps",
       dt: copy.applications,
-      dd: copy.applicationsValue(object.activeApplications),
+      dd: resolveApplicationsDisplay(object),
     },
   ];
   const stopCardNavigation = (event: MouseEvent<HTMLElement>) => {
@@ -107,14 +111,14 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
                 src={object.coverImageUrl}
                 alt=""
                 aria-hidden="true"
-                width={184}
-                height={184}
+                width={160}
+                height={160}
                 quality={90}
                 className={THUMB_IMAGE_CLASS}
               />
             ) : (
               <div aria-hidden="true" className={THUMB_CLASS}>
-                <AppIcon icon={Home} size={28} strokeWidth={1.4} decorative />
+                <AppIcon icon={Home} size={26} strokeWidth={1.4} decorative />
               </div>
             )}
             <div className="min-w-0 flex-1">

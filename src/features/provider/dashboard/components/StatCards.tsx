@@ -5,7 +5,7 @@ interface StatCardsProps {
   totalObjects: number;
   publishedObjects: number;
   draftObjects: number;
-  newApplications: number;
+  activeApplications: number;
 }
 
 const GRID_CLASS = "grid grid-cols-3 gap-1.5 md:max-w-2xl md:gap-2.5";
@@ -23,7 +23,7 @@ export function StatCards({
   totalObjects,
   publishedObjects,
   draftObjects,
-  newApplications,
+  activeApplications,
 }: StatCardsProps) {
   const { stats } = dashboardCopy;
 
@@ -36,10 +36,10 @@ export function StatCards({
       muted: true,
     },
     {
-      id: "new",
-      label: stats.newApplications,
-      num: newApplications,
-      foot: stats.newApplicationsFoot,
+      id: "active-applications",
+      label: stats.activeApplications,
+      num: activeApplications,
+      foot: null,
       muted: false,
     },
     {
@@ -57,13 +57,15 @@ export function StatCards({
         <div key={card.id} className={CARD_CLASS}>
           <span className={LABEL_CLASS}>{card.label}</span>
           <span className={NUM_CLASS}>{card.num}</span>
-          <span className={FOOT_CLASS}>
-            <span
-              aria-hidden="true"
-              className={cn(card.muted ? PIP_MUTED_CLASS : PIP_CLASS)}
-            />
-            {card.foot}
-          </span>
+          {card.foot ? (
+            <span className={FOOT_CLASS}>
+              <span
+                aria-hidden="true"
+                className={cn(card.muted ? PIP_MUTED_CLASS : PIP_CLASS)}
+              />
+              {card.foot}
+            </span>
+          ) : null}
         </div>
       ))}
     </div>

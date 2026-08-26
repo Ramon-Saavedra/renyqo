@@ -90,7 +90,7 @@ const SORTERS: Record<
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
   created: (a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  applications: (a, b) => b.applicationsTotal - a.applicationsTotal,
+  applications: (a, b) => b.activeApplicationsCount - a.activeApplicationsCount,
 };
 
 export function ListingsView({

@@ -27,6 +27,22 @@ describe("ObjectSelectorMobile", () => {
     expect(screen.getByText("4-Zimmer-Reihenhaus Karlshorst")).not.toBeNull();
   });
 
+  it("shows authoritative ACTIVE counts for unselected listings", () => {
+    render(
+      <ObjectSelectorMobile
+        objects={MOCK_OBJECTS}
+        totalCount={MOCK_OBJECTS.length}
+        selectedId="obj-kreuzberg"
+        onSelect={onSelect}
+      />,
+    );
+
+    expect(screen.getByText("3 / 5 aktiv")).not.toBeNull();
+    expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
+    expect(screen.getByText("2 / 5 aktiv")).not.toBeNull();
+    expect(screen.getByText("0 / 5 aktiv")).not.toBeNull();
+  });
+
   it("marks the selected object as pressed", () => {
     render(
       <ObjectSelectorMobile

@@ -16,7 +16,7 @@ const BASE: ListingOverviewItem = {
   depositMonths: 2,
   livingArea: 68,
   rooms: 2,
-  applicationsTotal: 3,
+  activeApplicationsCount: 3,
   openQuestionsCount: 0,
   status: "published",
   needsAttention: false,
@@ -37,7 +37,7 @@ describe("ListingRow", () => {
       screen.getByText("Parkstraße 12 · Berlin, Mitte · 10115"),
     ).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Veröffentlicht")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("3 sichtbar")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("3 / 5 aktiv")).toBeInstanceOf(HTMLElement);
     expect(screen.getByRole("button", { name: "Aktionen" })).toBeInstanceOf(
       HTMLElement,
     );
@@ -70,18 +70,17 @@ describe("ListingRow", () => {
     );
   });
 
-  it("renders the waiting application label when applications exceed the visible limit", () => {
+  it("uses activeApplicationsCount without deriving WAITING from a total", () => {
     render(
       <ListingRow
-        listing={{ ...BASE, applicationsTotal: 17 }}
+        listing={{ ...BASE, activeApplicationsCount: 5 }}
         onAction={vi.fn()}
         now={NOW}
       />,
     );
 
-    expect(screen.getByText("5 sichtbar · 12 wartend")).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(screen.getByText("5 / 5 aktiv")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText(/wartend/i)).toBeNull();
   });
 
   it("renders attention state only when needed", () => {

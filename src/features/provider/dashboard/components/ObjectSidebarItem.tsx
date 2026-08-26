@@ -1,9 +1,10 @@
-import { MapPin, Share2 } from "lucide-react";
+import Image from "next/image";
+import { Home, MapPin, Share2 } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { formatEUR } from "@/features/provider/listings-overview/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { dashboardCopy, OBJECT_STATUS_LABEL } from "../copy/dashboard";
-import { MAX_ACTIVE_APPLICATIONS, type DashboardObject } from "../types";
+import type { DashboardObject } from "../types";
 
 interface ObjectSidebarItemProps {
   object: DashboardObject;
@@ -14,11 +15,12 @@ interface ObjectSidebarItemProps {
 }
 
 const CARD_CLASS =
-  "relative flex flex-col overflow-hidden rounded-md border bg-background shadow-card focus-within:shadow-focus";
+  "relative flex flex-col overflow-hidden rounded-md border bg-background shadow-card transition-shadow hover:shadow-card-hover focus-within:shadow-focus";
 const CARD_INACTIVE_CLASS = "border-border hover:border-primary-soft";
 const CARD_ACTIVE_CLASS = "border-primary bg-primary";
 
-const HEADER_CLASS = "flex shrink-0 items-center pl-3.5 pr-12 py-2";
+const HEADER_CLASS =
+  "pointer-events-none flex shrink-0 items-center pl-3 pr-12 py-2";
 const HEADER_INACTIVE_CLASS = "bg-primary-tint";
 const HEADER_ACTIVE_CLASS =
   "border-b border-primary-foreground/15 bg-primary-foreground/12";
@@ -30,56 +32,57 @@ const STATUS_ACTIVE_CLASS = "text-primary-foreground";
 const DOT_CLASS = "h-1.5 w-1.5 rounded-full bg-current";
 
 const SHARE_BUTTON_CLASS =
-  "absolute top-1 right-3 z-10 inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-sm border focus-visible:outline-none focus-visible:shadow-focus";
+  "absolute top-1 right-3 z-20 inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-sm border focus-visible:outline-none focus-visible:shadow-focus";
 const SHARE_INACTIVE_CLASS =
   "border-primary-soft bg-background text-primary hover:bg-primary-tint";
 const SHARE_ACTIVE_CLASS =
   "border-primary-foreground/35 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25";
 
-const BODY_CLASS = "flex flex-1 flex-col p-3.5";
+const BODY_CLASS = "pointer-events-none flex min-w-0 flex-1 flex-col p-3";
+const CONTENT_ROW_CLASS = "flex min-w-0 gap-2.5";
+const TEXT_CLASS = "flex min-w-0 flex-1 flex-col";
+
+const THUMB_CLASS =
+  "relative size-15 shrink-0 overflow-hidden rounded-sm aspect-square";
+const THUMB_IMAGE_CLASS = "size-full object-cover";
+const THUMB_FALLBACK_CLASS =
+  "flex size-full items-center justify-center bg-background-muted text-foreground-tertiary";
+const THUMB_FALLBACK_ACTIVE_CLASS =
+  "bg-primary-foreground/15 text-primary-foreground/70";
 
 const SELECT_CLASS =
-  "absolute inset-0 z-0 w-full cursor-pointer rounded-md focus-visible:outline-none";
+  "absolute inset-0 z-10 w-full cursor-pointer rounded-md focus-visible:outline-none";
 
 const TITLE_CLASS =
   "block min-w-0 truncate font-display text-caption font-semibold";
 const TITLE_INACTIVE_CLASS = "text-foreground";
 const TITLE_ACTIVE_CLASS = "text-primary-foreground";
 
-const ADDRESS_CLASS = "mt-1.5 flex min-w-0 items-center gap-1.5 text-caption";
+const ADDRESS_CLASS = "mt-1 flex min-w-0 items-center gap-1 text-caption";
 const ADDRESS_INACTIVE_CLASS = "text-foreground-tertiary";
 const ADDRESS_ACTIVE_CLASS = "text-primary-foreground/70";
 
-const RENT_ROW_CLASS = "mt-3 flex items-baseline justify-between gap-2";
-const RENT_LABEL_CLASS = "font-mono text-meta uppercase";
+const RENT_ROW_CLASS = "mt-2 flex min-w-0 items-baseline justify-between gap-2";
+const RENT_LABEL_CLASS = "min-w-0 truncate font-mono text-meta uppercase";
 const RENT_LABEL_INACTIVE_CLASS = "text-foreground-tertiary";
 const RENT_LABEL_ACTIVE_CLASS = "text-primary-foreground/65";
 const RENT_CLASS = "shrink-0 font-display text-caption font-semibold";
 const RENT_INACTIVE_CLASS = "text-foreground";
 const RENT_ACTIVE_CLASS = "text-primary-foreground";
 
-const BOTTOM_BLOCK_CLASS = "mt-auto block border-t pt-3";
+const BOTTOM_BLOCK_CLASS = "mt-auto block border-t pt-2.5";
 const BOTTOM_BLOCK_INACTIVE_CLASS = "border-border";
 const BOTTOM_BLOCK_ACTIVE_CLASS = "border-primary-foreground/20";
 
-const PROGRESS_ROW_CLASS = "mb-1.5 flex items-baseline justify-between gap-2";
-const PROGRESS_LABEL_CLASS = "text-caption";
-const PROGRESS_LABEL_INACTIVE_CLASS = "text-foreground-secondary";
-const PROGRESS_LABEL_ACTIVE_CLASS = "text-primary-foreground/80";
-const PROGRESS_COUNT_CLASS =
+const APPLICATIONS_ROW_CLASS =
+  "flex min-w-0 items-baseline justify-between gap-2";
+const APPLICATIONS_LABEL_CLASS = "min-w-0 truncate text-caption";
+const APPLICATIONS_LABEL_INACTIVE_CLASS = "text-foreground-secondary";
+const APPLICATIONS_LABEL_ACTIVE_CLASS = "text-primary-foreground/80";
+const APPLICATIONS_COUNT_CLASS =
   "shrink-0 font-mono text-meta font-bold whitespace-nowrap";
-const PROGRESS_COUNT_INACTIVE_CLASS = "text-primary";
-const PROGRESS_COUNT_ACTIVE_CLASS = "text-primary-foreground";
-const TRACK_CLASS = "block h-1.5 overflow-hidden rounded-full";
-const TRACK_INACTIVE_CLASS = "bg-primary-soft";
-const TRACK_ACTIVE_CLASS = "bg-primary-foreground/30";
-const FILL_CLASS = "block h-full rounded-full";
-const FILL_INACTIVE_CLASS = "bg-primary";
-const FILL_ACTIVE_CLASS = "bg-primary-foreground";
-
-const DRAFT_NOTICE_CLASS = "block truncate text-caption";
-const DRAFT_NOTICE_INACTIVE_CLASS = "text-foreground-secondary";
-const DRAFT_NOTICE_ACTIVE_CLASS = "text-primary-foreground/80";
+const APPLICATIONS_COUNT_INACTIVE_CLASS = "text-primary";
+const APPLICATIONS_COUNT_ACTIVE_CLASS = "text-primary-foreground";
 
 export function ObjectSidebarItem({
   object,
@@ -88,10 +91,13 @@ export function ObjectSidebarItem({
   onSelect,
   fillAvailableSpace = true,
 }: ObjectSidebarItemProps) {
-  const { sidebar } = dashboardCopy;
+  const { sidebar, object: objectCopy } = dashboardCopy;
   const isDraft = object.status === "draft";
-  const activeApplications = object.activeApplications;
-  const progressPercent = (activeApplications / MAX_ACTIVE_APPLICATIONS) * 100;
+
+  const applicationsDisplay = objectCopy.applicationsValue(
+    object.activeApplicationsCount,
+  );
+  const applicationsAriaLabel = applicationsDisplay;
 
   const handleShare = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -143,40 +149,69 @@ export function ObjectSidebarItem({
       </span>
 
       <span className={BODY_CLASS}>
-        <span
-          className={cn(
-            TITLE_CLASS,
-            selected ? TITLE_ACTIVE_CLASS : TITLE_INACTIVE_CLASS,
-          )}
-        >
-          {object.title}
-        </span>
-        <span
-          className={cn(
-            ADDRESS_CLASS,
-            selected ? ADDRESS_ACTIVE_CLASS : ADDRESS_INACTIVE_CLASS,
-          )}
-        >
-          <AppIcon icon={MapPin} size={12} strokeWidth={1.8} decorative />
-          <span className="truncate">{object.address}</span>
-        </span>
-
-        <span className={RENT_ROW_CLASS}>
-          <span
-            className={cn(
-              RENT_LABEL_CLASS,
-              selected ? RENT_LABEL_ACTIVE_CLASS : RENT_LABEL_INACTIVE_CLASS,
+        <span className={CONTENT_ROW_CLASS}>
+          <span aria-hidden="true" className={THUMB_CLASS}>
+            {object.coverImageUrl ? (
+              <Image
+                src={object.coverImageUrl}
+                alt=""
+                aria-hidden="true"
+                width={192}
+                height={192}
+                quality={90}
+                className={THUMB_IMAGE_CLASS}
+              />
+            ) : (
+              <span
+                className={cn(
+                  THUMB_FALLBACK_CLASS,
+                  selected && THUMB_FALLBACK_ACTIVE_CLASS,
+                )}
+              >
+                <AppIcon icon={Home} size={18} strokeWidth={1.5} decorative />
+              </span>
             )}
-          >
-            {sidebar.rentLabel}
           </span>
-          <span
-            className={cn(
-              RENT_CLASS,
-              selected ? RENT_ACTIVE_CLASS : RENT_INACTIVE_CLASS,
-            )}
-          >
-            {formatEUR(object.coldRent)}
+
+          <span className={TEXT_CLASS}>
+            <span
+              className={cn(
+                TITLE_CLASS,
+                selected ? TITLE_ACTIVE_CLASS : TITLE_INACTIVE_CLASS,
+              )}
+            >
+              {object.title}
+            </span>
+            <span
+              className={cn(
+                ADDRESS_CLASS,
+                selected ? ADDRESS_ACTIVE_CLASS : ADDRESS_INACTIVE_CLASS,
+              )}
+            >
+              <AppIcon icon={MapPin} size={12} strokeWidth={1.8} decorative />
+              <span className="min-w-0 truncate">{object.address}</span>
+            </span>
+
+            <span className={RENT_ROW_CLASS}>
+              <span
+                className={cn(
+                  RENT_LABEL_CLASS,
+                  selected
+                    ? RENT_LABEL_ACTIVE_CLASS
+                    : RENT_LABEL_INACTIVE_CLASS,
+                )}
+              >
+                {sidebar.rentLabel}
+              </span>
+              <span
+                className={cn(
+                  RENT_CLASS,
+                  selected ? RENT_ACTIVE_CLASS : RENT_INACTIVE_CLASS,
+                )}
+              >
+                {formatEUR(object.coldRent)}
+              </span>
+            </span>
           </span>
         </span>
 
@@ -186,62 +221,29 @@ export function ObjectSidebarItem({
             selected ? BOTTOM_BLOCK_ACTIVE_CLASS : BOTTOM_BLOCK_INACTIVE_CLASS,
           )}
         >
-          {isDraft ? (
+          <span className={APPLICATIONS_ROW_CLASS}>
             <span
               className={cn(
-                DRAFT_NOTICE_CLASS,
+                APPLICATIONS_LABEL_CLASS,
                 selected
-                  ? DRAFT_NOTICE_ACTIVE_CLASS
-                  : DRAFT_NOTICE_INACTIVE_CLASS,
+                  ? APPLICATIONS_LABEL_ACTIVE_CLASS
+                  : APPLICATIONS_LABEL_INACTIVE_CLASS,
               )}
             >
-              {sidebar.draftNotice}
+              {sidebar.applications}
             </span>
-          ) : (
-            <>
-              <span className={PROGRESS_ROW_CLASS}>
-                <span
-                  className={cn(
-                    PROGRESS_LABEL_CLASS,
-                    selected
-                      ? PROGRESS_LABEL_ACTIVE_CLASS
-                      : PROGRESS_LABEL_INACTIVE_CLASS,
-                  )}
-                >
-                  {sidebar.applications}
-                </span>
-                <span
-                  className={cn(
-                    PROGRESS_COUNT_CLASS,
-                    selected
-                      ? PROGRESS_COUNT_ACTIVE_CLASS
-                      : PROGRESS_COUNT_INACTIVE_CLASS,
-                  )}
-                >
-                  {sidebar.applicationsCount(activeApplications)}
-                </span>
-              </span>
-              <span
-                role="progressbar"
-                aria-label={sidebar.applicationsLabel(activeApplications)}
-                aria-valuemin={0}
-                aria-valuemax={MAX_ACTIVE_APPLICATIONS}
-                aria-valuenow={activeApplications}
-                className={cn(
-                  TRACK_CLASS,
-                  selected ? TRACK_ACTIVE_CLASS : TRACK_INACTIVE_CLASS,
-                )}
-              >
-                <span
-                  className={cn(
-                    FILL_CLASS,
-                    selected ? FILL_ACTIVE_CLASS : FILL_INACTIVE_CLASS,
-                  )}
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </span>
-            </>
-          )}
+            <span
+              className={cn(
+                APPLICATIONS_COUNT_CLASS,
+                selected
+                  ? APPLICATIONS_COUNT_ACTIVE_CLASS
+                  : APPLICATIONS_COUNT_INACTIVE_CLASS,
+              )}
+              aria-label={applicationsAriaLabel}
+            >
+              {applicationsDisplay}
+            </span>
+          </span>
         </span>
       </span>
 

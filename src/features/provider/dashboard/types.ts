@@ -16,18 +16,8 @@ export interface DashboardObject {
   readonly publishedAt: string | null;
   readonly updatedAt: string | null;
   readonly status: DashboardObjectStatus;
-  readonly activeApplications: number;
+  readonly activeApplicationsCount: number;
   readonly coverImageUrl?: string | null;
-}
-
-export type CandidateBadge = "match" | "askback";
-
-export type CandidateAttrState = "ok" | "open" | "muted";
-
-export interface CandidateAttr {
-  readonly label: string;
-  readonly value: string;
-  readonly state: CandidateAttrState;
 }
 
 export interface Candidate {
@@ -36,8 +26,12 @@ export interface Candidate {
   readonly initials: string;
   readonly name: string;
   readonly household: string;
-  readonly badge: CandidateBadge;
-  readonly attrs: readonly CandidateAttr[];
 }
 
 export const MAX_ACTIVE_APPLICATIONS = 5;
+
+export type WaitingCountState =
+  | { readonly status: "idle" }
+  | { readonly status: "loading" }
+  | { readonly status: "success"; readonly count: number }
+  | { readonly status: "error" };

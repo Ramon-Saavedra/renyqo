@@ -82,8 +82,7 @@ export function ListingRow({
   selectedRowRef,
 }: ListingRowProps) {
   const isInactive = listing.status === "archived";
-  const visibleCount = Math.min(listing.applicationsTotal, 5);
-  const waitingCount = Math.max(listing.applicationsTotal - 5, 0);
+  const activeCount = listing.activeApplicationsCount;
   const actionPending = Boolean(actionStatus);
   const timestamp = listing.publishedAt ?? listing.updatedAt;
   const timestampLabel = formatDateTime(timestamp);
@@ -230,12 +229,9 @@ export function ListingRow({
                 {listingsCopy.row.applications}
               </span>
               <div className={BEW_CELL_CLASS}>
-                <ApplicationsMeter active={visibleCount} />
+                <ApplicationsMeter active={activeCount} />
                 <span className={STAT_VALUE_SOFT}>
-                  {listingsCopy.row.applicationsLabel(
-                    visibleCount,
-                    waitingCount,
-                  )}
+                  {listingsCopy.row.applicationsLabel(activeCount)}
                 </span>
               </div>
             </div>

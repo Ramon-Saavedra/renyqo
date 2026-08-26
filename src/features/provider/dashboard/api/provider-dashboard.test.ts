@@ -13,7 +13,7 @@ describe("getProviderDashboardObjects", () => {
     vi.clearAllMocks();
   });
 
-  it("maps listings and clamps application totals to dashboard limits", async () => {
+  it("maps listings and propagates activeApplicationsCount", async () => {
     vi.mocked(getProviderListings).mockResolvedValue([
       {
         id: "listing-1",
@@ -25,7 +25,7 @@ describe("getProviderDashboardObjects", () => {
         livingArea: 68,
         rooms: 2.5,
         status: "published",
-        applicationsTotal: 7,
+        activeApplicationsCount: 3,
         needsAttention: false,
         attentionReason: null,
         openQuestionsCount: 0,
@@ -44,7 +44,7 @@ describe("getProviderDashboardObjects", () => {
         livingArea: 0,
         rooms: 0,
         status: "draft",
-        applicationsTotal: -2,
+        activeApplicationsCount: 0,
         needsAttention: false,
         attentionReason: null,
         openQuestionsCount: 0,
@@ -63,7 +63,7 @@ describe("getProviderDashboardObjects", () => {
         livingArea: 70,
         rooms: 3,
         status: "archived",
-        applicationsTotal: 4,
+        activeApplicationsCount: 4,
         needsAttention: false,
         attentionReason: null,
         openQuestionsCount: 0,
@@ -82,7 +82,7 @@ describe("getProviderDashboardObjects", () => {
         livingArea: 65,
         rooms: 3,
         status: "published",
-        applicationsTotal: MAX_ACTIVE_APPLICATIONS,
+        activeApplicationsCount: MAX_ACTIVE_APPLICATIONS,
         needsAttention: false,
         attentionReason: null,
         openQuestionsCount: 0,
@@ -108,7 +108,7 @@ describe("getProviderDashboardObjects", () => {
         publishedAt: "02.07.2026, 13:00",
         updatedAt: "02.07.2026, 12:00",
         status: "published",
-        activeApplications: MAX_ACTIVE_APPLICATIONS,
+        activeApplicationsCount: 3,
         coverImageUrl: "https://res.cloudinary.com/demo/image/upload/flat.jpg",
       },
       {
@@ -125,7 +125,7 @@ describe("getProviderDashboardObjects", () => {
         publishedAt: null,
         updatedAt: "01.01.1970, 01:00",
         status: "draft",
-        activeApplications: 0,
+        activeApplicationsCount: 0,
         coverImageUrl: null,
       },
       {
@@ -142,7 +142,7 @@ describe("getProviderDashboardObjects", () => {
         publishedAt: "02.07.2026, 13:00",
         updatedAt: "02.07.2026, 12:00",
         status: "published",
-        activeApplications: MAX_ACTIVE_APPLICATIONS,
+        activeApplicationsCount: MAX_ACTIVE_APPLICATIONS,
         coverImageUrl: null,
       },
     ]);
