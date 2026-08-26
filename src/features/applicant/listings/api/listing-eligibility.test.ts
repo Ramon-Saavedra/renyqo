@@ -5,9 +5,9 @@ import { getListingEligibility } from "./listing-eligibility";
 vi.mock("@/lib/api/client", () => ({ apiGet: vi.fn() }));
 
 const response = {
-  canApply: true,
-  reasons: [],
-  warnings: ["pets_by_arrangement"],
+  canApply: false,
+  reasons: ["smoking_not_allowed"],
+  warnings: ["smoking_by_arrangement"],
   evaluatedAt: "2026-08-23T10:00:00.000Z",
 };
 

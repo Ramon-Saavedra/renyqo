@@ -9,12 +9,12 @@ export const eligibilityReasonSchema = z.enum([
   "household_size_not_available",
   "household_size_exceeds_requirement",
   "pets_not_allowed",
+  "smoking_not_allowed",
 ]);
 
 export const eligibilityWarningSchema = z.enum([
   "pets_by_arrangement",
   "smoking_by_arrangement",
-  "smoking_not_preferred",
 ]);
 
 export const listingEligibilitySchema = z.object({
