@@ -11,7 +11,6 @@ export interface ApplicantProfileDraft {
   incomeProof: YesNoOption;
   schufa: YesNoOption;
   pets: YesNoOption;
-  petsNote: string;
   smoker: SmokerOption;
 }
 
@@ -26,7 +25,6 @@ export const INITIAL_PROFILE: ApplicantProfileDraft = {
   incomeProof: "",
   schufa: "",
   pets: "",
-  petsNote: "",
   smoker: "",
 };
 

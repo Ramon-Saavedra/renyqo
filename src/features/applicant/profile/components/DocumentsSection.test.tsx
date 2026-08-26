@@ -42,33 +42,33 @@ describe("DocumentsSection", () => {
     expect(setField).toHaveBeenCalledWith("schufa", "ja");
   });
 
-  it("hides the pets detail field until pets are confirmed", () => {
+  it("does not render a pets detail field", () => {
     render(<DocumentsSection draft={INITIAL_PROFILE} setField={vi.fn()} />);
 
-    expect(screen.queryByLabelText("Welche Haustiere?")).toBeNull();
+    expect(screen.queryByRole("textbox")).toBeNull();
   });
 
-  it("reveals the pets detail field once pets are confirmed", () => {
-    render(
-      <DocumentsSection
-        draft={{ ...INITIAL_PROFILE, pets: "ja" }}
-        setField={vi.fn()}
-      />,
-    );
-
-    const note = screen.getByLabelText("Welche Haustiere?");
-    expect(note).toBeInstanceOf(HTMLInputElement);
-    expect(note).toHaveProperty("maxLength", 500);
-  });
-
-  it("forwards the smoker status", async () => {
+  it("forwards the smoker answer", async () => {
     const user = userEvent.setup();
     const setField = vi.fn();
 
     render(<DocumentsSection draft={INITIAL_PROFILE} setField={setField} />);
 
-    await user.click(screen.getByRole("radio", { name: "Nichtraucher" }));
+    const smoker = screen.getByRole("radiogroup", { name: "Raucher?" });
+    await user.click(within(smoker).getByRole("radio", { name: "Ja" }));
 
-    expect(setField).toHaveBeenCalledWith("smoker", "nichtraucher");
+    expect(setField).toHaveBeenCalledWith("smoker", "ja");
+  });
+
+  it("renders binary pets and smoker choices", () => {
+    render(<DocumentsSection draft={INITIAL_PROFILE} setField={vi.fn()} />);
+
+    expect(
+      screen.getByRole("radiogroup", { name: "Haustiere?" }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("radiogroup", { name: "Raucher?" })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.queryByRole("radio", { name: "Gelegentlich" })).toBeNull();
   });
 });
