@@ -1,7 +1,6 @@
 "use client";
 
 import { FormField } from "@/components/ui/form/FormField";
-import { Input } from "@/components/ui/form/Input";
 import { Segmented } from "@/components/ui/form/Segmented";
 import { SectionCard } from "@/components/ui/section-card/SectionCard";
 import {
@@ -76,18 +75,6 @@ export function DocumentsSection({ draft, setField }: DocumentsSectionProps) {
           />
         </div>
       </FormField>
-
-      {draft.pets === "ja" && (
-        <FormField label={fields.petsNote.label} htmlFor="pets-note">
-          <Input
-            id="pets-note"
-            value={draft.petsNote}
-            maxLength={fields.petsNote.maxLength}
-            placeholder={fields.petsNote.placeholder}
-            onChange={(event) => setField("petsNote", event.target.value)}
-          />
-        </FormField>
-      )}
 
       <FormField label={fields.smoker.label} required>
         <div id="smoker">

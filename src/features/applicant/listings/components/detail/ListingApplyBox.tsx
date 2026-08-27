@@ -42,7 +42,6 @@ function matchLabel(value: ProfileMatchResult): string {
 const WARNING_COPY: Record<EligibilityWarning, string> = {
   pets_by_arrangement: "Haustiere sind nach Absprache möglich.",
   smoking_by_arrangement: "Rauchen ist nach Absprache möglich.",
-  smoking_not_preferred: "Nichtrauchen wird bevorzugt.",
 };
 
 const REASON_COPY: Record<EligibilityReason, string> = {
@@ -56,6 +55,7 @@ const REASON_COPY: Record<EligibilityReason, string> = {
   household_size_exceeds_requirement:
     "Die Haushaltsgröße passt nicht zu diesem Objekt.",
   pets_not_allowed: "Haustiere sind für dieses Objekt nicht erlaubt.",
+  smoking_not_allowed: "Rauchen ist für dieses Objekt nicht erlaubt.",
 };
 
 export function ListingApplyBox({

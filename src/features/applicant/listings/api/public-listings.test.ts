@@ -391,7 +391,7 @@ describe("getPublicListingDetail", () => {
 
   it.each([
     ["petsPolicy", "PREFER_NOT"],
-    ["smokingPolicy", "NOT_ALLOWED"],
+    ["smokingPolicy", "NON_SMOKERS_PREFERRED"],
   ] as const)("rejects an invalid %s enum value", async (key, value) => {
     vi.mocked(apiGet).mockResolvedValue(
       detailResponse({
@@ -432,7 +432,7 @@ describe("getPublicListingDetail", () => {
           incomeProofRequired: true,
           suitableForPeopleCount: 2,
           petsPolicy: "NOT_ALLOWED",
-          smokingPolicy: "NON_SMOKERS_PREFERRED",
+          smokingPolicy: "NOT_ALLOWED",
         },
       }),
     );
@@ -450,7 +450,7 @@ describe("getPublicListingDetail", () => {
     expect(listing?.incomeProofRequired).toBe(true);
     expect(listing?.suitableForPeopleCount).toBe(2);
     expect(listing?.petsPolicy).toBe("NOT_ALLOWED");
-    expect(listing?.smokingPolicy).toBe("NON_SMOKERS_PREFERRED");
+    expect(listing?.smokingPolicy).toBe("NOT_ALLOWED");
   });
 
   it("maps images from the detail payload and orders them by position", async () => {

@@ -20,12 +20,15 @@ export interface DashboardObject {
   readonly coverImageUrl?: string | null;
 }
 
+export type CandidateWarning = "pets_by_arrangement" | "smoking_by_arrangement";
+
 export interface Candidate {
   readonly id: string;
   readonly objectId: string;
   readonly initials: string;
   readonly name: string;
   readonly household: string;
+  readonly warnings: readonly CandidateWarning[];
 }
 
 export const MAX_ACTIVE_APPLICATIONS = 5;

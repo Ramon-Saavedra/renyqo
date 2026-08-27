@@ -21,6 +21,7 @@ function buildApplication(
     applicant: {
       name: "Anna Lehmann",
       peopleCount: 2,
+      warnings: [],
       ...applicantOverrides,
     },
     ...applicationOverrides,
@@ -38,6 +39,7 @@ describe("mapActiveApplicationToCandidate", () => {
       initials: "AL",
       name: "Anna Lehmann",
       household: "2 Personen",
+      warnings: [],
     });
   });
 
@@ -58,6 +60,21 @@ describe("mapActiveApplicationToCandidate", () => {
     );
 
     expect(candidate.household).toBe("Haushalt nicht angegeben");
+  });
+
+  it("passes backend warnings through to the candidate", () => {
+    const candidate = mapActiveApplicationToCandidate(
+      buildApplication({
+        applicant: {
+          warnings: ["pets_by_arrangement", "smoking_by_arrangement"],
+        },
+      }),
+    );
+
+    expect(candidate.warnings).toEqual([
+      "pets_by_arrangement",
+      "smoking_by_arrangement",
+    ]);
   });
 });
 

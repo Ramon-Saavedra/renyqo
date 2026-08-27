@@ -16,6 +16,7 @@ vi.mock("../api/provider-listing-applications", () => ({
 const baseApplicant = {
   name: "Anna Lehmann",
   peopleCount: 2,
+  warnings: [],
 };
 
 describe("useSelectedListingApplications", () => {

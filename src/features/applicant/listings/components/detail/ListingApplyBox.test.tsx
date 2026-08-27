@@ -109,7 +109,7 @@ describe("ListingApplyBox", () => {
       status: "loaded",
       eligibility: {
         ...baseEligibility.eligibility,
-        warnings: ["pets_by_arrangement"],
+        warnings: ["smoking_by_arrangement"],
       },
     });
     application.mockReturnValue(idle);

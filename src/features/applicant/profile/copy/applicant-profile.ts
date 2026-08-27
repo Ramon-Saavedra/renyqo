@@ -1,11 +1,7 @@
 export const YES_NO_OPTIONS = ["ja", "nein"] as const;
 export type YesNoOption = (typeof YES_NO_OPTIONS)[number] | "";
 
-export const SMOKER_OPTIONS = [
-  "nichtraucher",
-  "gelegentlich",
-  "raucher",
-] as const;
+export const SMOKER_OPTIONS = ["ja", "nein"] as const;
 export type SmokerOption = (typeof SMOKER_OPTIONS)[number] | "";
 
 export const PROFILE_SECTION_IDS = ["sec-household", "sec-documents"] as const;
@@ -77,23 +73,17 @@ export const applicantProfileCopy = {
         ],
       },
       pets: {
-        label: "Haustiere",
+        label: "Haustiere?",
         options: [
           { value: "nein", label: "Nein" },
           { value: "ja", label: "Ja" },
         ],
       },
-      petsNote: {
-        label: "Welche Haustiere?",
-        placeholder: "z. B. 1 Katze, 1 kleiner Hund",
-        maxLength: 500,
-      },
       smoker: {
-        label: "Raucherstatus",
+        label: "Raucher?",
         options: [
-          { value: "nichtraucher", label: "Nichtraucher" },
-          { value: "gelegentlich", label: "Gelegentlich" },
-          { value: "raucher", label: "Raucher" },
+          { value: "nein", label: "Nein" },
+          { value: "ja", label: "Ja" },
         ],
       },
     },
@@ -116,8 +106,8 @@ export const applicantProfileCopy = {
     income: "Haushaltsnettoeinkommen",
     incomeProof: "Einkommensnachweis",
     schufa: "SCHUFA-Auskunft",
-    pets: "Haustiere",
-    smoker: "Raucherstatus",
+    pets: "Haustiere?",
+    smoker: "Raucher?",
   },
   validation: {
     income: "Bitte einen Betrag über 0 € angeben.",

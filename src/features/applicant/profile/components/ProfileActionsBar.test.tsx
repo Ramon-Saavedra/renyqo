@@ -8,7 +8,7 @@ describe("ProfileActionsBar", () => {
   it("lists every required field and marks the answered ones", () => {
     render(
       <ProfileActionsBar
-        missing={["Haushaltsnettoeinkommen", "Raucherstatus"]}
+        missing={["Haushaltsnettoeinkommen", "Raucher?"]}
         complete={false}
         canSave
         saveStatus="idle"
@@ -53,7 +53,7 @@ describe("ProfileActionsBar", () => {
 
     render(
       <ProfileActionsBar
-        missing={["Raucherstatus"]}
+        missing={["Raucher?"]}
         complete={false}
         canSave
         saveStatus="idle"
@@ -69,7 +69,7 @@ describe("ProfileActionsBar", () => {
   it("blocks saving and explains why when a value is invalid", () => {
     render(
       <ProfileActionsBar
-        missing={["Raucherstatus"]}
+        missing={["Raucher?"]}
         complete={false}
         canSave={false}
         saveStatus="idle"

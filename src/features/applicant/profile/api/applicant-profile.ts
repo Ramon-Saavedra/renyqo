@@ -3,11 +3,9 @@ import {
   INITIAL_PROFILE,
   type ApplicantProfileDraft,
 } from "../utils/profile-validation";
-import type { SmokerOption, YesNoOption } from "../copy/applicant-profile";
+import type { YesNoOption } from "../copy/applicant-profile";
 
 const APPLICANT_PROFILE_PATH = "/api/v1/applicant/profile";
-
-export type SmokingStatusBackend = "SMOKER" | "NON_SMOKER" | "OCCASIONALLY";
 
 export interface ApplicantProfileResponse {
   readonly householdNetIncome: number | null;
@@ -17,8 +15,7 @@ export interface ApplicantProfileResponse {
   readonly adultsCount: number | null;
   readonly childrenCount: number | null;
   readonly hasPets: boolean | null;
-  readonly petsNote: string | null;
-  readonly smokingStatus: SmokingStatusBackend | null;
+  readonly isSmoker: boolean | null;
 }
 
 export interface ApplicantProfilePayload {
@@ -28,24 +25,8 @@ export interface ApplicantProfilePayload {
   readonly adultsCount: number;
   readonly childrenCount: number;
   readonly hasPets: boolean | null;
-  readonly petsNote: string | null;
-  readonly smokingStatus: SmokingStatusBackend | null;
+  readonly isSmoker: boolean | null;
 }
-
-const SMOKER_TO_BACKEND: Record<
-  Exclude<SmokerOption, "">,
-  SmokingStatusBackend
-> = {
-  nichtraucher: "NON_SMOKER",
-  raucher: "SMOKER",
-  gelegentlich: "OCCASIONALLY",
-};
-
-const SMOKER_FROM_BACKEND: Record<SmokingStatusBackend, SmokerOption> = {
-  NON_SMOKER: "nichtraucher",
-  SMOKER: "raucher",
-  OCCASIONALLY: "gelegentlich",
-};
 
 function toYesNo(value: boolean | null): YesNoOption {
   if (value === true) return "ja";
@@ -66,8 +47,6 @@ function clamp(value: number, min: number, max: number): number {
 export function toDraft(
   response: Partial<ApplicantProfileResponse>,
 ): ApplicantProfileDraft {
-  const smokingStatus = response.smokingStatus ?? null;
-
   return {
     income:
       typeof response.householdNetIncome === "number"
@@ -84,8 +63,7 @@ export function toDraft(
     incomeProof: toYesNo(response.incomeProofAvailable ?? null),
     schufa: toYesNo(response.schufaAvailable ?? null),
     pets: toYesNo(response.hasPets ?? null),
-    petsNote: response.petsNote ?? INITIAL_PROFILE.petsNote,
-    smoker: smokingStatus ? SMOKER_FROM_BACKEND[smokingStatus] : "",
+    smoker: toYesNo(response.isSmoker ?? null),
   };
 }
 
@@ -93,7 +71,6 @@ export function toPayload(
   draft: ApplicantProfileDraft,
 ): ApplicantProfilePayload {
   const income = draft.income.trim();
-  const note = draft.petsNote.trim();
 
   return {
     householdNetIncome: income === "" ? null : Number.parseInt(income, 10),
@@ -102,8 +79,7 @@ export function toPayload(
     adultsCount: draft.adults,
     childrenCount: draft.children,
     hasPets: fromYesNo(draft.pets),
-    petsNote: draft.pets === "ja" && note !== "" ? note : null,
-    smokingStatus: draft.smoker === "" ? null : SMOKER_TO_BACKEND[draft.smoker],
+    isSmoker: fromYesNo(draft.smoker),
   };
 }
 

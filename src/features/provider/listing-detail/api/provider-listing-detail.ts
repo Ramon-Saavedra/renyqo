@@ -84,8 +84,8 @@ function normalizeSmokingPolicy(
       return "ALLOWED";
     case "BY_ARRANGEMENT":
       return "BY_ARRANGEMENT";
-    case "NON_SMOKERS_PREFERRED":
-      return "NON_SMOKERS_PREFERRED";
+    case "NOT_ALLOWED":
+      return "NOT_ALLOWED";
     default:
       return null;
   }

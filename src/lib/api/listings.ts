@@ -30,15 +30,12 @@ export const OBJECT_TYPE_LABEL: Record<ObjectTypeBackend, string> = {
 };
 
 export type PetPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "NOT_ALLOWED";
-export type SmokingPolicyBackend =
-  | "ALLOWED"
-  | "BY_ARRANGEMENT"
-  | "NON_SMOKERS_PREFERRED";
+export type SmokingPolicyBackend = "ALLOWED" | "BY_ARRANGEMENT" | "NOT_ALLOWED";
 
 export const SMOKING_POLICY_LABEL: Record<SmokingPolicyBackend, string> = {
   ALLOWED: "Erlaubt",
   BY_ARRANGEMENT: "Auf Anfrage",
-  NON_SMOKERS_PREFERRED: "Nicht erlaubt",
+  NOT_ALLOWED: "Nicht erlaubt",
 };
 
 export interface CreateListingPayload {

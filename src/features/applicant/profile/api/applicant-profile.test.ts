@@ -14,8 +14,7 @@ describe("applicant-profile mapping", () => {
         adultsCount: 2,
         childrenCount: 1,
         hasPets: true,
-        petsNote: "1 Katze",
-        smokingStatus: "NON_SMOKER",
+        isSmoker: false,
       }),
     ).toEqual({
       income: "3200",
@@ -24,8 +23,7 @@ describe("applicant-profile mapping", () => {
       incomeProof: "ja",
       schufa: "nein",
       pets: "ja",
-      petsNote: "1 Katze",
-      smoker: "nichtraucher",
+      smoker: "nein",
     });
   });
 
@@ -33,17 +31,10 @@ describe("applicant-profile mapping", () => {
     expect(toDraft({})).toEqual(INITIAL_PROFILE);
   });
 
-  it("round-trips every smoking status", () => {
-    expect(toDraft({ smokingStatus: "SMOKER" }).smoker).toBe("raucher");
-    expect(toDraft({ smokingStatus: "OCCASIONALLY" }).smoker).toBe(
-      "gelegentlich",
-    );
-    expect(
-      toPayload({ ...INITIAL_PROFILE, smoker: "gelegentlich" }).smokingStatus,
-    ).toBe("OCCASIONALLY");
-    expect(
-      toPayload({ ...INITIAL_PROFILE, smoker: "raucher" }).smokingStatus,
-    ).toBe("SMOKER");
+  it("round-trips the smoker boolean", () => {
+    expect(toDraft({ isSmoker: true }).smoker).toBe("ja");
+    expect(toDraft({ isSmoker: false }).smoker).toBe("nein");
+    expect(toPayload({ ...INITIAL_PROFILE, smoker: "ja" }).isSmoker).toBe(true);
   });
 
   it("clamps out-of-range household counts", () => {
@@ -61,8 +52,7 @@ describe("applicant-profile mapping", () => {
       adultsCount: 1,
       childrenCount: 0,
       hasPets: null,
-      petsNote: null,
-      smokingStatus: null,
+      isSmoker: null,
     });
   });
 
@@ -75,26 +65,6 @@ describe("applicant-profile mapping", () => {
 
   it("never sends the derived people count", () => {
     expect(toPayload(INITIAL_PROFILE)).not.toHaveProperty("peopleCount");
-  });
-
-  it("drops the pets note when pets are not confirmed", () => {
-    expect(
-      toPayload({
-        ...INITIAL_PROFILE,
-        pets: "nein",
-        petsNote: "1 Katze",
-      }).petsNote,
-    ).toBeNull();
-  });
-
-  it("keeps the trimmed pets note when pets are confirmed", () => {
-    expect(
-      toPayload({
-        ...INITIAL_PROFILE,
-        pets: "ja",
-        petsNote: "  1 Katze  ",
-      }).petsNote,
-    ).toBe("1 Katze");
   });
 
   it("parses the income into a number", () => {

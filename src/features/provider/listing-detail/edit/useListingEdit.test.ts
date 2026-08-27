@@ -35,7 +35,7 @@ const LISTING: ListingDetail = {
   minimumHouseholdNetIncome: 3000,
   suitableForPeopleCount: 2,
   petsPolicy: "BY_ARRANGEMENT",
-  smokingPolicy: "NON_SMOKERS_PREFERRED",
+  smokingPolicy: "NOT_ALLOWED",
   images: [],
   createdAt: null,
   updatedAt: null,

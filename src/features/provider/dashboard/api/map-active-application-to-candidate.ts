@@ -32,6 +32,7 @@ export function mapActiveApplicationToCandidate(
     initials: buildInitials(application.applicant.name),
     name: application.applicant.name,
     household: formatHousehold(application.applicant),
+    warnings: application.applicant.warnings,
   };
 }
 

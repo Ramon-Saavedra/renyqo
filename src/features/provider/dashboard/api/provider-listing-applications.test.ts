@@ -14,6 +14,7 @@ vi.mock("@/lib/api/client", () => ({
 const baseApplicant = {
   name: "Anna Lehmann",
   peopleCount: 2,
+  warnings: [],
 };
 
 const activeApplication = {
@@ -85,6 +86,19 @@ describe("getProviderActiveApplications", () => {
       {
         ...activeApplication,
         applicant: { ...baseApplicant, peopleCount: total },
+      },
+    ]);
+
+    await expect(
+      getProviderActiveApplications("listing-1"),
+    ).rejects.toBeInstanceOf(ProviderListingApplicationsContractError);
+  });
+
+  it("rejects an unknown warning value", async () => {
+    vi.mocked(apiGet).mockResolvedValue([
+      {
+        ...activeApplication,
+        applicant: { ...baseApplicant, warnings: ["unknown_warning"] },
       },
     ]);
 

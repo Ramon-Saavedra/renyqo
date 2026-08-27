@@ -24,7 +24,7 @@ const listingExtractionValuesSchema = z.object({
   suitableForPeopleCount: z.number().nullable().optional(),
   petsPolicy: z.enum(["ALLOWED", "BY_ARRANGEMENT", "NOT_ALLOWED"]).optional(),
   smokingPolicy: z
-    .enum(["ALLOWED", "BY_ARRANGEMENT", "NON_SMOKERS_PREFERRED"])
+    .enum(["ALLOWED", "BY_ARRANGEMENT", "NOT_ALLOWED"])
     .optional(),
   district: z.string().optional(),
 });

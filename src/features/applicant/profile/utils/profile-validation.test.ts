@@ -18,8 +18,7 @@ const COMPLETE_PROFILE: ApplicantProfileDraft = {
   incomeProof: "ja",
   schufa: "ja",
   pets: "ja",
-  petsNote: "1 Katze",
-  smoker: "nichtraucher",
+  smoker: "nein",
 };
 
 describe("profile-validation", () => {
@@ -28,8 +27,8 @@ describe("profile-validation", () => {
       "Haushaltsnettoeinkommen",
       "Einkommensnachweis",
       "SCHUFA-Auskunft",
-      "Haustiere",
-      "Raucherstatus",
+      "Haustiere?",
+      "Raucher?",
     ]);
   });
 
