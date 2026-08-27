@@ -13,9 +13,7 @@ const candidate: Candidate = {
   warnings: [],
 };
 
-function candidateWithWarnings(
-  warnings: Candidate["warnings"],
-): Candidate {
+function candidateWithWarnings(warnings: Candidate["warnings"]): Candidate {
   return { ...candidate, warnings };
 }
 
@@ -45,7 +43,9 @@ describe("CandidateCard", () => {
 
   it("renders the pets warning with an icon", () => {
     const { container } = render(
-      <CandidateCard candidate={candidateWithWarnings(["pets_by_arrangement"])} />,
+      <CandidateCard
+        candidate={candidateWithWarnings(["pets_by_arrangement"])}
+      />,
     );
 
     expect(screen.getByText("Rückfrage: Haustiere")).not.toBeNull();
