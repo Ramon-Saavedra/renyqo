@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
@@ -8,9 +8,9 @@ vi.mock("./DashboardTopbar", () => ({
 }));
 
 describe("DashboardLoadingSkeleton", () => {
-  it("renders a waiting queue placeholder", () => {
-    render(<DashboardLoadingSkeleton />);
+  it("renders dashboard loading placeholders", () => {
+    const { container } = render(<DashboardLoadingSkeleton />);
 
-    expect(screen.getByTestId("waiting-queue-skeleton")).not.toBeNull();
+    expect(container.getElementsByClassName("sk").length).toBeGreaterThan(0);
   });
 });

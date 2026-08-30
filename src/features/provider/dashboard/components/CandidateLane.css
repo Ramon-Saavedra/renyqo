@@ -1,0 +1,226 @@
+@keyframes rqCardEnter {
+  from {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  60% {
+    opacity: 0.6;
+  }
+  to {
+    max-width: 340px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes rqRowEnter {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  60% {
+    opacity: 0.6;
+  }
+  to {
+    max-height: 140px;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rqTeaserInA {
+  from {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes rqTeaserInB {
+  from {
+    opacity: 0;
+    transform: translateX(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes rqTeaserInColA {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rqTeaserInColB {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rqCountTickA {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes rqCountTickB {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rqAreaPulseA {
+  0% {
+    box-shadow: 0 0 0 1px var(--rq-edge);
+  }
+  28% {
+    box-shadow:
+      0 0 0 1px rgba(42, 122, 92, 0.55),
+      0 0 30px -8px rgba(42, 122, 92, 0.34);
+  }
+  100% {
+    box-shadow: 0 0 0 1px var(--rq-edge);
+  }
+}
+@keyframes rqAreaPulseB {
+  0% {
+    box-shadow: 0 0 0 1px var(--rq-edge);
+  }
+  28% {
+    box-shadow:
+      0 0 0 1px rgba(42, 122, 92, 0.55),
+      0 0 30px -8px rgba(42, 122, 92, 0.34);
+  }
+  100% {
+    box-shadow: 0 0 0 1px var(--rq-edge);
+  }
+}
+
+@keyframes rqLaneFlow {
+  0% {
+    transform: translateX(28%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes rqQueueSweep {
+  0% {
+    opacity: 0;
+    transform: translateY(105%);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-105%);
+  }
+}
+@keyframes rqSkelBreathe {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+@keyframes rqDotBreathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+@keyframes rqRailCrawl {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 16px 0;
+  }
+}
+
+@keyframes rqPressPushX {
+  0% {
+    opacity: 0.35;
+    transform: translateX(10px);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0.35;
+    transform: translateX(10px);
+  }
+}
+@keyframes rqPressPushY {
+  0% {
+    opacity: 0.35;
+    transform: translateY(10px);
+  }
+  45% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0.35;
+    transform: translateY(10px);
+  }
+}
+@keyframes rqSeamPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+[data-rq-tip]:focus {
+  outline: none;
+}
+[data-rq-tip]:focus-visible {
+  outline: 2px solid var(--rq-tip-bd);
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-rq-lane],
+  [data-rq-lane] *,
+  [data-rq-lane] *::before,
+  [data-rq-lane] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

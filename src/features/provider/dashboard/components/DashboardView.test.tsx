@@ -219,7 +219,7 @@ describe("DashboardView", () => {
     );
     expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
     expect(screen.getByText("Passende Kandidaten")).not.toBeNull();
-    expect(screen.getAllByText("Freier Platz")).toHaveLength(5);
+    expect(screen.getAllByText("Platz frei")).toHaveLength(5);
     expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
   });
 

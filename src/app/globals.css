@@ -38,9 +38,12 @@ html {
   --color-warning-vivid: var(--warning-vivid);
   --color-danger: var(--danger);
 
-  --radius-sm: 4px;
+  --color-candidate-panel-bg: var(--candidate-panel-bg);
+
+  --radius: var(--radius-md);
+  --radius-sm: var(--radius-md);
   --radius-md: 6px;
-  --radius-lg: 10px;
+  --radius-lg: var(--radius-md);
 
   --shadow-focus: var(--focus-ring);
   --shadow-card: var(--card-shadow);
@@ -142,6 +145,8 @@ html {
   --warning-vivid: #fa8714;
   --danger: #dc2626;
 
+  --candidate-panel-bg: #ffffff;
+
   --watermark-opacity-peak: 0.35;
   --watermark-cycle-duration: 120s;
 
@@ -186,6 +191,8 @@ html {
   --warning: #d2a36a;
   --warning-vivid: #f59527;
   --danger: #f87171;
+
+  --candidate-panel-bg: #17171a;
 
   --watermark-opacity-peak: 0.5;
 
