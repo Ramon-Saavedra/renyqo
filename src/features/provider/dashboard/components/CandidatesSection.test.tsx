@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { CandidatesSection } from "./CandidatesSection";
 import type { Candidate, DashboardObject } from "../types";
@@ -37,6 +37,24 @@ const candidates: readonly Candidate[] = [
   },
 ];
 
+const candidateWithBothWarnings: Candidate = {
+  id: "candidate-warnings-both",
+  objectId: "object-1",
+  initials: "AB",
+  name: "Anna Berger",
+  household: "2 Personen",
+  warnings: ["pets_by_arrangement", "smoking_by_arrangement"],
+};
+
+const candidateWithSmokingWarning: Candidate = {
+  id: "candidate-warning-smoking",
+  objectId: "object-1",
+  initials: "AS",
+  name: "Anna Sommer",
+  household: "2 Personen",
+  warnings: ["smoking_by_arrangement"],
+};
+
 const fiveCandidates: readonly Candidate[] = Array.from(
   { length: 5 },
   (_, index) => ({
@@ -48,6 +66,33 @@ const fiveCandidates: readonly Candidate[] = Array.from(
     warnings: [],
   }),
 );
+
+const fifoCandidates: readonly Candidate[] = [
+  {
+    id: "candidate-fifo-1",
+    objectId: "object-1",
+    initials: "FA",
+    name: "FIFO Anna",
+    household: "1 Person",
+    warnings: [],
+  },
+  {
+    id: "candidate-fifo-2",
+    objectId: "object-1",
+    initials: "FB",
+    name: "FIFO Bruno",
+    household: "2 Personen",
+    warnings: [],
+  },
+  {
+    id: "candidate-fifo-3",
+    objectId: "object-1",
+    initials: "FC",
+    name: "FIFO Clara",
+    household: "3 Personen",
+    warnings: [],
+  },
+];
 
 describe("CandidatesSection", () => {
   it("renders the compact active occupancy indicator in the section header", () => {
@@ -76,7 +121,77 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.getByText("Anna Lehmann")).not.toBeNull();
-    expect(screen.getAllByText("Freier Platz")).toHaveLength(4);
+    expect(screen.getByText("Anna Lehmann").closest("article")).not.toBeNull();
+    expect(screen.getAllByText("Platz frei")).toHaveLength(4);
+  });
+
+  it("renders both backend warnings with their matching icons", () => {
+    render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={[candidateWithBothWarnings]}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(screen.getByLabelText("Haustiere klären")).not.toBeNull();
+    expect(screen.getByLabelText("Rauchen klären")).not.toBeNull();
+  });
+
+  it("removes a candidate immediately when the active backend result changes", () => {
+    const { rerender } = render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={candidates}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    rerender(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={[]}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(screen.queryByText("Anna Lehmann")).toBeNull();
+  });
+
+  it("shows warning tooltips through keyboard focus", () => {
+    render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={[candidateWithSmokingWarning]}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    const trigger = screen.getByLabelText("Rauchen klären");
+    fireEvent.focus(trigger);
+    expect(screen.getByRole("tooltip")).not.toBeNull();
+    expect(trigger.getAttribute("aria-describedby")).toBe(
+      screen.getByRole("tooltip").id,
+    );
+    expect(screen.getByRole("tooltip").style.transform).toBe(
+      "translateX(-100%)",
+    );
+
+    fireEvent.keyDown(trigger, { key: "Escape" });
+    expect(trigger.getAttribute("aria-describedby")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
+
+    fireEvent.blur(trigger);
+    expect(trigger.getAttribute("aria-describedby")).toBeNull();
+    expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
   it("renders five empty slots when there are zero active candidates", () => {
@@ -90,7 +205,7 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(screen.getAllByText("Freier Platz")).toHaveLength(5);
+    expect(screen.getAllByText("Platz frei")).toHaveLength(5);
   });
 
   it("renders five active candidate cards without empty slots", () => {
@@ -105,7 +220,23 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.getAllByText(/Candidate /)).toHaveLength(5);
-    expect(screen.queryByText("Freier Platz")).toBeNull();
+    expect(screen.queryByText("Platz frei")).toBeNull();
+  });
+
+  it("preserves the backend FIFO order for active candidates", () => {
+    render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={fifoCandidates}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(
+      screen.getAllByText(/^FIFO /).map((candidate) => candidate.textContent),
+    ).toEqual(["FIFO Anna", "FIFO Bruno", "FIFO Clara"]);
   });
 
   it("renders at most five active candidate cards even when more are provided", () => {
@@ -133,10 +264,10 @@ describe("CandidatesSection", () => {
 
     expect(screen.getAllByText(/Candidate /)).toHaveLength(5);
     expect(screen.queryByText("Candidate 6")).toBeNull();
-    expect(screen.queryByText("Freier Platz")).toBeNull();
+    expect(screen.queryByText("Platz frei")).toBeNull();
   });
 
-  it("renders the neutral empty waiting row when waiting count is zero", () => {
+  it("renders the neutral capacity label when waiting count is zero", () => {
     render(
       <CandidatesSection
         object={publishedObject}
@@ -147,11 +278,7 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(
-      screen.getByText(
-        "Aktuell keine weiteren passenden Bewerbungen in der Warteschlange",
-      ),
-    ).not.toBeNull();
+    expect(screen.getByRole("status", { name: "Kapazität 5" })).not.toBeNull();
     expect(screen.queryByText("0")).toBeNull();
   });
 
@@ -166,9 +293,7 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(
-      screen.getByText("1 weitere passende Bewerbung wartet"),
-    ).not.toBeNull();
+    expect(screen.getByRole("status", { name: "+1 wartet" })).not.toBeNull();
   });
 
   it("renders plural waiting copy for multiple waiting applications", () => {
@@ -182,9 +307,33 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(
-      screen.getByText("3 weitere passende Bewerbungen warten"),
-    ).not.toBeNull();
+    expect(screen.getByRole("status", { name: "+3 warten" })).not.toBeNull();
+  });
+
+  it("uses the active candidate count for the first waiting position", () => {
+    const { rerender } = render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={candidates}
+        waitingCountState={{ status: "success", count: 5 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(screen.getByText("Nr. 2 von 6")).not.toBeNull();
+
+    rerender(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={[]}
+        waitingCountState={{ status: "success", count: 5 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(screen.getByText("Nr. 1 von 5")).not.toBeNull();
   });
 
   it("shows waiting-count error without rendering a fake zero", () => {
@@ -198,9 +347,11 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(
-      screen.getByText("Warteschlange konnte nicht geladen werden."),
-    ).not.toBeNull();
+    const error = screen.getByRole("status", {
+      name: "Warteschlange konnte nicht geladen werden.",
+    });
+    expect(error.getAttribute("aria-live")).toBe("polite");
+    expect(screen.queryByRole("status", { name: "Kapazität 5" })).toBeNull();
     expect(screen.queryByText("0")).toBeNull();
     expect(screen.queryByText("weitere passende Bewerbung wartet")).toBeNull();
     expect(
@@ -208,7 +359,7 @@ describe("CandidatesSection", () => {
     ).toBeNull();
   });
 
-  it("never renders waiting applicant identities", () => {
+  it("renders the waiting teaser without waiting applicant data", () => {
     render(
       <CandidatesSection
         object={publishedObject}
@@ -219,8 +370,13 @@ describe("CandidatesSection", () => {
       />,
     );
 
+    expect(screen.getByRole("status", { name: "+2 warten" })).not.toBeNull();
+    const queueLabel = screen.getByText("in Warteschlange");
+    const teaser = queueLabel.parentElement;
+    expect(teaser?.textContent).toBe("in Warteschlange");
     expect(screen.queryByText(/waiting applicant/i)).toBeNull();
     expect(screen.queryAllByText(/@/)).toHaveLength(0);
+    expect(screen.queryByLabelText(/klären/)).toBeNull();
   });
 
   it("renders a draft message instead of candidates for draft objects", () => {
@@ -254,7 +410,7 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.queryByText("Anna Lehmann")).toBeNull();
-    expect(screen.getAllByText("Freier Platz")).toHaveLength(5);
+    expect(screen.getAllByText("Platz frei")).toHaveLength(5);
   });
 
   it("shows an application error while still rendering active candidates", () => {
@@ -291,8 +447,7 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.queryByText("Anna Lehmann")).toBeNull();
-    expect(screen.queryByText("Freier Platz")).toBeNull();
+    expect(screen.queryByText("Platz frei")).toBeNull();
     expect(container.getElementsByClassName("sk").length).toBeGreaterThan(0);
-    expect(screen.getByTestId("waiting-queue-skeleton")).not.toBeNull();
   });
 });

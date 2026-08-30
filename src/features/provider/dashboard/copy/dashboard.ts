@@ -102,26 +102,23 @@ export const dashboardCopy = {
   candidates: {
     title: "Passende Kandidaten",
     lead: `Nur passende Bewerbungen werden aktiv angezeigt — höchstens ${MAX_ACTIVE_APPLICATIONS} pro Objekt.`,
-    activeOccupancy: (active: number) =>
-      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktiv`,
-    emptySlotPrimary: "Freier Platz",
-    emptySlotSecondary: "für passende Bewerbung",
     draftEmpty:
       "Dieses Objekt ist noch ein Entwurf. Veröffentliche es, um passende Bewerbungen zu erhalten.",
     loadError:
       "Bewerbungen konnten nicht geladen werden. Bitte versuche es gleich erneut.",
+    freeSlot: "Platz frei",
+    slot: (position: number) => `Platz ${String(position).padStart(2, "0")}`,
     householdOne: "1 Person",
     householdMany: (count: number) => `${count} Personen`,
     householdUnavailable: "Haushalt nicht angegeben",
-    warningLabels: {
-      pets_by_arrangement: "Rückfrage: Haustiere",
-      smoking_by_arrangement: "Rückfrage: Rauchen",
-    },
   },
-  waitingBanner: {
-    singular: "1 weitere passende Bewerbung wartet",
-    plural: (count: number) => `${count} weitere passende Bewerbungen warten`,
-    empty: "Aktuell keine weiteren passenden Bewerbungen in der Warteschlange",
+  waitingQueue: {
+    badge: (count: number) => (count === 1 ? "+1 wartet" : `+${count} warten`),
+    queueLabel: "in Warteschlange",
+    queuePosition: (position: number, total: number) =>
+      `Nr. ${position} von ${total}`,
+    capacity: (max: number) => `Kapazität ${max}`,
+    capacityWithQueue: (max: number) => `Kapazität ${max} · FIFO`,
     loadError: "Warteschlange konnte nicht geladen werden.",
   },
 } as const;
