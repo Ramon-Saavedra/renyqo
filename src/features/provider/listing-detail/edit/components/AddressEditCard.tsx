@@ -26,7 +26,7 @@ export function AddressEditCard({
   return (
     <DetailCard
       title={listingDetailCopy.address.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <div className="flex flex-col gap-4">
         <FormField label={fields.street} htmlFor="edit-street">

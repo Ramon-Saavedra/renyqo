@@ -24,9 +24,8 @@ interface CompletionChecklistProps {
 
 const VARIANT_CLASS: Record<ChecklistVariant, string> = {
   inline: "min-w-0 xl:hidden",
-  rail: "sticky top-21 hidden w-full rounded-md border border-border bg-background-subtle px-3 py-3 xl:block",
-  panel:
-    "w-full rounded-md border border-border bg-background-subtle px-3 py-3",
+  rail: "sticky top-21 hidden w-full rounded-md border border-border bg-background-muted px-3 py-3 xl:block",
+  panel: "w-full rounded-md border border-border bg-background-muted px-3 py-3",
 };
 const HEADER_CLASS = "mb-2 flex items-center justify-between gap-3";
 const LABEL_CLASS = "font-mono text-meta uppercase text-foreground-tertiary";

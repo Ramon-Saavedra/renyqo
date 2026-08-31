@@ -71,7 +71,7 @@ describe("CandidateLane", () => {
     if (!(lane instanceof HTMLElement))
       throw new Error("Candidate lane is missing");
 
-    expect(lane.style.getPropertyValue("--rq-panel")).toBe("#FFFFFF");
+    expect(lane.style.getPropertyValue("--rq-lane-edge")).toBe("#E5E5E5");
   });
 
   it("announces waiting count changes", () => {

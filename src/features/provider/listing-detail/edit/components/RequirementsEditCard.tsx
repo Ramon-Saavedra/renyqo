@@ -47,7 +47,7 @@ export function RequirementsEditCard({
   return (
     <DetailCard
       title={listingDetailCopy.requirements.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">

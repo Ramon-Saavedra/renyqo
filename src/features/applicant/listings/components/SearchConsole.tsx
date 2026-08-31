@@ -23,7 +23,7 @@ interface SearchConsoleProps {
 }
 
 const CONSOLE_CLASS =
-  "flex flex-wrap items-center gap-2.5 rounded-lg border border-border bg-background-subtle px-4 py-3.5";
+  "flex flex-wrap items-center gap-2.5 rounded-md border border-border bg-background-muted px-4 py-3.5";
 
 const DIVIDER_CLASS = "mx-1 hidden h-6 w-px bg-border lg:block";
 

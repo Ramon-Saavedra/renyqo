@@ -16,7 +16,7 @@ interface PhotoGridProps {
 }
 
 const TILE_BASE =
-  "group relative aspect-[4/3] overflow-hidden rounded-md border bg-background-subtle";
+  "group relative aspect-[4/3] overflow-hidden rounded-md border bg-background-muted";
 const TILE_IDLE = "border-border";
 const TILE_COVER = "border-border shadow-cover-ring";
 

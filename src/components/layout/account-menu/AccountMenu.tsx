@@ -40,7 +40,7 @@ const PANEL_HEAD_CLASS = "mb-3 flex items-center justify-between gap-3";
 const PANEL_TITLE_CLASS =
   "font-mono text-meta uppercase text-foreground-tertiary";
 const THEME_ROW_CLASS =
-  "flex items-center justify-between gap-3 rounded-md border border-border bg-background-subtle p-3";
+  "flex items-center justify-between gap-3 rounded-md border border-border bg-background-muted p-3";
 const THEME_LABEL_CLASS =
   "font-mono text-meta uppercase text-foreground-tertiary";
 const THEME_TOGGLE_CLASS =

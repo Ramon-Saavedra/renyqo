@@ -62,7 +62,7 @@ export const RoleCard = forwardRef<HTMLDivElement, RoleCardProps>(
         onKeyDown={handleKeyDown}
         tabIndex={tabIndex}
         className={cn(
-          "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-background-subtle p-4 text-left shadow-card focus-visible:outline-none focus-visible:shadow-focus",
+          "group relative flex cursor-pointer flex-col overflow-hidden rounded-md border bg-background-muted p-4 text-left shadow-card focus-visible:outline-none focus-visible:shadow-focus",
           active
             ? "border-primary"
             : "border-border hover:border-border-strong",

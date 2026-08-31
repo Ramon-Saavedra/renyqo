@@ -12,7 +12,7 @@ const ROW_BASE =
   "relative flex items-stretch gap-3.5 rounded-md border px-4 py-3.5";
 
 const ROW_CURRENT = "border-primary bg-background shadow-tint-ring";
-const ROW_IDLE = "border-border bg-background-subtle";
+const ROW_IDLE = "border-border bg-background-muted";
 
 const NUM_BASE =
   "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-mono text-caption font-medium";

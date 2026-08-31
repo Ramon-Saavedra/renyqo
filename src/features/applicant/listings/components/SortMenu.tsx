@@ -13,7 +13,7 @@ interface SortMenuProps {
 }
 
 const TRIGGER_CLASS =
-  "inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-md border border-border-strong bg-input px-3 text-caption text-foreground hover:bg-background-subtle focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-8.5 cursor-pointer items-center gap-1.5 rounded-md border border-border-strong bg-input px-3 text-caption text-foreground hover:bg-background-muted focus-visible:outline-none focus-visible:shadow-focus";
 
 const TRIGGER_LABEL_CLASS = "hidden text-foreground-tertiary sm:inline";
 

@@ -16,7 +16,7 @@ interface ObjectSidebarProps {
 }
 
 const ASIDE_CLASS =
-  "hidden bg-background-subtle lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-r lg:border-border";
+  "hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-x lg:border-border";
 
 const HEAD_CLASS = "flex items-start justify-between gap-3 px-5 py-4";
 const HEAD_COPY_CLASS = "flex min-w-0 flex-col gap-1";
@@ -24,7 +24,7 @@ const HEAD_TITLE_CLASS =
   "min-w-0 truncate font-mono text-meta text-foreground-tertiary";
 const HEAD_COUNT_CLASS = "font-mono text-meta text-foreground-tertiary";
 const COLLAPSE_CLASS =
-  "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 const LIST_CLASS =
   "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-3 pt-0 pb-4";

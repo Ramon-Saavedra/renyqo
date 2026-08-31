@@ -100,7 +100,7 @@ export function RequirementsCard({
   return (
     <DetailCard
       title={requirements.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <ul className={LIST_CLASS}>
         {rows.map((row) => (

@@ -39,9 +39,9 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   secondary:
     "border border-primary-soft bg-primary-tint text-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
   outline:
-    "border border-border-strong bg-transparent text-foreground-secondary hover:border-foreground-tertiary hover:bg-background-subtle hover:text-foreground",
+    "border border-border-strong bg-transparent text-foreground-secondary hover:border-foreground-tertiary hover:bg-background-muted hover:text-foreground",
   ghost:
-    "bg-transparent text-foreground-secondary hover:bg-background-subtle hover:text-foreground",
+    "bg-transparent text-foreground-secondary hover:bg-background-muted hover:text-foreground",
   danger:
     "border border-danger/20 bg-background text-danger hover:bg-danger/10",
 };

@@ -1,7 +1,5 @@
 export const DARK: Record<string, string> = {
-  "--rq-panel": "#17171A",
   "--rq-edge": "#2E2E2E",
-  "--rq-lane": "#1B1B1F",
   "--rq-lane-edge": "#2C2C33",
   "--rq-div": "#26262C",
   "--rq-text": "#EDEDEF",
@@ -33,9 +31,7 @@ export const DARK: Record<string, string> = {
 };
 
 export const LIGHT: Record<string, string> = {
-  "--rq-panel": "#FFFFFF",
   "--rq-edge": "#E5E5E5",
-  "--rq-lane": "#FCFCFC",
   "--rq-lane-edge": "#E5E5E5",
   "--rq-div": "#EBEBE8",
   "--rq-text": "#1A141A",

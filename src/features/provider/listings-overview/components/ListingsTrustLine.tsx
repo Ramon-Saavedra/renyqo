@@ -3,7 +3,7 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingsCopy } from "../copy/listings";
 
 const WRAPPER_CLASS =
-  "mb-6 flex items-center gap-2.5 rounded-md border border-border bg-background-subtle px-3.5 py-2.75 text-caption text-foreground-secondary";
+  "mb-6 flex items-center gap-2.5 rounded-md border border-border bg-background-muted px-3.5 py-2.75 text-caption text-foreground-secondary";
 
 const ICON_CLASS = "shrink-0 text-primary";
 

@@ -17,7 +17,7 @@ interface DashboardSearchProps {
 const ICON_CLASS =
   "pointer-events-none absolute top-1/2 -translate-y-1/2 text-foreground-tertiary";
 const CLEAR_CLASS =
-  "absolute top-1/2 right-2 -translate-y-1/2 inline-flex items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "absolute top-1/2 right-2 -translate-y-1/2 inline-flex items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 export function DashboardSearch({
   value,

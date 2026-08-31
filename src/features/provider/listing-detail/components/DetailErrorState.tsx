@@ -8,7 +8,7 @@ interface DetailErrorStateProps {
 }
 
 const WRAP_CLASS =
-  "flex flex-col items-center justify-center gap-4 rounded-lg border border-border px-6 py-20 text-center";
+  "flex flex-col items-center justify-center gap-4 rounded-md border border-border px-6 py-20 text-center";
 const ICON_CLASS =
   "flex h-12 w-12 items-center justify-center rounded-md bg-background-muted text-danger";
 const TITLE_CLASS = "font-display text-heading-md font-medium text-foreground";

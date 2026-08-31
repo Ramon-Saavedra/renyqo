@@ -30,7 +30,7 @@ interface FilterDrawerProps {
 const SCRIM_CLASS = "fixed inset-0 z-40 bg-foreground/40 lg:hidden";
 
 const SHEET_CLASS =
-  "fixed inset-x-0 bottom-0 z-50 max-h-dvh overflow-y-auto rounded-t-lg border-t border-border bg-background-subtle px-4.5 pt-4 pb-6 shadow-card scrollbar-slim lg:hidden";
+  "fixed inset-x-0 bottom-0 z-50 max-h-dvh overflow-y-auto rounded-t-md border-t border-border bg-background-muted px-4.5 pt-4 pb-6 shadow-card scrollbar-slim lg:hidden";
 
 const HANDLE_CLASS = "mx-auto mb-4 h-1 w-9 rounded-full bg-border-strong";
 

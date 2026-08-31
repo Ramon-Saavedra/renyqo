@@ -19,7 +19,7 @@ export function DescriptionCard({
   return (
     <DetailCard
       title={listingDetailCopy.description.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <p className={TEXT_CLASS}>{description}</p>
     </DetailCard>

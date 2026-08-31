@@ -31,7 +31,7 @@ export const STATUS_META: Record<ListingStatus, StatusMeta> = {
   },
   archived: {
     label: "Archiviert",
-    pillClass: "bg-background-subtle text-foreground-tertiary",
+    pillClass: "bg-background-muted text-foreground-tertiary",
   },
 };
 

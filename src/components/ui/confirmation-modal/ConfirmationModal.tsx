@@ -28,13 +28,13 @@ const OVERLAY_CLASS =
 const PANEL_CLASS =
   "relative w-full max-w-md rounded-md border border-border bg-background p-5 shadow-card sm:max-w-xl";
 const CLOSE_BUTTON_CLASS =
-  "absolute right-3 top-3 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
+  "absolute right-3 top-3 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
 const ICON_WRAP_CLASS =
   "mb-4 flex h-9 w-9 items-center justify-center rounded-md border border-primary-soft bg-primary-tint text-primary";
 const TITLE_CLASS = "mb-2 text-title font-medium text-foreground";
 const TEXT_CLASS = "mb-4 text-body text-foreground-secondary";
 const ERROR_CLASS =
-  "mb-4 rounded-sm border border-border bg-background-subtle px-3 py-2 text-caption text-foreground-secondary";
+  "mb-4 rounded-sm border border-border bg-background-muted px-3 py-2 text-caption text-foreground-secondary";
 const ACTIONS_CLASS = "grid gap-2";
 const ACTION_BUTTON_CLASS =
   "min-h-11 w-full justify-center text-center leading-tight";

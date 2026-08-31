@@ -20,7 +20,7 @@ interface ListingApplyBoxProps {
 }
 
 const BOX_CLASS =
-  "flex w-fit flex-col gap-2.5 rounded-lg border border-border p-4 max-sm:w-full";
+  "flex w-fit flex-col gap-2.5 rounded-md border border-border p-4 max-sm:w-full";
 
 const ACTION_ROW_CLASS = "flex items-center gap-3";
 

@@ -273,7 +273,7 @@ export function ObjektdatenSection({
             id="deposit-months"
             role="group"
             aria-label={fields.deposit.label}
-            className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-background-subtle"
+            className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-input"
           >
             <button
               type="button"

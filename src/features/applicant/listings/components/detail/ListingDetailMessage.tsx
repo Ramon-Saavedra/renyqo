@@ -13,7 +13,7 @@ interface ListingDetailMessageProps {
 }
 
 const WRAPPER_CLASS =
-  "flex flex-col items-center justify-center gap-5 rounded-lg border border-dashed border-border-strong bg-background-subtle px-6 py-14 text-center";
+  "flex flex-col items-center justify-center gap-5 rounded-md border border-dashed border-border-strong bg-background-muted px-6 py-14 text-center";
 
 const MARK_CLASS =
   "inline-flex h-12 w-12 items-center justify-center rounded-md bg-primary-tint text-primary";

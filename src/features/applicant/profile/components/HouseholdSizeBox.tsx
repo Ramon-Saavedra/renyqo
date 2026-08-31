@@ -1,7 +1,7 @@
 import { applicantProfileCopy } from "../copy/applicant-profile";
 
 const BOX_CLASS =
-  "flex flex-col gap-1 rounded-md border border-dashed border-border-strong bg-background-subtle px-4 py-3.5";
+  "flex flex-col gap-1 rounded-md border border-dashed border-border-strong bg-background-muted px-4 py-3.5";
 const KICKER_CLASS =
   "flex items-center gap-2 font-mono text-meta uppercase text-foreground-tertiary";
 const PIP_CLASS = "h-1.25 w-1.25 rounded-full bg-primary";

@@ -28,7 +28,7 @@ const OVERLAY_CLASS =
   "absolute inset-0 items-center justify-center bg-foreground/55 font-display text-title font-semibold text-background";
 
 const EMPTY_CLASS =
-  "flex h-72 w-full flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border-strong bg-background-subtle font-mono text-meta uppercase text-foreground-tertiary sm:h-96";
+  "flex h-72 w-full flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border-strong bg-background-muted font-mono text-meta uppercase text-foreground-tertiary sm:h-96";
 
 function tileClasses(count: number): readonly string[] {
   switch (count) {

@@ -5,7 +5,7 @@ const HEADER_ROW_CLASS =
   "flex flex-wrap items-start justify-between gap-4 gap-y-5";
 
 const APPLY_BOX_CLASS =
-  "flex w-full max-w-84 items-center gap-3 rounded-lg border border-border p-4 max-sm:max-w-none";
+  "flex w-full max-w-84 items-center gap-3 rounded-md border border-border p-4 max-sm:max-w-none";
 
 const MOSAIC_CLASS =
   "mt-6 mb-7 grid h-72 grid-cols-12 grid-rows-2 gap-2 sm:h-96 lg:h-128";
