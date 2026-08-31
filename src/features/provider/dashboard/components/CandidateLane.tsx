@@ -201,7 +201,7 @@ export function CandidateLane({
         display: "flex",
         flexDirection: "column",
         fontFamily: "Roboto, system-ui, sans-serif",
-        background: "var(--rq-panel)",
+        background: "var(--background-muted)",
         borderRadius: "var(--radius-lg)",
         padding: "var(--rq-panel-pad)",
         overflow: "hidden",
@@ -322,7 +322,6 @@ export function CandidateLane({
           borderRadius: "var(--rq-lane-radius)",
           overflow: "hidden",
           boxShadow: "inset 0 0 0 1px var(--rq-lane-edge)",
-          background: "var(--rq-lane)",
           padding: 6,
         }}
       >
