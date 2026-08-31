@@ -61,7 +61,7 @@ export function FactsEditCard({
   return (
     <DetailCard
       title={listingDetailCopy.facts.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField
@@ -113,7 +113,7 @@ export function FactsEditCard({
           <div
             role="group"
             aria-label={fields.deposit}
-            className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-background-subtle"
+            className="flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-input"
           >
             <button
               type="button"

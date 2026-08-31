@@ -8,7 +8,7 @@ interface NoteProps {
 }
 
 const BASE_CLASS =
-  "flex gap-3 rounded-md border border-border bg-background-subtle px-4 py-3.5 text-caption leading-normal text-foreground-secondary";
+  "flex gap-3 rounded-md border border-border bg-background-muted px-4 py-3.5 text-caption leading-normal text-foreground-secondary";
 
 export function Note({ icon, children, className }: NoteProps) {
   return (

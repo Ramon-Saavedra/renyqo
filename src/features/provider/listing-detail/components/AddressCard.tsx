@@ -12,7 +12,7 @@ interface AddressCardProps {
 
 const ADDRESS_CLASS = "mb-4 text-body leading-normal text-foreground";
 const NOTE_CLASS =
-  "flex gap-2.5 rounded-sm border border-border bg-background-subtle px-3.5 py-3";
+  "flex gap-2.5 rounded-sm border border-border bg-background-muted px-3.5 py-3";
 const NOTE_TEXT_CLASS =
   "text-caption leading-relaxed text-foreground-secondary";
 
@@ -23,7 +23,7 @@ export function AddressCard({ listing, className }: AddressCardProps) {
   return (
     <DetailCard
       title={listingDetailCopy.address.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <p className={ADDRESS_CLASS}>
         {hasAddress ? (

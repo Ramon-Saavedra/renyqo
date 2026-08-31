@@ -3,9 +3,9 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { dashboardCopy } from "../copy/dashboard";
 
 const CARD_CLASS =
-  "mb-7 overflow-hidden rounded-md border border-border bg-background";
+  "mb-6 overflow-hidden rounded-md border border-border bg-background-muted";
 const HEAD_CLASS =
-  "flex flex-col gap-4 border-b border-border px-6 py-5 xl:flex-row xl:items-start xl:justify-between";
+  "flex flex-col gap-3 border-b border-border px-6 py-5 xl:flex-row xl:items-start xl:justify-between";
 const HEAD_LEFT_CLASS = "flex min-w-0 gap-5";
 const THUMB_CLASS =
   "hidden h-23 w-23 shrink-0 items-center justify-center rounded-md bg-background-muted text-foreground-tertiary sm:flex";
@@ -17,7 +17,7 @@ const OBJ_TITLE_CLASS =
 const ADDR_CLASS =
   "flex items-center gap-1.5 text-body text-foreground-secondary";
 const GRID_CLASS =
-  "grid grid-cols-2 gap-x-4 gap-y-3 px-6 py-4 sm:grid-cols-3 xl:grid-cols-6";
+  "grid grid-cols-2 gap-x-4 gap-y-2.5 px-6 py-4 sm:grid-cols-3 xl:grid-cols-6";
 const CELL_CLASS =
   "flex flex-col gap-1 xl:border-r xl:border-border xl:pr-4 xl:last:border-r-0 xl:last:pr-0";
 const DT_CLASS = "font-mono text-meta uppercase text-foreground-tertiary";

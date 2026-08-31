@@ -74,7 +74,7 @@ export function FactsCard({ listing, className }: FactsCardProps) {
   return (
     <DetailCard
       title={listingDetailCopy.facts.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <dl className={GRID_CLASS}>
         {facts.map((fact) => (

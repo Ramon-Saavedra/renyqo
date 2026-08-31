@@ -24,7 +24,7 @@ describe("Note", () => {
     expect(div?.className).toContain("flex");
     expect(div?.className).toContain("rounded-md");
     expect(div?.className).toContain("border-border");
-    expect(div?.className).toContain("bg-background-subtle");
+    expect(div?.className).toContain("bg-background-muted");
   });
 
   it("appends a custom className alongside the base classes", () => {

@@ -122,7 +122,7 @@ function GuidePriorityLegend() {
 }
 
 const GUIDE_CHIP_CLASS =
-  "inline-flex items-center gap-1.5 rounded-sm border border-border-strong bg-background-subtle px-2 py-1 text-caption text-foreground";
+  "inline-flex items-center gap-1.5 rounded-sm border border-border-strong bg-background-muted px-2 py-1 text-caption text-foreground";
 
 function GuideFieldChips({
   items,
@@ -192,7 +192,7 @@ export function AiCaptureSection({
       data-open={capture.isOpen}
       aria-label={copy.closed.title}
       className={cn(
-        "rounded-md border border-border bg-background-subtle data-[open=true]:border-border-strong data-[open=true]:shadow-card",
+        "rounded-md border border-border bg-background-muted data-[open=true]:border-border-strong data-[open=true]:shadow-card",
         className,
       )}
     >
@@ -466,7 +466,7 @@ function PdfPane({ capture }: { capture: UseAiCaptureResult }) {
         </button>
       ) : (
         <div className="flex items-center gap-3 rounded-md border border-border bg-background px-3.5 py-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-border bg-background-subtle text-primary">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-border bg-background-muted text-primary">
             <AppIcon icon={FileText} size={15} strokeWidth={1.5} decorative />
           </span>
           <span className="min-w-0 flex-1">
@@ -570,7 +570,7 @@ function VoicePane({ capture }: { capture: UseAiCaptureResult }) {
             type="button"
             disabled={!capture.voiceSupported}
             onClick={capture.startRecording}
-            className="inline-flex h-11 cursor-pointer items-center gap-2.5 rounded-full border border-border-strong bg-background-subtle px-5 text-action font-medium text-foreground hover:border-primary hover:bg-primary-tint disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-11 cursor-pointer items-center gap-2.5 rounded-full border border-border-strong bg-background-muted px-5 text-action font-medium text-foreground hover:border-primary hover:bg-primary-tint disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span
               aria-hidden="true"
@@ -619,7 +619,7 @@ function VoicePane({ capture }: { capture: UseAiCaptureResult }) {
       )}
       {voice.status === "done" && voice.blob && (
         <>
-          <div className="flex w-full items-center gap-3 rounded-md border border-border bg-background-subtle px-3.5 py-3 text-left">
+          <div className="flex w-full items-center gap-3 rounded-md border border-border bg-background-muted px-3.5 py-3 text-left">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-border bg-background text-primary">
               <AppIcon icon={Mic} size={15} strokeWidth={1.5} decorative />
             </span>

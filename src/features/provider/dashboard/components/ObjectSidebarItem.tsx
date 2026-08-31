@@ -15,7 +15,7 @@ interface ObjectSidebarItemProps {
 }
 
 const CARD_CLASS =
-  "relative flex flex-col overflow-hidden rounded-md border bg-background shadow-card transition-shadow hover:shadow-card-hover focus-within:shadow-focus";
+  "relative flex flex-col overflow-hidden rounded-md border bg-background-muted shadow-card transition-shadow hover:shadow-card-hover focus-within:shadow-focus";
 const CARD_INACTIVE_CLASS = "border-border hover:border-primary-soft";
 const CARD_ACTIVE_CLASS = "border-primary bg-primary";
 
@@ -46,7 +46,7 @@ const THUMB_CLASS =
   "relative size-15 shrink-0 overflow-hidden rounded-sm aspect-square";
 const THUMB_IMAGE_CLASS = "size-full object-cover";
 const THUMB_FALLBACK_CLASS =
-  "flex size-full items-center justify-center bg-background-muted text-foreground-tertiary";
+  "flex size-full items-center justify-center bg-media-placeholder text-foreground-tertiary";
 const THUMB_FALLBACK_ACTIVE_CLASS =
   "bg-primary-foreground/15 text-primary-foreground/70";
 

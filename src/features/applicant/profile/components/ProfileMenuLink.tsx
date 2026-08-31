@@ -10,7 +10,7 @@ import { useApplicantProfileStatus } from "../hooks/useApplicantProfileStatus";
 import { buildProfileHref } from "../utils/profile-href";
 
 const LINK_CLASS =
-  "mt-3 flex w-full items-center gap-2 rounded-sm border border-border bg-background-subtle px-3 py-2 text-caption font-medium text-foreground-secondary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "mt-3 flex w-full items-center gap-2 rounded-sm border border-border bg-background-muted px-3 py-2 text-caption font-medium text-foreground-secondary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 export function ProfileMenuLink() {
   const pathname = usePathname();

@@ -13,7 +13,7 @@ interface InfoPillProps {
 }
 
 const BASE_CLASS =
-  "inline-flex items-center gap-2 rounded-sm border border-border bg-background-subtle";
+  "inline-flex items-center gap-2 rounded-sm border border-border bg-background-muted";
 
 const VARIANT_CLASS: Record<InfoPillVariant, string> = {
   mono: "px-2.5 py-1.5 font-mono text-meta uppercase text-foreground-tertiary",

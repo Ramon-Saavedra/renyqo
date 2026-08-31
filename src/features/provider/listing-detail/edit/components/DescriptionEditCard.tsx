@@ -25,7 +25,7 @@ export function DescriptionEditCard({
   return (
     <DetailCard
       title={listingDetailCopy.description.title}
-      className={cn("bg-background-subtle", className)}
+      className={cn("bg-background-muted", className)}
     >
       <FormField
         label={listingEditCopy.fields.description}

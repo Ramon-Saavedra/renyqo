@@ -4,7 +4,7 @@ const CHIP_BASE_CLASS =
   "inline-flex h-9.5 cursor-pointer items-center gap-1.5 rounded-md border px-3.5 text-caption whitespace-nowrap focus-visible:outline-none focus-visible:shadow-focus";
 
 const CHIP_IDLE_CLASS =
-  "border-border-strong bg-input text-foreground hover:border-foreground-tertiary hover:bg-background-subtle";
+  "border-border-strong bg-input text-foreground hover:border-foreground-tertiary hover:bg-background-muted";
 
 const CHIP_ACTIVE_CLASS =
   "border-primary bg-primary-tint text-primary hover:bg-primary-soft";
