@@ -154,7 +154,7 @@ export function ListingEditView({
         ) : null}
       </div>
 
-      <section className="mb-6 rounded-md border border-border px-5.5 py-5">
+      <section className="mb-6 rounded-md border border-border p-6">
         <ListingEditHead
           form={form}
           status={listing.status}

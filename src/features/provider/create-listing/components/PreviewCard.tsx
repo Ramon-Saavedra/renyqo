@@ -88,7 +88,7 @@ export function PreviewCard({ draft, finalTitle }: PreviewCardProps) {
           {!cover && <span>{copy.photoPlaceholder}</span>}
         </div>
 
-        <div className="px-4.5 pt-4.5 pb-5">
+        <div className="px-5 pt-4.5 pb-5">
           <h3 className="mb-1 font-display text-brand font-medium text-foreground">
             {finalTitle || copy.titlePlaceholder}
           </h3>
@@ -118,7 +118,7 @@ export function PreviewCard({ draft, finalTitle }: PreviewCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border bg-background-subtle px-4.5 py-3.5">
+        <div className="flex items-center justify-between border-t border-border bg-background-muted px-5 py-3.5">
           {price ? (
             <span className="font-display text-title font-medium tabular-nums text-foreground">
               {price} €
