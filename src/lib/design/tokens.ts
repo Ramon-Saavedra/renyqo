@@ -3,8 +3,8 @@
 // Keep in sync with globals.css.
 export const designTokens = {
   themeColor: {
-    light: "#fcfbf1",
-    dark: "#111111",
+    light: "#edebe1",
+    dark: "#0c0c0e",
   },
   brand: {
     primary: "#566582",
