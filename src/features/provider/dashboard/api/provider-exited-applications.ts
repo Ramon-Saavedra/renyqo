@@ -21,7 +21,7 @@ const providerExitedApplicationsResponseSchema = z
     items: z.array(providerExitedApplicationSchema).max(5),
     totalCount: z.number().int().nonnegative(),
   })
-  .refine(({ items, totalCount }) => totalCount >= items.length);
+  .refine(({ items, totalCount }) => items.length === Math.min(totalCount, 5));
 
 export type ProviderExitedApplicationsResponse = z.infer<
   typeof providerExitedApplicationsResponseSchema

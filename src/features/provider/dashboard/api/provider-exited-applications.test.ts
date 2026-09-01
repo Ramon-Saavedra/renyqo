@@ -139,6 +139,38 @@ describe("getProviderExitedApplications", () => {
     ).rejects.toBeInstanceOf(ProviderExitedApplicationsContractError);
   });
 
+  it("rejects empty items when totalCount is positive", async () => {
+    vi.mocked(apiGet).mockResolvedValue({ items: [], totalCount: 3 });
+
+    await expect(
+      getProviderExitedApplications("listing-1"),
+    ).rejects.toBeInstanceOf(ProviderExitedApplicationsContractError);
+  });
+
+  it("rejects an incomplete items page", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [withdrawnApplication],
+      totalCount: 2,
+    });
+
+    await expect(
+      getProviderExitedApplications("listing-1"),
+    ).rejects.toBeInstanceOf(ProviderExitedApplicationsContractError);
+  });
+
+  it("accepts five items when totalCount is greater than five", async () => {
+    const items = Array.from({ length: 5 }, (_, index) => ({
+      ...withdrawnApplication,
+      id: `exit-${index + 1}`,
+    }));
+    vi.mocked(apiGet).mockResolvedValue({ items, totalCount: 8 });
+
+    await expect(getProviderExitedApplications("listing-1")).resolves.toEqual({
+      items,
+      totalCount: 8,
+    });
+  });
+
   it("rejects more than five items", async () => {
     const items = Array.from({ length: 6 }, (_, index) => ({
       ...withdrawnApplication,

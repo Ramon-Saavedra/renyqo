@@ -105,6 +105,20 @@ describe("getProviderActiveApplications", () => {
     ]);
   });
 
+  it("accepts an omitted activeAt", async () => {
+    const applicationWithoutActiveAt = {
+      id: activeApplication.id,
+      listingId: activeApplication.listingId,
+      status: activeApplication.status,
+      applicant: activeApplication.applicant,
+    };
+    vi.mocked(apiGet).mockResolvedValue([applicationWithoutActiveAt]);
+
+    await expect(getProviderActiveApplications("listing-1")).resolves.toEqual([
+      applicationWithoutActiveAt,
+    ]);
+  });
+
   it("rejects an unknown warning value", async () => {
     vi.mocked(apiGet).mockResolvedValue([
       {

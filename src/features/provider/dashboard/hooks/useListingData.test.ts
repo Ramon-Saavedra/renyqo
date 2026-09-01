@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createElement, type ReactNode } from "react";
+import { createElement, StrictMode, type ReactNode } from "react";
 
 import type { DashboardObjectStatus } from "../types";
 import { TabRefreshProvider } from "./TabRefreshProvider";
@@ -8,6 +8,14 @@ import { useListingData } from "./useListingData";
 
 function wrapper({ children }: { children: ReactNode }) {
   return createElement(TabRefreshProvider, null, children);
+}
+
+function strictWrapper({ children }: { children: ReactNode }) {
+  return createElement(
+    StrictMode,
+    null,
+    createElement(TabRefreshProvider, null, children),
+  );
 }
 
 interface SampleData {
@@ -82,6 +90,26 @@ describe("useListingData", () => {
 
     expect(load).toHaveBeenCalledWith("listing-1");
     expect(result.current.data).toEqual({ items: ["a"] });
+    expect(result.current.hasError).toBe(false);
+  });
+
+  it("completes the initial load in Strict Mode", async () => {
+    const load = vi.fn().mockResolvedValue({
+      data: { items: ["a"] },
+      hasError: false,
+    });
+
+    const { result } = renderHook(
+      () =>
+        useListingData("listing-1", "published", idleData, loadingData, load),
+      { wrapper: strictWrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a"] });
+    });
+
+    expect(result.current.isLoading).toBe(false);
     expect(result.current.hasError).toBe(false);
   });
 
