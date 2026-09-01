@@ -6,8 +6,9 @@ import { getCurrentUser } from "@/lib/api/auth";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
+import { useExitedApplications } from "../hooks/useExitedApplications";
 import { DashboardView } from "./DashboardView";
-import type { Candidate, DashboardObject } from "../types";
+import type { Candidate, DashboardObject, ExitedApplicant } from "../types";
 
 vi.mock("next/link", () => ({
   default: ({
@@ -42,6 +43,10 @@ vi.mock("../api/provider-dashboard", () => ({
 
 vi.mock("../hooks/useSelectedListingApplications", () => ({
   useSelectedListingApplications: vi.fn(),
+}));
+
+vi.mock("../hooks/useExitedApplications", () => ({
+  useExitedApplications: vi.fn(),
 }));
 
 const objects: readonly DashboardObject[] = [
@@ -102,6 +107,18 @@ function mockApplicationsState(
   });
 }
 
+function mockExitedState(
+  overrides: Partial<ReturnType<typeof useExitedApplications>> = {},
+) {
+  vi.mocked(useExitedApplications).mockReturnValue({
+    exits: [],
+    totalCount: 0,
+    isLoading: false,
+    hasError: false,
+    ...overrides,
+  });
+}
+
 describe("DashboardView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -116,6 +133,7 @@ describe("DashboardView", () => {
       companyName: "Renyqo Immobilien",
     });
     mockApplicationsState();
+    mockExitedState();
   });
 
   it("renders dashboard stats, the selected object, and matching candidates", async () => {
@@ -284,5 +302,71 @@ describe("DashboardView", () => {
     expect(screen.getAllByText("Meine Mietobjekte · 2").length).toBeGreaterThan(
       0,
     );
+  });
+
+  it("renders the recent exits rail with totalCount for a published object", async () => {
+    const exits: readonly ExitedApplicant[] = [
+      {
+        id: "exit-1",
+        listingId: "first-object",
+        applicantName: "Familie Weber",
+        visualState: "withdrawn",
+        exitedAt: "2026-08-30T14:23:00.000Z",
+        exitedAtLabel: "30.08.2026 · 16:23",
+        exitedAtLabelCompact: "30.08. · 16:23",
+      },
+    ];
+    mockExitedState({ exits, totalCount: 7 });
+
+    render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(screen.getByText("Kürzlich ausgeschieden")).not.toBeNull();
+    expect(screen.getByText("Familie Weber")).not.toBeNull();
+    expect(screen.getByText("7")).not.toBeNull();
+    expect(useExitedApplications).toHaveBeenCalledWith(
+      "first-object",
+      "published",
+    );
+  });
+
+  it("renders the recent exits loading state", async () => {
+    mockExitedState({ isLoading: true });
+
+    const { container } = render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(container.getElementsByClassName("sk-circle").length).toBe(5);
+  });
+
+  it("renders the recent exits error state", async () => {
+    mockExitedState({ hasError: true });
+
+    render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(
+      screen.getByText(
+        "Kürzlich ausgeschiedene Bewerbungen konnten nicht geladen werden.",
+      ),
+    ).not.toBeNull();
+  });
+
+  it("hides the recent exits rail for a draft object", async () => {
+    const user = userEvent.setup();
+    render(<DashboardView objects={objects} />);
+
+    await screen.findByText("Ramon Saavedra");
+    const secondObjectButton = screen.getAllByRole("button", {
+      name: /Zweite Wohnung/i,
+    })[0];
+    if (!secondObjectButton) throw new Error("Second object button not found");
+    await user.click(secondObjectButton);
+
+    expect(useExitedApplications).toHaveBeenCalledWith(
+      "second-object",
+      "draft",
+    );
+    expect(screen.queryByText("Kürzlich ausgeschieden")).toBeNull();
   });
 });

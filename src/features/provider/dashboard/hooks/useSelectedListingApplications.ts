@@ -1,23 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { mapActiveApplicationsToCandidates } from "../api/map-active-application-to-candidate";
 import {
   getProviderActiveApplications,
   getProviderWaitingCount,
 } from "../api/provider-listing-applications";
+import { useListingData } from "./useListingData";
 import type {
   Candidate,
   DashboardObjectStatus,
   WaitingCountState,
 } from "../types";
 
-interface SelectedListingApplicationsState {
-  readonly listingId: string | null;
+interface SelectedListingData {
   readonly candidates: readonly Candidate[];
   readonly waitingCountState: WaitingCountState;
-  readonly isLoading: boolean;
-  readonly hasError: boolean;
 }
 
 interface SelectedListingApplicationsResult {
@@ -27,132 +25,61 @@ interface SelectedListingApplicationsResult {
   readonly hasError: boolean;
 }
 
-const IDLE_STATE: SelectedListingApplicationsResult = {
+const IDLE_STATE: SelectedListingData = {
   candidates: [],
   waitingCountState: { status: "idle" },
-  isLoading: false,
-  hasError: false,
 };
 
-const LOADING_STATE: SelectedListingApplicationsResult = {
+const LOADING_STATE: SelectedListingData = {
   candidates: [],
   waitingCountState: { status: "loading" },
-  isLoading: true,
-  hasError: false,
 };
-
-function resolveActiveListingId(
-  listingId: string | null,
-  listingStatus: DashboardObjectStatus | null,
-): string | null {
-  if (!listingId || listingStatus === "draft") return null;
-  return listingId;
-}
 
 export function useSelectedListingApplications(
   listingId: string | null,
   listingStatus: DashboardObjectStatus | null,
 ): SelectedListingApplicationsResult {
-  const activeListingId = resolveActiveListingId(listingId, listingStatus);
-  const [prevActiveListingId, setPrevActiveListingId] =
-    useState(activeListingId);
-  const [state, setState] = useState<SelectedListingApplicationsState>({
-    listingId: null,
-    candidates: [],
-    waitingCountState: { status: "idle" },
-    isLoading: false,
-    hasError: false,
-  });
+  const load = useCallback(async (currentListingId: string) => {
+    const [applicationsResult, waitingResult] = await Promise.allSettled([
+      getProviderActiveApplications(currentListingId),
+      getProviderWaitingCount(currentListingId),
+    ]);
 
-  useEffect(() => {
-    if (!activeListingId) return;
+    const waitingCountState: WaitingCountState =
+      waitingResult.status === "fulfilled"
+        ? { status: "success", count: waitingResult.value }
+        : { status: "error" };
 
-    const currentListingId = activeListingId;
-    let active = true;
-
-    async function loadApplications() {
-      setState({
-        listingId: currentListingId,
-        candidates: [],
-        waitingCountState: { status: "loading" },
-        isLoading: true,
-        hasError: false,
-      });
-
-      try {
-        const [applicationsResult, waitingResult] = await Promise.allSettled([
-          getProviderActiveApplications(currentListingId),
-          getProviderWaitingCount(currentListingId),
-        ]);
-        if (!active) return;
-
-        const waitingCountState: WaitingCountState =
-          waitingResult.status === "fulfilled"
-            ? { status: "success", count: waitingResult.value }
-            : { status: "error" };
-
-        if (applicationsResult.status === "fulfilled") {
-          setState({
-            listingId: currentListingId,
-            candidates: mapActiveApplicationsToCandidates(
-              applicationsResult.value,
-            ),
-            waitingCountState,
-            isLoading: false,
-            hasError: false,
-          });
-          return;
-        }
-
-        setState({
-          listingId: currentListingId,
-          candidates: [],
+    if (applicationsResult.status === "fulfilled") {
+      return {
+        data: {
+          candidates: mapActiveApplicationsToCandidates(
+            applicationsResult.value,
+          ),
           waitingCountState,
-          isLoading: false,
-          hasError: true,
-        });
-      } catch {
-        if (!active) return;
-        setState({
-          listingId: currentListingId,
-          candidates: [],
-          waitingCountState: { status: "error" },
-          isLoading: false,
-          hasError: true,
-        });
-      }
+        },
+        hasError: false,
+      };
     }
 
-    void loadApplications();
-
-    return () => {
-      active = false;
+    return {
+      data: { candidates: [], waitingCountState },
+      hasError: true,
     };
-  }, [activeListingId]);
+  }, []);
 
-  if (activeListingId !== prevActiveListingId) {
-    setPrevActiveListingId(activeListingId);
-  }
-
-  if (!activeListingId) {
-    return IDLE_STATE;
-  }
-
-  const resumedFromInactive =
-    prevActiveListingId === null && state.listingId === activeListingId;
-
-  if (
-    state.listingId !== activeListingId ||
-    resumedFromInactive ||
-    state.isLoading
-  ) {
-    return LOADING_STATE;
-  }
+  const { data, isLoading, hasError } = useListingData(
+    listingId,
+    listingStatus,
+    IDLE_STATE,
+    LOADING_STATE,
+    load,
+  );
 
   return {
-    candidates: state.candidates,
-    waitingCountState: state.waitingCountState,
-    isLoading: state.isLoading,
-    hasError: state.hasError,
+    candidates: data.candidates,
+    waitingCountState: data.waitingCountState,
+    isLoading,
+    hasError,
   };
 }

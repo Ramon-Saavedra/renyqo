@@ -121,4 +121,18 @@ export const dashboardCopy = {
     capacityWithQueue: (max: number) => `Kapazität ${max} · FIFO`,
     loadError: "Warteschlange konnte nicht geladen werden.",
   },
+  recentExits: {
+    title: "Kürzlich ausgeschieden",
+    helper:
+      "Hier erscheinen nur Bewerber, die zuvor zu den 5 aktiven Bewerbungen gehört haben.",
+    empty: "Noch keine ausgeschiedenen Bewerber",
+    loadError:
+      "Kürzlich ausgeschiedene Bewerbungen konnten nicht geladen werden.",
+    more: (count: number) => `+${count} weitere`,
+    stateLabel: {
+      withdrawn: "Bewerbung zurückgezogen",
+      provider_discarded: "Von dir abgelehnt",
+      system_removed: "Nicht mehr verfügbar",
+    },
+  },
 } as const;

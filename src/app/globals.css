@@ -38,6 +38,14 @@ html {
   --color-warning-vivid: var(--warning-vivid);
   --color-danger: var(--danger);
 
+  --color-exit-withdrawn-bg: var(--exit-withdrawn-bg);
+  --color-exit-withdrawn-fg: var(--exit-withdrawn-fg);
+  --color-exit-provider-discarded-bg: var(--exit-provider-discarded-bg);
+  --color-exit-provider-discarded-fg: var(--exit-provider-discarded-fg);
+  --color-exit-provider-discarded-muted-fg: var(
+    --exit-provider-discarded-muted-fg
+  );
+
   --radius: var(--radius-md);
   --radius-sm: var(--radius-md);
   --radius-md: 6px;
@@ -143,6 +151,12 @@ html {
   --warning-vivid: #fa8714;
   --danger: #dc2626;
 
+  --exit-withdrawn-bg: #f1f4f3;
+  --exit-withdrawn-fg: #5c6b65;
+  --exit-provider-discarded-bg: #faf2ef;
+  --exit-provider-discarded-fg: #a2685a;
+  --exit-provider-discarded-muted-fg: #8f5f4e;
+
   --watermark-opacity-peak: 0.35;
   --watermark-cycle-duration: 120s;
 
@@ -187,6 +201,12 @@ html {
   --warning: #d2a36a;
   --warning-vivid: #f59527;
   --danger: #f87171;
+
+  --exit-withdrawn-bg: #242927;
+  --exit-withdrawn-fg: #93a29c;
+  --exit-provider-discarded-bg: #2b2422;
+  --exit-provider-discarded-fg: #c79080;
+  --exit-provider-discarded-muted-fg: #bf8b79;
 
   --watermark-opacity-peak: 0.5;
 

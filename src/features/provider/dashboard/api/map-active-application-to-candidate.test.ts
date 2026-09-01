@@ -18,6 +18,7 @@ function buildApplication(
     id: "application-1",
     listingId: "listing-1",
     status: "ACTIVE",
+    activeAt: null,
     applicant: {
       name: "Anna Lehmann",
       peopleCount: 2,
