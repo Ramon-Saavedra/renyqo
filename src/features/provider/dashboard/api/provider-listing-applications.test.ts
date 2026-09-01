@@ -22,6 +22,7 @@ const activeApplication = {
   listingId: "listing-1",
   status: "ACTIVE" as const,
   applicant: baseApplicant,
+  activeAt: "2026-08-30T14:23:00.000Z",
 };
 
 describe("getProviderActiveApplications", () => {
@@ -92,6 +93,16 @@ describe("getProviderActiveApplications", () => {
     await expect(
       getProviderActiveApplications("listing-1"),
     ).rejects.toBeInstanceOf(ProviderListingApplicationsContractError);
+  });
+
+  it("accepts a null activeAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue([
+      { ...activeApplication, activeAt: null },
+    ]);
+
+    await expect(
+      getProviderActiveApplications("listing-1"),
+    ).resolves.toEqual([{ ...activeApplication, activeAt: null }]);
   });
 
   it("rejects an unknown warning value", async () => {

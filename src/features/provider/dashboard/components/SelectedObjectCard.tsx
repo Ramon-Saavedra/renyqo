@@ -114,6 +114,8 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
                 width={160}
                 height={160}
                 quality={90}
+                loading="eager"
+                fetchPriority="high"
                 className={THUMB_IMAGE_CLASS}
               />
             ) : (

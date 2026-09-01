@@ -7,7 +7,9 @@ import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
+import { useExitedApplications } from "../hooks/useExitedApplications";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
+import { TabRefreshProvider } from "../hooks/TabRefreshProvider";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { DashboardObject } from "../types";
 import { AccentPicker } from "./AccentPicker";
@@ -17,12 +19,17 @@ import { DashboardSearch } from "./DashboardSearch";
 import { DashboardTopbar } from "./DashboardTopbar";
 import { ObjectSelectorMobile } from "./ObjectSelectorMobile";
 import { ObjectSidebar } from "./ObjectSidebar";
+import { RecentExitsRail } from "./RecentExitsRail";
 import { SelectedObjectEmptyCard } from "./SelectedObjectEmptyCard";
 import { SelectedObjectCard } from "./SelectedObjectCard";
 import { StatCards } from "./StatCards";
 
 interface DashboardViewProps {
   objects?: readonly DashboardObject[];
+}
+
+interface DashboardViewContentProps {
+  objects?: readonly DashboardObject[] | undefined;
 }
 
 const SHELL_CLASS = "flex flex-col lg:h-dvh lg:overflow-hidden lg:flex-row";
@@ -70,7 +77,17 @@ function useStoredSelectedObjectId() {
   );
 }
 
-export function DashboardView({ objects: initialObjects }: DashboardViewProps) {
+export function DashboardView({ objects }: DashboardViewProps) {
+  return (
+    <TabRefreshProvider>
+      <DashboardViewContent objects={objects} />
+    </TabRefreshProvider>
+  );
+}
+
+function DashboardViewContent({
+  objects: initialObjects,
+}: DashboardViewContentProps) {
   const shouldLoadObjects = initialObjects === undefined;
   const [loadedObjects, setLoadedObjects] = useState<
     readonly DashboardObject[]
@@ -137,6 +154,13 @@ export function DashboardView({ objects: initialObjects }: DashboardViewProps) {
     selected?.id ?? null,
     selected?.status ?? null,
   );
+
+  const {
+    exits: recentExits,
+    totalCount: recentExitsTotalCount,
+    isLoading: isExitedApplicationsLoading,
+    hasError: hasExitedApplicationsError,
+  } = useExitedApplications(selected?.id ?? null, selected?.status ?? null);
 
   const publishedObjects = objects.filter(
     (o) => o.status === "published",
@@ -233,6 +257,17 @@ export function DashboardView({ objects: initialObjects }: DashboardViewProps) {
               isLoading={isApplicationsLoading}
               hasError={hasApplicationsError}
             />
+
+            {selected && selected.status !== "draft" ? (
+              <div className="pb-6">
+                <RecentExitsRail
+                  exits={recentExits}
+                  totalCount={recentExitsTotalCount}
+                  isLoading={isExitedApplicationsLoading}
+                  hasError={hasExitedApplicationsError}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

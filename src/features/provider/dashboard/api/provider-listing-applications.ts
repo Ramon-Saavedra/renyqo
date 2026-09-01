@@ -12,6 +12,7 @@ const providerActiveApplicationSchema = z.object({
   listingId: z.string().min(1),
   status: z.literal("ACTIVE"),
   applicant: providerApplicantSummarySchema,
+  activeAt: z.string().nullable(),
 });
 
 const providerActiveApplicationsResponseSchema = z

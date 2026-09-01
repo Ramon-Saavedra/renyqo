@@ -64,7 +64,7 @@ export function ObjectSidebar({
       </div>
 
       <ul className={LIST_CLASS}>
-        {visibleObjects.map((object) => (
+        {visibleObjects.map((object, index) => (
           <ObjectSidebarItem
             key={object.id}
             object={object}
@@ -72,6 +72,7 @@ export function ObjectSidebar({
             shareUrl={`${siteConfig.url}/objekt/${object.id}`}
             onSelect={onSelect}
             fillAvailableSpace={!hasOverflow}
+            eager={index === 0}
           />
         ))}
         {Array.from({ length: emptySlots }).map((_, index) => (

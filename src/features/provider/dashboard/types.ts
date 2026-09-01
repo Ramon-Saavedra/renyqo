@@ -38,3 +38,18 @@ export type WaitingCountState =
   | { readonly status: "loading" }
   | { readonly status: "success"; readonly count: number }
   | { readonly status: "error" };
+
+export type ExitedApplicantVisualState =
+  | "withdrawn"
+  | "provider_discarded"
+  | "system_removed";
+
+export interface ExitedApplicant {
+  readonly id: string;
+  readonly listingId: string;
+  readonly applicantName: string;
+  readonly visualState: ExitedApplicantVisualState;
+  readonly exitedAt: string;
+  readonly exitedAtLabel: string;
+  readonly exitedAtLabelCompact: string;
+}
