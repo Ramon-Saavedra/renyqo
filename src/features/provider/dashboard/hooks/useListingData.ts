@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DashboardObjectStatus } from "../types";
 import { useTabRefreshRevision } from "./TabRefreshProvider";
 
@@ -34,6 +34,8 @@ export function useListingData<T>(
 ): ListingDataResult<T> {
   const activeListingId = resolveActiveListingId(listingId, listingStatus);
   const refreshRevision = useTabRefreshRevision();
+  const previousActiveListingIdRef = useRef<string | null>(null);
+  const previousRefreshRevisionRef = useRef(refreshRevision);
   const [prevActiveListingId, setPrevActiveListingId] =
     useState(activeListingId);
   const [state, setState] = useState<ListingDataState<T>>({
@@ -44,35 +46,58 @@ export function useListingData<T>(
   });
 
   useEffect(() => {
-    if (!activeListingId) return;
+    const listingChanged =
+      previousActiveListingIdRef.current !== activeListingId;
+    const refreshRequested =
+      previousRefreshRevisionRef.current !== refreshRevision;
+
+    previousActiveListingIdRef.current = activeListingId;
+    previousRefreshRevisionRef.current = refreshRevision;
+
+    if (!activeListingId || (!listingChanged && !refreshRequested)) return;
 
     const currentListingId = activeListingId;
+    const isRefresh = !listingChanged && refreshRequested;
     let active = true;
 
     async function loadListings() {
-      setState({
-        listingId: currentListingId,
-        data: idleData,
-        isLoading: true,
-        hasError: false,
-      });
+      if (!isRefresh) {
+        setState({
+          listingId: currentListingId,
+          data: idleData,
+          isLoading: true,
+          hasError: false,
+        });
+      }
 
       try {
         const result = await load(currentListingId);
         if (!active) return;
-        setState({
-          listingId: currentListingId,
-          data: result.data,
-          isLoading: false,
-          hasError: result.hasError,
+        setState((current) => {
+          if (current.listingId !== currentListingId) return current;
+          if (isRefresh && result.hasError) {
+            return { ...current, isLoading: false, hasError: true };
+          }
+          return {
+            listingId: currentListingId,
+            data: result.data,
+            isLoading: false,
+            hasError: result.hasError,
+          };
         });
       } catch {
         if (!active) return;
-        setState({
-          listingId: currentListingId,
-          data: idleData,
-          isLoading: false,
-          hasError: true,
+        setState((current) => {
+          if (current.listingId !== currentListingId) return current;
+          if (isRefresh) {
+            return { ...current, isLoading: false, hasError: true };
+          }
+          return {
+            listingId: currentListingId,
+            data: idleData,
+            isLoading: false,
+            hasError: true,
+          };
         });
       }
     }
@@ -82,44 +107,7 @@ export function useListingData<T>(
     return () => {
       active = false;
     };
-  }, [activeListingId, load, idleData]);
-
-  useEffect(() => {
-    if (!activeListingId || refreshRevision === 0) return;
-
-    const currentListingId = activeListingId;
-    let active = true;
-
-    async function refreshListings() {
-      try {
-        const result = await load(currentListingId);
-        if (!active) return;
-        setState((current) =>
-          current.listingId === currentListingId
-            ? {
-                listingId: currentListingId,
-                data: result.data,
-                isLoading: false,
-                hasError: result.hasError,
-              }
-            : current,
-        );
-      } catch {
-        if (!active) return;
-        setState((current) =>
-          current.listingId === currentListingId
-            ? { ...current, hasError: true }
-            : current,
-        );
-      }
-    }
-
-    void refreshListings();
-
-    return () => {
-      active = false;
-    };
-  }, [activeListingId, refreshRevision, load]);
+  }, [activeListingId, refreshRevision, load, idleData]);
 
   if (activeListingId !== prevActiveListingId) {
     setPrevActiveListingId(activeListingId);

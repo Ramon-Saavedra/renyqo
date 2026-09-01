@@ -294,7 +294,7 @@ describe("useSelectedListingApplications", () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it("reports refresh failure with empty candidates", async () => {
+  it("preserves candidates when a refresh fails", async () => {
     vi.mocked(getProviderActiveApplications)
       .mockResolvedValueOnce([
         {
@@ -323,7 +323,7 @@ describe("useSelectedListingApplications", () => {
       expect(result.current.hasError).toBe(true);
     });
 
-    expect(result.current.candidates).toEqual([]);
+    expect(result.current.candidates[0]?.name).toBe("Anna Lehmann");
     expect(result.current.isLoading).toBe(false);
   });
 

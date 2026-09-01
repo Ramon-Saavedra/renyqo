@@ -556,6 +556,7 @@ After approval:
 - begin with focused validations where possible;
 - avoid repository-wide formatting;
 - avoid modifying unrelated files;
+- before any approved commit, push, or pull request, run the CI-equivalent repository-wide `npm run format:check` and do not publish while it fails;
 - report the exact command executed;
 - report the real result;
 - distinguish new failures from pre-existing failures;

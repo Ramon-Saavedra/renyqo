@@ -16,7 +16,7 @@ export interface RecentExitsRailProps {
   hasError: boolean;
 }
 
-const PANEL_CLASS = "rounded-md bg-background-muted px-4 py-parent-y sm:px-5";
+const PANEL_CLASS = "rounded-md bg-background-muted px-4 py-3 sm:px-5";
 const HEAD_CLASS = "mb-3 flex items-center gap-2";
 const TITLE_CLASS =
   "text-meta leading-none font-medium tracking-wide text-foreground-tertiary uppercase";
@@ -88,7 +88,7 @@ export function RecentExitsRail({
         </p>
         <div className={HEAD_CLASS}>
           <h3 className={TITLE_CLASS}>{copy.title}</h3>
-          {!isLoading && !hasError && exits.length > 0 ? (
+          {!isLoading && exits.length > 0 ? (
             <span className={COUNT_CLASS}>{totalCount}</span>
           ) : null}
         </div>
@@ -97,13 +97,15 @@ export function RecentExitsRail({
           <p className="text-caption text-foreground-tertiary">
             {copy.loadError}
           </p>
-        ) : isEmpty ? (
+        ) : null}
+
+        {isEmpty ? (
           <div className="flex h-12 items-center px-0.5 sm:h-13">
             <span className="text-caption text-foreground-tertiary">
               {copy.empty}
             </span>
           </div>
-        ) : (
+        ) : !hasError || exits.length > 0 ? (
           <div className={RAIL_CLASS}>
             {isLoading
               ? renderLoadingSlots()
@@ -149,7 +151,7 @@ export function RecentExitsRail({
               <span className={MORE_CLASS}>{copy.more(remaining)}</span>
             ) : null}
           </div>
-        )}
+        ) : null}
       </div>
     </section>
   );

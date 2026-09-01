@@ -128,6 +128,32 @@ describe("useListingData", () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it("preserves data when a silent refresh resolves with an error", async () => {
+    const load = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { items: ["a"] }, hasError: false })
+      .mockResolvedValueOnce({ data: idleData, hasError: true });
+
+    const { result } = renderHook(
+      () =>
+        useListingData("listing-1", "published", idleData, loadingData, load),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a"] });
+    });
+
+    fireFocus();
+
+    await waitFor(() => {
+      expect(result.current.hasError).toBe(true);
+    });
+
+    expect(result.current.data).toEqual({ items: ["a"] });
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it("refreshes data on window focus without a loading state", async () => {
     const load = vi
       .fn()
@@ -230,5 +256,38 @@ describe("useListingData", () => {
       expect(result.current.data).toEqual({ items: ["b"] });
     });
     expect(result.current.isLoading).toBe(false);
+  });
+
+  it("loads a changed listing once after a focus refresh", async () => {
+    const load = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { items: ["a"] }, hasError: false })
+      .mockResolvedValueOnce({ data: { items: ["b"] }, hasError: false })
+      .mockResolvedValue({ data: { items: ["c"] }, hasError: false });
+
+    const { result, rerender } = renderHook(
+      ({ listingId }: { listingId: string }) =>
+        useListingData(listingId, "published", idleData, loadingData, load),
+      { wrapper, initialProps: { listingId: "listing-1" } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a"] });
+    });
+
+    fireFocus();
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["b"] });
+    });
+
+    rerender({ listingId: "listing-2" });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["c"] });
+    });
+
+    expect(load).toHaveBeenCalledTimes(3);
+    expect(load).toHaveBeenNthCalledWith(3, "listing-2");
   });
 });

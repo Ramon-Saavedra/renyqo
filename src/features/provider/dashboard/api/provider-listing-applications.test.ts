@@ -100,9 +100,9 @@ describe("getProviderActiveApplications", () => {
       { ...activeApplication, activeAt: null },
     ]);
 
-    await expect(
-      getProviderActiveApplications("listing-1"),
-    ).resolves.toEqual([{ ...activeApplication, activeAt: null }]);
+    await expect(getProviderActiveApplications("listing-1")).resolves.toEqual([
+      { ...activeApplication, activeAt: null },
+    ]);
   });
 
   it("rejects an unknown warning value", async () => {

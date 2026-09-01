@@ -12,7 +12,6 @@ interface ObjectSidebarItemProps {
   shareUrl: string;
   onSelect: (id: string) => void;
   fillAvailableSpace?: boolean;
-  eager?: boolean;
 }
 
 const CARD_CLASS =
@@ -91,7 +90,6 @@ export function ObjectSidebarItem({
   shareUrl,
   onSelect,
   fillAvailableSpace = true,
-  eager = false,
 }: ObjectSidebarItemProps) {
   const { sidebar, object: objectCopy } = dashboardCopy;
   const isDraft = object.status === "draft";
@@ -161,7 +159,6 @@ export function ObjectSidebarItem({
                 width={192}
                 height={192}
                 quality={90}
-                loading={eager ? "eager" : undefined}
                 className={THUMB_IMAGE_CLASS}
               />
             ) : (

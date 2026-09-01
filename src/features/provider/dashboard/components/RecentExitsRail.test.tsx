@@ -188,6 +188,25 @@ describe("RecentExitsRail", () => {
     expect(screen.queryByText("3")).toBeNull();
   });
 
+  it("keeps preserved exits visible when a refresh failed", () => {
+    render(
+      <RecentExitsRail
+        exits={[buildExit({})]}
+        totalCount={1}
+        isLoading={false}
+        hasError={true}
+      />,
+    );
+
+    expect(screen.getByText("Familie Weber")).not.toBeNull();
+    expect(
+      screen.getByText(
+        "Kürzlich ausgeschiedene Bewerbungen konnten nicht geladen werden.",
+      ),
+    ).not.toBeNull();
+    expect(screen.getByText("1")).not.toBeNull();
+  });
+
   it("shows loading placeholders instead of exit cards", () => {
     const { container } = render(
       <RecentExitsRail

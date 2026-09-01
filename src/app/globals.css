@@ -97,7 +97,6 @@ html {
 
   --spacing-page: min(80%, 1280px);
   --spacing-section: 4rem;
-  --spacing-parent-y: 12px;
 }
 
 @media (min-width: 768px) {

@@ -94,7 +94,7 @@ export function ListingPhotoMosaic({
               fill
               sizes={IMAGE_SIZES}
               quality={90}
-              loading={index < 2 ? "eager" : "lazy"}
+              loading={index === 0 ? "eager" : "lazy"}
               className={IMAGE_CLASS}
             />
 
