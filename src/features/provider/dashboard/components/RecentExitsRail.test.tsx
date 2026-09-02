@@ -77,6 +77,22 @@ describe("RecentExitsRail", () => {
     expect(screen.getByText("30.08.2026 · 16:23")).not.toBeNull();
   });
 
+  it("contains the absolutely positioned state label within its card", () => {
+    render(
+      <RecentExitsRail
+        exits={[buildExit({})]}
+        totalCount={1}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    const stateLabel = screen.getByText("Bewerbung zurückgezogen");
+    const card = stateLabel.parentElement?.parentElement;
+
+    expect(card?.classList.contains("relative")).toBe(true);
+  });
+
   it("shows the total count in the header", () => {
     render(
       <RecentExitsRail

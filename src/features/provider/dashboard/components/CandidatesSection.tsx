@@ -16,17 +16,18 @@ interface CandidatesSectionProps {
   hasError: boolean;
 }
 
-const PANEL_CLASS = "rounded-md bg-background-muted p-6";
+const PANEL_CLASS =
+  "rounded-md bg-background-muted px-dashboard-parent-x py-dashboard-parent-y";
 const HEAD_CLASS = "mb-4 flex flex-col gap-1.5";
 const TITLE_CLASS = "font-display text-heading-md font-medium text-foreground";
 const LEAD_CLASS = "max-w-md text-caption text-foreground-tertiary";
 
 const DRAFT_CLASS =
-  "rounded-md border border-dashed border-border-strong bg-background-muted px-6 py-12 text-center text-caption text-foreground-secondary";
+  "rounded-md border border-dashed border-border-strong bg-background-muted px-dashboard-card-x py-12 text-center text-caption text-foreground-secondary";
 
 const LOADING_LANE_CLASS = "flex flex-col gap-2 lg:flex-row";
 const SKELETON_SLOT_CLASS =
-  "flex h-16 min-w-0 flex-1 items-center gap-3 rounded-md border border-border bg-background-muted px-3.5 py-3";
+  "flex h-16 min-w-0 flex-1 items-center gap-3 rounded-md border border-border bg-background-muted px-dashboard-card-x py-dashboard-card-y";
 
 function renderLoadingSlots() {
   return Array.from({ length: MAX_ACTIVE_APPLICATIONS }).map((_, index) => (

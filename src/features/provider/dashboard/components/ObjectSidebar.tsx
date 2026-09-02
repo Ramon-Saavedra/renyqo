@@ -18,7 +18,8 @@ interface ObjectSidebarProps {
 const ASIDE_CLASS =
   "hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-x lg:border-border";
 
-const HEAD_CLASS = "flex items-start justify-between gap-3 px-5 py-4";
+const HEAD_CLASS =
+  "flex items-start justify-between gap-3 px-dashboard-parent-x py-dashboard-parent-y";
 const HEAD_COPY_CLASS = "flex min-w-0 flex-col gap-1";
 const HEAD_TITLE_CLASS =
   "min-w-0 truncate font-mono text-meta text-foreground-tertiary";
@@ -27,9 +28,9 @@ const COLLAPSE_CLASS =
   "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 const LIST_CLASS =
-  "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-3 pt-0 pb-4";
+  "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-dashboard-parent-x pb-dashboard-parent-y";
 const SLOT_CLASS =
-  "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background px-3 text-center text-caption text-foreground-secondary";
+  "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background px-dashboard-card-x py-dashboard-card-y text-center text-caption text-foreground-secondary";
 const SLOT_LOGO_CLASS =
   "inline-flex h-6.5 w-6.5 items-center justify-center rounded-sm bg-primary-soft text-primary";
 const SIDEBAR_OBJECT_SLOTS = 5;

@@ -97,6 +97,10 @@ html {
 
   --spacing-page: min(80%, 1280px);
   --spacing-section: 4rem;
+  --spacing-dashboard-parent-x: 1rem;
+  --spacing-dashboard-parent-y: 0.75rem;
+  --spacing-dashboard-card-x: 1rem;
+  --spacing-dashboard-card-y: 0.5rem;
 }
 
 @media (min-width: 768px) {

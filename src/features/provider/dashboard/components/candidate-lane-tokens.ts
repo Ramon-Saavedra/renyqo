@@ -68,23 +68,24 @@ export const ROW: Record<string, string> = {
   "--rq-field-flex": "1 1 0",
   "--rq-sep": "inset 1px 0 0 var(--rq-div)",
   "--rq-card-sep-shadow": "inset 1px 0 0 var(--rq-card-sep)",
-  "--rq-pad": "15px 15px 16px",
+  "--rq-pad": "var(--spacing-dashboard-card-y) var(--spacing-dashboard-card-x)",
   "--rq-meta-gap": "8px",
   "--rq-teaser-flex": "0 0 118px",
   "--rq-teaser-h": "auto",
   "--rq-teaser-iw": "150px",
   "--rq-teaser-ih": "100%",
   "--rq-mask": "linear-gradient(to right, #000 40%, rgba(0,0,0,.1) 100%)",
-  "--rq-bleed-r": "-26px",
+  "--rq-bleed-r": "calc(-1 * var(--spacing-dashboard-parent-x))",
   "--rq-bleed-b": "0px",
   "--rq-lane-radius": "var(--radius-lg) 0 0 var(--radius-lg)",
-  "--rq-panel-pad": "26px",
+  "--rq-panel-pad":
+    "var(--spacing-dashboard-parent-y) var(--spacing-dashboard-parent-x)",
   "--rq-chat-display": "block",
   "--rq-name-fs": "13px",
 };
 
 export const MID: Record<string, string> = {
-  "--rq-pad": "13px 11px 14px",
+  "--rq-pad": "var(--spacing-dashboard-card-y) var(--spacing-dashboard-card-x)",
   "--rq-meta-gap": "6px",
   "--rq-teaser-flex": "0 0 84px",
   "--rq-teaser-iw": "112px",
@@ -98,7 +99,7 @@ export const COL: Record<string, string> = {
   "--rq-field-flex": "0 0 auto",
   "--rq-sep": "inset 0 1px 0 var(--rq-div)",
   "--rq-card-sep-shadow": "inset 0 1px 0 var(--rq-card-sep)",
-  "--rq-pad": "13px 14px 14px",
+  "--rq-pad": "var(--spacing-dashboard-card-y) var(--spacing-dashboard-card-x)",
   "--rq-meta-gap": "8px",
   "--rq-teaser-flex": "0 0 auto",
   "--rq-teaser-h": "104px",
@@ -108,7 +109,8 @@ export const COL: Record<string, string> = {
   "--rq-bleed-r": "0px",
   "--rq-bleed-b": "0px",
   "--rq-lane-radius": "var(--radius-lg) var(--radius-lg) 0 0",
-  "--rq-panel-pad": "20px",
+  "--rq-panel-pad":
+    "var(--spacing-dashboard-parent-y) var(--spacing-dashboard-parent-x)",
   "--rq-chat-display": "block",
   "--rq-name-fs": "13px",
 };

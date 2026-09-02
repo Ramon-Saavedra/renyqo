@@ -18,7 +18,7 @@ const HEAD_CLASS =
 const SCROLLER_CLASS = "scrollbar-slim flex gap-2 overflow-x-auto pb-1";
 
 const CARD_BASE =
-  "w-56 shrink-0 cursor-pointer rounded-md border px-3.5 py-3 text-left focus-visible:outline-none focus-visible:shadow-focus";
+  "w-56 shrink-0 cursor-pointer rounded-md border px-dashboard-card-x py-dashboard-card-y text-left focus-visible:outline-none focus-visible:shadow-focus";
 const CARD_INACTIVE =
   "border-border bg-background-muted hover:border-border-strong hover:bg-background";
 const CARD_ACTIVE = "border-primary bg-primary";
@@ -39,7 +39,7 @@ const META_ACTIVE = "text-primary-foreground/80";
 const CAND_BASE = "mt-1.5 text-caption text-foreground-secondary";
 const CAND_ACTIVE = "text-primary-foreground/90";
 const SLOT_CLASS =
-  "flex h-26 w-56 shrink-0 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background-muted px-3 text-center text-caption text-foreground-secondary";
+  "flex h-26 w-56 shrink-0 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background-muted px-dashboard-card-x py-dashboard-card-y text-center text-caption text-foreground-secondary";
 const SLOT_LOGO_CLASS =
   "inline-flex h-6.5 w-6.5 items-center justify-center rounded-sm bg-primary-soft text-primary";
 const MOBILE_OBJECT_SLOTS = 5;
@@ -51,7 +51,7 @@ export function ObjectSelectorMobile({
   onSelect,
 }: ObjectSelectorMobileProps) {
   const { sidebar, object: objectCopy } = dashboardCopy;
-  const visibleObjects = objects.slice(0, MOBILE_OBJECT_SLOTS);
+  const visibleObjects = objects;
   const emptySlots = Math.max(0, MOBILE_OBJECT_SLOTS - visibleObjects.length);
 
   return (

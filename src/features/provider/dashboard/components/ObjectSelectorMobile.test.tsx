@@ -27,6 +27,37 @@ describe("ObjectSelectorMobile", () => {
     expect(screen.getByText("4-Zimmer-Reihenhaus Karlshorst")).not.toBeNull();
   });
 
+  it("renders every available object when more than five exist", () => {
+    const baseObject = MOCK_OBJECTS[0];
+    if (!baseObject) throw new Error("Expected a dashboard object fixture");
+
+    const objects = [
+      ...MOCK_OBJECTS,
+      {
+        ...baseObject,
+        id: "obj-fifth",
+        title: "Fünftes Mietobjekt",
+      },
+      {
+        ...baseObject,
+        id: "obj-sixth",
+        title: "Sechstes Mietobjekt",
+      },
+    ];
+
+    render(
+      <ObjectSelectorMobile
+        objects={objects}
+        totalCount={objects.length}
+        selectedId="obj-kreuzberg"
+        onSelect={onSelect}
+      />,
+    );
+
+    expect(screen.getByText("Fünftes Mietobjekt")).not.toBeNull();
+    expect(screen.getByText("Sechstes Mietobjekt")).not.toBeNull();
+  });
+
   it("shows authoritative ACTIVE counts for unselected listings", () => {
     render(
       <ObjectSelectorMobile

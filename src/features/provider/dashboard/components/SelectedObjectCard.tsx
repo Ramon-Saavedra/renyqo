@@ -21,7 +21,7 @@ interface SelectedObjectCardProps {
 const CARD_CLASS =
   "mb-6 overflow-hidden rounded-md border border-primary bg-primary shadow-card";
 const HEAD_CLASS =
-  "flex flex-col gap-3 border-b border-primary-foreground/20 px-6 py-5 xl:flex-row xl:items-start xl:justify-between";
+  "flex flex-col gap-3 border-b border-primary-foreground/20 px-dashboard-card-x py-dashboard-card-y xl:flex-row xl:items-start xl:justify-between";
 const HEAD_LEFT_CLASS = "flex w-full min-w-0 gap-4 xl:flex-1";
 const THUMB_CLASS =
   "hidden h-20 w-20 shrink-0 items-center justify-center rounded-md bg-primary-foreground/15 text-primary-foreground/70 sm:flex";
@@ -51,7 +51,7 @@ const TIMESTAMP_CAPTION_CLASS =
   "text-xs leading-tight text-primary-foreground/75";
 
 const GRID_CLASS =
-  "grid grid-cols-2 gap-x-4 gap-y-2.5 px-6 py-4 sm:grid-cols-3 xl:grid-cols-6";
+  "grid grid-cols-2 gap-x-4 gap-y-2.5 px-dashboard-card-x py-dashboard-card-y sm:grid-cols-3 xl:grid-cols-6";
 const CELL_CLASS =
   "flex flex-col gap-1 xl:border-r xl:border-primary-foreground/20 xl:pr-4 xl:last:border-r-0 xl:last:pr-0";
 const DT_CLASS = "font-mono text-meta uppercase text-primary-foreground/75";
