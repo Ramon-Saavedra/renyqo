@@ -97,6 +97,10 @@ html {
 
   --spacing-page: min(80%, 1280px);
   --spacing-section: 4rem;
+  --spacing-dashboard-parent-x: 1rem;
+  --spacing-dashboard-parent-y: 0.75rem;
+  --spacing-dashboard-card-x: 1rem;
+  --spacing-dashboard-card-y: 0.5rem;
 }
 
 @media (min-width: 768px) {
@@ -563,7 +567,7 @@ body {
   position: relative;
   border-radius: var(--radius-md);
 }
-.reveal-wrap:not(.is-loaded) {
+.reveal-wrap.reveal-ring:not(.is-loaded) {
   animation: rq-ring-pulse 4.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   animation-delay: var(--rq-stagger, 0s);
 }

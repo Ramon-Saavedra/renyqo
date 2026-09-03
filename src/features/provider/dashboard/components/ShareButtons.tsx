@@ -17,7 +17,7 @@ interface ShareButtonsProps {
 
 const ROW_CLASS = "mt-2.5 grid grid-cols-3 gap-1";
 const POPOVER_ROW_CLASS =
-  "grid min-w-64 grid-cols-3 gap-1 rounded-md border border-border bg-background p-1.5 shadow-card";
+  "grid min-w-64 grid-cols-3 gap-1 rounded-md border border-border bg-background px-dashboard-parent-x py-dashboard-parent-y shadow-card";
 const SIDEBAR_ROW_CLASS = "mt-auto grid grid-cols-3 gap-1 pt-2";
 
 const BUTTON_CLASS =

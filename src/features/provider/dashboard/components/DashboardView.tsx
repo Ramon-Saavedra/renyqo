@@ -218,7 +218,7 @@ function DashboardViewContent({
               <AccentPicker value={accent} onChange={setStoredAccent} />
             </div>
 
-            <div className="mt-3 mb-5">
+            <div className="mt-3 mb-6">
               <DashboardSearch
                 value={search}
                 onChange={setSearch}

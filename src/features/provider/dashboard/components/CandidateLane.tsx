@@ -90,7 +90,6 @@ export function CandidateLane({
 
   const countBeat = useBeat(liveCount);
   const waitBeat = useBeat(waiting);
-  const areaBeat = countBeat + waitBeat;
 
   const light = theme === "light";
 
@@ -196,20 +195,15 @@ export function CandidateLane({
     <div
       ref={setLaneRef}
       data-rq-lane=""
+      className="bg-background-muted rounded-lg"
       style={{
         ...shell,
         display: "flex",
         flexDirection: "column",
         fontFamily: "Roboto, system-ui, sans-serif",
-        background: "var(--background-muted)",
-        borderRadius: "var(--radius-lg)",
         padding: "var(--rq-panel-pad)",
         overflow: "hidden",
         boxShadow: "0 0 0 1px var(--rq-edge)",
-        animation:
-          areaBeat === 0
-            ? undefined
-            : `${areaBeat % 2 ? "rqAreaPulseA" : "rqAreaPulseB"} 1.5s ease-out both`,
       }}
     >
       {announceWaitingStatus ? (
@@ -381,6 +375,12 @@ export function CandidateLane({
               >
                 <article
                   data-rq-candidate-card=""
+                  className={
+                    warnings.includes("smoking_by_arrangement") ||
+                    warnings.includes("pets_by_arrangement")
+                      ? "border-t-2 border-t-warning-vivid"
+                      : undefined
+                  }
                   style={{
                     position: "relative",
                     height: "100%",

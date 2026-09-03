@@ -103,6 +103,73 @@ describe("CandidateLane", () => {
     expect(screen.queryByRole("status")).toBeNull();
   });
 
+  it("marks a candidate card with a smoking warning using a warning border", () => {
+    const candidateWithWarning: Candidate = {
+      ...candidate,
+      warnings: ["smoking_by_arrangement"],
+    };
+
+    const { container } = render(
+      <CandidateLane actives={[candidateWithWarning]} waitingCount={0} />,
+    );
+
+    const card = container.querySelector("[data-rq-candidate-card]");
+    if (!(card instanceof HTMLElement))
+      throw new Error("Candidate card is missing");
+
+    expect(card.className).toContain("border-t-2");
+    expect(card.className).toContain("border-t-warning-vivid");
+  });
+
+  it("marks a candidate card with a pet warning using a warning border", () => {
+    const candidateWithWarning: Candidate = {
+      ...candidate,
+      warnings: ["pets_by_arrangement"],
+    };
+
+    const { container } = render(
+      <CandidateLane actives={[candidateWithWarning]} waitingCount={0} />,
+    );
+
+    const card = container.querySelector("[data-rq-candidate-card]");
+    if (!(card instanceof HTMLElement))
+      throw new Error("Candidate card is missing");
+
+    expect(card.className).toContain("border-t-2");
+    expect(card.className).toContain("border-t-warning-vivid");
+  });
+
+  it("marks a candidate card with both warnings using a single warning border", () => {
+    const candidateWithWarnings: Candidate = {
+      ...candidate,
+      warnings: ["smoking_by_arrangement", "pets_by_arrangement"],
+    };
+
+    const { container } = render(
+      <CandidateLane actives={[candidateWithWarnings]} waitingCount={0} />,
+    );
+
+    const card = container.querySelector("[data-rq-candidate-card]");
+    if (!(card instanceof HTMLElement))
+      throw new Error("Candidate card is missing");
+
+    expect(card.className).toContain("border-t-2");
+    expect(card.className).toContain("border-t-warning-vivid");
+  });
+
+  it("does not apply a warning border when a candidate has no warning", () => {
+    const { container } = render(
+      <CandidateLane actives={[candidate]} waitingCount={0} />,
+    );
+
+    const card = container.querySelector("[data-rq-candidate-card]");
+    if (!(card instanceof HTMLElement))
+      throw new Error("Candidate card is missing");
+
+    expect(card.className).not.toContain("border-t-2");
+    expect(card.className).not.toContain("border-t-warning-vivid");
+  });
+
   it("preserves responsive lane direction and chat visibility", () => {
     const { container } = render(
       <CandidateLane actives={[candidate]} waitingCount={0} theme="dark" />,

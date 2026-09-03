@@ -19,6 +19,30 @@ describe("RenyqoReveal", () => {
     expect(
       container.querySelector(".reveal-wrap")?.classList.contains("is-loaded"),
     ).toBe(false);
+    expect(
+      container
+        .querySelector(".reveal-wrap")
+        ?.classList.contains("reveal-ring"),
+    ).toBe(true);
+  });
+
+  it("can omit the loading ring without removing the veil", () => {
+    const { container } = render(
+      <RenyqoReveal
+        loading
+        showRingPulse={false}
+        skeleton={<span>SKELETON</span>}
+      />,
+    );
+
+    expect(container.querySelector(".veil.veil-static")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(
+      container
+        .querySelector(".reveal-wrap")
+        ?.classList.contains("reveal-ring"),
+    ).toBe(false);
   });
 
   it("reveals real content and marks the wrapper loaded when done", () => {

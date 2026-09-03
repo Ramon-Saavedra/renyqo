@@ -20,7 +20,7 @@ const CARD_INACTIVE_CLASS = "border-border hover:border-primary-soft";
 const CARD_ACTIVE_CLASS = "border-primary bg-primary";
 
 const HEADER_CLASS =
-  "pointer-events-none flex shrink-0 items-center pl-3 pr-12 py-2";
+  "pointer-events-none flex shrink-0 items-center py-2 pl-dashboard-card-x pr-12";
 const HEADER_INACTIVE_CLASS = "bg-primary-tint";
 const HEADER_ACTIVE_CLASS =
   "border-b border-primary-foreground/15 bg-primary-foreground/12";
@@ -38,7 +38,8 @@ const SHARE_INACTIVE_CLASS =
 const SHARE_ACTIVE_CLASS =
   "border-primary-foreground/35 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25";
 
-const BODY_CLASS = "pointer-events-none flex min-w-0 flex-1 flex-col p-3";
+const BODY_CLASS =
+  "pointer-events-none flex min-w-0 flex-1 flex-col px-dashboard-card-x py-dashboard-card-y";
 const CONTENT_ROW_CLASS = "flex min-w-0 gap-2.5";
 const TEXT_CLASS = "flex min-w-0 flex-1 flex-col";
 
