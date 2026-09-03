@@ -75,7 +75,7 @@ function ContentSkeleton() {
         <RenyqoSkeleton variant="pill" width={120} height={20} />
       </div>
 
-      <div className="relative mb-4 w-full">
+      <div className="relative mb-6 w-full">
         <RenyqoSkeleton
           height={40}
           className="rounded-md border border-border-strong bg-input"
@@ -119,7 +119,7 @@ function ContentSkeleton() {
         </div>
       </div>
 
-      <div className="rounded-md bg-background-muted px-dashboard-parent-x py-dashboard-parent-y">
+      <div className="mb-6 rounded-md bg-background-muted px-dashboard-parent-x py-dashboard-parent-y">
         <div className="mb-4 flex flex-col gap-1.5">
           <RenyqoSkeleton width={180} height={18} />
           <RenyqoSkeleton width={260} height={11} className="max-w-full" />
@@ -139,6 +139,27 @@ function ContentSkeleton() {
           ))}
         </div>
       </div>
+
+      <section
+        aria-label={dashboardCopy.recentExits.title}
+        className="rounded-md bg-background-muted px-dashboard-parent-x py-dashboard-parent-y"
+      >
+        <RenyqoSkeleton width={128} height={11} className="mb-1" />
+        <div className="mb-3 flex items-center gap-2">
+          <RenyqoSkeleton width={152} height={10} />
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={`recent-exit-${index}`}
+              className="flex h-12 min-w-0 items-center gap-2 rounded-md bg-background px-dashboard-card-x sm:h-13"
+            >
+              <RenyqoSkeleton variant="circle" width={12} height={12} />
+              <RenyqoSkeleton height={11} className="w-full max-w-20" />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -168,7 +189,12 @@ export function DashboardLoadingSkeleton() {
         <div className="mb-3 flex justify-end">
           <RenyqoLoadingDots label={dashboardCopy.loading} />
         </div>
-        <RenyqoReveal loading vertical skeleton={<ShellSkeleton />} />
+        <RenyqoReveal
+          loading
+          vertical
+          showRingPulse={false}
+          skeleton={<ShellSkeleton />}
+        />
       </div>
     </PageShell>
   );

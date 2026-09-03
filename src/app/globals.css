@@ -567,7 +567,7 @@ body {
   position: relative;
   border-radius: var(--radius-md);
 }
-.reveal-wrap:not(.is-loaded) {
+.reveal-wrap.reveal-ring:not(.is-loaded) {
   animation: rq-ring-pulse 4.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   animation-delay: var(--rq-stagger, 0s);
 }

@@ -23,6 +23,7 @@ export interface RenyqoRevealProps {
    * suits first-load states where no data exists yet.
    */
   overlay?: boolean;
+  showRingPulse?: boolean;
   className?: string;
 }
 
@@ -39,6 +40,7 @@ export function RenyqoReveal({
   vertical = false,
   stagger,
   overlay = false,
+  showRingPulse = true,
   className,
 }: RenyqoRevealProps) {
   const style =
@@ -49,7 +51,12 @@ export function RenyqoReveal({
   if (overlay) {
     return (
       <div
-        className={cn("reveal-wrap", !loading && "is-loaded", className)}
+        className={cn(
+          "reveal-wrap",
+          loading && showRingPulse && "reveal-ring",
+          !loading && "is-loaded",
+          className,
+        )}
         style={style}
         aria-busy={loading}
       >
@@ -63,7 +70,12 @@ export function RenyqoReveal({
 
   return (
     <div
-      className={cn("reveal-wrap", !loading && "is-loaded", className)}
+      className={cn(
+        "reveal-wrap",
+        loading && showRingPulse && "reveal-ring",
+        !loading && "is-loaded",
+        className,
+      )}
       style={style}
       aria-busy={loading}
     >

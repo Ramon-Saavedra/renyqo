@@ -88,7 +88,7 @@ describe("RecentExitsRail", () => {
     );
 
     const stateLabel = screen.getByText("Bewerbung zurückgezogen");
-    const card = stateLabel.parentElement?.parentElement;
+    const card = stateLabel.closest(".relative");
 
     expect(card?.classList.contains("relative")).toBe(true);
   });

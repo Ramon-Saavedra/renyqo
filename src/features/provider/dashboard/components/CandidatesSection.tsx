@@ -74,7 +74,7 @@ function CandidatesSectionContent({
 
   if (isLoading) {
     return (
-      <section id="bewerbungen" className="pb-6">
+      <section id="bewerbungen" className="mb-6">
         <div className={PANEL_CLASS}>
           <div className={HEAD_CLASS}>
             <h3 className={TITLE_CLASS}>{copy.title}</h3>
@@ -87,7 +87,7 @@ function CandidatesSectionContent({
   }
 
   return (
-    <section id="bewerbungen" className="pb-6">
+    <section id="bewerbungen" className="mb-6">
       {hasError ? (
         <FormAlert variant="error" message={copy.loadError} className="mb-3" />
       ) : null}

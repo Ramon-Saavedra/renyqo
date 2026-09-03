@@ -99,7 +99,7 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   return (
     <>
       {object.objectType ? (
-        <div className="mb-3 flex">
+        <div className="mb-1 flex">
           <TypeChip objectType={object.objectType} />
         </div>
       ) : null}
