@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-      - run: npm ci
+      - run: npm ci --no-audit
 
   format-prettier:
     name: format-prettier
@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-      - run: npm ci
+      - run: npm ci --no-audit
       - run: npm run format:check
 
   lint-eslint:
@@ -39,7 +39,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-      - run: npm ci
+      - run: npm ci --no-audit
       - run: npm run lint
 
   typecheck-tsc:
@@ -52,7 +52,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-      - run: npm ci
+      - run: npm ci --no-audit
       - run: npm run typecheck
 
   test-unit:
@@ -66,7 +66,7 @@ jobs:
           node-version: "20"
           cache: "npm"
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit
       - name: Run unit tests
         run: npm test
 
@@ -79,9 +79,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-      - run: npm ci
-      - run: npm audit --audit-level=high
+      - run: npm audit --package-lock-only --audit-level=high
 
   build-next:
     name: build-next
@@ -99,7 +97,7 @@ jobs:
           path: .next/cache
           key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: nextjs-${{ runner.os }}-
-      - run: npm ci
+      - run: npm ci --no-audit
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
@@ -120,7 +118,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-      - run: npm ci
+      - run: npm ci --no-audit
       - uses: actions/download-artifact@v4
         with:
           name: next-build
