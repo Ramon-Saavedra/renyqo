@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, Home } from "lucide-react";
+import { Button } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { siteConfig } from "@/config/site";
 import { dashboardCopy } from "../copy/dashboard";
@@ -24,8 +25,6 @@ const HEAD_COPY_CLASS = "flex min-w-0 flex-col gap-1";
 const HEAD_TITLE_CLASS =
   "min-w-0 truncate font-mono text-meta text-foreground-tertiary";
 const HEAD_COUNT_CLASS = "font-mono text-meta text-foreground-tertiary";
-const COLLAPSE_CLASS =
-  "inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 const LIST_CLASS =
   "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-dashboard-parent-x pb-dashboard-parent-y";
@@ -54,14 +53,15 @@ export function ObjectSidebar({
           <span className={HEAD_TITLE_CLASS}>{sidebar.heading}</span>
           <span className={HEAD_COUNT_CLASS}>{totalCount}</span>
         </span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-xs"
           onClick={onCollapse}
           aria-label={sidebar.collapse}
-          className={COLLAPSE_CLASS}
         >
           <AppIcon icon={ChevronLeft} size={12} strokeWidth={1.8} decorative />
-        </button>
+        </Button>
       </div>
 
       <ul className={LIST_CLASS}>

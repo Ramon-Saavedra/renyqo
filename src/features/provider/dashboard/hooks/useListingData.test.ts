@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, StrictMode, type ReactNode } from "react";
 
@@ -49,7 +49,7 @@ describe("useListingData", () => {
       { wrapper },
     );
 
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       data: idleData,
       isLoading: false,
       hasError: false,
@@ -64,7 +64,7 @@ describe("useListingData", () => {
       { wrapper },
     );
 
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       data: idleData,
       isLoading: false,
       hasError: false,
@@ -244,6 +244,50 @@ describe("useListingData", () => {
     expect(result.current.data.items).not.toContain("stale");
   });
 
+  it("ignores data updates captured for a previously selected listing", async () => {
+    let resolveSecond:
+      | ((value: { data: SampleData; hasError: boolean }) => void)
+      | undefined;
+    const secondRequest = new Promise<{
+      data: SampleData;
+      hasError: boolean;
+    }>((resolve) => {
+      resolveSecond = resolve;
+    });
+    const load = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { items: ["a"] }, hasError: false })
+      .mockReturnValueOnce(secondRequest);
+
+    const { result, rerender } = renderHook(
+      ({ listingId }: { listingId: string }) =>
+        useListingData(listingId, "published", idleData, loadingData, load),
+      { wrapper, initialProps: { listingId: "listing-1" } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a"] });
+    });
+    const updatePreviousListing = result.current.updateData;
+
+    rerender({ listingId: "listing-2" });
+    await waitFor(() => {
+      expect(load).toHaveBeenCalledWith("listing-2");
+    });
+
+    act(() => {
+      updatePreviousListing(() => ({ items: ["stale-update"] }));
+    });
+    await act(async () => {
+      resolveSecond?.({ data: { items: ["b"] }, hasError: false });
+      await secondRequest;
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["b"] });
+    });
+  });
+
   it("reloads with a loading state when returning to a published listing from draft", async () => {
     const load = vi
       .fn()
@@ -270,7 +314,7 @@ describe("useListingData", () => {
     });
 
     rerender({ listingId: "listing-1", listingStatus: "draft" });
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       data: idleData,
       isLoading: false,
       hasError: false,

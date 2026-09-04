@@ -123,6 +123,40 @@ describe("ConfirmationModal", () => {
     expect((secondaryButton as HTMLButtonElement).disabled).toBe(true);
   });
 
+  it("supports a pending destructive primary action", () => {
+    renderModal({
+      primaryLabel: "Ablehnen",
+      primaryPendingLabel: "Wird abgelehnt…",
+      primaryPending: true,
+      primaryVariant: "danger",
+      secondaryLabel: "Behalten",
+      closeLabel: "Behalten",
+    });
+
+    const primaryButton = screen.getByRole("button", {
+      name: "Wird abgelehnt…",
+    });
+    const cancelButtons = screen.getAllByRole("button", { name: "Behalten" });
+
+    expect(primaryButton).toBeInstanceOf(HTMLButtonElement);
+    expect(primaryButton.classList.contains("text-danger")).toBe(true);
+    expect((primaryButton as HTMLButtonElement).disabled).toBe(true);
+    expect(cancelButtons).toHaveLength(2);
+    expect(
+      cancelButtons.every((button) => (button as HTMLButtonElement).disabled),
+    ).toBe(true);
+  });
+
+  it("uses the dedicated close action for Escape", () => {
+    const onClose = vi.fn();
+    const { onPrimary } = renderModal({ onClose });
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onPrimary).not.toHaveBeenCalled();
+  });
+
   it("renders an error message when provided", () => {
     renderModal({ error: "Der Entwurf konnte nicht gespeichert werden." });
 

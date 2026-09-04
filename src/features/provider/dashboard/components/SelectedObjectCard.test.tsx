@@ -50,8 +50,19 @@ describe("SelectedObjectCard", () => {
     expect(screen.getByText("60 m²")).not.toBeNull();
     expect(screen.getByText("900 €")).not.toBeNull();
     expect(screen.getByText("3 / 5 aktiv")).not.toBeNull();
-    expect(screen.getByRole("link", { name: /Bearbeiten/i })).not.toBeNull();
-    expect(screen.getByRole("link", { name: /Vorschau/i })).not.toBeNull();
+    const editLink = screen.getByRole("link", { name: /Bearbeiten/i });
+    const previewLink = screen.getByRole("link", { name: /Vorschau/i });
+    expect(editLink.className).toContain("bg-transparent");
+    expect(editLink.className).toContain("hover:bg-primary-foreground/20");
+    expect(previewLink.className).toContain("bg-transparent");
+    expect(previewLink.className).toContain("hover:bg-primary-foreground/20");
+    const mobileShare = document.querySelector(
+      'summary[aria-label="Link kopieren"]',
+    );
+    expect(mobileShare).toBeInstanceOf(HTMLElement);
+    if (!(mobileShare instanceof HTMLElement)) return;
+    expect(mobileShare.className).toContain("bg-transparent");
+    expect(mobileShare.className).toContain("hover:bg-primary-foreground/20");
     expect(screen.getByText("02.07.2026, 13:00")).not.toBeNull();
     expect(screen.getByText("Veröffentlicht am")).not.toBeNull();
   });

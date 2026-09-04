@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button/Button";
 import { INPUT_BASE_CLASS } from "@/components/ui/form/Input";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
@@ -16,8 +17,7 @@ interface DashboardSearchProps {
 
 const ICON_CLASS =
   "pointer-events-none absolute top-1/2 -translate-y-1/2 text-foreground-tertiary";
-const CLEAR_CLASS =
-  "absolute top-1/2 right-2 -translate-y-1/2 inline-flex items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+const CLEAR_CLASS = "absolute top-1/2 right-2 -translate-y-1/2";
 
 export function DashboardSearch({
   value,
@@ -54,11 +54,13 @@ export function DashboardSearch({
         className={inputClass}
       />
       {value && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size={dense ? "icon-2xs" : "icon-xs"}
           onClick={() => onChange("")}
           aria-label={clearLabel}
-          className={cn(CLEAR_CLASS, dense ? "h-6 w-6" : "h-7 w-7")}
+          className={CLEAR_CLASS}
         >
           <AppIcon
             icon={X}
@@ -66,7 +68,7 @@ export function DashboardSearch({
             strokeWidth={1.8}
             decorative
           />
-        </button>
+        </Button>
       )}
     </div>
   );

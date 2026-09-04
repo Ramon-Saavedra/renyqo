@@ -4,12 +4,17 @@ import { createElement, type ReactNode } from "react";
 
 import { getProviderExitedApplications } from "../api/provider-exited-applications";
 import type { ProviderExitedApplicationsResponse } from "../api/provider-exited-applications";
+import { restoreProviderApplication } from "../api/provider-application-restore";
 import { useExitedApplications } from "./useExitedApplications";
 import { TabRefreshProvider } from "./TabRefreshProvider";
 import type { DashboardObjectStatus } from "../types";
 
 vi.mock("../api/provider-exited-applications", () => ({
   getProviderExitedApplications: vi.fn(),
+}));
+
+vi.mock("../api/provider-application-restore", () => ({
+  restoreProviderApplication: vi.fn(),
 }));
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -28,6 +33,7 @@ const withdrawn = {
 describe("useExitedApplications", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(restoreProviderApplication).mockResolvedValue();
   });
 
   afterEach(() => {
@@ -55,11 +61,12 @@ describe("useExitedApplications", () => {
       wrapper,
     });
 
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       exits: [],
       totalCount: 0,
       isLoading: false,
       hasError: false,
+      restorationState: { status: "idle" },
     });
     expect(getProviderExitedApplications).not.toHaveBeenCalled();
   });
@@ -136,11 +143,12 @@ describe("useExitedApplications", () => {
     });
 
     rerender({ listingId: "listing-1", listingStatus: "draft" });
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       exits: [],
       totalCount: 0,
       isLoading: false,
       hasError: false,
+      restorationState: { status: "idle" },
     });
   });
 
@@ -268,6 +276,128 @@ describe("useExitedApplications", () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it("keeps a confirmed restoration consistent when the authoritative refresh fails", async () => {
+    vi.mocked(getProviderExitedApplications)
+      .mockResolvedValueOnce({
+        items: [withdrawn, { ...withdrawn, id: "exit-2" }],
+        totalCount: 2,
+      })
+      .mockRejectedValueOnce(new Error("network"));
+
+    const { result } = renderHook(
+      () => useExitedApplications("listing-1", "published"),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.exits).toHaveLength(2);
+    });
+
+    await act(async () => {
+      expect(await result.current.restoreCandidate("exit-1")).toBe(true);
+    });
+
+    await waitFor(() => {
+      expect(result.current.hasError).toBe(true);
+    });
+
+    expect(restoreProviderApplication).toHaveBeenCalledWith("exit-1");
+    expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
+    expect(result.current.totalCount).toBe(1);
+  });
+
+  it("ignores an older refresh after restoration when the authoritative refresh fails", async () => {
+    let resolveOlderRefresh:
+      | ((value: ProviderExitedApplicationsResponse) => void)
+      | undefined;
+    let rejectAuthoritativeRefresh: ((reason: Error) => void) | undefined;
+    const olderRefresh = new Promise<ProviderExitedApplicationsResponse>(
+      (resolve) => {
+        resolveOlderRefresh = resolve;
+      },
+    );
+    const authoritativeRefresh =
+      new Promise<ProviderExitedApplicationsResponse>((_, reject) => {
+        rejectAuthoritativeRefresh = reject;
+      });
+    vi.mocked(getProviderExitedApplications)
+      .mockResolvedValueOnce({
+        items: [withdrawn, { ...withdrawn, id: "exit-2" }],
+        totalCount: 2,
+      })
+      .mockReturnValueOnce(olderRefresh)
+      .mockReturnValueOnce(authoritativeRefresh);
+
+    const { result } = renderHook(
+      () => useExitedApplications("listing-1", "published"),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.exits).toHaveLength(2);
+    });
+
+    fireFocus();
+    await waitFor(() => {
+      expect(getProviderExitedApplications).toHaveBeenCalledTimes(2);
+    });
+
+    await act(async () => {
+      expect(await result.current.restoreCandidate("exit-1")).toBe(true);
+    });
+    await waitFor(() => {
+      expect(getProviderExitedApplications).toHaveBeenCalledTimes(3);
+    });
+
+    await act(async () => {
+      resolveOlderRefresh?.({
+        items: [withdrawn, { ...withdrawn, id: "exit-2" }],
+        totalCount: 2,
+      });
+      await olderRefresh;
+    });
+
+    expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
+    expect(result.current.totalCount).toBe(1);
+
+    await act(async () => {
+      rejectAuthoritativeRefresh?.(new Error("network"));
+      await authoritativeRefresh.catch(() => undefined);
+    });
+
+    await waitFor(() => {
+      expect(result.current.hasError).toBe(true);
+    });
+    expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
+    expect(result.current.totalCount).toBe(1);
+  });
+
+  it("never decrements the confirmed exited count below zero", async () => {
+    vi.mocked(getProviderExitedApplications)
+      .mockResolvedValueOnce({ items: [withdrawn], totalCount: 0 })
+      .mockRejectedValueOnce(new Error("network"));
+
+    const { result } = renderHook(
+      () => useExitedApplications("listing-1", "published"),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.exits).toHaveLength(1);
+    });
+
+    await act(async () => {
+      expect(await result.current.restoreCandidate("exit-1")).toBe(true);
+    });
+
+    await waitFor(() => {
+      expect(result.current.hasError).toBe(true);
+    });
+
+    expect(result.current.exits).toEqual([]);
+    expect(result.current.totalCount).toBe(0);
+  });
+
   it("shows a loading state when returning to a published listing from draft", async () => {
     vi.mocked(getProviderExitedApplications)
       .mockResolvedValueOnce({ items: [withdrawn], totalCount: 1 })
@@ -293,11 +423,12 @@ describe("useExitedApplications", () => {
     });
 
     rerender({ listingId: "listing-1", listingStatus: "draft" });
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       exits: [],
       totalCount: 0,
       isLoading: false,
       hasError: false,
+      restorationState: { status: "idle" },
     });
 
     rerender({ listingId: "listing-1", listingStatus: "published" });
@@ -316,11 +447,12 @@ describe("useExitedApplications", () => {
 
     fireFocus();
 
-    expect(result.current).toEqual({
+    expect(result.current).toMatchObject({
       exits: [],
       totalCount: 0,
       isLoading: false,
       hasError: false,
+      restorationState: { status: "idle" },
     });
     expect(getProviderExitedApplications).not.toHaveBeenCalled();
   });

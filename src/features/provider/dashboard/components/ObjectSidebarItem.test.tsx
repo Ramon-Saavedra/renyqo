@@ -63,9 +63,9 @@ describe("ObjectSidebarItem", () => {
     expect(screen.getByText("Veröffentlicht")).not.toBeNull();
     expect(screen.getByText("Bewerbungen")).not.toBeNull();
     expect(screen.getByText("5 / 5 aktiv")).not.toBeNull();
-    expect(
-      screen.getByRole("button", { name: "Objekt teilen" }),
-    ).not.toBeNull();
+    const shareButton = screen.getByRole("button", { name: "Objekt teilen" });
+    expect(shareButton.className).toContain("bg-transparent");
+    expect(shareButton.className).toContain("hover:bg-primary-tint");
   });
 
   it("does not render a progress bar for applications", () => {
@@ -159,6 +159,14 @@ describe("ObjectSidebarItem", () => {
         pressed: true,
       }),
     ).not.toBeNull();
+  });
+
+  it("uses an inverse transparent hover for selected-item sharing", () => {
+    renderItem(publishedObject, true);
+
+    const shareButton = screen.getByRole("button", { name: "Objekt teilen" });
+    expect(shareButton.className).toContain("bg-transparent");
+    expect(shareButton.className).toContain("hover:bg-primary-foreground/20");
   });
 
   it("uses the same ACTIVE source for selected and unselected cards", () => {

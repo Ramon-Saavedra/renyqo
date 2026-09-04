@@ -155,11 +155,11 @@ html {
   --warning-vivid: #fa8714;
   --danger: #dc2626;
 
-  --exit-withdrawn-bg: #f1f4f3;
-  --exit-withdrawn-fg: #5c6b65;
-  --exit-provider-discarded-bg: #faf2ef;
-  --exit-provider-discarded-fg: #a2685a;
-  --exit-provider-discarded-muted-fg: #8f5f4e;
+  --exit-withdrawn-bg: #e2e9e6;
+  --exit-withdrawn-fg: #46554f;
+  --exit-provider-discarded-bg: #f4dfd8;
+  --exit-provider-discarded-fg: #8f4f40;
+  --exit-provider-discarded-muted-fg: #744437;
 
   --watermark-opacity-peak: 0.35;
   --watermark-cycle-duration: 120s;
@@ -206,11 +206,11 @@ html {
   --warning-vivid: #f59527;
   --danger: #f87171;
 
-  --exit-withdrawn-bg: #242927;
-  --exit-withdrawn-fg: #93a29c;
-  --exit-provider-discarded-bg: #2b2422;
-  --exit-provider-discarded-fg: #c79080;
-  --exit-provider-discarded-muted-fg: #bf8b79;
+  --exit-withdrawn-bg: #303b37;
+  --exit-withdrawn-fg: #b9c8c2;
+  --exit-provider-discarded-bg: #442e29;
+  --exit-provider-discarded-fg: #e0a08e;
+  --exit-provider-discarded-muted-fg: #d29a88;
 
   --watermark-opacity-peak: 0.5;
 

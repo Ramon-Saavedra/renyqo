@@ -60,6 +60,9 @@ describe("Button", () => {
       outline: "border-border-strong",
       ghost: "bg-transparent",
       danger: "text-danger",
+      dangerGhost: "bg-transparent",
+      primaryGhost: "bg-transparent",
+      inverseGhost: "bg-transparent",
     };
 
     for (const variant of Object.keys(markers) as ButtonVariant[]) {
@@ -146,4 +149,28 @@ describe("buttonClassWithSize", () => {
     expect(result).toContain("h-11");
     expect(result).toContain("w-full");
   });
+
+  it("provides a borderless danger hover for icon actions", () => {
+    const result = buttonClassWithSize("dangerGhost", "icon-sm");
+
+    expect(result).toContain("bg-transparent");
+    expect(result).toContain("text-danger");
+    expect(result).toContain("hover:bg-danger/10");
+    expect(result).not.toContain("border-danger");
+  });
+
+  it.each([
+    ["primaryGhost", "hover:bg-primary-tint"],
+    ["inverseGhost", "hover:bg-primary-foreground/20"],
+  ] as const)(
+    "provides transparent %s icon controls",
+    (variant, hoverClass) => {
+      const result = buttonClassWithSize(variant, "icon-xs");
+
+      expect(result).toContain("bg-transparent");
+      expect(result).toContain(hoverClass);
+      expect(result).toContain("h-7");
+      expect(result).toContain("w-7");
+    },
+  );
 });

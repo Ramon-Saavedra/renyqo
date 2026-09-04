@@ -68,7 +68,10 @@ describe("ObjectSidebar", () => {
     const user = userEvent.setup();
     renderSidebar();
 
-    await user.click(screen.getByRole("button", { name: /Ausblenden/i }));
+    const collapseButton = screen.getByRole("button", { name: /Ausblenden/i });
+    expect(collapseButton.className).toContain("bg-transparent");
+    expect(collapseButton.className).toContain("hover:bg-background-muted");
+    await user.click(collapseButton);
 
     expect(onCollapse).toHaveBeenCalledTimes(1);
   });

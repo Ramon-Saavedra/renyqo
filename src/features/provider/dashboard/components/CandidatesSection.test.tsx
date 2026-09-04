@@ -1,7 +1,23 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { rejectProviderApplication } from "../api/provider-application-rejection";
+import {
+  TabRefreshProvider,
+  useTabRefreshRevision,
+} from "../hooks/TabRefreshProvider";
 import { CandidatesSection } from "./CandidatesSection";
 import type { Candidate, DashboardObject } from "../types";
+
+vi.mock("../api/provider-application-rejection", () => ({
+  rejectProviderApplication: vi.fn(),
+}));
 
 const publishedObject: DashboardObject = {
   id: "object-1",
@@ -94,7 +110,16 @@ const fifoCandidates: readonly Candidate[] = [
   },
 ];
 
+function RefreshRevisionProbe() {
+  const revision = useTabRefreshRevision();
+  return <output data-testid="refresh-revision">{revision}</output>;
+}
+
 describe("CandidatesSection", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders the compact active occupancy indicator in the section header", () => {
     render(
       <CandidatesSection
@@ -123,6 +148,167 @@ describe("CandidatesSection", () => {
     expect(screen.getByText("Anna Lehmann")).not.toBeNull();
     expect(screen.getByText("Anna Lehmann").closest("article")).not.toBeNull();
     expect(screen.getAllByText("Platz frei")).toHaveLength(4);
+  });
+
+  it("cancels candidate rejection without calling the backend", async () => {
+    const user = userEvent.setup();
+    render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={candidates}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "Bewerber ablehnen?" }),
+    ).not.toBeNull();
+    await user.click(screen.getAllByRole("button", { name: "Behalten" })[1]!);
+
+    expect(rejectProviderApplication).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByText("Anna Lehmann")).not.toBeNull();
+  });
+
+  it("removes the candidate and requests a refresh after backend success", async () => {
+    const user = userEvent.setup();
+    vi.mocked(rejectProviderApplication).mockResolvedValue();
+    render(
+      <TabRefreshProvider>
+        <CandidatesSection
+          object={publishedObject}
+          candidates={candidates}
+          waitingCountState={{ status: "success", count: 0 }}
+          isLoading={false}
+          hasError={false}
+        />
+        <RefreshRevisionProbe />
+      </TabRefreshProvider>,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Ablehnen" }));
+
+    await waitFor(() => {
+      expect(rejectProviderApplication).toHaveBeenCalledWith("candidate-1");
+      expect(screen.queryByText("Anna Lehmann")).toBeNull();
+      expect(screen.getByTestId("refresh-revision").textContent).toBe("1");
+    });
+    expect(screen.getByText("Bewerbung wurde abgelehnt.")).not.toBeNull();
+  });
+
+  it("shows a rejected application again when the backend returns it as active", async () => {
+    const user = userEvent.setup();
+    vi.mocked(rejectProviderApplication).mockResolvedValue();
+    const { rerender } = render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={candidates}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Ablehnen" }));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Anna Lehmann")).toBeNull();
+    });
+
+    rerender(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={[...candidates]}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(screen.getByText("Anna Lehmann")).not.toBeNull();
+  });
+
+  it("keeps a confirmed rejection hidden when active data changed during submission", async () => {
+    const user = userEvent.setup();
+    let resolveRejection: (() => void) | undefined;
+    const rejection = new Promise<void>((resolve) => {
+      resolveRejection = resolve;
+    });
+    vi.mocked(rejectProviderApplication).mockReturnValue(rejection);
+    const { rerender } = render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={candidates}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Ablehnen" }));
+
+    rerender(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={[...candidates]}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await act(async () => {
+      resolveRejection?.();
+      await rejection;
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Anna Lehmann")).toBeNull();
+    });
+  });
+
+  it("keeps the candidate visible and shows a safe error after failure", async () => {
+    const user = userEvent.setup();
+    vi.mocked(rejectProviderApplication).mockRejectedValue(
+      new Error("internal backend details"),
+    );
+    render(
+      <CandidatesSection
+        object={publishedObject}
+        candidates={candidates}
+        waitingCountState={{ status: "success", count: 0 }}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Ablehnen" }));
+
+    expect(
+      await screen.findByText(
+        "Die Bewerbung konnte nicht abgelehnt werden. Bitte versuche es erneut.",
+      ),
+    ).not.toBeNull();
+    expect(screen.getByText("Anna Lehmann")).not.toBeNull();
+    expect(screen.queryByText("internal backend details")).toBeNull();
   });
 
   it("renders both backend warnings with their matching icons", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DashboardObjectStatus } from "../types";
 import { useTabRefreshRevision } from "./TabRefreshProvider";
 
@@ -15,6 +15,7 @@ interface ListingDataResult<T> {
   readonly data: T;
   readonly isLoading: boolean;
   readonly hasError: boolean;
+  readonly updateData: (update: (current: T) => T) => void;
 }
 
 function resolveActiveListingId(
@@ -35,6 +36,7 @@ export function useListingData<T>(
   const activeListingId = resolveActiveListingId(listingId, listingStatus);
   const refreshRevision = useTabRefreshRevision();
   const loadedListingIdRef = useRef<string | null>(null);
+  const requestIdsRef = useRef(new Map<string, number>());
   const [prevActiveListingId, setPrevActiveListingId] =
     useState(activeListingId);
   const [state, setState] = useState<ListingDataState<T>>({
@@ -44,6 +46,19 @@ export function useListingData<T>(
     hasError: false,
   });
 
+  const updateData = useCallback(
+    (update: (current: T) => T) => {
+      if (!activeListingId) return;
+      const requestId = (requestIdsRef.current.get(activeListingId) ?? 0) + 1;
+      requestIdsRef.current.set(activeListingId, requestId);
+      setState((current) => {
+        if (current.listingId !== activeListingId) return current;
+        return { ...current, data: update(current.data) };
+      });
+    },
+    [activeListingId],
+  );
+
   useEffect(() => {
     if (!activeListingId) {
       loadedListingIdRef.current = null;
@@ -52,6 +67,8 @@ export function useListingData<T>(
 
     const currentListingId = activeListingId;
     const isRefresh = loadedListingIdRef.current === currentListingId;
+    const requestId = (requestIdsRef.current.get(currentListingId) ?? 0) + 1;
+    requestIdsRef.current.set(currentListingId, requestId);
     let active = true;
 
     async function loadListings() {
@@ -66,7 +83,11 @@ export function useListingData<T>(
 
       try {
         const result = await load(currentListingId);
-        if (!active) return;
+        if (
+          !active ||
+          requestId !== requestIdsRef.current.get(currentListingId)
+        )
+          return;
         loadedListingIdRef.current = currentListingId;
         setState((current) => {
           if (current.listingId !== currentListingId) return current;
@@ -81,7 +102,11 @@ export function useListingData<T>(
           };
         });
       } catch {
-        if (!active) return;
+        if (
+          !active ||
+          requestId !== requestIdsRef.current.get(currentListingId)
+        )
+          return;
         loadedListingIdRef.current = currentListingId;
         setState((current) => {
           if (current.listingId !== currentListingId) return current;
@@ -110,7 +135,7 @@ export function useListingData<T>(
   }
 
   if (!activeListingId) {
-    return { data: idleData, isLoading: false, hasError: false };
+    return { data: idleData, isLoading: false, hasError: false, updateData };
   }
 
   const resumedFromInactive =
@@ -121,8 +146,13 @@ export function useListingData<T>(
     resumedFromInactive ||
     state.isLoading
   ) {
-    return { data: loadingData, isLoading: true, hasError: false };
+    return { data: loadingData, isLoading: true, hasError: false, updateData };
   }
 
-  return { data: state.data, isLoading: false, hasError: state.hasError };
+  return {
+    data: state.data,
+    isLoading: false,
+    hasError: state.hasError,
+    updateData,
+  };
 }

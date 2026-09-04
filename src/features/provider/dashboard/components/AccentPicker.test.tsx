@@ -17,6 +17,17 @@ describe("AccentPicker", () => {
     expect(
       screen.getByRole("button", { name: "Akzentfarbe anpassen" }),
     ).not.toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Akzentfarbe anpassen" }).className,
+    ).toContain("bg-transparent");
+    expect(
+      screen.getByRole("button", { name: "Akzentfarbe anpassen" }).className,
+    ).toContain("hover:bg-primary-tint");
+    expect(
+      screen
+        .getByRole("button", { name: "Akzentfarbe anpassen" })
+        .getAttribute("title"),
+    ).toBe("Akzentfarbe anpassen");
     expect(screen.queryByRole("radiogroup")).toBeNull();
   });
 

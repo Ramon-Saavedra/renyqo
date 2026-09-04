@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, type RefObject } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Info, X } from "lucide-react";
-import { buttonClass } from "@/components/ui/button/Button";
+import {
+  Button,
+  buttonClass,
+  type ButtonVariant,
+} from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 
 interface ConfirmationModalProps {
@@ -11,9 +15,15 @@ interface ConfirmationModalProps {
   readonly title: string;
   readonly text: string;
   readonly primaryLabel: string;
+  readonly primaryPendingLabel?: string | undefined;
+  readonly primaryPending?: boolean;
+  readonly primaryDisabled?: boolean;
+  readonly primaryVariant?: ButtonVariant;
   readonly secondaryLabel: string;
   readonly onPrimary: () => void;
   readonly onSecondary: () => void;
+  readonly onClose?: (() => void) | undefined;
+  readonly closeLabel?: string | undefined;
   readonly tertiaryLabel?: string | undefined;
   readonly tertiaryPendingLabel?: string | undefined;
   readonly onTertiary?: () => void;
@@ -21,14 +31,14 @@ interface ConfirmationModalProps {
   readonly tertiaryDisabled?: boolean;
   readonly error?: string | null;
   readonly icon?: LucideIcon;
+  readonly focusFallbackRef?: RefObject<HTMLElement | null> | null;
 }
 
 const OVERLAY_CLASS =
   "fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 px-gutter";
 const PANEL_CLASS =
   "relative w-full max-w-md rounded-md border border-border bg-background p-5 shadow-card sm:max-w-xl";
-const CLOSE_BUTTON_CLASS =
-  "absolute right-3 top-3 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
+const CLOSE_BUTTON_CLASS = "absolute right-3 top-3";
 const ICON_WRAP_CLASS =
   "mb-4 flex h-9 w-9 items-center justify-center rounded-md border border-primary-soft bg-primary-tint text-primary";
 const TITLE_CLASS = "mb-2 text-title font-medium text-foreground";
@@ -50,9 +60,15 @@ export function ConfirmationModal({
   title,
   text,
   primaryLabel,
+  primaryPendingLabel,
+  primaryPending = false,
+  primaryDisabled = false,
+  primaryVariant = "primary",
   secondaryLabel,
   onPrimary,
   onSecondary,
+  onClose = onPrimary,
+  closeLabel = primaryLabel,
   tertiaryLabel,
   tertiaryPendingLabel,
   onTertiary,
@@ -60,12 +76,15 @@ export function ConfirmationModal({
   tertiaryDisabled = false,
   error,
   icon: Icon = Info,
+  focusFallbackRef,
 }: ConfirmationModalProps) {
   const titleId = useId();
   const textId = useId();
+  const errorId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
+  const actionPending = primaryPending || tertiaryPending;
 
   useEffect(() => {
     if (open) {
@@ -89,15 +108,20 @@ export function ConfirmationModal({
     const elementToRestore = restoreFocusRef.current;
     restoreFocusRef.current = null;
     wasOpenRef.current = false;
-    if (elementToRestore?.isConnected) elementToRestore.focus();
-  }, [open]);
+    if (elementToRestore?.isConnected) {
+      elementToRestore.focus();
+      return;
+    }
+    const fallback = focusFallbackRef?.current;
+    if (fallback?.isConnected) fallback.focus();
+  }, [open, focusFallbackRef]);
 
   useEffect(() => {
     if (!open) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onPrimary();
+        if (!actionPending) onClose();
         return;
       }
 
@@ -138,7 +162,7 @@ export function ConfirmationModal({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onPrimary, open]);
+  }, [actionPending, onClose, open]);
 
   if (!open) return null;
 
@@ -149,19 +173,21 @@ export function ConfirmationModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        aria-describedby={textId}
+        aria-describedby={error ? `${textId} ${errorId}` : textId}
         tabIndex={-1}
         className={PANEL_CLASS}
       >
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           className={CLOSE_BUTTON_CLASS}
-          onClick={onPrimary}
-          disabled={tertiaryPending}
-          aria-label={primaryLabel}
+          onClick={onClose}
+          disabled={actionPending}
+          aria-label={closeLabel}
         >
           <AppIcon icon={X} size={16} strokeWidth={1.7} decorative />
-        </button>
+        </Button>
         <div className={ICON_WRAP_CLASS}>
           <AppIcon icon={Icon} size={17} strokeWidth={1.5} decorative />
         </div>
@@ -171,21 +197,27 @@ export function ConfirmationModal({
         <p id={textId} className={TEXT_CLASS}>
           {text}
         </p>
-        {error && <p className={ERROR_CLASS}>{error}</p>}
+        {error && (
+          <p id={errorId} role="alert" className={ERROR_CLASS}>
+            {error}
+          </p>
+        )}
         <div className={ACTIONS_CLASS}>
           <button
             type="button"
-            className={buttonClass("primary", ACTION_BUTTON_CLASS)}
+            className={buttonClass(primaryVariant, ACTION_BUTTON_CLASS)}
             onClick={onPrimary}
-            disabled={tertiaryPending}
+            disabled={actionPending || primaryDisabled}
           >
-            {primaryLabel}
+            {primaryPending && primaryPendingLabel
+              ? primaryPendingLabel
+              : primaryLabel}
           </button>
           <button
             type="button"
             className={buttonClass("secondary", ACTION_BUTTON_CLASS)}
             onClick={onSecondary}
-            disabled={tertiaryPending}
+            disabled={actionPending}
           >
             {secondaryLabel}
           </button>
@@ -194,7 +226,7 @@ export function ConfirmationModal({
               type="button"
               className={buttonClass("secondary", ACTION_BUTTON_CLASS)}
               onClick={onTertiary}
-              disabled={tertiaryPending || tertiaryDisabled}
+              disabled={actionPending || tertiaryDisabled}
             >
               {tertiaryPending && tertiaryPendingLabel
                 ? tertiaryPendingLabel

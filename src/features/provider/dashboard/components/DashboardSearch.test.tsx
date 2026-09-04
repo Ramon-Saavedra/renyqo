@@ -57,7 +57,10 @@ describe("DashboardSearch", () => {
     const user = userEvent.setup();
     renderSearch("Berlin");
 
-    await user.click(screen.getByRole("button", { name: "Suche leeren" }));
+    const clearButton = screen.getByRole("button", { name: "Suche leeren" });
+    expect(clearButton.className).toContain("bg-transparent");
+    expect(clearButton.className).toContain("hover:bg-background-muted");
+    await user.click(clearButton);
 
     expect(onChange).toHaveBeenCalledWith("");
   });

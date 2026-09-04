@@ -111,6 +111,16 @@ export const dashboardCopy = {
     householdOne: "1 Person",
     householdMany: (count: number) => `${count} Personen`,
     householdUnavailable: "Haushalt nicht angegeben",
+    rejectAction: (name: string) => `${name} ablehnen`,
+    rejectTitle: "Bewerber ablehnen?",
+    rejectText: (name: string) =>
+      `Möchtest du die Bewerbung von ${name} wirklich ablehnen?`,
+    rejectCancel: "Behalten",
+    rejectConfirm: "Ablehnen",
+    rejectPending: "Wird abgelehnt…",
+    rejectError:
+      "Die Bewerbung konnte nicht abgelehnt werden. Bitte versuche es erneut.",
+    rejectSuccess: "Bewerbung wurde abgelehnt.",
   },
   waitingQueue: {
     badge: (count: number) => (count === 1 ? "+1 wartet" : `+${count} warten`),
@@ -134,5 +144,15 @@ export const dashboardCopy = {
       provider_discarded: "Von dir abgelehnt",
       system_removed: "Nicht mehr verfügbar",
     },
+    restoreAction: (name: string) => `${name} wieder aufnehmen`,
+    restoreTitle: "Bewerber wieder aufnehmen?",
+    restoreText: (name: string) =>
+      `Möchtest du ${name} wieder in die Bewerbungen aufnehmen?`,
+    restoreCancel: "Abbrechen",
+    restoreConfirm: "Wieder aufnehmen",
+    restorePending: "Wird wieder aufgenommen…",
+    restoreError:
+      "Die Bewerbung konnte nicht wieder aufgenommen werden. Bitte versuche es erneut.",
+    restoreSuccess: "Bewerbung wurde wieder aufgenommen.",
   },
 } as const;
