@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Home, MapPin, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { formatEUR } from "@/features/provider/listings-overview/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -31,12 +32,7 @@ const STATUS_INACTIVE_CLASS = "text-primary";
 const STATUS_ACTIVE_CLASS = "text-primary-foreground";
 const DOT_CLASS = "h-1.5 w-1.5 rounded-full bg-current";
 
-const SHARE_BUTTON_CLASS =
-  "absolute top-1 right-3 z-20 inline-flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-sm border focus-visible:outline-none focus-visible:shadow-focus";
-const SHARE_INACTIVE_CLASS =
-  "border-primary-soft bg-background text-primary hover:bg-primary-tint";
-const SHARE_ACTIVE_CLASS =
-  "border-primary-foreground/35 bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25";
+const SHARE_BUTTON_CLASS = "absolute top-1 right-3 z-20 shrink-0";
 
 const BODY_CLASS =
   "pointer-events-none flex min-w-0 flex-1 flex-col px-dashboard-card-x py-dashboard-card-y";
@@ -249,17 +245,16 @@ export function ObjectSidebarItem({
       </span>
 
       {!isDraft && (
-        <button
+        <Button
           type="button"
+          variant={selected ? "inverseGhost" : "primaryGhost"}
+          size="icon-2xs"
           onClick={handleShare}
-          className={cn(
-            SHARE_BUTTON_CLASS,
-            selected ? SHARE_ACTIVE_CLASS : SHARE_INACTIVE_CLASS,
-          )}
+          className={SHARE_BUTTON_CLASS}
           aria-label={sidebar.share.aria}
         >
           <AppIcon icon={Share2} size={12} strokeWidth={1.8} decorative />
-        </button>
+        </Button>
       )}
     </li>
   );

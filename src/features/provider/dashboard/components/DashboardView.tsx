@@ -1,15 +1,25 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { ChevronRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
+import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { useExitedApplications } from "../hooks/useExitedApplications";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
-import { TabRefreshProvider } from "../hooks/TabRefreshProvider";
+import {
+  TabRefreshProvider,
+  useTabRefreshRevision,
+} from "../hooks/TabRefreshProvider";
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { DashboardObject } from "../types";
 import { AccentPicker } from "./AccentPicker";
@@ -38,8 +48,11 @@ const MAIN_CLASS =
 const CONTENT_CLASS =
   "px-3 pt-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-gutter scrollbar-slim";
 
-const REOPEN_CLASS =
-  "sticky top-0 z-10 hidden h-8 w-8 cursor-pointer items-center justify-center self-start border-r border-b border-border bg-background text-foreground-secondary hover:bg-primary-tint hover:text-primary focus-visible:outline-none focus-visible:shadow-focus lg:inline-flex lg:rounded-br-md";
+const REOPEN_CLASS = buttonClassWithSize(
+  "primaryGhost",
+  "icon-sm",
+  "sticky top-0 z-10 hidden self-start border-r border-b border-border lg:inline-flex lg:rounded-br-md",
+);
 
 function getStoredSelectedObjectId() {
   return window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY);
@@ -89,6 +102,8 @@ function DashboardViewContent({
   objects: initialObjects,
 }: DashboardViewContentProps) {
   const shouldLoadObjects = initialObjects === undefined;
+  const refreshRevision = useTabRefreshRevision();
+  const hasLoadedObjectsRef = useRef(false);
   const [loadedObjects, setLoadedObjects] = useState<
     readonly DashboardObject[]
   >([]);
@@ -104,15 +119,18 @@ function DashboardViewContent({
     if (!shouldLoadObjects) return;
 
     let active = true;
+    const isRefresh = hasLoadedObjectsRef.current;
 
     getProviderDashboardObjects()
       .then((nextObjects) => {
         if (!active) return;
+        hasLoadedObjectsRef.current = true;
         setLoadedObjects(nextObjects);
+        setLoadError(false);
       })
       .catch(() => {
         if (!active) return;
-        setLoadedObjects([]);
+        if (!isRefresh) setLoadedObjects([]);
         setLoadError(true);
       })
       .finally(() => {
@@ -123,7 +141,7 @@ function DashboardViewContent({
     return () => {
       active = false;
     };
-  }, [shouldLoadObjects]);
+  }, [refreshRevision, shouldLoadObjects]);
 
   const filteredObjects = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -160,6 +178,9 @@ function DashboardViewContent({
     totalCount: recentExitsTotalCount,
     isLoading: isExitedApplicationsLoading,
     hasError: hasExitedApplicationsError,
+    restorationState,
+    restoreCandidate,
+    resetRestoration,
   } = useExitedApplications(selected?.id ?? null, selected?.status ?? null);
 
   const publishedObjects = objects.filter(
@@ -261,10 +282,14 @@ function DashboardViewContent({
             {selected && selected.status !== "draft" ? (
               <div className="pb-6">
                 <RecentExitsRail
+                  key={selected.id}
                   exits={recentExits}
                   totalCount={recentExitsTotalCount}
                   isLoading={isExitedApplicationsLoading}
                   hasError={hasExitedApplicationsError}
+                  restorationState={restorationState}
+                  onRestore={restoreCandidate}
+                  onResetRestoration={resetRestoration}
                 />
               </div>
             ) : null}

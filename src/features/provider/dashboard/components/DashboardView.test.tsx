@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getCurrentUser } from "@/lib/api/auth";
+import { rejectProviderApplication } from "../api/provider-application-rejection";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
@@ -39,6 +40,10 @@ vi.mock("@/lib/api/auth", () => ({
 
 vi.mock("../api/provider-dashboard", () => ({
   getProviderDashboardObjects: vi.fn(),
+}));
+
+vi.mock("../api/provider-application-rejection", () => ({
+  rejectProviderApplication: vi.fn(),
 }));
 
 vi.mock("../hooks/useSelectedListingApplications", () => ({
@@ -115,6 +120,9 @@ function mockExitedState(
     totalCount: 0,
     isLoading: false,
     hasError: false,
+    restorationState: { status: "idle" },
+    restoreCandidate: vi.fn(),
+    resetRestoration: vi.fn(),
     ...overrides,
   });
 }
@@ -124,6 +132,7 @@ describe("DashboardView", () => {
     vi.clearAllMocks();
     window.localStorage.clear();
     vi.mocked(getProviderDashboardObjects).mockResolvedValue([]);
+    vi.mocked(rejectProviderApplication).mockResolvedValue();
     vi.mocked(getCurrentUser).mockResolvedValue({
       id: "provider-1",
       name: "Ramon Saavedra",
@@ -252,6 +261,22 @@ describe("DashboardView", () => {
     );
   });
 
+  it("refreshes listing counters after rejecting a candidate", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getProviderDashboardObjects).mockResolvedValue([objects[0]!]);
+    mockApplicationsState({ candidates });
+
+    render(<DashboardView />);
+
+    await screen.findByText("Erste Wohnung in Berlin");
+    await user.click(screen.getByRole("button", { name: "Anna A. ablehnen" }));
+    await user.click(screen.getByRole("button", { name: "Ablehnen" }));
+
+    await vi.waitFor(() => {
+      expect(getProviderDashboardObjects).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it("shows a server error state when dashboard listings fail to load", async () => {
     vi.mocked(getProviderDashboardObjects).mockRejectedValue(
       new Error("server error"),
@@ -291,13 +316,13 @@ describe("DashboardView", () => {
     await screen.findByText("Ramon Saavedra");
     await user.click(screen.getByRole("button", { name: /Ausblenden/i }));
 
-    expect(
-      screen.getByRole("button", { name: /Objekte einblenden/i }),
-    ).not.toBeNull();
+    const reopenButton = screen.getByRole("button", {
+      name: /Objekte einblenden/i,
+    });
+    expect(reopenButton.className).toContain("bg-transparent");
+    expect(reopenButton.className).toContain("hover:bg-primary-tint");
 
-    await user.click(
-      screen.getByRole("button", { name: /Objekte einblenden/i }),
-    );
+    await user.click(reopenButton);
 
     expect(screen.getAllByText("Meine Mietobjekte · 2").length).toBeGreaterThan(
       0,

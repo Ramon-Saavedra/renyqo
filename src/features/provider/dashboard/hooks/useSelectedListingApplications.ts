@@ -13,11 +13,6 @@ import type {
   WaitingCountState,
 } from "../types";
 
-interface SelectedListingData {
-  readonly candidates: readonly Candidate[];
-  readonly waitingCountState: WaitingCountState;
-}
-
 interface SelectedListingApplicationsResult {
   readonly candidates: readonly Candidate[];
   readonly waitingCountState: WaitingCountState;
@@ -25,61 +20,62 @@ interface SelectedListingApplicationsResult {
   readonly hasError: boolean;
 }
 
-const IDLE_STATE: SelectedListingData = {
-  candidates: [],
-  waitingCountState: { status: "idle" },
-};
-
-const LOADING_STATE: SelectedListingData = {
-  candidates: [],
-  waitingCountState: { status: "loading" },
-};
+const IDLE_CANDIDATES: readonly Candidate[] = [];
+const LOADING_CANDIDATES: readonly Candidate[] = [];
+const IDLE_WAITING: WaitingCountState = { status: "idle" };
+const LOADING_WAITING: WaitingCountState = { status: "loading" };
 
 export function useSelectedListingApplications(
   listingId: string | null,
   listingStatus: DashboardObjectStatus | null,
 ): SelectedListingApplicationsResult {
-  const load = useCallback(async (currentListingId: string) => {
-    const [applicationsResult, waitingResult] = await Promise.allSettled([
-      getProviderActiveApplications(currentListingId),
-      getProviderWaitingCount(currentListingId),
-    ]);
-
-    const waitingCountState: WaitingCountState =
-      waitingResult.status === "fulfilled"
-        ? { status: "success", count: waitingResult.value }
-        : { status: "error" };
-
-    if (applicationsResult.status === "fulfilled") {
+  const loadApplications = useCallback(async (currentListingId: string) => {
+    try {
+      const applications =
+        await getProviderActiveApplications(currentListingId);
       return {
-        data: {
-          candidates: mapActiveApplicationsToCandidates(
-            applicationsResult.value,
-          ),
-          waitingCountState,
-        },
+        data: mapActiveApplicationsToCandidates(applications),
         hasError: false,
       };
+    } catch {
+      return { data: IDLE_CANDIDATES, hasError: true };
     }
-
-    return {
-      data: { candidates: [], waitingCountState },
-      hasError: true,
-    };
   }, []);
 
-  const { data, isLoading, hasError } = useListingData(
+  const loadWaitingCount = useCallback(
+    async (
+      currentListingId: string,
+    ): Promise<{ data: WaitingCountState; hasError: boolean }> => {
+      try {
+        const count = await getProviderWaitingCount(currentListingId);
+        return { data: { status: "success", count }, hasError: false };
+      } catch {
+        return { data: { status: "error" }, hasError: false };
+      }
+    },
+    [],
+  );
+
+  const candidatesResult = useListingData(
     listingId,
     listingStatus,
-    IDLE_STATE,
-    LOADING_STATE,
-    load,
+    IDLE_CANDIDATES,
+    LOADING_CANDIDATES,
+    loadApplications,
+  );
+
+  const waitingResult = useListingData(
+    listingId,
+    listingStatus,
+    IDLE_WAITING,
+    LOADING_WAITING,
+    loadWaitingCount,
   );
 
   return {
-    candidates: data.candidates,
-    waitingCountState: data.waitingCountState,
-    isLoading,
-    hasError,
+    candidates: candidatesResult.data,
+    waitingCountState: waitingResult.data,
+    isLoading: candidatesResult.isLoading || waitingResult.isLoading,
+    hasError: candidatesResult.hasError,
   };
 }

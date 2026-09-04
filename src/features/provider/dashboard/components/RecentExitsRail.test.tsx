@@ -1,7 +1,28 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { RecentExitsRail } from "./RecentExitsRail";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { RecentExitsRail as RecentExitsRailView } from "./RecentExitsRail";
+import type { RecentExitsRailProps } from "./RecentExitsRail";
 import type { ExitedApplicant } from "../types";
+
+const onRestore = vi.fn<(applicationId: string) => Promise<boolean>>();
+const onResetRestoration = vi.fn();
+
+function RecentExitsRail(
+  props: Omit<
+    RecentExitsRailProps,
+    "restorationState" | "onRestore" | "onResetRestoration"
+  >,
+) {
+  return (
+    <RecentExitsRailView
+      {...props}
+      restorationState={{ status: "idle" }}
+      onRestore={onRestore}
+      onResetRestoration={onResetRestoration}
+    />
+  );
+}
 
 function buildExit(overrides: Partial<ExitedApplicant>): ExitedApplicant {
   return {
@@ -17,6 +38,10 @@ function buildExit(overrides: Partial<ExitedApplicant>): ExitedApplicant {
 }
 
 describe("RecentExitsRail", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    onRestore.mockResolvedValue(true);
+  });
   it("renders the empty-state message when there are no exits and no error", () => {
     render(
       <RecentExitsRail
@@ -91,6 +116,8 @@ describe("RecentExitsRail", () => {
     const card = stateLabel.closest(".relative");
 
     expect(card?.classList.contains("relative")).toBe(true);
+    expect(card?.classList.contains("bg-exit-withdrawn-bg")).toBe(true);
+    expect(card?.classList.contains("border-exit-withdrawn-fg/35")).toBe(true);
   });
 
   it("shows the total count in the header", () => {
@@ -163,7 +190,15 @@ describe("RecentExitsRail", () => {
       />,
     );
 
-    expect(screen.getByText("Von dir abgelehnt")).not.toBeNull();
+    const stateLabel = screen.getByText("Von dir abgelehnt");
+    const card = stateLabel.closest(".relative");
+
+    expect(card?.classList.contains("bg-exit-provider-discarded-bg")).toBe(
+      true,
+    );
+    expect(
+      card?.classList.contains("border-exit-provider-discarded-fg/35"),
+    ).toBe(true);
   });
 
   it("maps a system removal to the system_removed label", () => {
@@ -182,7 +217,11 @@ describe("RecentExitsRail", () => {
       />,
     );
 
-    expect(screen.getByText("Nicht mehr verfügbar")).not.toBeNull();
+    const stateLabel = screen.getByText("Nicht mehr verfügbar");
+    const card = stateLabel.closest(".relative");
+
+    expect(card?.classList.contains("bg-background-subtle")).toBe(true);
+    expect(card?.classList.contains("border-border-strong")).toBe(true);
   });
 
   it("shows an error message instead of cards when loading failed", () => {
@@ -249,5 +288,186 @@ describe("RecentExitsRail", () => {
     );
 
     expect(screen.queryByText(/weitere/)).toBeNull();
+  });
+
+  it("shows a restore button only for provider_discarded exits", () => {
+    render(
+      <RecentExitsRail
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+          }),
+          buildExit({ id: "app-2", visualState: "withdrawn" }),
+          buildExit({ id: "app-3", visualState: "system_removed" }),
+        ]}
+        totalCount={3}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Jonas Brandt wieder aufnehmen" }),
+    ).not.toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Familie Weber wieder aufnehmen" }),
+    ).toBeNull();
+  });
+
+  it("opens the restore confirmation and cancels without calling the backend", async () => {
+    const user = userEvent.setup();
+    render(
+      <RecentExitsRail
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+          }),
+        ]}
+        totalCount={1}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Jonas Brandt wieder aufnehmen" }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).not.toBeNull();
+    expect(
+      screen.getByText(
+        "Möchtest du Jonas Brandt wieder in die Bewerbungen aufnehmen?",
+      ),
+    ).not.toBeNull();
+
+    await user.click(screen.getAllByRole("button", { name: "Abbrechen" })[1]!);
+
+    expect(onRestore).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByText("Jonas Brandt")).not.toBeNull();
+  });
+
+  it("closes a restore confirmation when the selected listing changes", async () => {
+    const user = userEvent.setup();
+    const exit = buildExit({
+      id: "app-1",
+      applicantName: "Jonas Brandt",
+      visualState: "provider_discarded",
+    });
+    const { rerender } = render(
+      <RecentExitsRailView
+        key="listing-1"
+        exits={[exit]}
+        totalCount={1}
+        isLoading={false}
+        hasError={false}
+        restorationState={{ status: "idle" }}
+        onRestore={onRestore}
+        onResetRestoration={onResetRestoration}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Jonas Brandt wieder aufnehmen" }),
+    );
+    expect(screen.getByRole("dialog")).not.toBeNull();
+
+    rerender(
+      <RecentExitsRailView
+        key="listing-2"
+        exits={[]}
+        totalCount={0}
+        isLoading={false}
+        hasError={false}
+        restorationState={{ status: "idle" }}
+        onRestore={onRestore}
+        onResetRestoration={onResetRestoration}
+      />,
+    );
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(onRestore).not.toHaveBeenCalled();
+  });
+
+  it("submits the restoration and announces success", async () => {
+    const user = userEvent.setup();
+    render(
+      <RecentExitsRail
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+          }),
+        ]}
+        totalCount={1}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Jonas Brandt wieder aufnehmen" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Wieder aufnehmen" }));
+
+    await waitFor(() => {
+      expect(onRestore).toHaveBeenCalledWith("app-1");
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+    expect(
+      screen.getByText("Bewerbung wurde wieder aufgenommen."),
+    ).not.toBeNull();
+  });
+
+  it("keeps the exit and shows a safe error when restoration fails", async () => {
+    const user = userEvent.setup();
+    const exit = buildExit({
+      id: "app-1",
+      applicantName: "Jonas Brandt",
+      visualState: "provider_discarded",
+    });
+    onRestore.mockResolvedValue(false);
+    const { rerender } = render(
+      <RecentExitsRailView
+        exits={[exit]}
+        totalCount={1}
+        isLoading={false}
+        hasError={false}
+        restorationState={{ status: "idle" }}
+        onRestore={onRestore}
+        onResetRestoration={onResetRestoration}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Jonas Brandt wieder aufnehmen" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Wieder aufnehmen" }));
+
+    rerender(
+      <RecentExitsRailView
+        exits={[exit]}
+        totalCount={1}
+        isLoading={false}
+        hasError={false}
+        restorationState={{ status: "error", applicationId: "app-1" }}
+        onRestore={onRestore}
+        onResetRestoration={onResetRestoration}
+      />,
+    );
+
+    expect(
+      await screen.findByText(
+        "Die Bewerbung konnte nicht wieder aufgenommen werden. Bitte versuche es erneut.",
+      ),
+    ).not.toBeNull();
+    expect(screen.getByText("Jonas Brandt")).not.toBeNull();
   });
 });

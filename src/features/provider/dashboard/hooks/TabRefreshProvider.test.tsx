@@ -1,14 +1,20 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   TabRefreshProvider,
+  useRequestTabRefresh,
   useTabRefreshRevision,
 } from "./TabRefreshProvider";
 
 function RevisionProbe() {
   const revision = useTabRefreshRevision();
   return <output data-testid="revision">{revision}</output>;
+}
+
+function RefreshProbe() {
+  const requestRefresh = useRequestTabRefresh();
+  return <button onClick={requestRefresh}>Refresh</button>;
 }
 
 function TwoConsumerTree() {
@@ -79,5 +85,18 @@ describe("TabRefreshProvider", () => {
       fireFocus();
     });
     expect(revisionValues()).toEqual(["2", "2"]);
+  });
+
+  it("allows consumers to request an immediate refresh", () => {
+    render(
+      <TabRefreshProvider>
+        <RevisionProbe />
+        <RefreshProbe />
+      </TabRefreshProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    expect(revisionValues()).toEqual(["1"]);
   });
 });

@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Candidate } from "../types";
 import { CandidateLane } from "./CandidateLane";
@@ -170,7 +170,47 @@ describe("CandidateLane", () => {
     expect(card.className).not.toContain("border-t-warning-vivid");
   });
 
-  it("preserves responsive lane direction and chat visibility", () => {
+  it("exposes candidate rejection through an accessible icon action", () => {
+    const onRejectCandidate = vi.fn();
+    const { rerender } = render(
+      <CandidateLane
+        actives={[candidate]}
+        waitingCount={0}
+        onRejectCandidate={onRejectCandidate}
+        rejectingApplicationId={candidate.id}
+      />,
+    );
+
+    const rejectButton = screen.getByRole("button", {
+      name: "Anna Lehmann ablehnen",
+    });
+
+    expect(rejectButton).toBeInstanceOf(HTMLButtonElement);
+    expect((rejectButton as HTMLButtonElement).disabled).toBe(true);
+    expect(rejectButton.className).toContain("bg-transparent");
+    expect(rejectButton.className).toContain("hover:bg-danger/10");
+    expect(rejectButton.querySelector("svg")?.getAttribute("width")).toBe("12");
+    expect(rejectButton.className).toContain("h-6");
+    expect(rejectButton.className).toContain("w-6");
+    expect(rejectButton.getAttribute("title")).toBe("Anna Lehmann ablehnen");
+
+    fireEvent.click(rejectButton);
+    expect(onRejectCandidate).not.toHaveBeenCalled();
+
+    rerender(
+      <CandidateLane
+        actives={[candidate]}
+        waitingCount={0}
+        onRejectCandidate={onRejectCandidate}
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
+    );
+    expect(onRejectCandidate).toHaveBeenCalledWith(candidate);
+  });
+
+  it("preserves responsive lane direction without a message action", () => {
     const { container } = render(
       <CandidateLane actives={[candidate]} waitingCount={0} theme="dark" />,
     );
@@ -188,18 +228,16 @@ describe("CandidateLane", () => {
     const lane = container.firstElementChild;
     if (!(lane instanceof HTMLElement))
       throw new Error("Candidate lane is missing");
-    const header = screen.getByText("Anna Lehmann").parentElement;
-    const chatIcon = header?.querySelector("svg");
 
     expect(fields?.style.flexDirection).toBe("row");
-    expect(chatIcon?.style.display).toBe("none");
+    expect(container.querySelector(".lucide-message-square")).toBeNull();
 
     act(() => {
       observer.notify(640);
     });
 
     expect(fields?.style.flexDirection).toBe("column");
-    expect(chatIcon?.style.display).toBe("block");
+    expect(container.querySelector(".lucide-message-square")).toBeNull();
     expect(lane.style.getPropertyValue("--rq-teaser-h")).toBe("104px");
   });
 });

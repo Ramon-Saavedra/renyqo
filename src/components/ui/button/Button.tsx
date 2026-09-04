@@ -6,9 +6,18 @@ export type ButtonVariant =
   | "secondary"
   | "outline"
   | "ghost"
-  | "danger";
+  | "danger"
+  | "dangerGhost"
+  | "primaryGhost"
+  | "inverseGhost";
 
-export type ButtonSize = "md" | "sm" | "icon-sm" | "icon-md";
+export type ButtonSize =
+  | "md"
+  | "sm"
+  | "icon-2xs"
+  | "icon-xs"
+  | "icon-sm"
+  | "icon-md";
 
 const BASE_CLASS =
   "inline-flex items-center cursor-pointer focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
@@ -16,6 +25,8 @@ const BASE_CLASS =
 const SIZE_CLASS: Record<ButtonSize, string> = {
   md: "h-11 gap-2 rounded-md px-4.5 text-action font-medium",
   sm: "h-8 gap-1.5 rounded-sm px-3 text-caption font-medium",
+  "icon-2xs": "h-6 w-6 justify-center rounded-sm p-0",
+  "icon-xs": "h-7 w-7 justify-center rounded-sm p-0",
   "icon-sm": "h-8 w-8 justify-center rounded-sm p-0",
   "icon-md": "h-11 w-11 justify-center rounded-md p-0",
 };
@@ -31,6 +42,9 @@ const DEFAULT_SIZE: Record<ButtonVariant, ButtonSize> = {
   outline: "md",
   ghost: "sm",
   danger: "md",
+  dangerGhost: "sm",
+  primaryGhost: "sm",
+  inverseGhost: "sm",
 };
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
@@ -44,6 +58,11 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
     "bg-transparent text-foreground-secondary hover:bg-background-muted hover:text-foreground",
   danger:
     "border border-danger/20 bg-background text-danger hover:bg-danger/10",
+  dangerGhost: "bg-transparent text-danger hover:bg-danger/10",
+  primaryGhost:
+    "bg-transparent text-primary hover:bg-primary-tint hover:text-primary-hover",
+  inverseGhost:
+    "bg-transparent text-primary-foreground hover:bg-primary-foreground/20",
 };
 
 /**

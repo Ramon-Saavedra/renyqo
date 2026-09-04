@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { Clock, MessageSquare, Users } from "lucide-react";
+import { Clock, UserRoundX, Users } from "lucide-react";
+import { Button } from "@/components/ui/button/Button";
+import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { dashboardCopy } from "../copy/dashboard";
 import "./CandidateLane.css";
 import { FlagChip } from "./FlagChip";
@@ -28,6 +30,8 @@ export type CandidateLaneProps = {
   announceWaitingStatus?: boolean;
   theme?: "dark" | "light";
   capacity?: number;
+  onRejectCandidate?: ((candidate: Candidate) => void) | undefined;
+  rejectingApplicationId?: string | null | undefined;
 };
 
 export function CandidateLane({
@@ -36,6 +40,8 @@ export function CandidateLane({
   announceWaitingStatus = true,
   theme = "dark",
   capacity = 5,
+  onRejectCandidate,
+  rejectingApplicationId = null,
 }: CandidateLaneProps) {
   const observed = useRef<HTMLDivElement | null>(null);
   const ro = useRef<ResizeObserver | null>(null);
@@ -443,15 +449,28 @@ export function CandidateLane({
                     >
                       {item.name}
                     </span>
-                    <MessageSquare
-                      size={13}
-                      strokeWidth={2}
-                      style={{
-                        flex: "0 0 auto",
-                        color: "currentColor",
-                        display: mid ? "none" : "block",
-                      }}
-                    />
+                    {onRejectCandidate ? (
+                      <Button
+                        type="button"
+                        variant="dangerGhost"
+                        size="icon-2xs"
+                        className="shrink-0"
+                        onClick={() => onRejectCandidate(item)}
+                        disabled={rejectingApplicationId === item.id}
+                        aria-busy={rejectingApplicationId === item.id}
+                        aria-label={dashboardCopy.candidates.rejectAction(
+                          item.name,
+                        )}
+                        title={dashboardCopy.candidates.rejectAction(item.name)}
+                      >
+                        <AppIcon
+                          icon={UserRoundX}
+                          size={12}
+                          strokeWidth={1.8}
+                          decorative
+                        />
+                      </Button>
+                    ) : null}
                   </div>
 
                   <div

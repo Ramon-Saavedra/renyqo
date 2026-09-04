@@ -1,8 +1,13 @@
 "use client";
 
+import { useRef, useState } from "react";
+import { UserRoundX } from "lucide-react";
+import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { dashboardCopy } from "../copy/dashboard";
+import { useCandidateRejection } from "../hooks/useCandidateRejection";
+import { useRequestTabRefresh } from "../hooks/TabRefreshProvider";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import type { Candidate, DashboardObject, WaitingCountState } from "../types";
 import { CandidateLane } from "./CandidateLane";
@@ -14,6 +19,11 @@ interface CandidatesSectionProps {
   waitingCountState: WaitingCountState;
   isLoading: boolean;
   hasError: boolean;
+}
+
+interface RejectedApplicationsState {
+  readonly candidates: readonly Candidate[];
+  readonly applicationIds: readonly string[];
 }
 
 const PANEL_CLASS =
@@ -56,7 +66,58 @@ function CandidatesSectionContent({
 }: CandidatesSectionProps) {
   const { candidates: copy, waitingQueue: waitingCopy } = dashboardCopy;
   const colorScheme = useColorScheme();
-  const shown = object ? candidates.slice(0, MAX_ACTIVE_APPLICATIONS) : [];
+  const requestRefresh = useRequestTabRefresh();
+  const { state, rejectCandidate, reset } = useCandidateRejection();
+  const [candidateToReject, setCandidateToReject] = useState<Candidate | null>(
+    null,
+  );
+  const [rejectedApplications, setRejectedApplications] =
+    useState<RejectedApplicationsState>({
+      candidates,
+      applicationIds: [],
+    });
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const candidateLaneRef = useRef<HTMLElement>(null);
+  if (rejectedApplications.candidates !== candidates) {
+    setRejectedApplications({ candidates, applicationIds: [] });
+  }
+  const rejectedApplicationIds =
+    rejectedApplications.candidates === candidates
+      ? rejectedApplications.applicationIds
+      : [];
+  const shown = object
+    ? candidates
+        .filter((candidate) => !rejectedApplicationIds.includes(candidate.id))
+        .slice(0, MAX_ACTIVE_APPLICATIONS)
+    : [];
+  const isRejecting = state.status === "submitting";
+
+  function openRejectConfirmation(candidate: Candidate) {
+    reset();
+    setSuccessMessage(null);
+    setCandidateToReject(candidate);
+  }
+
+  function closeRejectConfirmation() {
+    if (isRejecting) return;
+    reset();
+    setCandidateToReject(null);
+  }
+
+  async function confirmRejection() {
+    if (!candidateToReject) return;
+
+    const rejected = await rejectCandidate(candidateToReject.id);
+    if (!rejected) return;
+
+    setRejectedApplications((current) => ({
+      candidates: current.candidates,
+      applicationIds: [...current.applicationIds, candidateToReject.id],
+    }));
+    setCandidateToReject(null);
+    setSuccessMessage(copy.rejectSuccess);
+    requestRefresh();
+  }
 
   if (object?.status === "draft") {
     return (
@@ -87,29 +148,66 @@ function CandidatesSectionContent({
   }
 
   return (
-    <section id="bewerbungen" className="mb-6">
-      {hasError ? (
-        <FormAlert variant="error" message={copy.loadError} className="mb-3" />
-      ) : null}
-      {waitingCountState.status === "error" ? (
-        <p
-          role="status"
-          aria-label={waitingCopy.loadError}
-          aria-live="polite"
-          className="mb-3 text-caption text-foreground-tertiary"
-        >
-          {waitingCopy.loadError}
-        </p>
-      ) : null}
-      <CandidateLane
-        actives={shown}
-        waitingCount={
-          waitingCountState.status === "success" ? waitingCountState.count : 0
-        }
-        announceWaitingStatus={waitingCountState.status !== "error"}
-        capacity={MAX_ACTIVE_APPLICATIONS}
-        theme={colorScheme}
+    <>
+      <section
+        ref={candidateLaneRef}
+        id="bewerbungen"
+        tabIndex={-1}
+        className="mb-6"
+      >
+        {hasError ? (
+          <FormAlert
+            variant="error"
+            message={copy.loadError}
+            className="mb-3"
+          />
+        ) : null}
+        {waitingCountState.status === "error" ? (
+          <p
+            role="status"
+            aria-label={waitingCopy.loadError}
+            aria-live="polite"
+            className="mb-3 text-caption text-foreground-tertiary"
+          >
+            {waitingCopy.loadError}
+          </p>
+        ) : null}
+        {successMessage ? (
+          <p role="status" aria-live="polite" className="sr-only">
+            {successMessage}
+          </p>
+        ) : null}
+        <CandidateLane
+          actives={shown}
+          waitingCount={
+            waitingCountState.status === "success" ? waitingCountState.count : 0
+          }
+          announceWaitingStatus={waitingCountState.status !== "error"}
+          capacity={MAX_ACTIVE_APPLICATIONS}
+          theme={colorScheme}
+          onRejectCandidate={openRejectConfirmation}
+          rejectingApplicationId={
+            state.status === "submitting" ? state.applicationId : null
+          }
+        />
+      </section>
+      <ConfirmationModal
+        open={candidateToReject !== null}
+        title={copy.rejectTitle}
+        text={copy.rejectText(candidateToReject?.name ?? "")}
+        primaryLabel={copy.rejectConfirm}
+        primaryPendingLabel={copy.rejectPending}
+        primaryPending={isRejecting}
+        primaryVariant="danger"
+        secondaryLabel={copy.rejectCancel}
+        onPrimary={() => void confirmRejection()}
+        onSecondary={closeRejectConfirmation}
+        onClose={closeRejectConfirmation}
+        closeLabel={copy.rejectCancel}
+        error={state.status === "error" ? copy.rejectError : null}
+        icon={UserRoundX}
+        focusFallbackRef={candidateLaneRef}
       />
-    </section>
+    </>
   );
 }

@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -11,6 +12,7 @@ import {
 const COALESCE_MS = 250;
 
 const TabRefreshContext = createContext<number>(0);
+const TabRefreshRequestContext = createContext<() => void>(() => undefined);
 
 interface TabRefreshProviderProps {
   readonly children: ReactNode;
@@ -18,39 +20,48 @@ interface TabRefreshProviderProps {
 
 export function TabRefreshProvider({ children }: TabRefreshProviderProps) {
   const [revision, setRevision] = useState(0);
+  const requestRefresh = useCallback(() => {
+    setRevision((current) => current + 1);
+  }, []);
 
   useEffect(() => {
     let lastRefreshAt = 0;
 
-    function requestRefresh() {
+    function requestCoalescedRefresh() {
       const now = Date.now();
       if (now - lastRefreshAt < COALESCE_MS) return;
       lastRefreshAt = now;
-      setRevision((current) => current + 1);
+      requestRefresh();
     }
 
     function handleVisibilityChange() {
       if (document.visibilityState === "visible") {
-        requestRefresh();
+        requestCoalescedRefresh();
       }
     }
 
-    window.addEventListener("focus", requestRefresh);
+    window.addEventListener("focus", requestCoalescedRefresh);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("focus", requestRefresh);
+      window.removeEventListener("focus", requestCoalescedRefresh);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [requestRefresh]);
 
   return (
-    <TabRefreshContext.Provider value={revision}>
-      {children}
-    </TabRefreshContext.Provider>
+    <TabRefreshRequestContext.Provider value={requestRefresh}>
+      <TabRefreshContext.Provider value={revision}>
+        {children}
+      </TabRefreshContext.Provider>
+    </TabRefreshRequestContext.Provider>
   );
 }
 
 export function useTabRefreshRevision(): number {
   return useContext(TabRefreshContext);
+}
+
+export function useRequestTabRefresh(): () => void {
+  return useContext(TabRefreshRequestContext);
 }

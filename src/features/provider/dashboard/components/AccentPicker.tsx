@@ -1,6 +1,7 @@
 "use client";
 
 import { Blend } from "lucide-react";
+import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { dashboardCopy } from "../copy/dashboard";
@@ -12,8 +13,7 @@ interface AccentPickerProps {
   onChange: (accent: AccentId) => void;
 }
 
-const TRIGGER_CLASS =
-  "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm border-0 bg-transparent p-0 text-primary transition-colors hover:text-primary-hover focus-visible:outline-none focus-visible:shadow-focus";
+const TRIGGER_CLASS = buttonClassWithSize("primaryGhost", "icon-sm");
 const PANEL_CLASS = "w-32 px-dashboard-parent-x py-dashboard-parent-y";
 
 export function AccentPicker({ value, onChange }: AccentPickerProps) {
@@ -25,7 +25,12 @@ export function AccentPicker({ value, onChange }: AccentPickerProps) {
       align="right"
       panelClassName={PANEL_CLASS}
       trigger={({ triggerProps, triggerRef }) => (
-        <button {...triggerProps} ref={triggerRef} className={TRIGGER_CLASS}>
+        <button
+          {...triggerProps}
+          ref={triggerRef}
+          className={TRIGGER_CLASS}
+          title={accent.label}
+        >
           <AppIcon icon={Blend} size={16} strokeWidth={1.8} decorative />
         </button>
       )}
