@@ -36,6 +36,7 @@ export function useListingData<T>(
   const activeListingId = resolveActiveListingId(listingId, listingStatus);
   const refreshRevision = useTabRefreshRevision();
   const loadedListingIdRef = useRef<string | null>(null);
+  const stateListingIdRef = useRef<string | null>(null);
   const requestIdsRef = useRef(new Map<string, number>());
   const [prevActiveListingId, setPrevActiveListingId] =
     useState(activeListingId);
@@ -62,17 +63,21 @@ export function useListingData<T>(
   useEffect(() => {
     if (!activeListingId) {
       loadedListingIdRef.current = null;
+      stateListingIdRef.current = null;
       return;
     }
 
     const currentListingId = activeListingId;
-    const isRefresh = loadedListingIdRef.current === currentListingId;
+    const isRefresh =
+      loadedListingIdRef.current === currentListingId &&
+      stateListingIdRef.current === currentListingId;
     const requestId = (requestIdsRef.current.get(currentListingId) ?? 0) + 1;
     requestIdsRef.current.set(currentListingId, requestId);
     let active = true;
 
     async function loadListings() {
       if (!isRefresh) {
+        stateListingIdRef.current = currentListingId;
         setState({
           listingId: currentListingId,
           data: idleData,

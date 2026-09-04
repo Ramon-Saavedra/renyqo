@@ -244,6 +244,54 @@ describe("useListingData", () => {
     expect(result.current.data.items).not.toContain("stale");
   });
 
+  it("loads the original listing after returning while another listing is pending", async () => {
+    let resolveSecond:
+      | ((value: { data: SampleData; hasError: boolean }) => void)
+      | undefined;
+    const secondRequest = new Promise<{
+      data: SampleData;
+      hasError: boolean;
+    }>((resolve) => {
+      resolveSecond = resolve;
+    });
+    const load = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { items: ["a"] }, hasError: false })
+      .mockReturnValueOnce(secondRequest)
+      .mockResolvedValueOnce({
+        data: { items: ["a-returned"] },
+        hasError: false,
+      });
+
+    const { result, rerender } = renderHook(
+      ({ listingId }: { listingId: string }) =>
+        useListingData(listingId, "published", idleData, loadingData, load),
+      { wrapper, initialProps: { listingId: "listing-a" } },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a"] });
+    });
+
+    rerender({ listingId: "listing-b" });
+    await waitFor(() => {
+      expect(load).toHaveBeenCalledWith("listing-b");
+    });
+
+    rerender({ listingId: "listing-a" });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a-returned"] });
+    });
+    expect(result.current.isLoading).toBe(false);
+    expect(load).toHaveBeenCalledTimes(3);
+
+    resolveSecond?.({ data: { items: ["b"] }, hasError: false });
+    await secondRequest;
+
+    expect(result.current.data).toEqual({ items: ["a-returned"] });
+  });
+
   it("ignores data updates captured for a previously selected listing", async () => {
     let resolveSecond:
       | ((value: { data: SampleData; hasError: boolean }) => void)
