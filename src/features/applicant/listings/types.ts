@@ -26,6 +26,7 @@ export interface PublicListing {
   readonly coldRent: number;
   readonly serviceCharge: number;
   readonly matchesProfile: boolean | null;
+  readonly hasApplied: boolean;
   readonly isNew: boolean;
   readonly coverImageUrl: string | null;
   readonly publishedAt: string;

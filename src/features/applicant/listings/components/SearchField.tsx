@@ -13,9 +13,10 @@ interface SearchFieldProps {
 
 const ROTATION_MS = 3000;
 
-const WRAPPER_CLASS = "relative w-full lg:min-w-0 lg:flex-1";
+const WRAPPER_CLASS = "relative w-full xl:min-w-0 xl:flex-1";
 
-const INPUT_CLASS = "h-11 pl-10 pr-10 sm:pr-32";
+const INPUT_CLASS =
+  "h-11 pl-10 pr-10 sm:pr-32 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none";
 
 const ICON_LEFT_CLASS =
   "pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-tertiary";
