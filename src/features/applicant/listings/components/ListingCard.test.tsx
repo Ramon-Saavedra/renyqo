@@ -14,6 +14,7 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     coldRent: 1200,
     serviceCharge: 200,
     matchesProfile: null,
+    hasApplied: false,
     isNew: false,
     coverImageUrl: null,
     publishedAt: "2026-01-01T00:00:00.000Z",
@@ -127,6 +128,42 @@ describe("ListingCard", () => {
     expect(screen.getByText("Passt nicht")).toBeInstanceOf(HTMLElement);
   });
 
+  it("shows 'Bereits beworben' when hasApplied is true", () => {
+    render(
+      <ListingCard
+        listing={buildListing({ hasApplied: true, matchesProfile: true })}
+        href="/listings/l1"
+        showMatch
+      />,
+    );
+    expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+  });
+
+  it("does not show applied badge when hasApplied is false", () => {
+    render(
+      <ListingCard
+        listing={buildListing({ hasApplied: false, matchesProfile: true })}
+        href="/listings/l1"
+        showMatch
+      />,
+    );
+    expect(screen.queryByText("Bereits beworben")).toBeNull();
+    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("prefers applied badge over match badge when both would apply", () => {
+    render(
+      <ListingCard
+        listing={buildListing({ hasApplied: true, matchesProfile: false })}
+        href="/listings/l1"
+        showMatch
+      />,
+    );
+    expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt nicht")).toBeNull();
+  });
+
   it("does not show match badges when showMatch is false", () => {
     render(
       <ListingCard
@@ -137,6 +174,18 @@ describe("ListingCard", () => {
     );
     expect(screen.queryByText("Passt")).toBeNull();
     expect(screen.queryByText("Passt nicht")).toBeNull();
+  });
+
+  it("still shows applied badge when showMatch is false", () => {
+    render(
+      <ListingCard
+        listing={buildListing({ hasApplied: true, matchesProfile: true })}
+        href="/listings/l1"
+        showMatch={false}
+      />,
+    );
+    expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
   });
 
   it("does not show match badges when matchesProfile is null", () => {

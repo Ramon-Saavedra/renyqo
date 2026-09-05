@@ -29,6 +29,7 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     coldRent: 800,
     serviceCharge: 150,
     matchesProfile: null,
+    hasApplied: false,
     isNew: false,
     coverImageUrl: null,
     publishedAt: "2026-01-01T00:00:00.000Z",
@@ -269,6 +270,29 @@ describe("ApplicantListingsView", () => {
     const thirdCard = cards[2]!;
     expect(within(thirdCard).queryByText("Passt")).toBeNull();
     expect(within(thirdCard).queryByText("Passt nicht")).toBeNull();
+  });
+
+  it("shows applied badge from listing hasApplied regardless of profile match", () => {
+    mockUseProfileStatus.mockReturnValue("exists");
+
+    mockUsePublicListings.mockReturnValue(
+      mockResult({
+        fetchStatus: "idle",
+        listings: [
+          buildListing({
+            id: "applied",
+            hasApplied: true,
+            matchesProfile: true,
+          }),
+        ],
+        total: 1,
+      }),
+    );
+
+    renderView();
+
+    expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
   });
 
   it("does not show match badges when user has no profile", () => {

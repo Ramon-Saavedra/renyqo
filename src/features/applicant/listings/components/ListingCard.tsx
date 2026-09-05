@@ -60,6 +60,8 @@ export function ListingCard({
   eager = false,
 }: ListingCardProps) {
   const match = showMatch ? listing.matchesProfile : null;
+  const showApplied = listing.hasApplied;
+  const showMatchBadge = !showApplied && match !== null;
 
   return (
     <Link href={href} className={CARD_CLASS}>
@@ -96,7 +98,11 @@ export function ListingCard({
         )}
       </div>
 
-      {match !== null && (
+      {showApplied && (
+        <MatchBadge tone="new">{listingsCopy.card.badgeApplied}</MatchBadge>
+      )}
+
+      {showMatchBadge && (
         <MatchBadge tone={match ? "match" : "no-match"}>
           {match
             ? listingsCopy.card.badgeMatch

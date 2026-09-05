@@ -56,11 +56,27 @@ function buildDetailLocation({
   return location.length > 0 ? location.join(" · ") : null;
 }
 
+const publicListingSummaryContractSchema = z.object({
+  hasApplied: z.boolean(),
+});
+
+class PublicListingsContractError extends Error {
+  constructor() {
+    super("Invalid public listings response");
+    this.name = "PublicListingsContractError";
+  }
+}
+
 function mapPublicListing(value: unknown): PublicListing | null {
   if (!isRecord(value)) return null;
 
   const id = readString(value, ["id"]);
   if (!id) return null;
+
+  const contract = publicListingSummaryContractSchema.safeParse(value);
+  if (!contract.success) {
+    throw new PublicListingsContractError();
+  }
 
   const profileMatchValue = readString(value, [
     "profileMatch",
@@ -88,6 +104,7 @@ function mapPublicListing(value: unknown): PublicListing | null {
         "additional_costs",
       ]) ?? 0,
     matchesProfile: normalizeListingProfileMatch(profileMatchValue),
+    hasApplied: contract.data.hasApplied,
     isNew: readBoolean(value, ["isNew", "is_new"]) ?? false,
     coverImageUrl: readCoverImageUrl(value),
     publishedAt: readString(value, ["publishedAt", "published_at"]) ?? "",
