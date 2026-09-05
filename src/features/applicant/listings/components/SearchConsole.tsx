@@ -25,9 +25,9 @@ interface SearchConsoleProps {
 const CONSOLE_CLASS =
   "flex flex-wrap items-center gap-2.5 rounded-md border border-border bg-background-muted px-4 py-3.5";
 
-const DIVIDER_CLASS = "mx-1 hidden h-6 w-px bg-border lg:block";
+const DIVIDER_CLASS = "mx-1 hidden h-6 w-px bg-border xl:block";
 
-const DESKTOP_ONLY_CLASS = "hidden lg:inline-flex";
+const DESKTOP_ONLY_CLASS = "hidden xl:inline-flex";
 
 const COUNT_CLASS =
   "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-meta tracking-normal text-primary-foreground";
@@ -77,7 +77,7 @@ export function SearchConsole({
 
         <button
           type="button"
-          className={filterChipClass(drawerCount > 0, "lg:hidden")}
+          className={filterChipClass(drawerCount > 0, "xl:hidden")}
           onClick={onOpenDrawer}
         >
           <AppIcon
@@ -102,7 +102,7 @@ export function SearchConsole({
               title={listingsCopy.console.onlyMatchingHint}
               className={filterChipClass(
                 filters.onlyMatching,
-                "w-full justify-center lg:ml-auto lg:w-auto",
+                "w-full justify-center xl:ml-auto xl:w-auto",
                 "toggle",
               )}
               onClick={() => onChange({ onlyMatching: !filters.onlyMatching })}

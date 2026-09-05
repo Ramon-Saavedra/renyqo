@@ -111,6 +111,7 @@ describe("getPublicListings", () => {
           coverImage: {
             secureUrl: "https://res.cloudinary.com/example/apartment.jpg",
           },
+          hasApplied: false,
           isNew: true,
           publishedAt: "2026-07-01T10:00:00.000Z",
         },
@@ -134,6 +135,7 @@ describe("getPublicListings", () => {
     expect(listing?.livingArea).toBe(70);
     expect(listing?.coldRent).toBe(1200);
     expect(listing?.serviceCharge).toBe(200);
+    expect(listing?.hasApplied).toBe(false);
     expect(listing?.coverImageUrl).toBe(
       "https://res.cloudinary.com/example/apartment.jpg",
     );
@@ -146,9 +148,10 @@ describe("getPublicListings", () => {
       items: [
         {
           id: "a",
+          hasApplied: false,
           coverImage: { secureUrl: "https://res.cloudinary.com/a.jpg" },
         },
-        { id: "b", coverImage: null },
+        { id: "b", hasApplied: true, coverImage: null },
       ],
       nextCursor: null,
       total: 2,
@@ -156,17 +159,23 @@ describe("getPublicListings", () => {
 
     const { listings } = await getPublicListings({});
     expect(listings[0]?.coverImageUrl).toBe("https://res.cloudinary.com/a.jpg");
+    expect(listings[0]?.hasApplied).toBe(false);
     expect(listings[1]?.coverImageUrl).toBeNull();
+    expect(listings[1]?.hasApplied).toBe(true);
   });
 
   it("normalizes listing profileMatch values", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        { id: "match", profileMatch: "MATCH" },
-        { id: "no-match", profileMatch: "NO_MATCH" },
-        { id: "incomplete", profileMatch: "PROFILE_INCOMPLETE" },
-        { id: "unknown", profileMatch: "UNKNOWN" },
-        { id: "absent" },
+        { id: "match", hasApplied: false, profileMatch: "MATCH" },
+        { id: "no-match", hasApplied: false, profileMatch: "NO_MATCH" },
+        {
+          id: "incomplete",
+          hasApplied: false,
+          profileMatch: "PROFILE_INCOMPLETE",
+        },
+        { id: "unknown", hasApplied: false, profileMatch: "UNKNOWN" },
+        { id: "absent", hasApplied: false },
       ],
       nextCursor: null,
       total: 5,
@@ -180,9 +189,63 @@ describe("getPublicListings", () => {
     expect(listings[4]?.matchesProfile).toBeNull();
   });
 
+  it("maps hasApplied from the listing summary contract", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        { id: "applied", hasApplied: true },
+        { id: "open", hasApplied: false },
+      ],
+      nextCursor: null,
+      total: 2,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.hasApplied).toBe(true);
+    expect(listings[1]?.hasApplied).toBe(false);
+  });
+
+  it("rejects a listing summary missing hasApplied", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [{ id: "missing-applied" }],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects a listing summary with a non-boolean hasApplied", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [{ id: "bad-applied", hasApplied: "yes" }],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it.each([null, 0, 1] as const)(
+    "rejects a listing summary when hasApplied is %s",
+    async (hasApplied) => {
+      vi.mocked(apiGet).mockResolvedValue({
+        items: [{ id: "bad-applied", hasApplied }],
+        nextCursor: null,
+        total: 1,
+      });
+
+      await expect(getPublicListings({})).rejects.toThrow(
+        "Invalid public listings response",
+      );
+    },
+  );
+
   it("falls back to defaults for missing fields", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [{ id: "minimal" }],
+      items: [{ id: "minimal", hasApplied: false }],
       nextCursor: null,
       total: 1,
     });
@@ -194,11 +257,14 @@ describe("getPublicListings", () => {
     expect(listing?.coldRent).toBe(0);
     expect(listing?.coverImageUrl).toBeNull();
     expect(listing?.isNew).toBe(false);
+    expect(listing?.hasApplied).toBe(false);
   });
 
   it("builds location from city and district when displayAddress is absent", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [{ id: "x", city: "Berlin", district: "Mitte" }],
+      items: [
+        { id: "x", hasApplied: false, city: "Berlin", district: "Mitte" },
+      ],
       nextCursor: null,
       total: 1,
     });
@@ -212,6 +278,7 @@ describe("getPublicListings", () => {
       items: [
         {
           id: "x",
+          hasApplied: false,
           displayAddress: "Musterstraße 1, Berlin",
           city: "Berlin",
         },
@@ -226,7 +293,7 @@ describe("getPublicListings", () => {
 
   it("skips rows without an id", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [{ title: "no-id" }, { id: "valid" }],
+      items: [{ title: "no-id" }, { id: "valid", hasApplied: false }],
       nextCursor: null,
       total: 1,
     });
@@ -239,7 +306,7 @@ describe("getPublicListings", () => {
   it("reads listings from data and listings wrappers", async () => {
     for (const wrapper of ["data", "listings"]) {
       vi.mocked(apiGet).mockResolvedValue({
-        [wrapper]: [{ id: wrapper }],
+        [wrapper]: [{ id: wrapper, hasApplied: false }],
         nextCursor: null,
         total: 1,
       });
