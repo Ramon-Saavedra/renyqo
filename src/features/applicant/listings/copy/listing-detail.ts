@@ -29,6 +29,21 @@ export const listingDetailCopy = {
     label: "Bewerben",
   },
 
+  save: {
+    label: "Merken",
+    savedLabel: "Gemerkt",
+    error: "Das Objekt konnte nicht gemerkt werden.",
+    errorAuth: "Bitte melde dich an, um dieses Objekt zu merken.",
+    errorForbidden: "Du kannst dieses Objekt derzeit nicht merken.",
+    errorNotFound: "Dieses Objekt ist nicht mehr verfügbar.",
+    unsaveError: "Das Objekt konnte nicht von den Gemerkten entfernt werden.",
+    unsaveErrorAuth:
+      "Bitte melde dich an, um dieses Objekt von den Gemerkten zu entfernen.",
+    unsaveErrorForbidden:
+      "Du kannst dieses Objekt derzeit nicht von den Gemerkten entfernen.",
+    unsaveErrorNotFound: "Dieses Objekt ist nicht mehr verfügbar.",
+  },
+
   notSelected: {
     lead: "Eine erneute Bewerbung ist nicht möglich.",
   },

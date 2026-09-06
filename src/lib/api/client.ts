@@ -226,6 +226,21 @@ export async function apiPostFormData<T>(
   );
 }
 
+export async function apiPut<T>(
+  path: string,
+  options?: ApiRequestOptions,
+): Promise<T> {
+  return apiRequest(
+    path,
+    {
+      method: "PUT",
+      credentials: "include",
+    },
+    options,
+    (response) => response.json() as Promise<T>,
+  );
+}
+
 export async function apiPatch<T>(
   path: string,
   body: unknown,
