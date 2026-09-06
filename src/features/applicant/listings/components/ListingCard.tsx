@@ -75,7 +75,7 @@ export function ListingCard({
             height={640}
             quality={90}
             loading={eager ? "eager" : undefined}
-            sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
+            sizes="(min-width: 1280px) 17vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw"
             className={MEDIA_IMAGE_CLASS}
           />
         ) : (
