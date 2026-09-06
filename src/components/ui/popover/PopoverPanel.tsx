@@ -17,6 +17,7 @@ interface PopoverPanelProps {
   className?: string | undefined;
   panelClassName?: string | undefined;
   align?: "left" | "right";
+  onClose?: () => void;
 }
 
 interface PopoverRenderProps {
@@ -46,6 +47,7 @@ export function PopoverPanel({
   className,
   panelClassName,
   align = "right",
+  onClose,
 }: PopoverPanelProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -53,21 +55,31 @@ export function PopoverPanel({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const panelId = useId();
   const closeReasonRef = useRef<CloseReason | null>(null);
+  const wasOpenRef = useRef(false);
+  const onCloseRef = useRef(onClose);
 
   const triggerRefCallback = useCallback((node: HTMLElement | null) => {
     triggerRef.current = node;
   }, []);
 
   useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
+  useEffect(() => {
     if (!open) {
-      // Restore focus only for intentional closes (Escape / close callback),
-      // never on initial mount or outside click.
+      if (wasOpenRef.current) {
+        onCloseRef.current?.();
+      }
+      wasOpenRef.current = false;
       if (closeReasonRef.current) {
         triggerRef.current?.focus();
         closeReasonRef.current = null;
       }
       return;
     }
+
+    wasOpenRef.current = true;
 
     const frame = requestAnimationFrame(() => {
       panelRef.current?.focus();

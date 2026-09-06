@@ -70,10 +70,10 @@ describe("FilterDrawer", () => {
 
   it("marks selected chips as aria-pressed", () => {
     renderDrawer({
-      filters: { ...EMPTY_FILTERS, maxColdRent: 900 },
+      filters: { ...EMPTY_FILTERS, maxColdRent: 1000 },
     });
 
-    const selected = screen.getByRole("button", { name: "bis 900 €" });
+    const selected = screen.getByRole("button", { name: "bis 1.000 €" });
     expect(selected).toBeInstanceOf(HTMLElement);
     expect(selected.hasAttribute("aria-pressed")).toBe(true);
   });
@@ -82,15 +82,15 @@ describe("FilterDrawer", () => {
     const user = userEvent.setup();
     const { onChange } = renderDrawer();
 
-    await user.click(screen.getByRole("button", { name: "bis 700 €" }));
-    expect(onChange).toHaveBeenCalledWith({ maxColdRent: 700 });
+    await user.click(screen.getByRole("button", { name: "bis 800 €" }));
+    expect(onChange).toHaveBeenCalledWith({ maxColdRent: 800 });
   });
 
   it("calls onChange when a room chip is clicked", async () => {
     const user = userEvent.setup();
     const { onChange } = renderDrawer();
 
-    await user.click(screen.getByRole("button", { name: "ab 3 Zimmer" }));
+    await user.click(screen.getByRole("button", { name: "ab 3" }));
     expect(onChange).toHaveBeenCalledWith({ minRooms: 3 });
   });
 
@@ -122,5 +122,59 @@ describe("FilterDrawer", () => {
   it("shows singular label for 1 result", () => {
     renderDrawer({ resultCount: 1 });
     expect(screen.getByText("1 Ergebnis anzeigen")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("marks custom mode when reopening with a non-preset rent", () => {
+    renderDrawer({
+      filters: { ...EMPTY_FILTERS, maxColdRent: 1150 },
+    });
+
+    const custom = screen.getByRole("button", { name: "Eigener Betrag" });
+    expect(custom.getAttribute("aria-pressed")).toBe("true");
+    const preset = screen.getByRole("button", { name: "bis 800 €" });
+    expect(preset.getAttribute("aria-pressed")).toBe("false");
+    const input = screen.getByLabelText("Maximale Kaltmiete in Euro");
+    expect((input as HTMLInputElement).value).toBe("1150");
+    expect((input as HTMLInputElement).inputMode).toBe("numeric");
+    expect(screen.queryByRole("radiogroup")).toBeNull();
+  });
+
+  it("replaces a custom rent when a preset chip is clicked", async () => {
+    const user = userEvent.setup();
+    const { onChange } = renderDrawer({
+      filters: { ...EMPTY_FILTERS, maxColdRent: 1150 },
+    });
+
+    await user.click(screen.getByRole("button", { name: "bis 800 €" }));
+    expect(onChange).toHaveBeenCalledWith({ maxColdRent: 800 });
+  });
+
+  it("commits a typed custom rent when the drawer closes with Escape", async () => {
+    const user = userEvent.setup();
+    const { onChange, onClose } = renderDrawer();
+
+    await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
+    await user.type(
+      screen.getByLabelText("Maximale Kaltmiete in Euro"),
+      "1150",
+    );
+    await user.keyboard("{Escape}");
+
+    expect(onChange).toHaveBeenCalledWith({ maxColdRent: 1150 });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not clear a preset rent when closing after choosing a chip", async () => {
+    const user = userEvent.setup();
+    const { onChange, onClose } = renderDrawer({
+      filters: { ...EMPTY_FILTERS, maxColdRent: 1150 },
+    });
+
+    await user.click(screen.getByRole("button", { name: "bis 800 €" }));
+    expect(onChange).toHaveBeenCalledWith({ maxColdRent: 800 });
+    onChange.mockClear();
+    await user.keyboard("{Escape}");
+    expect(onChange).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

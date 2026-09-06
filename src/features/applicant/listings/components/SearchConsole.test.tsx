@@ -1,8 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { listingsCopy } from "../copy/listings";
 import { EMPTY_FILTERS } from "../types";
 import type { ListingFilters } from "../types";
+import {
+  formatMaxRentChoice,
+  formatMinAreaChoice,
+} from "../utils/filter-value";
 import { SearchConsole } from "./SearchConsole";
 
 describe("SearchConsole", () => {
@@ -30,7 +35,7 @@ describe("SearchConsole", () => {
   it("renders the search field", () => {
     renderConsole();
     expect(
-      screen.getByLabelText("Wohnungen nach Ort durchsuchen"),
+      screen.getByLabelText("Objekte nach Ort durchsuchen"),
     ).toBeInstanceOf(HTMLElement);
   });
 
@@ -44,12 +49,48 @@ describe("SearchConsole", () => {
     );
   });
 
+  it("summarizes active filter values on the trigger", () => {
+    renderConsole({
+      ...EMPTY_FILTERS,
+      maxColdRent: 1000,
+      minRooms: 3,
+      minLivingArea: 80,
+    });
+    expect(
+      screen.getByRole("button", {
+        name: `${listingsCopy.filters.coldRent} ${formatMaxRentChoice(1000)}`,
+      }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("button", { name: "Zimmer ab 3" })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(
+      screen.getByRole("button", {
+        name: `${listingsCopy.filters.livingArea} ${formatMinAreaChoice(80)}`,
+      }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
+  it("summarizes a custom rent value on the trigger", () => {
+    renderConsole({ ...EMPTY_FILTERS, maxColdRent: 1150, minLivingArea: 72 });
+    expect(
+      screen.getByRole("button", {
+        name: `${listingsCopy.filters.coldRent} ${formatMaxRentChoice(1150)}`,
+      }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("button", {
+        name: `${listingsCopy.filters.livingArea} ${formatMinAreaChoice(72)}`,
+      }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
   it("shows the match toggle only when showMatchToggle is true", () => {
     renderConsole(EMPTY_FILTERS, false);
-    expect(screen.queryByText("Nur passende Wohnungen")).toBeNull();
+    expect(screen.queryByText("Nur passende Objekte")).toBeNull();
 
     renderConsole(EMPTY_FILTERS, true);
-    expect(screen.getByText("Nur passende Wohnungen")).toBeInstanceOf(
+    expect(screen.getByText("Nur passende Objekte")).toBeInstanceOf(
       HTMLElement,
     );
   });
@@ -57,13 +98,13 @@ describe("SearchConsole", () => {
   it("match toggle aria-pressed reflects filters.onlyMatching", () => {
     renderConsole({ ...EMPTY_FILTERS, onlyMatching: true }, true);
     const toggle = screen.getByRole("button", {
-      name: "Nur passende Wohnungen",
+      name: "Nur passende Objekte",
     });
     expect(toggle.getAttribute("aria-pressed")).toBe("true");
   });
 
   it("renders the mobile filter button with active count badge", () => {
-    renderConsole({ ...EMPTY_FILTERS, maxColdRent: 900, minRooms: 2 }, false);
+    renderConsole({ ...EMPTY_FILTERS, maxColdRent: 1000, minRooms: 2 }, false);
     const btn = screen.getByRole("button", { name: /Filter/ });
     expect(btn).toBeInstanceOf(HTMLElement);
     expect(btn.textContent).toContain("2");
