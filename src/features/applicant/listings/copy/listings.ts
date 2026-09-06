@@ -112,17 +112,28 @@ export const listingsCopy = {
   profileNotice: {
     lead: "Erstelle dein ",
     leadStrong: "Bewerbungsprofil",
-    leadTail: ", um sofort passende Wohnungen zu erkennen.",
+    leadTail: ", um sofort passende Objekte zu erkennen.",
   },
   empty: {
-    title: "Keine Wohnungen gefunden",
+    title: "Keine Objekte gefunden",
     lead: "Für deine aktuelle Suche gibt es keine Treffer. Passe deine Filter an oder setze sie zurück.",
     reset: "Alle Filter zurücksetzen",
   },
   error: {
     message:
-      "Wohnungen konnten nicht geladen werden. Deine Filter bleiben erhalten.",
+      "Objekte konnten nicht geladen werden. Deine Filter bleiben erhalten.",
     retry: "Erneut versuchen",
   },
-  loading: "Wohnungen werden geladen …",
+  loading: "Objekte werden geladen …",
+  saved: {
+    menuLabel: "Gemerkt",
+    title: "Gemerkt",
+    lead: "Hier siehst du die verfügbaren Objekte, die du gemerkt hast.",
+    emptyTitle: "Noch nichts gemerkt",
+    emptyLead:
+      "Wenn du ein Inserat öffnest und auf Merken tippst, erscheint es hier.",
+    browse: "Objekte durchsuchen",
+    gridAriaLabel: "Gemerkte Objekte",
+    error: "Gemerkte Objekte konnten nicht geladen werden.",
+  },
 } as const;

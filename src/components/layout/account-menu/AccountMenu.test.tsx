@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getCurrentUser, logout } from "@/lib/api/auth";
 import { invalidateCurrentUser } from "@/lib/api/use-current-user";
+import { useApplicantProfileStatus } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
 import { AccountMenu } from "./AccountMenu";
 
 const replace = vi.fn();
@@ -16,6 +17,11 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/api/auth", () => ({
   getCurrentUser: vi.fn(),
   logout: vi.fn(),
+}));
+
+vi.mock("@/features/applicant/profile/hooks/useApplicantProfileStatus", () => ({
+  useApplicantProfileStatus: vi.fn(() => "exists"),
+  invalidateApplicantProfile: vi.fn(),
 }));
 
 const COMPANY_USER = {
@@ -36,10 +42,20 @@ const PRIVATE_USER = {
   companyName: null,
 } as const;
 
+const APPLICANT_USER = {
+  id: "applicant-1",
+  name: "Jonas Weber",
+  email: "jonas@example.com",
+  role: "applicant",
+  providerType: null,
+  companyName: null,
+} as const;
+
 describe("AccountMenu", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     invalidateCurrentUser();
+    vi.mocked(useApplicantProfileStatus).mockReturnValue("exists");
   });
 
   it("renders the authenticated name and company in the full variant", async () => {
@@ -183,5 +199,69 @@ describe("AccountMenu", () => {
 
     resolveLogout();
     await pendingLogout;
+  });
+
+  it("shows Gemerkt below the profile link for applicants", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getCurrentUser).mockResolvedValue(APPLICANT_USER);
+
+    render(<AccountMenu />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Konto & Profil" }),
+    );
+
+    const profileLink = screen.getByRole("link", {
+      name: "Bewerbungsprofil bearbeiten",
+    });
+    const savedLink = screen.getByRole("link", { name: "Gemerkt" });
+
+    expect(savedLink.getAttribute("href")).toBe("/applicant/saved");
+    expect(
+      profileLink.compareDocumentPosition(savedLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("does not show Gemerkt for providers", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getCurrentUser).mockResolvedValue(COMPANY_USER);
+
+    render(<AccountMenu />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Konto & Profil" }),
+    );
+
+    expect(screen.queryByRole("link", { name: "Gemerkt" })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Bewerbungsprofil bearbeiten" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Bewerbungsprofil erstellen" }),
+    ).toBeNull();
+  });
+
+  it("keeps the profile destination when profile status is unavailable", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getCurrentUser).mockResolvedValue(APPLICANT_USER);
+    vi.mocked(useApplicantProfileStatus).mockReturnValue("unavailable");
+
+    render(<AccountMenu />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "Konto & Profil" }),
+    );
+
+    const profileLink = screen.getByRole("link", {
+      name: "Bewerbungsprofil erstellen",
+    });
+    const savedLink = screen.getByRole("link", { name: "Gemerkt" });
+
+    expect(profileLink.getAttribute("href")).toContain("/applicant/profile");
+    expect(
+      profileLink.compareDocumentPosition(savedLink) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

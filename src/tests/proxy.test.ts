@@ -79,6 +79,17 @@ describe("applicant route proxy", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 
+  it("allows authenticated applicants to access /applicant/saved", async () => {
+    fetchMock.mockResolvedValueOnce(userResponse("applicant"));
+
+    const response = await proxy(
+      createRequest("/applicant/saved", "session=applicant"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+  });
+
   it("returns 503 when auth/me is unreachable", async () => {
     fetchMock.mockRejectedValueOnce(new Error("network failure"));
 
@@ -152,6 +163,35 @@ describe("applicant route proxy", () => {
     expect(response.status).toBe(307);
     expect(getRedirectPath(response)).toBe("/provider/dashboard");
   });
+
+  it("redirects anonymous users from /applicant/saved to /login", async () => {
+    fetchMock.mockResolvedValueOnce(unauthenticatedResponse());
+
+    const response = await proxy(createRequest("/applicant/saved", ""));
+
+    expect(response.status).toBe(307);
+    expect(getRedirectPath(response)).toBe("/login");
+  });
+
+  it.each(["create_first_listing", "dashboard"])(
+    "redirects provider from /applicant/saved to provider flow for nextStep=%s",
+    async (nextStep) => {
+      fetchMock
+        .mockResolvedValueOnce(userResponse("provider"))
+        .mockResolvedValueOnce(onboardingResponse(nextStep));
+
+      const response = await proxy(
+        createRequest("/applicant/saved", "session=provider"),
+      );
+
+      const expected =
+        nextStep === "dashboard"
+          ? "/provider/dashboard"
+          : "/provider/get-started";
+      expect(response.status).toBe(307);
+      expect(getRedirectPath(response)).toBe(expected);
+    },
+  );
 
   describe("exact /applicant route", () => {
     it("redirects anonymous users from /applicant to /login", async () => {
