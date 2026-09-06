@@ -29,6 +29,10 @@ export const listingDetailCopy = {
     label: "Bewerben",
   },
 
+  notSelected: {
+    lead: "Eine erneute Bewerbung ist nicht möglich.",
+  },
+
   photos: {
     galleryLabel: "Fotos des Objekts",
     imageAlt: (title: string | null, index: number) =>
@@ -57,7 +61,6 @@ export const listingDetailCopy = {
 
   requirements: {
     title: "Anforderungen",
-    minimumIncome: "Mindesteinkommen (netto)",
     schufa: "SCHUFA",
     incomeProof: "Einkommensnachweis",
     householdSize: "Haushaltsgröße",

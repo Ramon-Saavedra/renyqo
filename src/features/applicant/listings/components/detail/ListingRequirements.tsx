@@ -2,7 +2,6 @@ import { SMOKING_POLICY_LABEL } from "@/lib/api/listings";
 import { cn } from "@/lib/utils/cn";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import type { ApplicantPetPolicy, PublicListingDetail } from "../../types";
-import { formatEUR } from "../../utils/format";
 import { DetailSectionHeading } from "./DetailSectionHeading";
 
 interface ListingRequirementsProps {
@@ -49,14 +48,6 @@ function requiredRow(label: string, required: boolean): Requirement {
 
 function buildRequirements(listing: PublicListingDetail): Requirement[] {
   const rows: Requirement[] = [];
-
-  if (listing.minimumHouseholdNetIncome !== null) {
-    rows.push({
-      label: requirements.minimumIncome,
-      value: formatEUR(listing.minimumHouseholdNetIncome),
-      tone: "neutral",
-    });
-  }
 
   rows.push(requiredRow(requirements.schufa, listing.schufaRequired));
   rows.push(requiredRow(requirements.incomeProof, listing.incomeProofRequired));

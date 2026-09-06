@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils/cn";
 
-export type MatchBadgeTone = "new" | "match" | "no-match" | "incomplete";
+export type MatchBadgeTone =
+  | "new"
+  | "match"
+  | "no-match"
+  | "incomplete"
+  | "not-selected";
 
 export type MatchBadgeSize = "sm" | "md";
 
@@ -28,6 +33,8 @@ const TONE_CLASS: Record<MatchBadgeTone, string> = {
   match: "bg-success-surface text-success-on-surface",
   "no-match": "bg-foreground-tertiary/15 text-foreground-secondary",
   incomplete: "bg-warning/25 text-warning shadow-[0_0_6px_var(--warning)]",
+  "not-selected":
+    "bg-exit-provider-discarded-bg text-exit-provider-discarded-fg",
 };
 
 export function MatchBadge({

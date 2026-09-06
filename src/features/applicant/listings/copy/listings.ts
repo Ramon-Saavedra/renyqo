@@ -101,6 +101,7 @@ export const listingsCopy = {
     badgeMatch: "Passt",
     badgeNoMatch: "Passt nicht",
     badgeApplied: "Bereits beworben",
+    badgeNotSelected: "Nicht ausgewählt",
     matchLine: "Passt zu deinem Profil",
     noMatchLine: "Passt nicht zu deinem Profil",
     coldRent: "Kaltmiete",

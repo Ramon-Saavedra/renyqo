@@ -56,24 +56,40 @@ function buildDetailLocation({
   return location.length > 0 ? location.join(" · ") : null;
 }
 
-const publicListingSummaryContractSchema = z.object({
+const listingApplicationStatusSchema = z.enum([
+  "ACTIVE",
+  "WAITING",
+  "REJECTED",
+  "ACCEPTED",
+]);
+
+const listingApplicationPublicReasonSchema = z.enum([
+  "NOT_SELECTED",
+  "PROFILE_NO_LONGER_ELIGIBLE",
+  "LISTING_RENTED",
+]);
+
+const listingApplicantStateSchema = z.object({
   hasApplied: z.boolean(),
+  applicationStatus: listingApplicationStatusSchema.nullable(),
+  publicReason: listingApplicationPublicReasonSchema.nullable(),
+  isSaved: z.boolean(),
 });
 
-class PublicListingsContractError extends Error {
+export class PublicListingsContractError extends Error {
   constructor() {
     super("Invalid public listings response");
     this.name = "PublicListingsContractError";
   }
 }
 
-function mapPublicListing(value: unknown): PublicListing | null {
+export function mapPublicListing(value: unknown): PublicListing | null {
   if (!isRecord(value)) return null;
 
   const id = readString(value, ["id"]);
   if (!id) return null;
 
-  const contract = publicListingSummaryContractSchema.safeParse(value);
+  const contract = listingApplicantStateSchema.safeParse(value);
   if (!contract.success) {
     throw new PublicListingsContractError();
   }
@@ -105,6 +121,9 @@ function mapPublicListing(value: unknown): PublicListing | null {
       ]) ?? 0,
     matchesProfile: normalizeListingProfileMatch(profileMatchValue),
     hasApplied: contract.data.hasApplied,
+    applicationStatus: contract.data.applicationStatus,
+    publicReason: contract.data.publicReason,
+    isSaved: contract.data.isSaved,
     isNew: readBoolean(value, ["isNew", "is_new"]) ?? false,
     coverImageUrl: readCoverImageUrl(value),
     publishedAt: readString(value, ["publishedAt", "published_at"]) ?? "",
@@ -145,8 +164,11 @@ const applicantListingDetailSchema = z.object({
     }),
   ),
   profileMatch: z.enum(["MATCH", "NO_MATCH", "PROFILE_INCOMPLETE", "UNKNOWN"]),
+  hasApplied: z.boolean(),
+  applicationStatus: listingApplicationStatusSchema.nullable(),
+  publicReason: listingApplicationPublicReasonSchema.nullable(),
+  isSaved: z.boolean(),
   requirements: z.object({
-    minimumHouseholdNetIncome: nullableNumber,
     schufaRequired: z.boolean(),
     incomeProofRequired: z.boolean(),
     suitableForPeopleCount: nullableNumber,
@@ -181,6 +203,10 @@ function mapPublicListingDetail(
     title: value.title,
     location: buildDetailLocation(value),
     matchesProfile: normalizeDetailProfileMatch(value.profileMatch),
+    hasApplied: value.hasApplied,
+    applicationStatus: value.applicationStatus,
+    publicReason: value.publicReason,
+    isSaved: value.isSaved,
     street: value.street,
     zip: value.zip,
     city: value.city,
@@ -198,7 +224,6 @@ function mapPublicListingDetail(
     publishedAt: value.publishedAt,
     isNew: value.isNew,
     images,
-    minimumHouseholdNetIncome: value.requirements.minimumHouseholdNetIncome,
     schufaRequired: value.requirements.schufaRequired,
     incomeProofRequired: value.requirements.incomeProofRequired,
     suitableForPeopleCount: value.requirements.suitableForPeopleCount,

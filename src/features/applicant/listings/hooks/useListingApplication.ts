@@ -23,7 +23,7 @@ function messageFor(error: unknown): string {
   if (!(error instanceof ApiError))
     return "Die Bewerbung konnte nicht gesendet werden.";
   if (error.status === 409)
-    return "Du hast dich bereits auf diese Wohnung beworben.";
+    return "Du hast dich bereits auf dieses Objekt beworben.";
   if (error.status === 404) return "Dieses Objekt ist nicht mehr verfügbar.";
   if (error.status === 422)
     return "Für dieses Objekt sind Bewerbungen nicht mehr möglich.";

@@ -67,6 +67,8 @@ export function ListingDetailHeader({ listing }: ListingDetailHeaderProps) {
       <ListingApplyBox
         listingId={listing.id}
         matchesProfile={listing.matchesProfile}
+        applicationStatus={listing.applicationStatus}
+        publicReason={listing.publicReason}
       />
     </div>
   );

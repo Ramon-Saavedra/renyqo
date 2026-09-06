@@ -30,6 +30,9 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     serviceCharge: 150,
     matchesProfile: null,
     hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
     isNew: false,
     coverImageUrl: null,
     publishedAt: "2026-01-01T00:00:00.000Z",
@@ -222,8 +225,8 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(screen.queryByText("Mehr Wohnungen anzeigen")).toBeNull();
-    expect(screen.getByText("Wohnungen werden geladen …")).toBeInstanceOf(
+    expect(screen.queryByText("Mehr Objekte anzeigen")).toBeNull();
+    expect(screen.getByText("Objekte werden geladen …")).toBeInstanceOf(
       HTMLElement,
     );
   });
@@ -294,7 +297,7 @@ describe("ApplicantListingsView", () => {
     expect(within(thirdCard).queryByText("Passt nicht")).toBeNull();
   });
 
-  it("shows applied badge from listing hasApplied regardless of profile match", () => {
+  it("shows applied badge from listing applicationStatus regardless of profile match", () => {
     mockUseProfileStatus.mockReturnValue("exists");
 
     mockUsePublicListings.mockReturnValue(
@@ -303,7 +306,7 @@ describe("ApplicantListingsView", () => {
         listings: [
           buildListing({
             id: "applied",
-            hasApplied: true,
+            applicationStatus: "ACTIVE",
             matchesProfile: true,
           }),
         ],

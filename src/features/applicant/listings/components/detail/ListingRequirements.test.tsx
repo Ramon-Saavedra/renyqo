@@ -16,6 +16,10 @@ function mockListing(
     coldRent: 800,
     additionalCosts: 100,
     matchesProfile: "match",
+    hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
     isNew: false,
     publishedAt: "2026-01-01",
     street: null,
@@ -28,7 +32,6 @@ function mockListing(
     depositMonths: null,
     shortDescription: null,
     images: [],
-    minimumHouseholdNetIncome: null,
     schufaRequired: false,
     incomeProofRequired: false,
     suitableForPeopleCount: null,
@@ -43,7 +46,6 @@ describe("ListingRequirements", () => {
     render(
       <ListingRequirements
         listing={mockListing({
-          minimumHouseholdNetIncome: 2500,
           schufaRequired: true,
           suitableForPeopleCount: 2,
           petsPolicy: "NOT_ALLOWED",
@@ -52,10 +54,8 @@ describe("ListingRequirements", () => {
       />,
     );
 
-    expect(screen.getByText("Mindesteinkommen (netto)")).toBeInstanceOf(
-      HTMLElement,
-    );
-    expect(screen.getByText("2.500 €")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Mindesteinkommen (netto)")).toBeNull();
+    expect(screen.queryByText("2.500 €")).toBeNull();
     expect(screen.getByText("SCHUFA")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Erforderlich")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Haushaltsgröße")).toBeInstanceOf(HTMLElement);

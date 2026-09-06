@@ -48,6 +48,14 @@ const app = (
 function setup(
   existingApplication: ReturnType<typeof app> | null = null,
   canApply = true,
+  listingState: {
+    applicationStatus?: "REJECTED" | "ACTIVE" | "WAITING" | "ACCEPTED" | null;
+    publicReason?:
+      | "NOT_SELECTED"
+      | "PROFILE_NO_LONGER_ELIGIBLE"
+      | "LISTING_RENTED"
+      | null;
+  } = {},
 ) {
   eligibility.mockReturnValue({
     ...baseEligibility,
@@ -60,7 +68,14 @@ function setup(
     refresh: vi.fn(),
   });
   withdrawal.mockReturnValue(idleWithdraw);
-  render(<ListingApplyBox listingId="l" matchesProfile="unknown" />);
+  render(
+    <ListingApplyBox
+      listingId="l"
+      matchesProfile="unknown"
+      applicationStatus={listingState.applicationStatus ?? null}
+      publicReason={listingState.publicReason ?? null}
+    />,
+  );
 }
 
 describe("ListingApplyBox", () => {
@@ -119,7 +134,14 @@ describe("ListingApplyBox", () => {
       refresh: vi.fn(),
     });
     withdrawal.mockReturnValue(idleWithdraw);
-    render(<ListingApplyBox listingId="l" matchesProfile="unknown" />);
+    render(
+      <ListingApplyBox
+        listingId="l"
+        matchesProfile="unknown"
+        applicationStatus={null}
+        publicReason={null}
+      />,
+    );
     expect(
       (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
         .disabled,
@@ -136,9 +158,72 @@ describe("ListingApplyBox", () => {
       refresh: vi.fn(),
     });
     withdrawal.mockReturnValue(idleWithdraw);
-    render(<ListingApplyBox listingId="l" matchesProfile="unknown" />);
+    render(
+      <ListingApplyBox
+        listingId="l"
+        matchesProfile="unknown"
+        applicationStatus={null}
+        publicReason={null}
+      />,
+    );
     const button = screen.getByRole("button", { name: "Bewerben" });
     fireEvent.click(button);
     expect(submit).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the not-selected listing state instead of Bewerben", () => {
+    setup(app("REJECTED"), true, {
+      applicationStatus: "REJECTED",
+      publicReason: "NOT_SELECTED",
+    });
+
+    expect(screen.getByText("Nicht ausgewählt")).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByText("Eine erneute Bewerbung ist nicht möglich."),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.queryByText("Du wurdest für dieses Mietobjekt nicht ausgewählt."),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
+    expect(
+      screen.queryByText("Diese Bewerbung ist nicht mehr aktiv."),
+    ).toBeNull();
+  });
+
+  it("keeps the generic rejected apply state for LISTING_RENTED", () => {
+    setup(app("REJECTED"), true, {
+      applicationStatus: "REJECTED",
+      publicReason: "LISTING_RENTED",
+    });
+
+    expect(
+      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      screen.getByText("Diese Bewerbung ist nicht mehr aktiv."),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.queryByText("Eine erneute Bewerbung ist nicht möglich."),
+    ).toBeNull();
+  });
+
+  it("keeps the generic rejected apply state for PROFILE_NO_LONGER_ELIGIBLE", () => {
+    setup(app("REJECTED"), true, {
+      applicationStatus: "REJECTED",
+      publicReason: "PROFILE_NO_LONGER_ELIGIBLE",
+    });
+
+    expect(
+      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+    expect(
+      screen.getByText("Diese Bewerbung ist nicht mehr aktiv."),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
+    expect(
+      screen.queryByText("Eine erneute Bewerbung ist nicht möglich."),
+    ).toBeNull();
   });
 });
