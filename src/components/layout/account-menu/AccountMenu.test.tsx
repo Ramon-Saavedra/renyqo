@@ -254,7 +254,7 @@ describe("AccountMenu", () => {
     );
 
     const profileLink = screen.getByRole("link", {
-      name: "Bewerbungsprofil erstellen",
+      name: "Bewerbungsprofil",
     });
     const savedLink = screen.getByRole("link", { name: "Gemerkt" });
 

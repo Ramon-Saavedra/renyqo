@@ -44,6 +44,12 @@ describe("ListingReportAction", () => {
     await user.click(screen.getByRole("button", { name: "Melden" }));
     expect(document.body.style.overflow).toBe("hidden");
 
+    const dialog = screen.getByRole("dialog", { name: "Objekt melden" });
+    expect(dialog.className).toContain("max-h-full");
+    expect(dialog.className).toContain("min-h-0");
+    expect(dialog.className).toContain("overflow-y-auto");
+    expect(dialog.className).toContain("scrollbar-slim");
+
     await user.click(screen.getByRole("button", { name: "Schließen" }));
     expect(document.body.style.overflow).not.toBe("hidden");
   });
@@ -192,6 +198,67 @@ describe("ListingReportAction", () => {
       HTMLElement,
     );
     expect(screen.getByRole("dialog")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("clears the reason error and aria-invalid after a reason is selected", async () => {
+    const user = userEvent.setup();
+    render(<ListingReportAction listingId="listing-1" />);
+
+    await user.click(screen.getByRole("button", { name: "Melden" }));
+    await user.click(screen.getByRole("button", { name: "Meldung senden" }));
+
+    const reasons = screen.getByRole("group", { name: "Grund" });
+    expect(screen.getByText("Bitte wähle einen Grund.")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(reasons.getAttribute("aria-invalid")).toBe("true");
+
+    await user.click(
+      screen.getByLabelText("Irreführende oder falsche Angaben"),
+    );
+
+    expect(screen.queryByText("Bitte wähle einen Grund.")).toBeNull();
+    expect(reasons.getAttribute("aria-invalid")).not.toBe("true");
+  });
+
+  it("clears the detail error and textarea invalid state after valid detail is entered", async () => {
+    const user = userEvent.setup();
+    render(<ListingReportAction listingId="listing-1" />);
+
+    await user.click(screen.getByRole("button", { name: "Melden" }));
+    await user.click(screen.getByLabelText("Sonstiges"));
+    await user.click(screen.getByRole("button", { name: "Meldung senden" }));
+
+    const textarea = screen.getByRole("textbox");
+    expect(screen.getByText("Bitte beschreibe den Grund.")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(textarea.getAttribute("aria-invalid")).toBe("true");
+
+    await user.type(textarea, "Kurzbeschreibung des Problems");
+
+    expect(screen.queryByText("Bitte beschreibe den Grund.")).toBeNull();
+    expect(textarea.getAttribute("aria-invalid")).toBeNull();
+  });
+
+  it("clears the detail error when switching away from Sonstiges", async () => {
+    const user = userEvent.setup();
+    render(<ListingReportAction listingId="listing-1" />);
+
+    await user.click(screen.getByRole("button", { name: "Melden" }));
+    await user.click(screen.getByLabelText("Sonstiges"));
+    await user.click(screen.getByRole("button", { name: "Meldung senden" }));
+
+    const textarea = screen.getByRole("textbox");
+    expect(screen.getByText("Bitte beschreibe den Grund.")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(textarea.getAttribute("aria-invalid")).toBe("true");
+
+    await user.click(screen.getByLabelText("Betrugsverdacht"));
+
+    expect(screen.queryByText("Bitte beschreibe den Grund.")).toBeNull();
+    expect(screen.getByRole("textbox").getAttribute("aria-invalid")).toBeNull();
   });
 
   it("keeps the dialog open on a 401", async () => {

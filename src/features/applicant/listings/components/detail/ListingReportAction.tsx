@@ -21,8 +21,15 @@ export function ListingReportAction({ listingId }: ListingReportActionProps) {
   const [open, setOpen] = useState(false);
   const [reported, setReported] = useState(false);
   const [syncedListingId, setSyncedListingId] = useState(listingId);
-  const { status, error, validationCode, submit, reset } =
-    useListingReport(listingId);
+  const {
+    status,
+    error,
+    validationCode,
+    submit,
+    acknowledgeReason,
+    acknowledgeDetail,
+    reset,
+  } = useListingReport(listingId);
   const pending = status === "submitting";
 
   if (listingId !== syncedListingId) {
@@ -74,6 +81,8 @@ export function ListingReportAction({ listingId }: ListingReportActionProps) {
         validationCode={validationCode}
         onClose={handleClose}
         onSubmit={handleSubmit}
+        onReasonSelected={acknowledgeReason}
+        onDetailEdited={acknowledgeDetail}
       />
     </div>
   );

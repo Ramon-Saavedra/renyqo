@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_FILTERS } from "../types";
@@ -176,5 +176,107 @@ describe("FilterDrawer", () => {
     await user.keyboard("{Escape}");
     expect(onChange).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps focus on the custom chip after Enter commits an empty rent", async () => {
+    const user = userEvent.setup();
+    renderDrawer();
+
+    await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
+    await user.click(screen.getByLabelText("Maximale Kaltmiete in Euro"));
+    await user.keyboard("{Enter}");
+
+    const drawer = screen.getByRole("dialog");
+    const customChip = screen.getByRole("button", { name: "Eigener Betrag" });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(customChip);
+    });
+    expect(drawer.contains(document.activeElement)).toBe(true);
+    expect(screen.queryByLabelText("Maximale Kaltmiete in Euro")).toBeNull();
+  });
+
+  it("moves focus to the matching preset chip after Enter commits a preset rent", async () => {
+    const user = userEvent.setup();
+    renderDrawer();
+
+    await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
+    await user.type(
+      screen.getByLabelText("Maximale Kaltmiete in Euro"),
+      "800",
+    );
+    await user.keyboard("{Enter}");
+
+    const drawer = screen.getByRole("dialog");
+    const preset = screen.getByRole("button", { name: "bis 800 €" });
+    await waitFor(() => {
+      expect(document.activeElement).toBe(preset);
+    });
+    expect(drawer.contains(document.activeElement)).toBe(true);
+    expect(screen.queryByLabelText("Maximale Kaltmiete in Euro")).toBeNull();
+  });
+
+  it("does not restore focus after Tab commits a preset custom rent", async () => {
+    const user = userEvent.setup();
+    renderDrawer();
+
+    await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
+    await user.type(
+      screen.getByLabelText("Maximale Kaltmiete in Euro"),
+      "800",
+    );
+    await user.tab();
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+
+    expect(document.activeElement).not.toBe(
+      screen.getByRole("button", { name: "bis 800 €" }),
+    );
+    expect(document.activeElement).not.toBe(
+      screen.getByRole("button", { name: "Eigener Betrag" }),
+    );
+  });
+
+  it("does not restore focus after Tab commits an empty custom rent", async () => {
+    const user = userEvent.setup();
+    renderDrawer();
+
+    await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
+    await user.click(screen.getByLabelText("Maximale Kaltmiete in Euro"));
+    await user.tab();
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+
+    expect(document.activeElement).not.toBe(
+      screen.getByRole("button", { name: "Eigener Betrag" }),
+    );
+  });
+
+  it("does not restore focus after clicking away from a preset custom rent", async () => {
+    const user = userEvent.setup();
+    renderDrawer();
+
+    await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
+    await user.type(
+      screen.getByLabelText("Maximale Kaltmiete in Euro"),
+      "800",
+    );
+    const rooms = screen.getByRole("button", { name: "ab 3" });
+    await user.click(rooms);
+    await act(async () => {
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+
+    expect(document.activeElement).toBe(rooms);
+    expect(document.activeElement).not.toBe(
+      screen.getByRole("button", { name: "bis 800 €" }),
+    );
   });
 });

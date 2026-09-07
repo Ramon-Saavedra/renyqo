@@ -1,7 +1,10 @@
 "use client";
 
+import { useRef } from "react";
 import { Input } from "@/components/ui/form/Input";
 import { InputAffix } from "@/components/ui/form/InputAffix";
+
+type FilterCustomCommitSource = "enter" | "blur";
 
 interface FilterCustomValueInputProps {
   id: string;
@@ -9,7 +12,7 @@ interface FilterCustomValueInputProps {
   suffix: string;
   ariaLabel: string;
   onChange: (value: string) => void;
-  onCommit: () => void;
+  onCommit: (source: FilterCustomCommitSource) => boolean;
 }
 
 export function FilterCustomValueInput({
@@ -20,6 +23,8 @@ export function FilterCustomValueInput({
   onChange,
   onCommit,
 }: FilterCustomValueInputProps) {
+  const skipBlurCommitRef = useRef(false);
+
   return (
     <InputAffix suffix={suffix}>
       <Input
@@ -29,11 +34,17 @@ export function FilterCustomValueInput({
         value={value}
         className="pr-22"
         onChange={(event) => onChange(event.target.value)}
-        onBlur={onCommit}
+        onBlur={() => {
+          if (skipBlurCommitRef.current) {
+            skipBlurCommitRef.current = false;
+            return;
+          }
+          onCommit("blur");
+        }}
         onKeyDown={(event) => {
           if (event.key !== "Enter") return;
           event.preventDefault();
-          onCommit();
+          skipBlurCommitRef.current = onCommit("enter");
         }}
       />
     </InputAffix>

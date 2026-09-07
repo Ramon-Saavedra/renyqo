@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button/Button";
+import { FieldError } from "@/components/ui/form/FieldError";
 import { FormField } from "@/components/ui/form/FormField";
 import { Textarea } from "@/components/ui/form/Textarea";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -24,12 +25,14 @@ interface ListingReportDialogProps {
     | null;
   onClose: () => void;
   onSubmit: (reason: ListingReportReason | null, detail: string) => void;
+  onReasonSelected: () => void;
+  onDetailEdited: (reason: ListingReportReason, detail: string) => void;
 }
 
 const OVERLAY_CLASS =
   "fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 px-gutter";
 const PANEL_CLASS =
-  "relative w-full max-w-md rounded-md border border-border bg-background p-5 shadow-card";
+  "relative max-h-full min-h-0 w-full max-w-md overflow-y-auto rounded-md border border-border bg-background p-5 shadow-card scrollbar-slim";
 const CLOSE_BUTTON_CLASS = "absolute right-3 top-3";
 const TITLE_CLASS = "pr-8 text-title font-medium text-foreground";
 const LEAD_CLASS = "mt-2 text-caption text-foreground-secondary";
@@ -69,12 +72,15 @@ export function ListingReportDialog({
   validationCode,
   onClose,
   onSubmit,
+  onReasonSelected,
+  onDetailEdited,
 }: ListingReportDialogProps) {
   const titleId = useId();
   const leadId = useId();
   const reasonsName = useId();
   const reasonErrorId = useId();
   const detailId = useId();
+  const detailErrorId = useId();
   const overlayRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -196,6 +202,9 @@ export function ListingReportDialog({
   const detailRequired = reason === "OTHER";
   const fieldMessage = validationMessage(validationCode);
   const reasonInvalid = validationCode === "reason-required";
+  const detailInvalid =
+    validationCode === "detail-required" ||
+    validationCode === "detail-too-long";
 
   return (
     <div
@@ -238,7 +247,7 @@ export function ListingReportDialog({
         <fieldset
           className={REASONS_CLASS}
           aria-required="true"
-          aria-invalid={reasonInvalid}
+          aria-invalid={reasonInvalid || undefined}
           {...(reasonInvalid ? { "aria-errormessage": reasonErrorId } : {})}
         >
           <legend className="mb-1 text-caption font-medium text-foreground">
@@ -256,7 +265,11 @@ export function ListingReportDialog({
                     value={value}
                     checked={reason === value}
                     disabled={pending}
-                    onChange={() => setReason(value)}
+                    onChange={() => {
+                      setReason(value);
+                      onReasonSelected();
+                      onDetailEdited(value, detail);
+                    }}
                     className={RADIO_CLASS}
                   />
                   <span aria-hidden="true" className={RADIO_MARK_CLASS}>
@@ -278,20 +291,25 @@ export function ListingReportDialog({
             hint={
               detailRequired ? report.detailRequiredHint : report.detailHint
             }
-            error={
-              validationCode === "detail-required" ||
-              validationCode === "detail-too-long"
-                ? (fieldMessage ?? undefined)
-                : undefined
-            }
           >
             <Textarea
               id={detailId}
               value={detail}
               maxLength={LISTING_REPORT_DETAIL_MAX}
               disabled={pending}
-              onChange={(event) => setDetail(event.target.value)}
+              aria-invalid={detailInvalid || undefined}
+              {...(detailInvalid
+                ? { "aria-errormessage": detailErrorId }
+                : {})}
+              onChange={(event) => {
+                const nextDetail = event.target.value;
+                setDetail(nextDetail);
+                onDetailEdited(reason, nextDetail);
+              }}
             />
+            {detailInvalid && fieldMessage ? (
+              <FieldError id={detailErrorId} message={fieldMessage} />
+            ) : null}
           </FormField>
         ) : null}
 

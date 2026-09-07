@@ -56,14 +56,16 @@ describe("useFilterCustomValue", () => {
     expect(onChange).toHaveBeenCalledWith(1150);
 
     onChange.mockClear();
+    let invalidResult: ReturnType<(typeof result.current)["commit"]> | undefined;
     act(() => {
       result.current.selectCustom();
       result.current.setDraft("0");
     });
     act(() => {
-      result.current.commit();
+      invalidResult = result.current.commit();
     });
     expect(onChange).not.toHaveBeenCalled();
+    expect(invalidResult).toEqual({ kind: "kept" });
   });
 
   it("commits empty input as null", () => {
@@ -72,14 +74,16 @@ describe("useFilterCustomValue", () => {
       useFilterCustomValue(1150, OPTIONS, onChange),
     );
 
+    let emptyResult: ReturnType<(typeof result.current)["commit"]> | undefined;
     act(() => {
       result.current.setDraft("");
     });
     act(() => {
-      result.current.commit();
+      emptyResult = result.current.commit();
     });
     expect(onChange).toHaveBeenCalledWith(null);
     expect(result.current.customMode).toBe(false);
+    expect(emptyResult).toEqual({ kind: "cleared" });
   });
 
   it("syncs custom mode when the committed value changes", () => {

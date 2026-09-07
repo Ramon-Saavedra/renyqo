@@ -5,13 +5,18 @@ import {
   parseFilterInteger,
 } from "../utils/filter-value";
 
+export type FilterCustomCommitResult =
+  | { readonly kind: "kept" }
+  | { readonly kind: "preset"; readonly value: number }
+  | { readonly kind: "cleared" };
+
 interface UseFilterCustomValueResult {
   readonly customMode: boolean;
   readonly draft: string;
   readonly selectPreset: (value: number | null) => void;
   readonly selectCustom: () => void;
   readonly setDraft: (raw: string) => void;
-  readonly commit: () => void;
+  readonly commit: () => FilterCustomCommitResult;
 }
 
 export function useFilterCustomValue(
@@ -55,13 +60,13 @@ export function useFilterCustomValue(
     setDraftState(digitsOnly(raw));
   };
 
-  const commit = () => {
+  const commit = (): FilterCustomCommitResult => {
     const trimmed = draft.trim();
     if (trimmed === "") {
       setCustomMode(false);
       setDraftState("");
       if (value !== null) onChange(null);
-      return;
+      return { kind: "cleared" };
     }
     const parsed = parseFilterInteger(trimmed);
     if (parsed === null) {
@@ -70,16 +75,17 @@ export function useFilterCustomValue(
           ? String(value)
           : "",
       );
-      return;
+      return { kind: "kept" };
     }
     onChange(parsed);
     if (isCustomFilterValue(options, parsed)) {
       setCustomMode(true);
       setDraftState(String(parsed));
-      return;
+      return { kind: "kept" };
     }
     setCustomMode(false);
     setDraftState("");
+    return { kind: "preset", value: parsed };
   };
 
   return {

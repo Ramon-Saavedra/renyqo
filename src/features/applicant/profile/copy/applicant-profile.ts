@@ -11,6 +11,7 @@ export const applicantProfileCopy = {
   cta: {
     create: "Bewerbungsprofil erstellen",
     edit: "Bewerbungsprofil bearbeiten",
+    profile: "Bewerbungsprofil",
   },
   topbar: {
     saved: "Gespeichert",

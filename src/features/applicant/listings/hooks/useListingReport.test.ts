@@ -99,6 +99,73 @@ describe("useListingReport", () => {
     expect(result.current.status).toBe("idle");
   });
 
+  it("clears reason-required after a reason is acknowledged", async () => {
+    const { result } = renderHook(() => useListingReport("listing-1"));
+
+    await act(async () => {
+      await result.current.submit(null, "");
+    });
+    expect(result.current.validationCode).toBe("reason-required");
+
+    act(() => {
+      result.current.acknowledgeReason();
+    });
+    expect(result.current.validationCode).toBeNull();
+  });
+
+  it("clears detail-required only after the detail is valid", async () => {
+    const { result } = renderHook(() => useListingReport("listing-1"));
+
+    await act(async () => {
+      await result.current.submit("OTHER", "");
+    });
+    expect(result.current.validationCode).toBe("detail-required");
+
+    act(() => {
+      result.current.acknowledgeDetail("OTHER", "   ");
+    });
+    expect(result.current.validationCode).toBe("detail-required");
+
+    act(() => {
+      result.current.acknowledgeDetail("OTHER", "Ein kurzer Hinweis");
+    });
+    expect(result.current.validationCode).toBeNull();
+    expect(result.current.error).toBeNull();
+  });
+
+  it("clears detail-required when a non-OTHER reason is acknowledged", async () => {
+    const { result } = renderHook(() => useListingReport("listing-1"));
+
+    await act(async () => {
+      await result.current.submit("OTHER", "");
+    });
+    expect(result.current.validationCode).toBe("detail-required");
+
+    act(() => {
+      result.current.acknowledgeDetail("SCAM_OR_FRAUD", "");
+    });
+    expect(result.current.validationCode).toBeNull();
+    expect(result.current.error).toBeNull();
+  });
+
+  it("does not clear a rate-limit error when acknowledging fields", async () => {
+    vi.mocked(reportListing).mockRejectedValue(new ApiError(429, "limited"));
+    const { result } = renderHook(() => useListingReport("listing-1"));
+
+    await act(async () => {
+      await result.current.submit("SCAM_OR_FRAUD", "");
+    });
+    const serverError = result.current.error;
+
+    act(() => {
+      result.current.acknowledgeReason();
+      result.current.acknowledgeDetail("SCAM_OR_FRAUD", "text");
+    });
+
+    expect(result.current.error).toBe(serverError);
+    expect(result.current.validationCode).toBeNull();
+  });
+
   it("maps a 401 to a controlled auth message", async () => {
     vi.mocked(reportListing).mockRejectedValue(new ApiError(401, "auth"));
     const { result } = renderHook(() => useListingReport("listing-1"));

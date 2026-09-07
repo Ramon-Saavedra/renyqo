@@ -1,11 +1,14 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { cn } from "@/lib/utils/cn";
-import { useFilterCustomValue } from "../hooks/useFilterCustomValue";
+import {
+  useFilterCustomValue,
+  type FilterCustomCommitResult,
+} from "../hooks/useFilterCustomValue";
 import { filterChipClass } from "./filter-chip";
 import { FilterCustomValueInput } from "./FilterCustomValueInput";
 
@@ -50,7 +53,24 @@ export function FilterSelect({
 }: FilterSelectProps) {
   const customInputId = useId();
   const customValue = useFilterCustomValue(value, options, onChange);
+  const presetRefs = useRef(new Map<number | null, HTMLButtonElement>());
+  const customRadioRef = useRef<HTMLButtonElement | null>(null);
   const selected = options.find((option) => option.value === value);
+
+  const commitCustomValue = (source: "enter" | "blur"): boolean => {
+    const result: FilterCustomCommitResult = customValue.commit();
+    if (result.kind === "kept") return false;
+    if (source !== "enter") return true;
+    const target =
+      result.kind === "preset"
+        ? presetRefs.current.get(result.value)
+        : customRadioRef.current;
+    requestAnimationFrame(() => {
+      target?.focus();
+    });
+    return true;
+  };
+
   const triggerLabel =
     value === null
       ? label
@@ -90,6 +110,10 @@ export function FilterSelect({
               role="radio"
               aria-checked={isActive}
               className={cn(OPTION_CLASS, isActive && OPTION_ACTIVE_CLASS)}
+              ref={(node) => {
+                if (node) presetRefs.current.set(option.value, node);
+                else presetRefs.current.delete(option.value);
+              }}
               onClick={() => customValue.selectPreset(option.value)}
             >
               <span>{option.label}</span>
@@ -108,6 +132,7 @@ export function FilterSelect({
               OPTION_CLASS,
               customValue.customMode && OPTION_ACTIVE_CLASS,
             )}
+            ref={customRadioRef}
             onClick={customValue.selectCustom}
           >
             <span>{custom.optionLabel}</span>
@@ -125,7 +150,7 @@ export function FilterSelect({
             suffix={custom.suffix}
             ariaLabel={custom.inputAriaLabel}
             onChange={customValue.setDraft}
-            onCommit={customValue.commit}
+            onCommit={commitCustomValue}
           />
         </div>
       )}

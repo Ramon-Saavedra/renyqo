@@ -23,7 +23,9 @@ export function ProfileMenuLink() {
   const label =
     status === "exists"
       ? applicantProfileCopy.cta.edit
-      : applicantProfileCopy.cta.create;
+      : status === "missing"
+        ? applicantProfileCopy.cta.create
+        : applicantProfileCopy.cta.profile;
 
   return (
     <Link href={buildProfileHref(pathname)} className={LINK_CLASS}>

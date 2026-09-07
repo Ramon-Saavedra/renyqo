@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useEffect } from "react";
+import { useId, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import {
   buttonClassWithSize,
@@ -15,7 +15,10 @@ import {
   listingsCopy,
   ROOM_OPTIONS,
 } from "../copy/listings";
-import { useFilterCustomValue } from "../hooks/useFilterCustomValue";
+import {
+  useFilterCustomValue,
+  type FilterCustomCommitResult,
+} from "../hooks/useFilterCustomValue";
 import type { ListingFilters } from "../types";
 import { filterChipClass } from "./filter-chip";
 import { FilterCustomValueInput } from "./FilterCustomValueInput";
@@ -75,6 +78,28 @@ export function FilterDrawer({
     AREA_OPTIONS,
     (minLivingArea) => onChange({ minLivingArea }),
   );
+  const rentPresetRefs = useRef(new Map<number | null, HTMLButtonElement>());
+  const rentCustomRef = useRef<HTMLButtonElement | null>(null);
+  const areaPresetRefs = useRef(new Map<number | null, HTMLButtonElement>());
+  const areaCustomRef = useRef<HTMLButtonElement | null>(null);
+
+  const commitCustomField = (
+    result: FilterCustomCommitResult,
+    presetRefs: Map<number | null, HTMLButtonElement>,
+    customRef: { current: HTMLButtonElement | null },
+    source: "enter" | "blur",
+  ): boolean => {
+    if (result.kind === "kept") return false;
+    if (source !== "enter") return true;
+    const target =
+      result.kind === "preset"
+        ? presetRefs.get(result.value)
+        : customRef.current;
+    requestAnimationFrame(() => {
+      target?.focus();
+    });
+    return true;
+  };
 
   const handleClose = () => {
     if (rentCustom.customMode) rentCustom.commit();
@@ -136,6 +161,10 @@ export function FilterDrawer({
                   !rentCustom.customMode &&
                     filters.maxColdRent === option.value,
                 )}
+                ref={(node) => {
+                  if (node) rentPresetRefs.current.set(option.value, node);
+                  else rentPresetRefs.current.delete(option.value);
+                }}
                 onClick={() => rentCustom.selectPreset(option.value)}
               >
                 {option.label}
@@ -145,6 +174,7 @@ export function FilterDrawer({
               type="button"
               aria-pressed={rentCustom.customMode}
               className={filterChipClass(rentCustom.customMode)}
+              ref={rentCustomRef}
               onClick={rentCustom.selectCustom}
             >
               {listingsCopy.filters.customAmount}
@@ -158,7 +188,14 @@ export function FilterDrawer({
                 suffix={listingsCopy.filters.euroSuffix}
                 ariaLabel={listingsCopy.filters.customRentAria}
                 onChange={rentCustom.setDraft}
-                onCommit={rentCustom.commit}
+                onCommit={(source) =>
+                  commitCustomField(
+                    rentCustom.commit(),
+                    rentPresetRefs.current,
+                    rentCustomRef,
+                    source,
+                  )
+                }
               />
             </div>
           )}
@@ -198,6 +235,10 @@ export function FilterDrawer({
                   !areaCustom.customMode &&
                     filters.minLivingArea === option.value,
                 )}
+                ref={(node) => {
+                  if (node) areaPresetRefs.current.set(option.value, node);
+                  else areaPresetRefs.current.delete(option.value);
+                }}
                 onClick={() => areaCustom.selectPreset(option.value)}
               >
                 {option.label}
@@ -207,6 +248,7 @@ export function FilterDrawer({
               type="button"
               aria-pressed={areaCustom.customMode}
               className={filterChipClass(areaCustom.customMode)}
+              ref={areaCustomRef}
               onClick={areaCustom.selectCustom}
             >
               {listingsCopy.filters.customValue}
@@ -220,7 +262,14 @@ export function FilterDrawer({
                 suffix={listingsCopy.filters.areaSuffix}
                 ariaLabel={listingsCopy.filters.customAreaAria}
                 onChange={areaCustom.setDraft}
-                onCommit={areaCustom.commit}
+                onCommit={(source) =>
+                  commitCustomField(
+                    areaCustom.commit(),
+                    areaPresetRefs.current,
+                    areaCustomRef,
+                    source,
+                  )
+                }
               />
             </div>
           )}

@@ -21,6 +21,11 @@ export interface UseListingReportResult {
     reason: ListingReportReason | null,
     detail: string,
   ) => Promise<ListingReport | null>;
+  readonly acknowledgeReason: () => void;
+  readonly acknowledgeDetail: (
+    reason: ListingReportReason,
+    detail: string,
+  ) => void;
   readonly reset: () => void;
 }
 
@@ -54,6 +59,24 @@ export function useListingReport(listingId: string): UseListingReportResult {
     listingIdRef.current = listingId;
     isSubmittingRef.current = false;
   }, [listingId]);
+
+  const acknowledgeReason = () => {
+    setValidationCode((current) =>
+      current === "reason-required" ? null : current,
+    );
+  };
+
+  const acknowledgeDetail = (
+    reason: ListingReportReason,
+    detail: string,
+  ) => {
+    setValidationCode((current) => {
+      if (current !== "detail-required" && current !== "detail-too-long") {
+        return current;
+      }
+      return buildListingReportPayload(reason, detail).ok ? null : current;
+    });
+  };
 
   const reset = () => {
     setStatus("idle");
@@ -102,5 +125,13 @@ export function useListingReport(listingId: string): UseListingReportResult {
     return null;
   };
 
-  return { status, error, validationCode, submit, reset };
+  return {
+    status,
+    error,
+    validationCode,
+    submit,
+    acknowledgeReason,
+    acknowledgeDetail,
+    reset,
+  };
 }
