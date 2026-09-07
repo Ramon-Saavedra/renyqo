@@ -99,6 +99,20 @@ describe("reportListing", () => {
     expect(apiPost).toHaveBeenCalledTimes(1);
   });
 
+  it("does not POST OTHER without required detail", async () => {
+    await expect(
+      reportListing("listing-1", { reason: "OTHER" }),
+    ).rejects.toThrow("Invalid listing report response");
+    expect(apiPost).not.toHaveBeenCalled();
+  });
+
+  it("does not POST OTHER with whitespace-only detail", async () => {
+    await expect(
+      reportListing("listing-1", { reason: "OTHER", detail: "   " }),
+    ).rejects.toThrow("Invalid listing report response");
+    expect(apiPost).not.toHaveBeenCalled();
+  });
+
   it("does not POST an invalid outbound payload", async () => {
     await expect(
       reportListing("listing-1", {

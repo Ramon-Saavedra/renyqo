@@ -340,6 +340,30 @@ describe("ListingReportAction", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("clears previous success feedback when starting a new report attempt", async () => {
+    const user = userEvent.setup();
+    vi.mocked(reportListing).mockResolvedValue(created);
+    render(<ListingReportAction listingId="listing-1" />);
+
+    await user.click(screen.getByRole("button", { name: "Melden" }));
+    await user.click(
+      screen.getByLabelText("Irreführende oder falsche Angaben"),
+    );
+    await user.click(screen.getByRole("button", { name: "Meldung senden" }));
+    expect(await screen.findByRole("status")).toBeInstanceOf(HTMLElement);
+
+    vi.mocked(reportListing).mockRejectedValue(new ApiError(409, "conflict"));
+    await user.click(screen.getByRole("button", { name: "Melden" }));
+    await user.click(screen.getByLabelText("Betrugsverdacht"));
+    await user.click(screen.getByRole("button", { name: "Meldung senden" }));
+    expect(
+      await screen.findByText("Du hast dieses Objekt bereits gemeldet."),
+    ).toBeInstanceOf(HTMLElement);
+
+    await user.click(screen.getByRole("button", { name: "Schließen" }));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
   it("clears success feedback when the listing id changes", async () => {
     const user = userEvent.setup();
     vi.mocked(reportListing).mockResolvedValue(created);

@@ -12,17 +12,27 @@ function savedItem(overrides: Record<string, unknown> = {}) {
     id: "listing-1",
     title: "Apartment in Berlin",
     city: "Berlin",
+    zip: "10115",
     district: "Mitte",
-    rooms: 3,
+    objectType: "APARTMENT",
     livingArea: 70,
+    rooms: 3,
+    bedrooms: 1,
     coldRent: 1200,
-    serviceCharge: 200,
+    additionalCosts: 200,
+    deposit: 2400,
+    depositMonths: 2,
+    availableFrom: "2026-09-01T00:00:00.000Z",
+    shortDescription: "Helle Wohnung",
+    publishedAt: "2026-07-01T10:00:00.000Z",
+    isNew: false,
+    petsPolicy: null,
+    coverImage: null,
+    profileMatch: "UNKNOWN",
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
     isSaved: true,
-    isNew: false,
-    publishedAt: "2026-07-01T10:00:00.000Z",
     ...overrides,
   };
 }
@@ -145,24 +155,10 @@ describe("getSavedListings", () => {
   });
 
   it("rejects an item missing isSaved", async () => {
+    const payload: Record<string, unknown> = savedItem();
+    delete payload.isSaved;
     vi.mocked(apiGet).mockResolvedValue({
-      items: [
-        {
-          id: "missing-saved",
-          title: "Apartment in Berlin",
-          city: "Berlin",
-          district: "Mitte",
-          rooms: 3,
-          livingArea: 70,
-          coldRent: 1200,
-          serviceCharge: 200,
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isNew: false,
-          publishedAt: "2026-07-01T10:00:00.000Z",
-        },
-      ],
+      items: [payload],
       nextCursor: null,
       total: 1,
     });
@@ -214,6 +210,26 @@ describe("getSavedListings", () => {
   it("rejects an item with a mistyped living area", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [savedItem({ livingArea: { sqm: 70 } })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getSavedListings()).rejects.toBeInstanceOf(
+      SavedListingsContractError,
+    );
+  });
+
+  it.each([
+    ["additionalCosts"],
+    ["publishedAt"],
+    ["isNew"],
+    ["profileMatch"],
+    ["coverImage"],
+  ] as const)("rejects an item missing %s", async (field) => {
+    const payload: Record<string, unknown> = savedItem();
+    delete payload[field];
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [payload],
       nextCursor: null,
       total: 1,
     });

@@ -27,10 +27,27 @@ export type ListingReportPayloadResult =
 
 const listingReportReasonSchema = z.enum(LISTING_REPORT_REASONS);
 
-const listingReportPayloadSchema = z.object({
-  reason: listingReportReasonSchema,
-  detail: z.string().min(1).max(LISTING_REPORT_DETAIL_MAX).optional(),
-});
+const listingReportDetailSchema = z
+  .string()
+  .min(1)
+  .max(LISTING_REPORT_DETAIL_MAX);
+
+const listingReportPayloadSchema = z.discriminatedUnion("reason", [
+  z.object({
+    reason: z.literal("OTHER"),
+    detail: z.string().trim().min(1).max(LISTING_REPORT_DETAIL_MAX),
+  }),
+  z.object({
+    reason: z.enum([
+      "MISLEADING_INFO",
+      "SCAM_OR_FRAUD",
+      "DISCRIMINATION",
+      "INAPPROPRIATE_CONTENT",
+      "DUPLICATE_OR_SPAM",
+    ]),
+    detail: listingReportDetailSchema.optional(),
+  }),
+]);
 
 const listingReportResponseSchema = z.object({
   id: z.string().min(1),

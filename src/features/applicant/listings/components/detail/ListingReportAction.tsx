@@ -60,6 +60,7 @@ export function ListingReportAction({ listingId }: ListingReportActionProps) {
         size="sm"
         onClick={() => {
           reset();
+          setReported(false);
           setOpen(true);
         }}
       >

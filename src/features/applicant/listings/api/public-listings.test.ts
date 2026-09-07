@@ -7,6 +7,36 @@ vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
 }));
 
+function listingSummary(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "listing-1",
+    title: "Apartment in Berlin",
+    city: "Berlin",
+    zip: "10115",
+    district: "Mitte",
+    objectType: "APARTMENT",
+    livingArea: 70,
+    rooms: 3,
+    bedrooms: 1,
+    coldRent: 1200,
+    additionalCosts: 200,
+    deposit: 2400,
+    depositMonths: 2,
+    availableFrom: "2026-09-01T00:00:00.000Z",
+    shortDescription: "Helle Wohnung",
+    publishedAt: "2026-07-01T10:00:00.000Z",
+    isNew: false,
+    petsPolicy: null,
+    coverImage: null,
+    profileMatch: "UNKNOWN",
+    hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
+    ...overrides,
+  };
+}
+
 describe("getPublicListings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -99,25 +129,12 @@ describe("getPublicListings", () => {
   it("maps the standard backend response structure", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
-          id: "listing-1",
-          title: "Apartment in Berlin",
-          city: "Berlin",
-          district: "Mitte",
-          rooms: 3,
-          livingArea: 70,
-          coldRent: 1200,
-          serviceCharge: 200,
+        listingSummary({
           coverImage: {
             secureUrl: "https://res.cloudinary.com/example/apartment.jpg",
           },
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
           isNew: true,
-          publishedAt: "2026-07-01T10:00:00.000Z",
-        },
+        }),
       ],
       nextCursor: "cursor-abc",
       total: 42,
@@ -152,22 +169,16 @@ describe("getPublicListings", () => {
   it("maps coverImage.secureUrl and handles null coverImage", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
+        listingSummary({
           id: "a",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
           coverImage: { secureUrl: "https://res.cloudinary.com/a.jpg" },
-        },
-        {
+        }),
+        listingSummary({
           id: "b",
           hasApplied: true,
           applicationStatus: "ACTIVE",
-          publicReason: null,
-          isSaved: false,
           coverImage: null,
-        },
+        }),
       ],
       nextCursor: null,
       total: 2,
@@ -183,48 +194,16 @@ describe("getPublicListings", () => {
   it("normalizes listing profileMatch values", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
-          id: "match",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-          profileMatch: "MATCH",
-        },
-        {
-          id: "no-match",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-          profileMatch: "NO_MATCH",
-        },
-        {
+        listingSummary({ id: "match", profileMatch: "MATCH" }),
+        listingSummary({ id: "no-match", profileMatch: "NO_MATCH" }),
+        listingSummary({
           id: "incomplete",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
           profileMatch: "PROFILE_INCOMPLETE",
-        },
-        {
-          id: "unknown",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-          profileMatch: "UNKNOWN",
-        },
-        {
-          id: "absent",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-        },
+        }),
+        listingSummary({ id: "unknown", profileMatch: "UNKNOWN" }),
       ],
       nextCursor: null,
-      total: 5,
+      total: 4,
     });
 
     const { listings } = await getPublicListings({});
@@ -232,26 +211,17 @@ describe("getPublicListings", () => {
     expect(listings[1]?.matchesProfile).toBe(false);
     expect(listings[2]?.matchesProfile).toBeNull();
     expect(listings[3]?.matchesProfile).toBeNull();
-    expect(listings[4]?.matchesProfile).toBeNull();
   });
 
   it("maps hasApplied from the listing summary contract", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
+        listingSummary({
           id: "applied",
           hasApplied: true,
           applicationStatus: "ACTIVE",
-          publicReason: null,
-          isSaved: false,
-        },
-        {
-          id: "open",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-        },
+        }),
+        listingSummary({ id: "open" }),
       ],
       nextCursor: null,
       total: 2,
@@ -271,20 +241,8 @@ describe("getPublicListings", () => {
   it("maps isSaved from the listing summary contract", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
-          id: "saved",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: true,
-        },
-        {
-          id: "unsaved",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-        },
+        listingSummary({ id: "saved", isSaved: true }),
+        listingSummary({ id: "unsaved", isSaved: false }),
       ],
       nextCursor: null,
       total: 2,
@@ -298,27 +256,22 @@ describe("getPublicListings", () => {
   it("maps applicationStatus and publicReason from the listing summary contract", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
+        listingSummary({
           id: "waiting",
           hasApplied: true,
           applicationStatus: "WAITING",
-          publicReason: null,
-          isSaved: false,
-        },
-        {
+        }),
+        listingSummary({
           id: "rejected",
           hasApplied: true,
           applicationStatus: "REJECTED",
           publicReason: "NOT_SELECTED",
-          isSaved: false,
-        },
-        {
+        }),
+        listingSummary({
           id: "accepted",
           hasApplied: true,
           applicationStatus: "ACCEPTED",
-          publicReason: null,
-          isSaved: false,
-        },
+        }),
       ],
       nextCursor: null,
       total: 3,
@@ -416,6 +369,52 @@ describe("getPublicListings", () => {
     );
   });
 
+  it.each([
+    ["additionalCosts"],
+    ["city"],
+    ["district"],
+    ["availableFrom"],
+    ["publishedAt"],
+    ["isNew"],
+    ["profileMatch"],
+    ["coverImage"],
+  ] as const)("rejects a listing summary missing %s", async (field) => {
+    const payload: Record<string, unknown> = listingSummary();
+    delete payload[field];
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [payload],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it.each([
+    ["additionalCosts", "200"],
+    ["city", 12],
+    ["availableFrom", 20260901],
+    ["publishedAt", false],
+    ["isNew", "true"],
+    ["profileMatch", "LIKELY"],
+    ["coverImage", { url: "https://res.cloudinary.com/x.jpg" }],
+  ] as const)(
+    "rejects a listing summary when %s has the wrong type",
+    async (field, value) => {
+      vi.mocked(apiGet).mockResolvedValue({
+        items: [listingSummary({ [field]: value })],
+        nextCursor: null,
+        total: 1,
+      });
+
+      await expect(getPublicListings({})).rejects.toThrow(
+        "Invalid public listings response",
+      );
+    },
+  );
+
   it("rejects a listing summary with a mistyped title, rent, or living area", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
@@ -499,16 +498,23 @@ describe("getPublicListings", () => {
     },
   );
 
-  it("falls back to defaults for missing fields", async () => {
+  it("maps null summary fields to display fallbacks after a valid contract", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
+        listingSummary({
           id: "minimal",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-        },
+          title: null,
+          city: null,
+          district: null,
+          rooms: null,
+          livingArea: null,
+          coldRent: null,
+          additionalCosts: null,
+          availableFrom: null,
+          publishedAt: null,
+          coverImage: null,
+          isNew: false,
+        }),
       ],
       nextCursor: null,
       total: 1,
@@ -517,26 +523,19 @@ describe("getPublicListings", () => {
     const { listings } = await getPublicListings({});
     const listing = listings[0];
     expect(listing?.title).toBe("Unbenanntes Objekt");
+    expect(listing?.location).toBe("Adresse folgt");
     expect(listing?.rooms).toBe(0);
     expect(listing?.coldRent).toBe(0);
+    expect(listing?.serviceCharge).toBe(0);
     expect(listing?.coverImageUrl).toBeNull();
     expect(listing?.isNew).toBe(false);
-    expect(listing?.hasApplied).toBe(false);
+    expect(listing?.publishedAt).toBe("");
+    expect(listing?.availableFrom).toBeNull();
   });
 
-  it("builds location from city and district when displayAddress is absent", async () => {
+  it("builds location from city and district", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [
-        {
-          id: "x",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-          city: "Berlin",
-          district: "Mitte",
-        },
-      ],
+      items: [listingSummary({ id: "x", city: "Berlin", district: "Mitte" })],
       nextCursor: null,
       total: 1,
     });
@@ -545,60 +544,24 @@ describe("getPublicListings", () => {
     expect(listings[0]?.location).toBe("Berlin, Mitte");
   });
 
-  it("prefers displayAddress over city+district", async () => {
+  it("rejects a listing summary missing an id", async () => {
+    const payload: Record<string, unknown> = listingSummary();
+    delete payload.id;
     vi.mocked(apiGet).mockResolvedValue({
-      items: [
-        {
-          id: "x",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-          displayAddress: "Musterstraße 1, Berlin",
-          city: "Berlin",
-        },
-      ],
+      items: [payload, listingSummary({ id: "valid" })],
       nextCursor: null,
       total: 1,
     });
 
-    const { listings } = await getPublicListings({});
-    expect(listings[0]?.location).toBe("Musterstraße 1, Berlin");
-  });
-
-  it("skips rows without an id", async () => {
-    vi.mocked(apiGet).mockResolvedValue({
-      items: [
-        { title: "no-id" },
-        {
-          id: "valid",
-          hasApplied: false,
-          applicationStatus: null,
-          publicReason: null,
-          isSaved: false,
-        },
-      ],
-      nextCursor: null,
-      total: 1,
-    });
-
-    const { listings } = await getPublicListings({});
-    expect(listings).toHaveLength(1);
-    expect(listings[0]?.id).toBe("valid");
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
   });
 
   it("reads listings from data and listings wrappers", async () => {
     for (const wrapper of ["data", "listings"]) {
       vi.mocked(apiGet).mockResolvedValue({
-        [wrapper]: [
-          {
-            id: wrapper,
-            hasApplied: false,
-            applicationStatus: null,
-            publicReason: null,
-            isSaved: false,
-          },
-        ],
+        [wrapper]: [listingSummary({ id: wrapper })],
         nextCursor: null,
         total: 1,
       });

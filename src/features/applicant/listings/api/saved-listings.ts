@@ -27,7 +27,7 @@ export interface SavedListingsParams {
 function mapSavedListing(value: unknown): PublicListing {
   try {
     const listing = mapPublicListing(value);
-    if (listing !== null && listing.isSaved === true) return listing;
+    if (listing.isSaved === true) return listing;
   } catch (error) {
     if (error instanceof PublicListingsContractError) {
       throw new SavedListingsContractError();
