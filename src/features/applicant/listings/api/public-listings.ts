@@ -70,6 +70,9 @@ const listingApplicationPublicReasonSchema = z.enum([
 
 const nullableString = z.string().nullable();
 const nullableNumber = z.number().finite().nullable();
+const nullableIsoDateTime = z
+  .union([z.iso.datetime(), z.iso.date()])
+  .nullable();
 
 const applicantListingSummarySchema = z.object({
   id: z.string().min(1),
@@ -85,9 +88,9 @@ const applicantListingSummarySchema = z.object({
   additionalCosts: nullableNumber,
   deposit: nullableNumber,
   depositMonths: nullableNumber,
-  availableFrom: nullableString,
+  availableFrom: nullableIsoDateTime,
   shortDescription: nullableString,
-  publishedAt: nullableString,
+  publishedAt: nullableIsoDateTime,
   isNew: z.boolean(),
   petsPolicy: nullableString,
   coverImage: z

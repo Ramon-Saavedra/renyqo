@@ -415,6 +415,72 @@ describe("getPublicListings", () => {
     },
   );
 
+  it("rejects a listing summary with an invalid availableFrom date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [listingSummary({ availableFrom: "not-a-date" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects a listing summary with an invalid publishedAt date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [listingSummary({ publishedAt: "not-a-date" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("preserves valid ISO datetime and date strings for availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        listingSummary({
+          id: "datetime",
+          availableFrom: "2026-09-01T00:00:00.000Z",
+          publishedAt: "2026-07-01T10:00:00.000Z",
+        }),
+        listingSummary({
+          id: "date",
+          availableFrom: "2026-09-01",
+          publishedAt: "2026-07-01",
+        }),
+      ],
+      nextCursor: null,
+      total: 2,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.availableFrom).toBe("2026-09-01T00:00:00.000Z");
+    expect(listings[0]?.publishedAt).toBe("2026-07-01T10:00:00.000Z");
+    expect(listings[1]?.availableFrom).toBe("2026-09-01");
+    expect(listings[1]?.publishedAt).toBe("2026-07-01");
+  });
+
+  it("accepts null availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        listingSummary({
+          availableFrom: null,
+          publishedAt: null,
+        }),
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.availableFrom).toBeNull();
+    expect(listings[0]?.publishedAt).toBe("");
+  });
+
   it("rejects a listing summary with a mistyped title, rent, or living area", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [

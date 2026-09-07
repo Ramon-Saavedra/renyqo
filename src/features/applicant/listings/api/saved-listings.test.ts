@@ -106,6 +106,74 @@ describe("getSavedListings", () => {
     expect(result.listings[0]?.hasApplied).toBe(false);
     expect(result.listings[0]?.applicationStatus).toBeNull();
     expect(result.listings[0]?.publicReason).toBeNull();
+    expect(result.listings[0]?.availableFrom).toBe("2026-09-01T00:00:00.000Z");
+    expect(result.listings[0]?.publishedAt).toBe("2026-07-01T10:00:00.000Z");
+  });
+
+  it("rejects an item with an invalid availableFrom date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [savedItem({ availableFrom: "not-a-date" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getSavedListings()).rejects.toBeInstanceOf(
+      SavedListingsContractError,
+    );
+  });
+
+  it("rejects an item with an invalid publishedAt date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [savedItem({ publishedAt: "not-a-date" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getSavedListings()).rejects.toBeInstanceOf(
+      SavedListingsContractError,
+    );
+  });
+
+  it("preserves valid ISO datetime and date strings for availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        savedItem({
+          id: "datetime",
+          availableFrom: "2026-09-01T00:00:00.000Z",
+          publishedAt: "2026-07-01T10:00:00.000Z",
+        }),
+        savedItem({
+          id: "date",
+          availableFrom: "2026-09-01",
+          publishedAt: "2026-07-01",
+        }),
+      ],
+      nextCursor: null,
+      total: 2,
+    });
+
+    const { listings } = await getSavedListings();
+    expect(listings[0]?.availableFrom).toBe("2026-09-01T00:00:00.000Z");
+    expect(listings[0]?.publishedAt).toBe("2026-07-01T10:00:00.000Z");
+    expect(listings[1]?.availableFrom).toBe("2026-09-01");
+    expect(listings[1]?.publishedAt).toBe("2026-07-01");
+  });
+
+  it("accepts null availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        savedItem({
+          availableFrom: null,
+          publishedAt: null,
+        }),
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    const { listings } = await getSavedListings();
+    expect(listings[0]?.availableFrom).toBeNull();
+    expect(listings[0]?.publishedAt).toBe("");
   });
 
   it("rejects an envelope that uses next_cursor instead of nextCursor", async () => {
