@@ -66,10 +66,7 @@ export function useListingReport(listingId: string): UseListingReportResult {
     );
   };
 
-  const acknowledgeDetail = (
-    reason: ListingReportReason,
-    detail: string,
-  ) => {
+  const acknowledgeDetail = (reason: ListingReportReason, detail: string) => {
     setValidationCode((current) => {
       if (current !== "detail-required" && current !== "detail-too-long") {
         return current;

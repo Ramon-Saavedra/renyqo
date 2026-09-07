@@ -187,6 +187,42 @@ describe("getSavedListings", () => {
     );
   });
 
+  it("rejects an item with a mistyped title", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [savedItem({ title: 123 })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getSavedListings()).rejects.toBeInstanceOf(
+      SavedListingsContractError,
+    );
+  });
+
+  it("rejects an item with a mistyped rent", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [savedItem({ coldRent: "1200" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getSavedListings()).rejects.toBeInstanceOf(
+      SavedListingsContractError,
+    );
+  });
+
+  it("rejects an item with a mistyped living area", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [savedItem({ livingArea: { sqm: 70 } })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getSavedListings()).rejects.toBeInstanceOf(
+      SavedListingsContractError,
+    );
+  });
+
   it("rejects an item with a non-boolean isSaved", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [savedItem({ isSaved: "true" })],

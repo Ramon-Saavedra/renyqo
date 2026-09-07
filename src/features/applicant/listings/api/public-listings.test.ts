@@ -416,6 +416,30 @@ describe("getPublicListings", () => {
     );
   });
 
+  it("rejects a listing summary with a mistyped title, rent, or living area", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: "bad-types",
+          title: 123,
+          rooms: 3,
+          livingArea: "70",
+          coldRent: { amount: 1200 },
+          hasApplied: false,
+          applicationStatus: null,
+          publicReason: null,
+          isSaved: false,
+        },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
   it("rejects a listing summary with a non-boolean isSaved", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [

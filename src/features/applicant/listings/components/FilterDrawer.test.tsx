@@ -200,10 +200,7 @@ describe("FilterDrawer", () => {
     renderDrawer();
 
     await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
-    await user.type(
-      screen.getByLabelText("Maximale Kaltmiete in Euro"),
-      "800",
-    );
+    await user.type(screen.getByLabelText("Maximale Kaltmiete in Euro"), "800");
     await user.keyboard("{Enter}");
 
     const drawer = screen.getByRole("dialog");
@@ -220,10 +217,7 @@ describe("FilterDrawer", () => {
     renderDrawer();
 
     await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
-    await user.type(
-      screen.getByLabelText("Maximale Kaltmiete in Euro"),
-      "800",
-    );
+    await user.type(screen.getByLabelText("Maximale Kaltmiete in Euro"), "800");
     await user.tab();
     await act(async () => {
       await new Promise<void>((resolve) => {
@@ -262,10 +256,7 @@ describe("FilterDrawer", () => {
     renderDrawer();
 
     await user.click(screen.getByRole("button", { name: "Eigener Betrag" }));
-    await user.type(
-      screen.getByLabelText("Maximale Kaltmiete in Euro"),
-      "800",
-    );
+    await user.type(screen.getByLabelText("Maximale Kaltmiete in Euro"), "800");
     const rooms = screen.getByRole("button", { name: "ab 3" });
     await user.click(rooms);
     await act(async () => {

@@ -76,6 +76,16 @@ const listingApplicantStateSchema = z.object({
   isSaved: z.boolean(),
 });
 
+const listingSummaryContractSchema = listingApplicantStateSchema.extend({
+  title: z.string().nullable().optional(),
+  rooms: z.number().finite().nullable().optional(),
+  livingArea: z.number().finite().nullable().optional(),
+  area: z.number().finite().nullable().optional(),
+  coldRent: z.number().finite().nullable().optional(),
+  rent: z.number().finite().nullable().optional(),
+  price: z.number().finite().nullable().optional(),
+});
+
 export class PublicListingsContractError extends Error {
   constructor() {
     super("Invalid public listings response");
@@ -89,7 +99,7 @@ export function mapPublicListing(value: unknown): PublicListing | null {
   const id = readString(value, ["id"]);
   if (!id) return null;
 
-  const contract = listingApplicantStateSchema.safeParse(value);
+  const contract = listingSummaryContractSchema.safeParse(value);
   if (!contract.success) {
     throw new PublicListingsContractError();
   }

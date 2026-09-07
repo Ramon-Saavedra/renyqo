@@ -56,7 +56,9 @@ describe("useFilterCustomValue", () => {
     expect(onChange).toHaveBeenCalledWith(1150);
 
     onChange.mockClear();
-    let invalidResult: ReturnType<(typeof result.current)["commit"]> | undefined;
+    let invalidResult:
+      | ReturnType<(typeof result.current)["commit"]>
+      | undefined;
     act(() => {
       result.current.selectCustom();
       result.current.setDraft("0");

@@ -298,9 +298,7 @@ export function ListingReportDialog({
               maxLength={LISTING_REPORT_DETAIL_MAX}
               disabled={pending}
               aria-invalid={detailInvalid || undefined}
-              {...(detailInvalid
-                ? { "aria-errormessage": detailErrorId }
-                : {})}
+              {...(detailInvalid ? { "aria-errormessage": detailErrorId } : {})}
               onChange={(event) => {
                 const nextDetail = event.target.value;
                 setDetail(nextDetail);
