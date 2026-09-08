@@ -762,6 +762,63 @@ describe("getPublicListingDetail", () => {
     expect(listing?.isSaved).toBe(true);
   });
 
+  it("rejects a detail response with an invalid availableFrom date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ availableFrom: "not-a-date" }),
+    );
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it("rejects a detail response with an invalid publishedAt date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ publishedAt: "not-a-date" }),
+    );
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it("preserves valid ISO datetime and date strings for detail availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        availableFrom: "2026-09-01T00:00:00.000Z",
+        publishedAt: "2026-07-01T10:00:00.000Z",
+      }),
+    );
+
+    const datetimeListing = await getPublicListingDetail("detail-1");
+    expect(datetimeListing?.availableFrom).toBe("2026-09-01T00:00:00.000Z");
+    expect(datetimeListing?.publishedAt).toBe("2026-07-01T10:00:00.000Z");
+
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        availableFrom: "2026-09-01",
+        publishedAt: "2026-08-01",
+      }),
+    );
+
+    const dateListing = await getPublicListingDetail("detail-1");
+    expect(dateListing?.availableFrom).toBe("2026-09-01");
+    expect(dateListing?.publishedAt).toBe("2026-08-01");
+  });
+
+  it("accepts null availableFrom and publishedAt on listing detail", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        availableFrom: null,
+        publishedAt: null,
+      }),
+    );
+
+    const listing = await getPublicListingDetail("detail-1");
+    expect(listing?.availableFrom).toBeNull();
+    expect(listing?.publishedAt).toBeNull();
+  });
+
   it("rejects a detail response missing isSaved", async () => {
     const payload: Record<string, unknown> = { ...detailResponse() };
     delete payload.isSaved;

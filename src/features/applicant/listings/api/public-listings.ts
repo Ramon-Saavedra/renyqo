@@ -156,9 +156,9 @@ const applicantListingDetailSchema = z.object({
   additionalCosts: nullableNumber,
   deposit: nullableNumber,
   depositMonths: nullableNumber,
-  availableFrom: nullableString,
+  availableFrom: nullableIsoDateTime,
   shortDescription: nullableString,
-  publishedAt: nullableString,
+  publishedAt: nullableIsoDateTime,
   isNew: z.boolean(),
   images: z.array(
     z.object({
