@@ -12,6 +12,7 @@ import { listingsCopy } from "../copy/listings";
 import { EMPTY_FILTERS } from "../types";
 import type { ListingFilters, SortKey } from "../types";
 import { FilterDrawer } from "./FilterDrawer";
+import { AnimatedHeroTitle } from "./AnimatedHeroTitle";
 import { ListingCard } from "./ListingCard";
 import { ListingsEmptyState } from "./ListingsEmptyState";
 import { ListingsErrorBanner } from "./ListingsErrorBanner";
@@ -23,12 +24,10 @@ import { SearchConsole } from "./SearchConsole";
 export type { ListingsFetchStatus };
 
 const LISTING_GRID_CLASS =
-  "grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5";
+  "grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6";
 
 const RETURN_TO = "/listings";
 const CONTENT_CLASS = "px-gutter pt-10";
-const KICKER_CLASS =
-  "mb-3 font-mono text-meta uppercase text-foreground-tertiary";
 const TITLE_CLASS =
   "mb-2.5 max-w-2xl font-display text-heading-xl font-medium text-foreground";
 const LEAD_CLASS = "mb-6 max-w-2xl text-lead text-foreground-secondary";
@@ -86,8 +85,7 @@ export function ApplicantListingsView() {
       <div className={CONTENT_CLASS}>
         <ProfileNotice returnTo={RETURN_TO} />
 
-        <div className={KICKER_CLASS}>{listingsCopy.hero.kicker}</div>
-        <h1 className={TITLE_CLASS}>{listingsCopy.hero.title}</h1>
+        <AnimatedHeroTitle className={TITLE_CLASS} />
         <p className={LEAD_CLASS}>{listingsCopy.hero.lead}</p>
 
         <SearchConsole

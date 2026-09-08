@@ -39,6 +39,10 @@ function mockListing(
     coldRent: 620,
     additionalCosts: 80,
     matchesProfile: "match",
+    hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
     isNew: false,
     publishedAt: "2026-08-01",
     street: null,
@@ -51,7 +55,6 @@ function mockListing(
     depositMonths: null,
     shortDescription: "Helle Wohnung im vierten Stock.",
     images: [],
-    minimumHouseholdNetIncome: 1860,
     schufaRequired: true,
     incomeProofRequired: true,
     suitableForPeopleCount: 2,
@@ -143,9 +146,7 @@ describe("ListingDetailPage", () => {
     );
     render(<ListingDetailPage />);
 
-    expect(screen.getByText("Mindesteinkommen (netto)")).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(screen.queryByText("Mindesteinkommen (netto)")).toBeNull();
     expect(screen.getByText("1–2 Personen")).toBeInstanceOf(HTMLElement);
     expect(screen.getAllByText("Nicht erlaubt")).toHaveLength(2);
   });
@@ -155,7 +156,6 @@ describe("ListingDetailPage", () => {
       mockResult({
         status: "loaded",
         listing: mockListing({
-          minimumHouseholdNetIncome: null,
           schufaRequired: false,
           incomeProofRequired: false,
           suitableForPeopleCount: null,
@@ -168,6 +168,38 @@ describe("ListingDetailPage", () => {
 
     expect(screen.getByText("SCHUFA")).toBeInstanceOf(HTMLElement);
     expect(screen.getByText("Einkommensnachweis")).toBeInstanceOf(HTMLElement);
+  });
+
+  it("renders Merken and Melden on a loaded listing", () => {
+    mockUseDetail.mockReturnValue(
+      mockResult({ status: "loaded", listing: mockListing() }),
+    );
+    render(<ListingDetailPage />);
+
+    expect(screen.getByRole("button", { name: "Merken" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    expect(screen.getByRole("button", { name: "Melden" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    expect(screen.getByRole("button", { name: "Bewerben" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+  });
+
+  it("renders Gemerkt when the listing is already saved", () => {
+    mockUseDetail.mockReturnValue(
+      mockResult({
+        status: "loaded",
+        listing: mockListing({ isSaved: true }),
+      }),
+    );
+    render(<ListingDetailPage />);
+
+    expect(screen.getByRole("button", { name: "Gemerkt" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
   });
 
   it("renders the not-found state with back link", () => {

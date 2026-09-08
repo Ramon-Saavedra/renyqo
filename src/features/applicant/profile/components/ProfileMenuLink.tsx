@@ -20,12 +20,12 @@ export function ProfileMenuLink() {
     return <RenyqoSkeleton height={34} className="mt-3 w-full" />;
   }
 
-  if (status === "unavailable") return null;
-
   const label =
     status === "exists"
       ? applicantProfileCopy.cta.edit
-      : applicantProfileCopy.cta.create;
+      : status === "missing"
+        ? applicantProfileCopy.cta.create
+        : applicantProfileCopy.cta.profile;
 
   return (
     <Link href={buildProfileHref(pathname)} className={LINK_CLASS}>

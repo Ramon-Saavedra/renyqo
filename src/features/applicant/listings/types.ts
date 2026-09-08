@@ -16,6 +16,17 @@ export type SortKey = "newest" | "price-asc" | "price-desc" | "area-desc";
 
 export type FilterKey = "coldRent" | "rooms" | "livingArea" | "availableFrom";
 
+export type ListingApplicationStatus =
+  | "ACTIVE"
+  | "WAITING"
+  | "REJECTED"
+  | "ACCEPTED";
+
+export type ListingApplicationPublicReason =
+  | "NOT_SELECTED"
+  | "PROFILE_NO_LONGER_ELIGIBLE"
+  | "LISTING_RENTED";
+
 export interface PublicListing {
   readonly id: string;
   readonly title: string;
@@ -27,6 +38,9 @@ export interface PublicListing {
   readonly serviceCharge: number;
   readonly matchesProfile: boolean | null;
   readonly hasApplied: boolean;
+  readonly applicationStatus: ListingApplicationStatus | null;
+  readonly publicReason: ListingApplicationPublicReason | null;
+  readonly isSaved: boolean;
   readonly isNew: boolean;
   readonly coverImageUrl: string | null;
   readonly publishedAt: string;
@@ -37,6 +51,10 @@ export interface PublicListingDetail {
   readonly title: string | null;
   readonly location: string | null;
   readonly matchesProfile: ProfileMatchResult;
+  readonly hasApplied: boolean;
+  readonly applicationStatus: ListingApplicationStatus | null;
+  readonly publicReason: ListingApplicationPublicReason | null;
+  readonly isSaved: boolean;
   readonly street: string | null;
   readonly zip: string | null;
   readonly city: string | null;
@@ -55,7 +73,6 @@ export interface PublicListingDetail {
   readonly isNew: boolean;
   readonly images: readonly ListingImage[];
 
-  readonly minimumHouseholdNetIncome: number | null;
   readonly schufaRequired: boolean;
   readonly incomeProofRequired: boolean;
   readonly suitableForPeopleCount: number | null;

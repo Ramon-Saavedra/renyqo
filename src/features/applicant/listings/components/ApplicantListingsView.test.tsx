@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
 import { usePublicListings } from "../hooks/usePublicListings";
 import type { UsePublicListingsResult } from "../hooks/usePublicListings";
@@ -30,6 +30,9 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     serviceCharge: 150,
     matchesProfile: null,
     hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
     isNew: false,
     coverImageUrl: null,
     publishedAt: "2026-01-01T00:00:00.000Z",
@@ -56,19 +59,43 @@ function renderView() {
   return render(<ApplicantListingsView />);
 }
 
+function buildMatchMedia(reduce: boolean): typeof window.matchMedia {
+  return vi.fn().mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes("reduce") ? reduce : false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }) as MediaQueryList,
+  );
+}
+
 describe("ApplicantListingsView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.matchMedia = buildMatchMedia(true);
     mockUseProfileStatus.mockReturnValue("unavailable");
     mockUsePublicListings.mockReturnValue(mockResult());
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("renders the hero section", () => {
     renderView();
-    expect(screen.getByText("/ listings")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("/ listings")).toBeNull();
     expect(
-      screen.getByText("Wohnungen finden, die wirklich zu dir passen."),
-    ).toBeInstanceOf(HTMLElement);
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Mietobjekte finden, die wirklich zu dir passen.",
+      }),
+    ).toBeInstanceOf(HTMLHeadingElement);
   });
 
   it("shows loading skeleton during initial page load", () => {
@@ -76,7 +103,7 @@ describe("ApplicantListingsView", () => {
       mockResult({ fetchStatus: "loading-page" }),
     );
     renderView();
-    expect(screen.getByText("Wohnungen werden geladen …")).toBeInstanceOf(
+    expect(screen.getByText("Objekte werden geladen …")).toBeInstanceOf(
       HTMLElement,
     );
   });
@@ -94,7 +121,7 @@ describe("ApplicantListingsView", () => {
     renderView();
 
     expect(screen.getByText("Wohnung A")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("1 Wohnung gefunden")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("1 Objekt gefunden")).toBeInstanceOf(HTMLElement);
   });
 
   it("marks the first three listings with cover images as eager, skips cards without images, keeps later images lazy", () => {
@@ -146,7 +173,7 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(screen.getByText("Keine Wohnungen gefunden")).toBeInstanceOf(
+    expect(screen.getByText("Keine Objekte gefunden")).toBeInstanceOf(
       HTMLElement,
     );
   });
@@ -160,7 +187,7 @@ describe("ApplicantListingsView", () => {
 
     expect(
       screen.getByText(
-        "Wohnungen konnten nicht geladen werden. Deine Filter bleiben erhalten.",
+        "Objekte konnten nicht geladen werden. Deine Filter bleiben erhalten.",
       ),
     ).toBeInstanceOf(HTMLElement);
 
@@ -180,7 +207,7 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(screen.getByText("Mehr Wohnungen anzeigen")).toBeInstanceOf(
+    expect(screen.getByText("Mehr Objekte anzeigen")).toBeInstanceOf(
       HTMLElement,
     );
   });
@@ -198,8 +225,8 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(screen.queryByText("Mehr Wohnungen anzeigen")).toBeNull();
-    expect(screen.getByText("Wohnungen werden geladen …")).toBeInstanceOf(
+    expect(screen.queryByText("Mehr Objekte anzeigen")).toBeNull();
+    expect(screen.getByText("Objekte werden geladen …")).toBeInstanceOf(
       HTMLElement,
     );
   });
@@ -222,7 +249,7 @@ describe("ApplicantListingsView", () => {
     // Error banner is present.
     expect(
       screen.getByText(
-        "Wohnungen konnten nicht geladen werden. Deine Filter bleiben erhalten.",
+        "Objekte konnten nicht geladen werden. Deine Filter bleiben erhalten.",
       ),
     ).toBeInstanceOf(HTMLElement);
 
@@ -241,9 +268,7 @@ describe("ApplicantListingsView", () => {
     );
     renderView();
 
-    expect(screen.getByText("42 Wohnungen gefunden")).toBeInstanceOf(
-      HTMLElement,
-    );
+    expect(screen.getByText("42 Objekte gefunden")).toBeInstanceOf(HTMLElement);
   });
 
   it("shows MatchBadge only when user has a profile and listing has match info", () => {
@@ -272,7 +297,7 @@ describe("ApplicantListingsView", () => {
     expect(within(thirdCard).queryByText("Passt nicht")).toBeNull();
   });
 
-  it("shows applied badge from listing hasApplied regardless of profile match", () => {
+  it("shows applied badge from listing applicationStatus regardless of profile match", () => {
     mockUseProfileStatus.mockReturnValue("exists");
 
     mockUsePublicListings.mockReturnValue(
@@ -281,7 +306,7 @@ describe("ApplicantListingsView", () => {
         listings: [
           buildListing({
             id: "applied",
-            hasApplied: true,
+            applicationStatus: "ACTIVE",
             matchesProfile: true,
           }),
         ],
@@ -327,7 +352,7 @@ describe("ApplicantListingsView", () => {
     renderView();
 
     const user = userEvent.setup();
-    await user.click(screen.getByText("Mehr Wohnungen anzeigen"));
+    await user.click(screen.getByText("Mehr Objekte anzeigen"));
     expect(loadMore).toHaveBeenCalledTimes(1);
   });
 });

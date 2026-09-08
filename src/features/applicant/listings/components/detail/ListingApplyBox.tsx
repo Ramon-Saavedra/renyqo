@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button/Button";
 import { listingDetailCopy } from "../../copy/listing-detail";
+import { listingsCopy } from "../../copy/listings";
 import type {
   EligibilityReason,
   EligibilityWarning,
@@ -11,12 +12,19 @@ import { useListingApplication } from "../../hooks/useListingApplication";
 import { useListingEligibility } from "../../hooks/useListingEligibility";
 import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
 import { useApplicantListingApplication } from "../../hooks/useApplicantListingApplication";
-import type { ProfileMatchResult } from "../../types";
+import type {
+  ListingApplicationPublicReason,
+  ListingApplicationStatus,
+  ProfileMatchResult,
+} from "../../types";
+import { isNotSelectedRejection } from "../../utils/listing-card-badge";
 import { MatchBadge, type MatchBadgeTone } from "../MatchBadge";
 
 interface ListingApplyBoxProps {
   listingId: string;
   matchesProfile: ProfileMatchResult;
+  applicationStatus: ListingApplicationStatus | null;
+  publicReason: ListingApplicationPublicReason | null;
 }
 
 const BOX_CLASS =
@@ -24,7 +32,12 @@ const BOX_CLASS =
 
 const ACTION_ROW_CLASS = "flex items-center gap-3";
 
-const { apply, match } = listingDetailCopy;
+const NOT_SELECTED_CLASS = "flex w-fit max-w-full flex-col gap-1";
+
+const NOT_SELECTED_LEAD_CLASS =
+  "text-meta tracking-normal text-exit-provider-discarded-muted-fg";
+
+const { apply, match, notSelected } = listingDetailCopy;
 
 function matchTone(value: ProfileMatchResult): MatchBadgeTone {
   if (value === "match") return "match";
@@ -61,6 +74,8 @@ const REASON_COPY: Record<EligibilityReason, string> = {
 export function ListingApplyBox({
   listingId,
   matchesProfile,
+  applicationStatus,
+  publicReason,
 }: ListingApplyBoxProps) {
   const { eligibility, status } = useListingEligibility(listingId);
   const { state, submit, reset } = useListingApplication(listingId);
@@ -123,6 +138,17 @@ export function ListingApplyBox({
       showWithdrawalConfirmation();
     }
   };
+
+  if (isNotSelectedRejection(applicationStatus, publicReason)) {
+    return (
+      <div className={NOT_SELECTED_CLASS}>
+        <MatchBadge tone="not-selected">
+          {listingsCopy.card.badgeNotSelected}
+        </MatchBadge>
+        <p className={NOT_SELECTED_LEAD_CLASS}>{notSelected.lead}</p>
+      </div>
+    );
+  }
 
   return (
     <div className={BOX_CLASS}>

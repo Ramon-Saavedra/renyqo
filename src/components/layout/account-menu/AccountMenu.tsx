@@ -12,6 +12,7 @@ import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { invalidateApplicantProfile } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { SavedListingsMenuLink } from "@/features/applicant/navigation/components/SavedListingsMenuLink";
 import { ProfileMenuLink } from "@/features/applicant/profile/components/ProfileMenuLink";
 import { logout } from "@/lib/api/auth";
 import {
@@ -123,6 +124,7 @@ export function AccountMenu({
       </div>
 
       {isApplicant && <ProfileMenuLink />}
+      {isApplicant && <SavedListingsMenuLink />}
 
       {logoutError ? (
         <FormAlert variant="error" message={logoutError} className="mt-3" />

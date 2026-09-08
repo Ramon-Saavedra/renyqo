@@ -9,6 +9,8 @@ import {
   apiPostJsonVoid,
   apiPostFormData,
   apiPostVoid,
+  apiPut,
+  apiDelete,
 } from "./client";
 import { getCsrfToken } from "./csrf";
 
@@ -229,6 +231,25 @@ describe("CSRF retry", () => {
     expect(getCsrfToken).toHaveBeenCalledWith(true);
   });
 
+  it("refreshes and retries PUT once after CSRF token invalid", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        makeMockResponse(403, { code: "CSRF_TOKEN_INVALID" }),
+      )
+      .mockResolvedValueOnce(makeMockResponse(200, { ok: true }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPut("/resource")).resolves.toEqual({
+      ok: true,
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(
+      new Headers(mockFetch.mock.calls[1]?.[1].headers).get("X-CSRF-Token"),
+    ).toBe("refreshed-token");
+    expect(getCsrfToken).toHaveBeenCalledWith(true);
+  });
+
   it.each([
     ["CSRF_ORIGIN_INVALID", "does not retry origin errors"],
     ["FORBIDDEN", "does not retry normal forbidden errors"],
@@ -401,6 +422,86 @@ describe("apiPostJsonVoid", () => {
     expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
       "test-csrf-token",
     );
+  });
+});
+
+describe("apiPut", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends PUT with credentials and CSRF, without a request body", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(makeMockResponse(200, { ok: true }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiPut("/resource")).resolves.toEqual({ ok: true });
+
+    const [, request] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(request).toMatchObject({
+      method: "PUT",
+      credentials: "include",
+    });
+    expect(request.body).toBeUndefined();
+    expect(new Headers(request.headers).get("Content-Type")).toBeNull();
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "test-csrf-token",
+    );
+  });
+
+  it("throws ApiError with the response status on a non-2xx response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(401, { message: "Unauthorized" })),
+    );
+
+    await expect(apiPut("/resource")).rejects.toMatchObject({
+      status: 401,
+      message: "Unauthorized",
+    });
+  });
+});
+
+describe("apiDelete", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("sends DELETE with credentials and CSRF, without a request body", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(makeMockResponse(200, { ok: true }));
+    vi.stubGlobal("fetch", mockFetch);
+
+    await expect(apiDelete("/resource")).resolves.toEqual({ ok: true });
+
+    const [, request] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(request).toMatchObject({
+      method: "DELETE",
+      credentials: "include",
+    });
+    expect(request.body).toBeUndefined();
+    expect(new Headers(request.headers).get("Content-Type")).toBeNull();
+    expect(new Headers(request.headers).get("X-CSRF-Token")).toBe(
+      "test-csrf-token",
+    );
+  });
+
+  it("throws ApiError with the response status on a non-2xx response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValue(makeMockResponse(401, { message: "Unauthorized" })),
+    );
+
+    await expect(apiDelete("/resource")).rejects.toMatchObject({
+      status: 401,
+      message: "Unauthorized",
+    });
   });
 });
 

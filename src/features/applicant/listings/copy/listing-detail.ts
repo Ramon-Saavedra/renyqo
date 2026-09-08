@@ -29,6 +29,56 @@ export const listingDetailCopy = {
     label: "Bewerben",
   },
 
+  save: {
+    label: "Merken",
+    savedLabel: "Gemerkt",
+    error: "Das Objekt konnte nicht gemerkt werden.",
+    errorAuth: "Bitte melde dich an, um dieses Objekt zu merken.",
+    errorForbidden: "Du kannst dieses Objekt derzeit nicht merken.",
+    errorNotFound: "Dieses Objekt ist nicht mehr verfügbar.",
+    unsaveError: "Das Objekt konnte nicht von den Gemerkten entfernt werden.",
+    unsaveErrorAuth:
+      "Bitte melde dich an, um dieses Objekt von den Gemerkten zu entfernen.",
+    unsaveErrorForbidden:
+      "Du kannst dieses Objekt derzeit nicht von den Gemerkten entfernen.",
+    unsaveErrorNotFound: "Dieses Objekt ist nicht mehr verfügbar.",
+  },
+
+  report: {
+    label: "Melden",
+    title: "Objekt melden",
+    lead: "Sag uns, warum dieses Inserat nicht in Ordnung ist.",
+    submit: "Meldung senden",
+    submitting: "Meldung wird gesendet …",
+    cancel: "Abbrechen",
+    close: "Schließen",
+    reasonsLabel: "Grund",
+    detailLabel: "Details",
+    detailHint: "Optional. Maximal 500 Zeichen.",
+    detailRequiredHint: "Bitte beschreibe kurz, was nicht stimmt.",
+    reasonRequired: "Bitte wähle einen Grund.",
+    detailRequired: "Bitte beschreibe den Grund.",
+    detailTooLong: "Bitte kürze den Text auf 500 Zeichen.",
+    success: "Danke, wir haben deine Meldung erhalten.",
+    error: "Die Meldung konnte nicht gesendet werden.",
+    errorDuplicate: "Du hast dieses Objekt bereits gemeldet.",
+    errorRateLimited:
+      "Du hast zu viele Meldungen gesendet. Bitte versuche es später erneut.",
+    errorAuth: "Bitte melde dich an, um ein Objekt zu melden.",
+    reasons: {
+      MISLEADING_INFO: "Irreführende oder falsche Angaben",
+      SCAM_OR_FRAUD: "Betrugsverdacht",
+      DISCRIMINATION: "Diskriminierung",
+      INAPPROPRIATE_CONTENT: "Unangemessene Inhalte",
+      DUPLICATE_OR_SPAM: "Doppeltes Inserat / Spam",
+      OTHER: "Sonstiges",
+    },
+  },
+
+  notSelected: {
+    lead: "Eine erneute Bewerbung ist nicht möglich.",
+  },
+
   photos: {
     galleryLabel: "Fotos des Objekts",
     imageAlt: (title: string | null, index: number) =>
@@ -57,7 +107,6 @@ export const listingDetailCopy = {
 
   requirements: {
     title: "Anforderungen",
-    minimumIncome: "Mindesteinkommen (netto)",
     schufa: "SCHUFA",
     incomeProof: "Einkommensnachweis",
     householdSize: "Haushaltsgröße",

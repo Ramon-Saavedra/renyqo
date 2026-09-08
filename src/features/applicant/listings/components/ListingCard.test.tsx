@@ -15,6 +15,9 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     serviceCharge: 200,
     matchesProfile: null,
     hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
     isNew: false,
     coverImageUrl: null,
     publishedAt: "2026-01-01T00:00:00.000Z",
@@ -128,10 +131,13 @@ describe("ListingCard", () => {
     expect(screen.getByText("Passt nicht")).toBeInstanceOf(HTMLElement);
   });
 
-  it("shows 'Bereits beworben' when hasApplied is true", () => {
+  it("shows 'Bereits beworben' for ACTIVE and hides Passt", () => {
     render(
       <ListingCard
-        listing={buildListing({ hasApplied: true, matchesProfile: true })}
+        listing={buildListing({
+          applicationStatus: "ACTIVE",
+          matchesProfile: true,
+        })}
         href="/listings/l1"
         showMatch
       />,
@@ -140,10 +146,14 @@ describe("ListingCard", () => {
     expect(screen.queryByText("Passt")).toBeNull();
   });
 
-  it("does not show applied badge when hasApplied is false", () => {
+  it("does not treat hasApplied alone as an applied badge", () => {
     render(
       <ListingCard
-        listing={buildListing({ hasApplied: false, matchesProfile: true })}
+        listing={buildListing({
+          hasApplied: true,
+          applicationStatus: null,
+          matchesProfile: true,
+        })}
         href="/listings/l1"
         showMatch
       />,
@@ -155,7 +165,10 @@ describe("ListingCard", () => {
   it("prefers applied badge over match badge when both would apply", () => {
     render(
       <ListingCard
-        listing={buildListing({ hasApplied: true, matchesProfile: false })}
+        listing={buildListing({
+          applicationStatus: "WAITING",
+          matchesProfile: false,
+        })}
         href="/listings/l1"
         showMatch
       />,
@@ -179,13 +192,50 @@ describe("ListingCard", () => {
   it("still shows applied badge when showMatch is false", () => {
     render(
       <ListingCard
-        listing={buildListing({ hasApplied: true, matchesProfile: true })}
+        listing={buildListing({
+          applicationStatus: "ACTIVE",
+          matchesProfile: true,
+        })}
         href="/listings/l1"
         showMatch={false}
       />,
     );
     expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
     expect(screen.queryByText("Passt")).toBeNull();
+  });
+
+  it("shows Nicht ausgewählt over Passt for REJECTED and NOT_SELECTED", () => {
+    render(
+      <ListingCard
+        listing={buildListing({
+          applicationStatus: "REJECTED",
+          publicReason: "NOT_SELECTED",
+          matchesProfile: true,
+        })}
+        href="/listings/l1"
+        showMatch
+      />,
+    );
+    expect(screen.getByText("Nicht ausgewählt")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Bereits beworben")).toBeNull();
+  });
+
+  it("keeps Bereits beworben for REJECTED reasons without dedicated copy", () => {
+    render(
+      <ListingCard
+        listing={buildListing({
+          applicationStatus: "REJECTED",
+          publicReason: "LISTING_RENTED",
+          matchesProfile: true,
+        })}
+        href="/listings/l1"
+        showMatch
+      />,
+    );
+    expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
   });
 
   it("does not show match badges when matchesProfile is null", () => {

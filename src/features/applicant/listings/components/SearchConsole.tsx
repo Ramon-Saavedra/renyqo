@@ -10,6 +10,10 @@ import {
 } from "../copy/listings";
 import type { ListingFilters } from "../types";
 import { countActiveFilters } from "../utils/filter";
+import {
+  formatMaxRentChoice,
+  formatMinAreaChoice,
+} from "../utils/filter-value";
 import { AvailabilityFilter } from "./AvailabilityFilter";
 import { FilterSelect } from "./FilterSelect";
 import { SearchField } from "./SearchField";
@@ -55,6 +59,12 @@ export function SearchConsole({
           value={filters.maxColdRent}
           options={COLD_RENT_OPTIONS}
           onChange={(maxColdRent) => onChange({ maxColdRent })}
+          custom={{
+            optionLabel: listingsCopy.filters.customAmount,
+            suffix: listingsCopy.filters.euroSuffix,
+            inputAriaLabel: listingsCopy.filters.customRentAria,
+            formatValue: formatMaxRentChoice,
+          }}
         />
         <FilterSelect
           label={listingsCopy.filters.rooms}
@@ -68,6 +78,12 @@ export function SearchConsole({
           options={AREA_OPTIONS}
           onChange={(minLivingArea) => onChange({ minLivingArea })}
           className={DESKTOP_ONLY_CLASS}
+          custom={{
+            optionLabel: listingsCopy.filters.customValue,
+            suffix: listingsCopy.filters.areaSuffix,
+            inputAriaLabel: listingsCopy.filters.customAreaAria,
+            formatValue: formatMinAreaChoice,
+          }}
         />
         <AvailabilityFilter
           value={filters.availableFrom}

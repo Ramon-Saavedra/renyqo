@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useEffect } from "react";
+import { useId, useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import {
   buttonClassWithSize,
@@ -15,8 +15,13 @@ import {
   listingsCopy,
   ROOM_OPTIONS,
 } from "../copy/listings";
+import {
+  useFilterCustomValue,
+  type FilterCustomCommitResult,
+} from "../hooks/useFilterCustomValue";
 import type { ListingFilters } from "../types";
 import { filterChipClass } from "./filter-chip";
+import { FilterCustomValueInput } from "./FilterCustomValueInput";
 
 interface FilterDrawerProps {
   open: boolean;
@@ -45,6 +50,8 @@ const GROUP_LABEL_CLASS =
 
 const CHIP_ROW_CLASS = "flex flex-wrap gap-2";
 
+const CUSTOM_FIELD_CLASS = "mt-2.5";
+
 const CLOSE_CLASS =
   "inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
@@ -58,8 +65,49 @@ export function FilterDrawer({
 }: FilterDrawerProps) {
   const titleId = useId();
   const dateId = useId();
+  const rentInputId = useId();
+  const areaInputId = useId();
 
-  useEscapeKey(onClose, open);
+  const rentCustom = useFilterCustomValue(
+    filters.maxColdRent,
+    COLD_RENT_OPTIONS,
+    (maxColdRent) => onChange({ maxColdRent }),
+  );
+  const areaCustom = useFilterCustomValue(
+    filters.minLivingArea,
+    AREA_OPTIONS,
+    (minLivingArea) => onChange({ minLivingArea }),
+  );
+  const rentPresetRefs = useRef(new Map<number | null, HTMLButtonElement>());
+  const rentCustomRef = useRef<HTMLButtonElement | null>(null);
+  const areaPresetRefs = useRef(new Map<number | null, HTMLButtonElement>());
+  const areaCustomRef = useRef<HTMLButtonElement | null>(null);
+
+  const commitCustomField = (
+    result: FilterCustomCommitResult,
+    presetRefs: Map<number | null, HTMLButtonElement>,
+    customRef: { current: HTMLButtonElement | null },
+    source: "enter" | "blur",
+  ): boolean => {
+    if (result.kind === "kept") return false;
+    if (source !== "enter") return true;
+    const target =
+      result.kind === "preset"
+        ? presetRefs.get(result.value)
+        : customRef.current;
+    requestAnimationFrame(() => {
+      target?.focus();
+    });
+    return true;
+  };
+
+  const handleClose = () => {
+    if (rentCustom.customMode) rentCustom.commit();
+    if (areaCustom.customMode) areaCustom.commit();
+    onClose();
+  };
+
+  useEscapeKey(handleClose, open);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -74,7 +122,7 @@ export function FilterDrawer({
 
   return (
     <>
-      <div aria-hidden="true" className={SCRIM_CLASS} onClick={onClose} />
+      <div aria-hidden="true" className={SCRIM_CLASS} onClick={handleClose} />
       <div
         role="dialog"
         aria-modal="true"
@@ -91,7 +139,7 @@ export function FilterDrawer({
             type="button"
             className={CLOSE_CLASS}
             aria-label={listingsCopy.filters.drawerClose}
-            onClick={onClose}
+            onClick={handleClose}
           >
             <AppIcon icon={X} size={16} strokeWidth={1.8} decorative />
           </button>
@@ -106,16 +154,51 @@ export function FilterDrawer({
               <button
                 key={option.label}
                 type="button"
-                aria-pressed={filters.maxColdRent === option.value}
+                aria-pressed={
+                  !rentCustom.customMode && filters.maxColdRent === option.value
+                }
                 className={filterChipClass(
-                  filters.maxColdRent === option.value,
+                  !rentCustom.customMode &&
+                    filters.maxColdRent === option.value,
                 )}
-                onClick={() => onChange({ maxColdRent: option.value })}
+                ref={(node) => {
+                  if (node) rentPresetRefs.current.set(option.value, node);
+                  else rentPresetRefs.current.delete(option.value);
+                }}
+                onClick={() => rentCustom.selectPreset(option.value)}
               >
                 {option.label}
               </button>
             ))}
+            <button
+              type="button"
+              aria-pressed={rentCustom.customMode}
+              className={filterChipClass(rentCustom.customMode)}
+              ref={rentCustomRef}
+              onClick={rentCustom.selectCustom}
+            >
+              {listingsCopy.filters.customAmount}
+            </button>
           </div>
+          {rentCustom.customMode && (
+            <div className={CUSTOM_FIELD_CLASS}>
+              <FilterCustomValueInput
+                id={rentInputId}
+                value={rentCustom.draft}
+                suffix={listingsCopy.filters.euroSuffix}
+                ariaLabel={listingsCopy.filters.customRentAria}
+                onChange={rentCustom.setDraft}
+                onCommit={(source) =>
+                  commitCustomField(
+                    rentCustom.commit(),
+                    rentPresetRefs.current,
+                    rentCustomRef,
+                    source,
+                  )
+                }
+              />
+            </div>
+          )}
         </div>
 
         <div className={GROUP_CLASS}>
@@ -144,16 +227,52 @@ export function FilterDrawer({
               <button
                 key={option.label}
                 type="button"
-                aria-pressed={filters.minLivingArea === option.value}
+                aria-pressed={
+                  !areaCustom.customMode &&
+                  filters.minLivingArea === option.value
+                }
                 className={filterChipClass(
-                  filters.minLivingArea === option.value,
+                  !areaCustom.customMode &&
+                    filters.minLivingArea === option.value,
                 )}
-                onClick={() => onChange({ minLivingArea: option.value })}
+                ref={(node) => {
+                  if (node) areaPresetRefs.current.set(option.value, node);
+                  else areaPresetRefs.current.delete(option.value);
+                }}
+                onClick={() => areaCustom.selectPreset(option.value)}
               >
                 {option.label}
               </button>
             ))}
+            <button
+              type="button"
+              aria-pressed={areaCustom.customMode}
+              className={filterChipClass(areaCustom.customMode)}
+              ref={areaCustomRef}
+              onClick={areaCustom.selectCustom}
+            >
+              {listingsCopy.filters.customValue}
+            </button>
           </div>
+          {areaCustom.customMode && (
+            <div className={CUSTOM_FIELD_CLASS}>
+              <FilterCustomValueInput
+                id={areaInputId}
+                value={areaCustom.draft}
+                suffix={listingsCopy.filters.areaSuffix}
+                ariaLabel={listingsCopy.filters.customAreaAria}
+                onChange={areaCustom.setDraft}
+                onCommit={(source) =>
+                  commitCustomField(
+                    areaCustom.commit(),
+                    areaPresetRefs.current,
+                    areaCustomRef,
+                    source,
+                  )
+                }
+              />
+            </div>
+          )}
         </div>
 
         <div className={GROUP_CLASS}>
@@ -184,7 +303,7 @@ export function FilterDrawer({
             "md",
             "w-full justify-center",
           )}
-          onClick={onClose}
+          onClick={handleClose}
         >
           {listingsCopy.filters.drawerApply(resultCount)}
         </button>

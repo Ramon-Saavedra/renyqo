@@ -3,6 +3,7 @@ import { listingsCopy } from "../copy/listings";
 
 interface ListingsErrorBannerProps {
   onRetry: () => void;
+  message?: string;
 }
 
 const WRAPPER_CLASS =
@@ -10,10 +11,13 @@ const WRAPPER_CLASS =
 
 const TEXT_CLASS = "text-caption text-warning";
 
-export function ListingsErrorBanner({ onRetry }: ListingsErrorBannerProps) {
+export function ListingsErrorBanner({
+  onRetry,
+  message = listingsCopy.error.message,
+}: ListingsErrorBannerProps) {
   return (
     <div role="alert" className={WRAPPER_CLASS}>
-      <span className={TEXT_CLASS}>{listingsCopy.error.message}</span>
+      <span className={TEXT_CLASS}>{message}</span>
       <button
         type="button"
         className={buttonClassWithSize("outline", "sm", "shrink-0")}

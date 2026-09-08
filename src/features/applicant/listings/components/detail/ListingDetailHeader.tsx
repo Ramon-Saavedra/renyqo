@@ -4,6 +4,8 @@ import { listingDetailCopy } from "../../copy/listing-detail";
 import type { PublicListingDetail } from "../../types";
 import { formatEUR } from "../../utils/format";
 import { ListingApplyBox } from "./ListingApplyBox";
+import { ListingReportAction } from "./ListingReportAction";
+import { ListingSaveAction } from "./ListingSaveAction";
 
 interface ListingDetailHeaderProps {
   listing: PublicListingDetail;
@@ -62,11 +64,18 @@ export function ListingDetailHeader({ listing }: ListingDetailHeaderProps) {
               )}
           </p>
         )}
+
+        <div className="mt-3 flex flex-wrap items-start gap-1">
+          <ListingSaveAction listingId={listing.id} isSaved={listing.isSaved} />
+          <ListingReportAction listingId={listing.id} />
+        </div>
       </div>
 
       <ListingApplyBox
         listingId={listing.id}
         matchesProfile={listing.matchesProfile}
+        applicationStatus={listing.applicationStatus}
+        publicReason={listing.publicReason}
       />
     </div>
   );

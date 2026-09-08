@@ -1,6 +1,11 @@
 import { cn } from "@/lib/utils/cn";
 
-export type MatchBadgeTone = "new" | "match" | "no-match" | "incomplete";
+export type MatchBadgeTone =
+  | "new"
+  | "match"
+  | "no-match"
+  | "incomplete"
+  | "not-selected";
 
 export type MatchBadgeSize = "sm" | "md";
 
@@ -14,7 +19,7 @@ interface MatchBadgeProps {
 const BASE_CLASS = "inline-flex items-center self-start font-medium";
 
 const SIZE_CLASS: Record<MatchBadgeSize, string> = {
-  sm: "h-5 gap-1 rounded-sm px-2 font-mono text-meta uppercase",
+  sm: "h-5 gap-1 rounded-md px-2 font-mono text-meta uppercase",
   md: "h-11 gap-2 rounded-md px-4 text-caption",
 };
 
@@ -25,10 +30,11 @@ const DOT_SIZE_CLASS: Record<MatchBadgeSize, string> = {
 
 const TONE_CLASS: Record<MatchBadgeTone, string> = {
   new: "bg-input text-foreground-secondary",
-  match:
-    "bg-success/30 text-success-vivid shadow-[0_0_6px_var(--success-vivid)]",
+  match: "bg-success-surface text-success-on-surface",
   "no-match": "bg-foreground-tertiary/15 text-foreground-secondary",
   incomplete: "bg-warning/25 text-warning shadow-[0_0_6px_var(--warning)]",
+  "not-selected":
+    "bg-exit-provider-discarded-bg text-exit-provider-discarded-fg",
 };
 
 export function MatchBadge({

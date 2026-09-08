@@ -7,6 +7,36 @@ vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
 }));
 
+function listingSummary(overrides: Record<string, unknown> = {}) {
+  return {
+    id: "listing-1",
+    title: "Apartment in Berlin",
+    city: "Berlin",
+    zip: "10115",
+    district: "Mitte",
+    objectType: "APARTMENT",
+    livingArea: 70,
+    rooms: 3,
+    bedrooms: 1,
+    coldRent: 1200,
+    additionalCosts: 200,
+    deposit: 2400,
+    depositMonths: 2,
+    availableFrom: "2026-09-01T00:00:00.000Z",
+    shortDescription: "Helle Wohnung",
+    publishedAt: "2026-07-01T10:00:00.000Z",
+    isNew: false,
+    petsPolicy: null,
+    coverImage: null,
+    profileMatch: "UNKNOWN",
+    hasApplied: false,
+    applicationStatus: null,
+    publicReason: null,
+    isSaved: false,
+    ...overrides,
+  };
+}
+
 describe("getPublicListings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -99,22 +129,12 @@ describe("getPublicListings", () => {
   it("maps the standard backend response structure", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
-          id: "listing-1",
-          title: "Apartment in Berlin",
-          city: "Berlin",
-          district: "Mitte",
-          rooms: 3,
-          livingArea: 70,
-          coldRent: 1200,
-          serviceCharge: 200,
+        listingSummary({
           coverImage: {
             secureUrl: "https://res.cloudinary.com/example/apartment.jpg",
           },
-          hasApplied: false,
           isNew: true,
-          publishedAt: "2026-07-01T10:00:00.000Z",
-        },
+        }),
       ],
       nextCursor: "cursor-abc",
       total: 42,
@@ -136,6 +156,9 @@ describe("getPublicListings", () => {
     expect(listing?.coldRent).toBe(1200);
     expect(listing?.serviceCharge).toBe(200);
     expect(listing?.hasApplied).toBe(false);
+    expect(listing?.applicationStatus).toBeNull();
+    expect(listing?.publicReason).toBeNull();
+    expect(listing?.isSaved).toBe(false);
     expect(listing?.coverImageUrl).toBe(
       "https://res.cloudinary.com/example/apartment.jpg",
     );
@@ -146,12 +169,16 @@ describe("getPublicListings", () => {
   it("maps coverImage.secureUrl and handles null coverImage", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        {
+        listingSummary({
           id: "a",
-          hasApplied: false,
           coverImage: { secureUrl: "https://res.cloudinary.com/a.jpg" },
-        },
-        { id: "b", hasApplied: true, coverImage: null },
+        }),
+        listingSummary({
+          id: "b",
+          hasApplied: true,
+          applicationStatus: "ACTIVE",
+          coverImage: null,
+        }),
       ],
       nextCursor: null,
       total: 2,
@@ -167,18 +194,16 @@ describe("getPublicListings", () => {
   it("normalizes listing profileMatch values", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        { id: "match", hasApplied: false, profileMatch: "MATCH" },
-        { id: "no-match", hasApplied: false, profileMatch: "NO_MATCH" },
-        {
+        listingSummary({ id: "match", profileMatch: "MATCH" }),
+        listingSummary({ id: "no-match", profileMatch: "NO_MATCH" }),
+        listingSummary({
           id: "incomplete",
-          hasApplied: false,
           profileMatch: "PROFILE_INCOMPLETE",
-        },
-        { id: "unknown", hasApplied: false, profileMatch: "UNKNOWN" },
-        { id: "absent", hasApplied: false },
+        }),
+        listingSummary({ id: "unknown", profileMatch: "UNKNOWN" }),
       ],
       nextCursor: null,
-      total: 5,
+      total: 4,
     });
 
     const { listings } = await getPublicListings({});
@@ -186,14 +211,17 @@ describe("getPublicListings", () => {
     expect(listings[1]?.matchesProfile).toBe(false);
     expect(listings[2]?.matchesProfile).toBeNull();
     expect(listings[3]?.matchesProfile).toBeNull();
-    expect(listings[4]?.matchesProfile).toBeNull();
   });
 
   it("maps hasApplied from the listing summary contract", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        { id: "applied", hasApplied: true },
-        { id: "open", hasApplied: false },
+        listingSummary({
+          id: "applied",
+          hasApplied: true,
+          applicationStatus: "ACTIVE",
+        }),
+        listingSummary({ id: "open" }),
       ],
       nextCursor: null,
       total: 2,
@@ -201,7 +229,300 @@ describe("getPublicListings", () => {
 
     const { listings } = await getPublicListings({});
     expect(listings[0]?.hasApplied).toBe(true);
+    expect(listings[0]?.applicationStatus).toBe("ACTIVE");
+    expect(listings[0]?.publicReason).toBeNull();
     expect(listings[1]?.hasApplied).toBe(false);
+    expect(listings[1]?.applicationStatus).toBeNull();
+    expect(listings[1]?.publicReason).toBeNull();
+    expect(listings[0]?.isSaved).toBe(false);
+    expect(listings[1]?.isSaved).toBe(false);
+  });
+
+  it("maps isSaved from the listing summary contract", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        listingSummary({ id: "saved", isSaved: true }),
+        listingSummary({ id: "unsaved", isSaved: false }),
+      ],
+      nextCursor: null,
+      total: 2,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.isSaved).toBe(true);
+    expect(listings[1]?.isSaved).toBe(false);
+  });
+
+  it("maps applicationStatus and publicReason from the listing summary contract", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        listingSummary({
+          id: "waiting",
+          hasApplied: true,
+          applicationStatus: "WAITING",
+        }),
+        listingSummary({
+          id: "rejected",
+          hasApplied: true,
+          applicationStatus: "REJECTED",
+          publicReason: "NOT_SELECTED",
+        }),
+        listingSummary({
+          id: "accepted",
+          hasApplied: true,
+          applicationStatus: "ACCEPTED",
+        }),
+      ],
+      nextCursor: null,
+      total: 3,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.applicationStatus).toBe("WAITING");
+    expect(listings[1]?.applicationStatus).toBe("REJECTED");
+    expect(listings[1]?.publicReason).toBe("NOT_SELECTED");
+    expect(listings[2]?.applicationStatus).toBe("ACCEPTED");
+  });
+
+  it("rejects a listing summary missing applicationStatus", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [{ id: "missing-status", hasApplied: false, publicReason: null }],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects a listing summary missing publicReason", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        { id: "missing-reason", hasApplied: false, applicationStatus: null },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects WITHDRAWN applicationStatus on listing summaries", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: "withdrawn",
+          hasApplied: false,
+          applicationStatus: "WITHDRAWN",
+          publicReason: null,
+          isSaved: false,
+        },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects an unknown publicReason on listing summaries", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: "unknown-reason",
+          hasApplied: true,
+          applicationStatus: "REJECTED",
+          publicReason: "UNKNOWN_REASON",
+          isSaved: false,
+        },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects a listing summary missing isSaved", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: "missing-saved",
+          hasApplied: false,
+          applicationStatus: null,
+          publicReason: null,
+        },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it.each([
+    ["additionalCosts"],
+    ["city"],
+    ["district"],
+    ["availableFrom"],
+    ["publishedAt"],
+    ["isNew"],
+    ["profileMatch"],
+    ["coverImage"],
+  ] as const)("rejects a listing summary missing %s", async (field) => {
+    const payload: Record<string, unknown> = listingSummary();
+    delete payload[field];
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [payload],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it.each([
+    ["additionalCosts", "200"],
+    ["city", 12],
+    ["availableFrom", 20260901],
+    ["publishedAt", false],
+    ["isNew", "true"],
+    ["profileMatch", "LIKELY"],
+    ["coverImage", { url: "https://res.cloudinary.com/x.jpg" }],
+  ] as const)(
+    "rejects a listing summary when %s has the wrong type",
+    async (field, value) => {
+      vi.mocked(apiGet).mockResolvedValue({
+        items: [listingSummary({ [field]: value })],
+        nextCursor: null,
+        total: 1,
+      });
+
+      await expect(getPublicListings({})).rejects.toThrow(
+        "Invalid public listings response",
+      );
+    },
+  );
+
+  it("rejects a listing summary with an invalid availableFrom date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [listingSummary({ availableFrom: "not-a-date" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects a listing summary with an invalid publishedAt date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [listingSummary({ publishedAt: "not-a-date" })],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("preserves valid ISO datetime and date strings for availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        listingSummary({
+          id: "datetime",
+          availableFrom: "2026-09-01T00:00:00.000Z",
+          publishedAt: "2026-07-01T10:00:00.000Z",
+        }),
+        listingSummary({
+          id: "date",
+          availableFrom: "2026-09-01",
+          publishedAt: "2026-07-01",
+        }),
+      ],
+      nextCursor: null,
+      total: 2,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.availableFrom).toBe("2026-09-01T00:00:00.000Z");
+    expect(listings[0]?.publishedAt).toBe("2026-07-01T10:00:00.000Z");
+    expect(listings[1]?.availableFrom).toBe("2026-09-01");
+    expect(listings[1]?.publishedAt).toBe("2026-07-01");
+  });
+
+  it("accepts null availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        listingSummary({
+          availableFrom: null,
+          publishedAt: null,
+        }),
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    const { listings } = await getPublicListings({});
+    expect(listings[0]?.availableFrom).toBeNull();
+    expect(listings[0]?.publishedAt).toBe("");
+  });
+
+  it("rejects a listing summary with a mistyped title, rent, or living area", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: "bad-types",
+          title: 123,
+          rooms: 3,
+          livingArea: "70",
+          coldRent: { amount: 1200 },
+          hasApplied: false,
+          applicationStatus: null,
+          publicReason: null,
+          isSaved: false,
+        },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
+  });
+
+  it("rejects a listing summary with a non-boolean isSaved", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: "bad-saved",
+          hasApplied: false,
+          applicationStatus: null,
+          publicReason: null,
+          isSaved: "yes",
+        },
+      ],
+      nextCursor: null,
+      total: 1,
+    });
+
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
   });
 
   it("rejects a listing summary missing hasApplied", async () => {
@@ -243,9 +564,24 @@ describe("getPublicListings", () => {
     },
   );
 
-  it("falls back to defaults for missing fields", async () => {
+  it("maps null summary fields to display fallbacks after a valid contract", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [{ id: "minimal", hasApplied: false }],
+      items: [
+        listingSummary({
+          id: "minimal",
+          title: null,
+          city: null,
+          district: null,
+          rooms: null,
+          livingArea: null,
+          coldRent: null,
+          additionalCosts: null,
+          availableFrom: null,
+          publishedAt: null,
+          coverImage: null,
+          isNew: false,
+        }),
+      ],
       nextCursor: null,
       total: 1,
     });
@@ -253,18 +589,19 @@ describe("getPublicListings", () => {
     const { listings } = await getPublicListings({});
     const listing = listings[0];
     expect(listing?.title).toBe("Unbenanntes Objekt");
+    expect(listing?.location).toBe("Adresse folgt");
     expect(listing?.rooms).toBe(0);
     expect(listing?.coldRent).toBe(0);
+    expect(listing?.serviceCharge).toBe(0);
     expect(listing?.coverImageUrl).toBeNull();
     expect(listing?.isNew).toBe(false);
-    expect(listing?.hasApplied).toBe(false);
+    expect(listing?.publishedAt).toBe("");
+    expect(listing?.availableFrom).toBeNull();
   });
 
-  it("builds location from city and district when displayAddress is absent", async () => {
+  it("builds location from city and district", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [
-        { id: "x", hasApplied: false, city: "Berlin", district: "Mitte" },
-      ],
+      items: [listingSummary({ id: "x", city: "Berlin", district: "Mitte" })],
       nextCursor: null,
       total: 1,
     });
@@ -273,40 +610,24 @@ describe("getPublicListings", () => {
     expect(listings[0]?.location).toBe("Berlin, Mitte");
   });
 
-  it("prefers displayAddress over city+district", async () => {
+  it("rejects a listing summary missing an id", async () => {
+    const payload: Record<string, unknown> = listingSummary();
+    delete payload.id;
     vi.mocked(apiGet).mockResolvedValue({
-      items: [
-        {
-          id: "x",
-          hasApplied: false,
-          displayAddress: "Musterstraße 1, Berlin",
-          city: "Berlin",
-        },
-      ],
+      items: [payload, listingSummary({ id: "valid" })],
       nextCursor: null,
       total: 1,
     });
 
-    const { listings } = await getPublicListings({});
-    expect(listings[0]?.location).toBe("Musterstraße 1, Berlin");
-  });
-
-  it("skips rows without an id", async () => {
-    vi.mocked(apiGet).mockResolvedValue({
-      items: [{ title: "no-id" }, { id: "valid", hasApplied: false }],
-      nextCursor: null,
-      total: 1,
-    });
-
-    const { listings } = await getPublicListings({});
-    expect(listings).toHaveLength(1);
-    expect(listings[0]?.id).toBe("valid");
+    await expect(getPublicListings({})).rejects.toThrow(
+      "Invalid public listings response",
+    );
   });
 
   it("reads listings from data and listings wrappers", async () => {
     for (const wrapper of ["data", "listings"]) {
       vi.mocked(apiGet).mockResolvedValue({
-        [wrapper]: [{ id: wrapper, hasApplied: false }],
+        [wrapper]: [listingSummary({ id: wrapper })],
         nextCursor: null,
         total: 1,
       });
@@ -367,6 +688,10 @@ describe("getPublicListingDetail", () => {
       isNew: true,
       images: [],
       profileMatch: "MATCH",
+      hasApplied: false,
+      applicationStatus: null,
+      publicReason: null,
+      isSaved: false,
       requirements: {
         minimumHouseholdNetIncome: null,
         schufaRequired: true,
@@ -393,6 +718,10 @@ describe("getPublicListingDetail", () => {
     const listing = await getPublicListingDetail("detail-1");
     expect(listing?.id).toBe("detail-1");
     expect(listing?.title).toBe("Einzelwohnung");
+    expect(listing?.hasApplied).toBe(false);
+    expect(listing?.applicationStatus).toBeNull();
+    expect(listing?.publicReason).toBeNull();
+    expect(listing?.isSaved).toBe(false);
   });
 
   it.each([
@@ -408,6 +737,116 @@ describe("getPublicListingDetail", () => {
     const listing = await getPublicListingDetail("detail-match");
 
     expect(listing?.matchesProfile).toBe(expected);
+  });
+
+  it("maps hasApplied, applicationStatus, and publicReason from the detail contract", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        hasApplied: true,
+        applicationStatus: "REJECTED",
+        publicReason: "NOT_SELECTED",
+      }),
+    );
+
+    const listing = await getPublicListingDetail("detail-1");
+    expect(listing?.hasApplied).toBe(true);
+    expect(listing?.applicationStatus).toBe("REJECTED");
+    expect(listing?.publicReason).toBe("NOT_SELECTED");
+    expect(listing?.isSaved).toBe(false);
+  });
+
+  it("maps isSaved from the detail contract", async () => {
+    vi.mocked(apiGet).mockResolvedValue(detailResponse({ isSaved: true }));
+
+    const listing = await getPublicListingDetail("detail-1");
+    expect(listing?.isSaved).toBe(true);
+  });
+
+  it("rejects a detail response with an invalid availableFrom date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ availableFrom: "not-a-date" }),
+    );
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it("rejects a detail response with an invalid publishedAt date string", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ publishedAt: "not-a-date" }),
+    );
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it("preserves valid ISO datetime and date strings for detail availableFrom and publishedAt", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        availableFrom: "2026-09-01T00:00:00.000Z",
+        publishedAt: "2026-07-01T10:00:00.000Z",
+      }),
+    );
+
+    const datetimeListing = await getPublicListingDetail("detail-1");
+    expect(datetimeListing?.availableFrom).toBe("2026-09-01T00:00:00.000Z");
+    expect(datetimeListing?.publishedAt).toBe("2026-07-01T10:00:00.000Z");
+
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        availableFrom: "2026-09-01",
+        publishedAt: "2026-08-01",
+      }),
+    );
+
+    const dateListing = await getPublicListingDetail("detail-1");
+    expect(dateListing?.availableFrom).toBe("2026-09-01");
+    expect(dateListing?.publishedAt).toBe("2026-08-01");
+  });
+
+  it("accepts null availableFrom and publishedAt on listing detail", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        availableFrom: null,
+        publishedAt: null,
+      }),
+    );
+
+    const listing = await getPublicListingDetail("detail-1");
+    expect(listing?.availableFrom).toBeNull();
+    expect(listing?.publishedAt).toBeNull();
+  });
+
+  it("rejects a detail response missing isSaved", async () => {
+    const payload: Record<string, unknown> = { ...detailResponse() };
+    delete payload.isSaved;
+    vi.mocked(apiGet).mockResolvedValue(payload);
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it("rejects a detail response missing hasApplied", async () => {
+    const payload: Record<string, unknown> = { ...detailResponse() };
+    delete payload.hasApplied;
+    vi.mocked(apiGet).mockResolvedValue(payload);
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
+  });
+
+  it("rejects WITHDRAWN applicationStatus on listing detail", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({ applicationStatus: "WITHDRAWN" }),
+    );
+
+    await expect(getPublicListingDetail("x")).rejects.toThrow(
+      "Invalid applicant listing detail response",
+    );
   });
 
   it("rejects a malformed detail response", async () => {
@@ -512,12 +951,41 @@ describe("getPublicListingDetail", () => {
     expect(listing?.objectType).toBe("HOUSE");
     expect(listing?.bedrooms).toBe(2);
     expect(listing?.shortDescription).toBe("Helles Haus");
-    expect(listing?.minimumHouseholdNetIncome).toBe(3000);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        listing ?? {},
+        "minimumHouseholdNetIncome",
+      ),
+    ).toBe(false);
     expect(listing?.schufaRequired).toBe(true);
     expect(listing?.incomeProofRequired).toBe(true);
     expect(listing?.suitableForPeopleCount).toBe(2);
     expect(listing?.petsPolicy).toBe("NOT_ALLOWED");
     expect(listing?.smokingPolicy).toBe("NOT_ALLOWED");
+  });
+
+  it("maps a detail payload that omits minimumHouseholdNetIncome", async () => {
+    vi.mocked(apiGet).mockResolvedValue(
+      detailResponse({
+        requirements: {
+          schufaRequired: true,
+          incomeProofRequired: false,
+          suitableForPeopleCount: null,
+          petsPolicy: null,
+          smokingPolicy: null,
+        },
+      }),
+    );
+
+    const listing = await getPublicListingDetail("detail-no-income");
+    expect(listing?.schufaRequired).toBe(true);
+    expect(listing?.incomeProofRequired).toBe(false);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        listing ?? {},
+        "minimumHouseholdNetIncome",
+      ),
+    ).toBe(false);
   });
 
   it("maps images from the detail payload and orders them by position", async () => {

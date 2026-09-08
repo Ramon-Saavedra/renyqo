@@ -2,12 +2,9 @@ import { z } from "zod";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import {
   isRecord,
-  readBoolean,
-  readCoverImageUrl,
   readItems,
   readNullableString,
   readNumber,
-  readString,
 } from "@/lib/api/response-mappers";
 import type {
   ProfileMatchResult,
@@ -25,20 +22,22 @@ function normalizeDetailProfileMatch(value: string | null): ProfileMatchResult {
   return "unknown";
 }
 
-function normalizeListingProfileMatch(value: string | null): boolean | null {
-  const upper = value?.toUpperCase();
-  if (upper === "MATCH") return true;
-  if (upper === "NO_MATCH") return false;
+function normalizeListingProfileMatch(
+  value: "MATCH" | "NO_MATCH" | "PROFILE_INCOMPLETE" | "UNKNOWN",
+): boolean | null {
+  if (value === "MATCH") return true;
+  if (value === "NO_MATCH") return false;
   return null;
 }
 
-function buildDisplayLocation(record: Record<string, unknown>): string {
-  const existing = readString(record, ["displayAddress", "location"]);
-  if (existing) return existing;
-
-  const city = readString(record, ["city"]);
-  const district = readString(record, ["district", "neighborhood"]);
-  return [city, district].filter(Boolean).join(", ") || "Adresse folgt";
+function buildSummaryLocation(
+  city: string | null,
+  district: string | null,
+): string {
+  const location = [city, district].filter(
+    (value): value is string => value !== null && value.trim().length > 0,
+  );
+  return location.length > 0 ? location.join(", ") : "Adresse folgt";
 }
 
 function buildDetailLocation({
@@ -56,67 +55,91 @@ function buildDetailLocation({
   return location.length > 0 ? location.join(" · ") : null;
 }
 
-const publicListingSummaryContractSchema = z.object({
+const listingApplicationStatusSchema = z.enum([
+  "ACTIVE",
+  "WAITING",
+  "REJECTED",
+  "ACCEPTED",
+]);
+
+const listingApplicationPublicReasonSchema = z.enum([
+  "NOT_SELECTED",
+  "PROFILE_NO_LONGER_ELIGIBLE",
+  "LISTING_RENTED",
+]);
+
+const nullableString = z.string().nullable();
+const nullableNumber = z.number().finite().nullable();
+const nullableIsoDateTime = z
+  .union([z.iso.datetime(), z.iso.date()])
+  .nullable();
+
+const applicantListingSummarySchema = z.object({
+  id: z.string().min(1),
+  title: nullableString,
+  city: nullableString,
+  zip: nullableString,
+  district: nullableString,
+  objectType: nullableString,
+  livingArea: nullableNumber,
+  rooms: nullableNumber,
+  bedrooms: nullableNumber,
+  coldRent: nullableNumber,
+  additionalCosts: nullableNumber,
+  deposit: nullableNumber,
+  depositMonths: nullableNumber,
+  availableFrom: nullableIsoDateTime,
+  shortDescription: nullableString,
+  publishedAt: nullableIsoDateTime,
+  isNew: z.boolean(),
+  petsPolicy: nullableString,
+  coverImage: z
+    .object({
+      secureUrl: z.string().min(1),
+    })
+    .nullable(),
+  profileMatch: z.enum(["MATCH", "NO_MATCH", "PROFILE_INCOMPLETE", "UNKNOWN"]),
   hasApplied: z.boolean(),
+  applicationStatus: listingApplicationStatusSchema.nullable(),
+  publicReason: listingApplicationPublicReasonSchema.nullable(),
+  isSaved: z.boolean(),
 });
 
-class PublicListingsContractError extends Error {
+export class PublicListingsContractError extends Error {
   constructor() {
     super("Invalid public listings response");
     this.name = "PublicListingsContractError";
   }
 }
 
-function mapPublicListing(value: unknown): PublicListing | null {
-  if (!isRecord(value)) return null;
-
-  const id = readString(value, ["id"]);
-  if (!id) return null;
-
-  const contract = publicListingSummaryContractSchema.safeParse(value);
-  if (!contract.success) {
+export function mapPublicListing(value: unknown): PublicListing {
+  const parsed = applicantListingSummarySchema.safeParse(value);
+  if (!parsed.success) {
     throw new PublicListingsContractError();
   }
 
-  const profileMatchValue = readString(value, [
-    "profileMatch",
-    "profile_match",
-  ]);
+  const listing = parsed.data;
+  const title = listing.title?.trim() ?? "";
 
   return {
-    id,
-    title: readString(value, ["title"]) ?? "Unbenanntes Objekt",
-    location: buildDisplayLocation(value),
-    rooms: readNumber(value, ["rooms"]) ?? 0,
-    livingArea: readNumber(value, ["livingArea", "area"]) ?? 0,
-    availableFrom: readNullableString(value, [
-      "availableFrom",
-      "available_from",
-      "moveInDate",
-      "move_in_date",
-    ]),
-    coldRent: readNumber(value, ["coldRent", "rent", "price"]) ?? 0,
-    serviceCharge:
-      readNumber(value, [
-        "serviceCharge",
-        "service_charge",
-        "additionalCosts",
-        "additional_costs",
-      ]) ?? 0,
-    matchesProfile: normalizeListingProfileMatch(profileMatchValue),
-    hasApplied: contract.data.hasApplied,
-    isNew: readBoolean(value, ["isNew", "is_new"]) ?? false,
-    coverImageUrl: readCoverImageUrl(value),
-    publishedAt: readString(value, ["publishedAt", "published_at"]) ?? "",
+    id: listing.id,
+    title: title.length > 0 ? title : "Unbenanntes Objekt",
+    location: buildSummaryLocation(listing.city, listing.district),
+    rooms: listing.rooms ?? 0,
+    livingArea: listing.livingArea ?? 0,
+    availableFrom: listing.availableFrom,
+    coldRent: listing.coldRent ?? 0,
+    serviceCharge: listing.additionalCosts ?? 0,
+    matchesProfile: normalizeListingProfileMatch(listing.profileMatch),
+    hasApplied: listing.hasApplied,
+    applicationStatus: listing.applicationStatus,
+    publicReason: listing.publicReason,
+    isSaved: listing.isSaved,
+    isNew: listing.isNew,
+    coverImageUrl: listing.coverImage?.secureUrl ?? null,
+    publishedAt: listing.publishedAt ?? "",
   };
 }
-
-function isPublicListing(item: PublicListing | null): item is PublicListing {
-  return item !== null;
-}
-
-const nullableString = z.string().nullable();
-const nullableNumber = z.number().finite().nullable();
 
 const applicantListingDetailSchema = z.object({
   id: z.string().min(1),
@@ -133,9 +156,9 @@ const applicantListingDetailSchema = z.object({
   additionalCosts: nullableNumber,
   deposit: nullableNumber,
   depositMonths: nullableNumber,
-  availableFrom: nullableString,
+  availableFrom: nullableIsoDateTime,
   shortDescription: nullableString,
-  publishedAt: nullableString,
+  publishedAt: nullableIsoDateTime,
   isNew: z.boolean(),
   images: z.array(
     z.object({
@@ -145,8 +168,11 @@ const applicantListingDetailSchema = z.object({
     }),
   ),
   profileMatch: z.enum(["MATCH", "NO_MATCH", "PROFILE_INCOMPLETE", "UNKNOWN"]),
+  hasApplied: z.boolean(),
+  applicationStatus: listingApplicationStatusSchema.nullable(),
+  publicReason: listingApplicationPublicReasonSchema.nullable(),
+  isSaved: z.boolean(),
   requirements: z.object({
-    minimumHouseholdNetIncome: nullableNumber,
     schufaRequired: z.boolean(),
     incomeProofRequired: z.boolean(),
     suitableForPeopleCount: nullableNumber,
@@ -181,6 +207,10 @@ function mapPublicListingDetail(
     title: value.title,
     location: buildDetailLocation(value),
     matchesProfile: normalizeDetailProfileMatch(value.profileMatch),
+    hasApplied: value.hasApplied,
+    applicationStatus: value.applicationStatus,
+    publicReason: value.publicReason,
+    isSaved: value.isSaved,
     street: value.street,
     zip: value.zip,
     city: value.city,
@@ -198,7 +228,6 @@ function mapPublicListingDetail(
     publishedAt: value.publishedAt,
     isNew: value.isNew,
     images,
-    minimumHouseholdNetIncome: value.requirements.minimumHouseholdNetIncome,
     schufaRequired: value.requirements.schufaRequired,
     incomeProofRequired: value.requirements.incomeProofRequired,
     suitableForPeopleCount: value.requirements.suitableForPeopleCount,
@@ -253,7 +282,7 @@ export async function getPublicListings(
   const response = await apiGet<unknown>(path, options);
 
   return {
-    listings: readItems(response).map(mapPublicListing).filter(isPublicListing),
+    listings: readItems(response).map(mapPublicListing),
     total: readTotal(response),
     nextCursor: readNextCursor(response),
   };
