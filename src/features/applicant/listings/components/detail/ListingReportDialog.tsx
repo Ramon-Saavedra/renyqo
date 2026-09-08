@@ -245,6 +245,7 @@ export function ListingReportDialog({
         </p>
 
         <fieldset
+          role="radiogroup"
           className={REASONS_CLASS}
           aria-required="true"
           aria-invalid={reasonInvalid || undefined}

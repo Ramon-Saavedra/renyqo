@@ -168,4 +168,150 @@ describe("useSavedListings", () => {
 
     expect(getSavedListings).toHaveBeenCalledTimes(1);
   });
+
+  it("aborts the initial request on unmount", async () => {
+    vi.mocked(getSavedListings).mockReturnValue(
+      new Promise<PublicListingsResponse>(() => undefined),
+    );
+
+    const { unmount } = renderHook(() => useSavedListings());
+
+    await waitFor(() => {
+      expect(getSavedListings).toHaveBeenCalledTimes(1);
+    });
+
+    const signal = vi.mocked(getSavedListings).mock.calls[0]?.[1]?.signal;
+    unmount();
+    expect(signal?.aborted).toBe(true);
+  });
+
+  it("aborts an in-flight load-more request on unmount and ignores its response", async () => {
+    let resolveMore: (value: PublicListingsResponse) => void = () => undefined;
+    const morePromise = new Promise<PublicListingsResponse>((resolve) => {
+      resolveMore = resolve;
+    });
+
+    vi.mocked(getSavedListings)
+      .mockResolvedValueOnce(
+        mockResponse({
+          listings: [listing("l1")],
+          total: 2,
+          nextCursor: "c1",
+        }),
+      )
+      .mockReturnValueOnce(morePromise);
+
+    const { result, unmount } = renderHook(() => useSavedListings());
+
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    act(() => {
+      result.current.loadMore();
+    });
+
+    await waitFor(() => {
+      expect(getSavedListings).toHaveBeenCalledTimes(2);
+    });
+
+    const loadMoreSignal =
+      vi.mocked(getSavedListings).mock.calls[1]?.[1]?.signal;
+    unmount();
+    expect(loadMoreSignal?.aborted).toBe(true);
+
+    await act(async () => {
+      resolveMore(
+        mockResponse({
+          listings: [listing("l2")],
+          total: 2,
+          nextCursor: null,
+        }),
+      );
+      await morePromise;
+    });
+  });
+
+  it("aborts the previous load-more request and ignores its stale response", async () => {
+    let resolveFirstMore: (value: PublicListingsResponse) => void = () =>
+      undefined;
+    let resolveSecondMore: (value: PublicListingsResponse) => void = () =>
+      undefined;
+    const firstMore = new Promise<PublicListingsResponse>((resolve) => {
+      resolveFirstMore = resolve;
+    });
+    const secondMore = new Promise<PublicListingsResponse>((resolve) => {
+      resolveSecondMore = resolve;
+    });
+
+    vi.mocked(getSavedListings)
+      .mockResolvedValueOnce(
+        mockResponse({
+          listings: [listing("l1")],
+          total: 3,
+          nextCursor: "c1",
+        }),
+      )
+      .mockReturnValueOnce(firstMore)
+      .mockReturnValueOnce(secondMore);
+
+    const { result } = renderHook(() => useSavedListings());
+
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    act(() => {
+      result.current.loadMore();
+    });
+
+    await waitFor(() => {
+      expect(getSavedListings).toHaveBeenCalledTimes(2);
+    });
+
+    const firstSignal = vi.mocked(getSavedListings).mock.calls[1]?.[1]?.signal;
+
+    act(() => {
+      result.current.loadMore();
+    });
+
+    await waitFor(() => {
+      expect(getSavedListings).toHaveBeenCalledTimes(3);
+    });
+
+    expect(firstSignal?.aborted).toBe(true);
+
+    await act(async () => {
+      resolveFirstMore(
+        mockResponse({
+          listings: [listing("stale")],
+          total: 3,
+          nextCursor: "c2",
+        }),
+      );
+      await firstMore;
+    });
+
+    expect(result.current.listings.map((item) => item.id)).toEqual(["l1"]);
+
+    await act(async () => {
+      resolveSecondMore(
+        mockResponse({
+          listings: [listing("l2")],
+          total: 3,
+          nextCursor: null,
+        }),
+      );
+      await secondMore;
+    });
+
+    await waitFor(() => {
+      expect(result.current.listings.map((item) => item.id)).toEqual([
+        "l1",
+        "l2",
+      ]);
+    });
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(result.current.nextCursor).toBeNull();
+  });
 });

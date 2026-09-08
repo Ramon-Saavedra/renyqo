@@ -69,6 +69,11 @@ describe("ListingReportAction", () => {
     expect(radio.className).toContain("border-border-strong");
     expect(radio.className).toContain("checked:bg-primary");
     expect(radio.className).toContain("focus-visible:shadow-focus");
+
+    const reasons = screen.getByRole("radiogroup", { name: "Grund" });
+    expect(reasons.tagName).toBe("FIELDSET");
+    expect(reasons.getAttribute("aria-required")).toBe("true");
+    expect(screen.queryByRole("group", { name: "Grund" })).toBeNull();
   });
 
   it("makes the underlying page inert while the dialog is open", async () => {
@@ -207,11 +212,12 @@ describe("ListingReportAction", () => {
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByRole("button", { name: "Meldung senden" }));
 
-    const reasons = screen.getByRole("group", { name: "Grund" });
+    const reasons = screen.getByRole("radiogroup", { name: "Grund" });
     expect(screen.getByText("Bitte wähle einen Grund.")).toBeInstanceOf(
       HTMLElement,
     );
     expect(reasons.getAttribute("aria-invalid")).toBe("true");
+    expect(reasons.getAttribute("aria-required")).toBe("true");
 
     await user.click(
       screen.getByLabelText("Irreführende oder falsche Angaben"),

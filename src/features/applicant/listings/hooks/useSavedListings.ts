@@ -39,6 +39,7 @@ export function useSavedListings(): UseSavedListingsResult {
     useState<ListingsFetchStatus>("loading-page");
   const [retryCount, setRetryCount] = useState(0);
   const fetchGenerationRef = useRef(0);
+  const paginationControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const { controller, isStale } = startFetch(fetchGenerationRef);
@@ -71,11 +72,23 @@ export function useSavedListings(): UseSavedListingsResult {
     return () => controller.abort();
   }, [retryCount]);
 
+  useEffect(() => {
+    return () => {
+      const controller = paginationControllerRef.current;
+      if (controller === null) return;
+      paginationControllerRef.current = null;
+      fetchGenerationRef.current += 1;
+      controller.abort();
+    };
+  }, []);
+
   const handleLoadMore = useCallback(() => {
     const cursor = nextCursor;
     if (cursor === null) return;
 
+    paginationControllerRef.current?.abort();
     const { controller, isStale } = startFetch(fetchGenerationRef);
+    paginationControllerRef.current = controller;
 
     async function append() {
       setFetchStatus("loading-more");
