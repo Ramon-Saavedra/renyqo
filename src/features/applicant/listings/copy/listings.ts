@@ -131,8 +131,8 @@ export const listingsCopy = {
     lead: "Hier siehst du die verfügbaren Objekte, die du gemerkt hast.",
     emptyTitle: "Noch nichts gemerkt",
     emptyLead:
-      "Wenn du ein Inserat öffnest und auf Merken tippst, erscheint es hier.",
-    browse: "Objekte durchsuchen",
+      "Merke interessante Mietobjekte, um sie hier schnell wiederzufinden.",
+    browse: "Mietobjekte entdecken",
     gridAriaLabel: "Gemerkte Objekte",
     error: "Gemerkte Objekte konnten nicht geladen werden.",
   },

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentUser, logout } from "@/lib/api/auth";
 import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { LISTINGS_SEARCH_SESSION_KEY } from "@/features/applicant/listings/utils/listings-search-params";
 import { AccountMenu } from "./AccountMenu";
 
 const replace = vi.fn();
@@ -55,6 +56,7 @@ describe("AccountMenu", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     invalidateCurrentUser();
+    sessionStorage.clear();
     vi.mocked(useApplicantProfileStatus).mockReturnValue("exists");
   });
 
@@ -144,6 +146,7 @@ describe("AccountMenu", () => {
     const user = userEvent.setup();
     vi.mocked(getCurrentUser).mockResolvedValue(PRIVATE_USER);
     vi.mocked(logout).mockResolvedValue(undefined);
+    sessionStorage.setItem(LISTINGS_SEARCH_SESSION_KEY, "query=Freiburg");
 
     render(<AccountMenu />);
 
@@ -154,6 +157,7 @@ describe("AccountMenu", () => {
 
     expect(logout).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenCalledWith("/login");
+    expect(sessionStorage.getItem(LISTINGS_SEARCH_SESSION_KEY)).toBeNull();
   });
 
   it("shows an error and stays open when logout fails", async () => {

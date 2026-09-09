@@ -33,6 +33,7 @@ function messageFor(error: unknown, unsaving: boolean): string {
 export function useListingSave(
   listingId: string,
   initialSaved: boolean,
+  onSavedChange?: (saved: boolean) => void,
 ): UseListingSaveResult {
   const [saved, setSaved] = useState(initialSaved);
   const [status, setStatus] = useState<ListingSaveStatus>("idle");
@@ -41,6 +42,7 @@ export function useListingSave(
   const [syncedInitialSaved, setSyncedInitialSaved] = useState(initialSaved);
   const isSubmittingRef = useRef(false);
   const listingIdRef = useRef(listingId);
+  const onSavedChangeRef = useRef(onSavedChange);
 
   if (listingId !== syncedListingId || initialSaved !== syncedInitialSaved) {
     setSyncedListingId(listingId);
@@ -54,6 +56,10 @@ export function useListingSave(
     listingIdRef.current = listingId;
     isSubmittingRef.current = false;
   }, [listingId]);
+
+  useEffect(() => {
+    onSavedChangeRef.current = onSavedChange;
+  });
 
   const toggle = async () => {
     if (isSubmittingRef.current) return;
@@ -69,6 +75,7 @@ export function useListingSave(
       if (targetId !== listingIdRef.current) return;
       setSaved(result.saved);
       setStatus("idle");
+      onSavedChangeRef.current?.(result.saved);
     } catch (caught) {
       if (targetId !== listingIdRef.current) return;
       setStatus("error");

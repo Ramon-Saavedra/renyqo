@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button/Button";
+import { Button, buttonClass } from "@/components/ui/button/Button";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { listingsCopy } from "../../copy/listings";
 import type {
@@ -10,6 +11,7 @@ import type {
 } from "../../api/listing-eligibility";
 import { useListingApplication } from "../../hooks/useListingApplication";
 import { useListingEligibility } from "../../hooks/useListingEligibility";
+import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
 import { useApplicantListingApplication } from "../../hooks/useApplicantListingApplication";
 import type {
@@ -17,6 +19,7 @@ import type {
   ListingApplicationStatus,
   ProfileMatchResult,
 } from "../../types";
+import { LISTING_REGISTER_PATH } from "../../utils/listing-auth-paths";
 import { isNotSelectedRejection } from "../../utils/listing-card-badge";
 import { MatchBadge, type MatchBadgeTone } from "../MatchBadge";
 
@@ -71,19 +74,34 @@ const REASON_COPY: Record<EligibilityReason, string> = {
   smoking_not_allowed: "Rauchen ist für dieses Objekt nicht erlaubt.",
 };
 
+function ListingAnonymousApplyCta() {
+  return (
+    <div className={BOX_CLASS}>
+      <p className="text-caption text-foreground-secondary">
+        {apply.anonymousLead}
+      </p>
+      <Link href={LISTING_REGISTER_PATH} className={buttonClass("primary")}>
+        {apply.start}
+      </Link>
+    </div>
+  );
+}
+
 export function ListingApplyBox({
   listingId,
   matchesProfile,
   applicationStatus,
   publicReason,
 }: ListingApplyBoxProps) {
-  const { eligibility, status } = useListingEligibility(listingId);
+  const session = useListingViewerSession();
+  const applicant = session === "applicant";
+  const { eligibility, status } = useListingEligibility(listingId, applicant);
   const { state, submit, reset } = useListingApplication(listingId);
   const {
     application: existingApplication,
     status: existingApplicationStatus,
     refresh,
-  } = useApplicantListingApplication(listingId);
+  } = useApplicantListingApplication(listingId, applicant);
   const application =
     state.status === "success" ? state.application : existingApplication;
   const currentApplication =
@@ -138,6 +156,18 @@ export function ListingApplyBox({
       showWithdrawalConfirmation();
     }
   };
+
+  if (session === "loading") {
+    return <div className={BOX_CLASS} aria-busy="true" />;
+  }
+
+  if (session === "anonymous") {
+    return <ListingAnonymousApplyCta />;
+  }
+
+  if (session === "other") {
+    return null;
+  }
 
   if (isNotSelectedRejection(applicationStatus, publicReason)) {
     return (

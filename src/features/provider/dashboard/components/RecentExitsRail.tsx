@@ -26,8 +26,7 @@ export interface RecentExitsRailProps {
   onResetRestoration: () => void;
 }
 
-const PANEL_CLASS =
-  "rounded-md bg-background-muted px-dashboard-parent-x py-dashboard-parent-y";
+const PANEL_CLASS = "rounded-md bg-background-muted px-parent-x py-parent-y";
 const HEAD_CLASS = "mb-3 flex items-center gap-2";
 const TITLE_CLASS =
   "text-meta leading-none font-medium tracking-wide text-foreground-tertiary uppercase";
@@ -35,9 +34,9 @@ const COUNT_CLASS =
   "text-caption leading-none tabular-nums text-foreground-tertiary";
 const RAIL_CLASS = "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6";
 const CARD_CLASS =
-  "relative flex h-12 min-w-0 flex-col justify-center gap-0.5 rounded-md border px-dashboard-card-x shadow-card sm:h-13";
+  "relative flex h-12 min-w-0 flex-col justify-center gap-0.5 rounded-md border px-card-x shadow-card sm:h-13";
 const MORE_CLASS =
-  "flex h-12 min-w-0 items-center justify-center rounded-md bg-background px-dashboard-card-x text-caption text-foreground-tertiary sm:h-13";
+  "flex h-12 min-w-0 items-center justify-center rounded-md bg-background px-card-x text-caption text-foreground-tertiary sm:h-13";
 
 const VISUAL_STATE_STYLES: Record<
   ExitedApplicantVisualState,
@@ -73,7 +72,7 @@ function renderLoadingSlots() {
   return Array.from({ length: 5 }).map((_, index) => (
     <div
       key={`recent-exits-loading-${index}`}
-      className="flex h-12 min-w-0 items-center gap-2 rounded-md bg-background px-dashboard-card-x sm:h-13"
+      className="flex h-12 min-w-0 items-center gap-2 rounded-md bg-background px-card-x sm:h-13"
     >
       <RenyqoSkeleton variant="circle" width={12} height={12} />
       <RenyqoSkeleton height={11} className="w-full max-w-20" />

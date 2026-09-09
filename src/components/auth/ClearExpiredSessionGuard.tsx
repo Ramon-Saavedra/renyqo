@@ -1,6 +1,7 @@
 "use client";
 
 import { invalidateCurrentUser } from "@/lib/api/use-current-user";
+import { clearListingsSearchSession } from "@/features/applicant/listings/utils/listings-search-params";
 
 interface ClearExpiredSessionGuardProps {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ export function ClearExpiredSessionGuard({
 }: ClearExpiredSessionGuardProps) {
   if (expired) {
     invalidateCurrentUser();
+    clearListingsSearchSession();
   }
 
   return <>{children}</>;

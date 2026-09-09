@@ -8,6 +8,7 @@ import type {
   PublicListingsParams,
   SortKey,
 } from "../types";
+import { clampListingsSearchQuery } from "../utils/listings-search-params";
 
 export type ListingsFetchStatus =
   | "idle"
@@ -28,6 +29,30 @@ export interface UsePublicListingsResult {
 
 const PAGE_SIZE = 10;
 const QUERY_DEBOUNCE_MS = 300;
+
+function isTypingQueryChange(from: string, to: string): boolean {
+  if (from === to || to.length === 0) return false;
+  if (Math.abs(from.length - to.length) !== 1) return false;
+  const shorter = from.length < to.length ? from : to;
+  const longer = from.length < to.length ? to : from;
+  return longer.startsWith(shorter);
+}
+
+function listingFetchSignature(
+  filters: ListingFilters,
+  sort: SortKey,
+  hasProfile: boolean,
+): string {
+  return [
+    filters.maxColdRent,
+    filters.minRooms,
+    filters.minLivingArea,
+    filters.availableFrom,
+    filters.onlyMatching,
+    sort,
+    hasProfile,
+  ].join("\0");
+}
 
 /**
  * Shared abort + generation guard for page and load-more fetches.
@@ -57,32 +82,50 @@ export function usePublicListings(
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [fetchStatus, setFetchStatus] =
     useState<ListingsFetchStatus>("loading-page");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState(filters.query);
   const [retryCount, setRetryCount] = useState(0);
+  const [queryTrail, setQueryTrail] = useState({
+    previous: filters.query,
+    current: filters.query,
+  });
+  const [seenSignature, setSeenSignature] = useState(
+    listingFetchSignature(filters, sort, hasProfile),
+  );
 
-  const queryTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const fetchGenerationRef = useRef(0);
 
-  // Debounce the search query.
+  const fetchSignature = listingFetchSignature(filters, sort, hasProfile);
+  const othersChanged = fetchSignature !== seenSignature;
+  const previousQuery =
+    queryTrail.current === filters.query
+      ? queryTrail.previous
+      : queryTrail.current;
+  const typingQuery = isTypingQueryChange(previousQuery, filters.query);
+
+  if (queryTrail.current !== filters.query) {
+    setQueryTrail({ previous: queryTrail.current, current: filters.query });
+  }
+  if (seenSignature !== fetchSignature) {
+    setSeenSignature(fetchSignature);
+  }
+  if (debouncedQuery !== filters.query && (!typingQuery || othersChanged)) {
+    setDebouncedQuery(filters.query);
+  }
+
   useEffect(() => {
-    const currentQuery = filters.query;
-    if (queryTimerRef.current) {
-      clearTimeout(queryTimerRef.current);
-    }
-    queryTimerRef.current = setTimeout(() => {
-      setDebouncedQuery(currentQuery);
+    if (filters.query === debouncedQuery) return undefined;
+    const timeout = window.setTimeout(() => {
+      setDebouncedQuery(filters.query);
     }, QUERY_DEBOUNCE_MS);
     return () => {
-      if (queryTimerRef.current) {
-        clearTimeout(queryTimerRef.current);
-      }
+      window.clearTimeout(timeout);
     };
-  }, [filters.query]);
+  }, [filters.query, debouncedQuery]);
 
   // Build API params from current state.
   const buildParams = useCallback(
     (cursor?: string | null): PublicListingsParams => ({
-      query: debouncedQuery || undefined,
+      query: clampListingsSearchQuery(debouncedQuery) || undefined,
       maxRent: filters.maxColdRent ?? undefined,
       minRooms: filters.minRooms ?? undefined,
       minLivingArea: filters.minLivingArea ?? undefined,

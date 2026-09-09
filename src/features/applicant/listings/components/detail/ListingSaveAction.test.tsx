@@ -3,12 +3,19 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { saveListing, unsaveListing } from "../../api/listing-saved";
+import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { ListingSaveAction } from "./ListingSaveAction";
 
 vi.mock("../../api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
 }));
+
+vi.mock("../../hooks/useListingViewerSession", () => ({
+  useListingViewerSession: vi.fn(),
+}));
+
+const session = vi.mocked(useListingViewerSession);
 
 const saved = {
   saved: true as const,
@@ -23,6 +30,30 @@ const unsaved = {
 describe("ListingSaveAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    session.mockReturnValue("applicant");
+  });
+
+  it("guides anonymous users to login without saving", async () => {
+    const user = userEvent.setup();
+    session.mockReturnValue("anonymous");
+    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+
+    const link = screen.getByRole("link", { name: "Merken" });
+    expect(link.getAttribute("href")).toBe("/login");
+    await user.click(link);
+
+    expect(saveListing).not.toHaveBeenCalled();
+    expect(unsaveListing).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("hides save for a non-applicant session", () => {
+    session.mockReturnValue("other");
+    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
   });
 
   it("renders Merken when the listing is not saved", () => {
@@ -32,6 +63,9 @@ describe("ListingSaveAction", () => {
       HTMLButtonElement,
     );
     expect(screen.queryByRole("button", { name: "Gemerkt" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Merken" }).querySelector("svg"),
+    ).toBeInstanceOf(SVGElement);
   });
 
   it("renders Gemerkt when the listing is saved", () => {

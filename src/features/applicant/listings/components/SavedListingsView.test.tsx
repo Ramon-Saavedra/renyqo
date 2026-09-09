@@ -1,7 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
+import { saveListing, unsaveListing } from "../api/listing-saved";
+import { useListingViewerSession } from "../hooks/useListingViewerSession";
 import { useSavedListings } from "../hooks/useSavedListings";
 import type { UseSavedListingsResult } from "../hooks/useSavedListings";
 import type { PublicListing } from "../types";
@@ -15,8 +17,18 @@ vi.mock("../hooks/useSavedListings", () => ({
   useSavedListings: vi.fn(),
 }));
 
+vi.mock("../hooks/useListingViewerSession", () => ({
+  useListingViewerSession: vi.fn(),
+}));
+
+vi.mock("../api/listing-saved", () => ({
+  saveListing: vi.fn(),
+  unsaveListing: vi.fn(),
+}));
+
 const mockUseSavedListings = vi.mocked(useSavedListings);
 const mockUseProfileStatus = vi.mocked(useApplicantProfileStatus);
+const session = vi.mocked(useListingViewerSession);
 
 function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
   return {
@@ -51,6 +63,7 @@ function mockResult(
     loadMore: vi.fn(),
     retry: vi.fn(),
     retryMore: vi.fn(),
+    removeListing: vi.fn(),
     ...overrides,
   };
 }
@@ -58,6 +71,7 @@ function mockResult(
 describe("SavedListingsView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    session.mockReturnValue("applicant");
     mockUseProfileStatus.mockReturnValue("unavailable");
     mockUseSavedListings.mockReturnValue(mockResult());
   });
@@ -100,8 +114,10 @@ describe("SavedListingsView", () => {
     expect(
       screen.getByRole("list", { name: "Gemerkte Objekte" }),
     ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("button", { name: "Gemerkt" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
     expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Gemerkt" })).toBeNull();
   });
 
   it("shows empty state when there are no saved listings", () => {
@@ -113,14 +129,31 @@ describe("SavedListingsView", () => {
     expect(screen.getByText("Noch nichts gemerkt")).toBeInstanceOf(HTMLElement);
     expect(
       screen.getByText(
-        "Wenn du ein Inserat öffnest und auf Merken tippst, erscheint es hier.",
+        "Merke interessante Mietobjekte, um sie hier schnell wiederzufinden.",
       ),
     ).toBeInstanceOf(HTMLElement);
     expect(
       screen
-        .getByRole("link", { name: "Objekte durchsuchen" })
+        .getByRole("link", { name: "Mietobjekte entdecken" })
         .getAttribute("href"),
     ).toBe("/listings");
+  });
+
+  it("does not show the empty state when more saved pages remain", () => {
+    mockUseSavedListings.mockReturnValue(
+      mockResult({
+        fetchStatus: "idle",
+        listings: [],
+        total: 1,
+        nextCursor: "c1",
+      }),
+    );
+    render(<SavedListingsView />);
+
+    expect(screen.queryByText("Noch nichts gemerkt")).toBeNull();
+    expect(screen.getByText("Objekte werden geladen …")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("shows error banner on error-page without mentioning filters", async () => {
@@ -196,5 +229,32 @@ describe("SavedListingsView", () => {
     const user = userEvent.setup();
     await user.click(screen.getByText("Erneut versuchen"));
     expect(retryMore).toHaveBeenCalledTimes(1);
+  });
+
+  it("removes a listing from the saved grid after a successful unsave", async () => {
+    const removeListing = vi.fn();
+    vi.mocked(unsaveListing).mockResolvedValue({
+      saved: false,
+      savedAt: null,
+    });
+    mockUseSavedListings.mockReturnValue(
+      mockResult({
+        fetchStatus: "idle",
+        listings: [buildListing({ id: "a", title: "Wohnung A" })],
+        total: 1,
+        removeListing,
+      }),
+    );
+
+    render(<SavedListingsView />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Gemerkt" }));
+
+    expect(unsaveListing).toHaveBeenCalledWith("a");
+    expect(saveListing).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(removeListing).toHaveBeenCalledWith("a");
+    });
   });
 });

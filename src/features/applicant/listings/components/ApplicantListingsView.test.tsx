@@ -5,6 +5,7 @@ import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfi
 import { usePublicListings } from "../hooks/usePublicListings";
 import type { UsePublicListingsResult } from "../hooks/usePublicListings";
 import type { PublicListing } from "../types";
+import { LISTINGS_SEARCH_QUERY_MAX_LENGTH } from "../utils/listings-search-params";
 import { ApplicantListingsView } from "./ApplicantListingsView";
 
 vi.mock("../../profile/hooks/useApplicantProfileStatus", () => ({
@@ -13,6 +14,15 @@ vi.mock("../../profile/hooks/useApplicantProfileStatus", () => ({
 
 vi.mock("../hooks/usePublicListings", () => ({
   usePublicListings: vi.fn(),
+}));
+
+const replace = vi.fn();
+let searchParams = new URLSearchParams();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace, push: vi.fn(), back: vi.fn() }),
+  useSearchParams: () => searchParams,
+  usePathname: () => "/listings",
 }));
 
 const mockUsePublicListings = vi.mocked(usePublicListings);
@@ -78,6 +88,7 @@ function buildMatchMedia(reduce: boolean): typeof window.matchMedia {
 describe("ApplicantListingsView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    searchParams = new URLSearchParams();
     window.matchMedia = buildMatchMedia(true);
     mockUseProfileStatus.mockReturnValue("unavailable");
     mockUsePublicListings.mockReturnValue(mockResult());
@@ -354,5 +365,85 @@ describe("ApplicantListingsView", () => {
     const user = userEvent.setup();
     await user.click(screen.getByText("Mehr Objekte anzeigen"));
     expect(loadMore).toHaveBeenCalledTimes(1);
+  });
+
+  it("restores search, matching, and sort from the URL", () => {
+    searchParams = new URLSearchParams(
+      "query=Freiburg&onlyMatching=1&sort=price-asc",
+    );
+    mockUseProfileStatus.mockReturnValue("exists");
+    mockUsePublicListings.mockReturnValue(
+      mockResult({ fetchStatus: "idle", listings: [buildListing()], total: 1 }),
+    );
+
+    renderView();
+
+    expect(screen.getByDisplayValue("Freiburg")).toBeInstanceOf(
+      HTMLInputElement,
+    );
+    expect(mockUsePublicListings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "Freiburg",
+        onlyMatching: true,
+      }),
+      "price-asc",
+      true,
+    );
+  });
+
+  it("writes the search query to the URL", async () => {
+    mockUsePublicListings.mockReturnValue(
+      mockResult({ fetchStatus: "idle", listings: [buildListing()], total: 1 }),
+    );
+    renderView();
+
+    const user = userEvent.setup();
+    await user.type(
+      screen.getByRole("searchbox", { name: "Objekte nach Ort durchsuchen" }),
+      "F",
+    );
+
+    expect(replace).toHaveBeenCalledWith("/listings?query=F", {
+      scroll: false,
+    });
+  });
+
+  it("applies a cleared listings URL without unmounting the view", () => {
+    searchParams = new URLSearchParams("query=Freiburg&maxRent=1300");
+    mockUsePublicListings.mockReturnValue(
+      mockResult({ fetchStatus: "idle", listings: [buildListing()], total: 1 }),
+    );
+
+    const { rerender } = renderView();
+
+    expect(mockUsePublicListings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: "Freiburg",
+        maxColdRent: 1300,
+      }),
+      "newest",
+      false,
+    );
+
+    searchParams = new URLSearchParams();
+    rerender(<ApplicantListingsView />);
+
+    expect(mockUsePublicListings).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        query: "",
+        maxColdRent: null,
+      }),
+      "newest",
+      false,
+    );
+  });
+
+  it("limits the search field to the listings query max length", () => {
+    renderView();
+    expect(
+      screen
+        .getByRole("searchbox", { name: "Objekte nach Ort durchsuchen" })
+        .getAttribute("maxlength"),
+    ).toBe(String(LISTINGS_SEARCH_QUERY_MAX_LENGTH));
   });
 });

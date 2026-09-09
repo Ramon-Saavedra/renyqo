@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark } from "lucide-react";
+import { Heart } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingsCopy } from "@/features/applicant/listings/copy/listings";
 
@@ -11,7 +11,7 @@ const LINK_CLASS =
 export function SavedListingsMenuLink() {
   return (
     <Link href="/applicant/saved" className={LINK_CLASS}>
-      <AppIcon icon={Bookmark} size={14} strokeWidth={1.6} decorative />
+      <AppIcon icon={Heart} size={14} strokeWidth={1.6} decorative />
       <span>{listingsCopy.saved.menuLabel}</span>
     </Link>
   );

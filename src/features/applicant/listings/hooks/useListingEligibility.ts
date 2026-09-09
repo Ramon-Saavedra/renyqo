@@ -6,16 +6,22 @@ import {
   type ListingEligibility,
 } from "../api/listing-eligibility";
 
-export type ListingEligibilityStatus = "loading" | "loaded" | "error";
+export type ListingEligibilityStatus = "idle" | "loading" | "loaded" | "error";
 
-export function useListingEligibility(id: string) {
+export function useListingEligibility(id: string, enabled = true) {
   const [eligibility, setEligibility] = useState<ListingEligibility | null>(
     null,
   );
-  const [status, setStatus] = useState<ListingEligibilityStatus>("loading");
+  const [status, setStatus] = useState<ListingEligibilityStatus>(
+    enabled ? "loading" : "idle",
+  );
   const [resolvedId, setResolvedId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let active = true;
     const controller = new AbortController();
     getListingEligibility(id, { signal: controller.signal })
@@ -35,7 +41,11 @@ export function useListingEligibility(id: string) {
       active = false;
       controller.abort();
     };
-  }, [id]);
+  }, [id, enabled]);
+
+  if (!enabled) {
+    return { eligibility: null, status: "idle" as const };
+  }
 
   return {
     eligibility: resolvedId === id ? eligibility : null,

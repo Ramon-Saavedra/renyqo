@@ -314,4 +314,88 @@ describe("useSavedListings", () => {
     expect(result.current.fetchStatus).toBe("idle");
     expect(result.current.nextCursor).toBeNull();
   });
+
+  it("removes a listing and decrements the total", async () => {
+    vi.mocked(getSavedListings).mockResolvedValue(
+      mockResponse({
+        listings: [listing("l1"), listing("l2")],
+        total: 2,
+      }),
+    );
+
+    const { result } = renderHook(() => useSavedListings());
+
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    act(() => {
+      result.current.removeListing("l1");
+    });
+
+    expect(result.current.listings.map((item) => item.id)).toEqual(["l2"]);
+    expect(result.current.total).toBe(1);
+  });
+
+  it("does not decrement the total when the listing is not in the current page", async () => {
+    vi.mocked(getSavedListings).mockResolvedValue(
+      mockResponse({
+        listings: [listing("l1")],
+        total: 1,
+      }),
+    );
+
+    const { result } = renderHook(() => useSavedListings());
+
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    act(() => {
+      result.current.removeListing("missing");
+    });
+
+    expect(result.current.listings.map((item) => item.id)).toEqual(["l1"]);
+    expect(result.current.total).toBe(1);
+  });
+
+  it("loads the next page when the last visible saved listing is removed", async () => {
+    vi.mocked(getSavedListings)
+      .mockResolvedValueOnce(
+        mockResponse({
+          listings: [listing("l1")],
+          total: 2,
+          nextCursor: "c1",
+        }),
+      )
+      .mockResolvedValueOnce(
+        mockResponse({
+          listings: [listing("l2")],
+          total: 1,
+          nextCursor: null,
+        }),
+      );
+
+    const { result } = renderHook(() => useSavedListings());
+
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    act(() => {
+      result.current.removeListing("l1");
+    });
+
+    await waitFor(() => {
+      expect(result.current.listings.map((item) => item.id)).toEqual(["l2"]);
+    });
+
+    expect(getSavedListings).toHaveBeenLastCalledWith(
+      { limit: 20, cursor: "c1" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+    expect(result.current.total).toBe(1);
+    expect(result.current.nextCursor).toBeNull();
+    expect(result.current.fetchStatus).toBe("idle");
+  });
 });

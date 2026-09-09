@@ -1,10 +1,14 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
-import { Button } from "@/components/ui/button/Button";
+import Link from "next/link";
+import { Heart } from "lucide-react";
+import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { useListingSave } from "../../hooks/useListingSave";
+import { useListingViewerSession } from "../../hooks/useListingViewerSession";
+import { LISTING_LOGIN_PATH } from "../../utils/listing-auth-paths";
 
 interface ListingSaveActionProps {
   listingId: string;
@@ -19,25 +23,47 @@ export function ListingSaveAction({
   listingId,
   isSaved,
 }: ListingSaveActionProps) {
+  const session = useListingViewerSession();
   const { saved, status, error, toggle } = useListingSave(listingId, isSaved);
   const submitting = status === "submitting";
   const label = saved ? save.savedLabel : save.label;
 
+  if (session === "other") {
+    return null;
+  }
+
+  if (session === "anonymous") {
+    return (
+      <div className={WRAPPER_CLASS}>
+        <Link
+          href={LISTING_LOGIN_PATH}
+          className={buttonClassWithSize("primaryGhost", "sm")}
+        >
+          <AppIcon icon={Heart} size={14} strokeWidth={1.8} decorative />
+          {save.label}
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className={WRAPPER_CLASS}>
       <Button
-        variant="ghost"
+        variant="primaryGhost"
         size="sm"
         aria-pressed={saved}
-        disabled={submitting}
-        onClick={() => void toggle()}
+        disabled={submitting || session === "loading"}
+        onClick={() => {
+          if (session !== "applicant") return;
+          void toggle();
+        }}
       >
         <AppIcon
-          icon={Bookmark}
+          icon={Heart}
           size={14}
           strokeWidth={1.8}
           decorative
-          {...(saved ? { className: "fill-current" } : {})}
+          className={cn(saved && "fill-current")}
         />
         {label}
       </Button>

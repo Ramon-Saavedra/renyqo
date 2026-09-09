@@ -20,16 +20,16 @@ const ASIDE_CLASS =
   "hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-x lg:border-border";
 
 const HEAD_CLASS =
-  "flex items-start justify-between gap-3 px-dashboard-parent-x py-dashboard-parent-y";
+  "flex items-start justify-between gap-3 px-parent-x py-parent-y";
 const HEAD_COPY_CLASS = "flex min-w-0 flex-col gap-1";
 const HEAD_TITLE_CLASS =
   "min-w-0 truncate font-mono text-meta text-foreground-tertiary";
 const HEAD_COUNT_CLASS = "font-mono text-meta text-foreground-tertiary";
 
 const LIST_CLASS =
-  "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-dashboard-parent-x pb-dashboard-parent-y";
+  "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto scrollbar-slim px-parent-x pb-parent-y";
 const SLOT_CLASS =
-  "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background px-dashboard-card-x py-dashboard-card-y text-center text-caption text-foreground-secondary";
+  "flex min-h-0 flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background px-card-x py-card-y text-center text-caption text-foreground-secondary";
 const SLOT_LOGO_CLASS =
   "inline-flex h-6.5 w-6.5 items-center justify-center rounded-sm bg-primary-soft text-primary";
 const SIDEBAR_OBJECT_SLOTS = 5;

@@ -21,7 +21,7 @@ const CARD_INACTIVE_CLASS = "border-border hover:border-primary-soft";
 const CARD_ACTIVE_CLASS = "border-primary bg-primary";
 
 const HEADER_CLASS =
-  "pointer-events-none flex shrink-0 items-center py-2 pl-dashboard-card-x pr-12";
+  "pointer-events-none flex shrink-0 items-center py-2 pl-card-x pr-12";
 const HEADER_INACTIVE_CLASS = "bg-primary-tint";
 const HEADER_ACTIVE_CLASS =
   "border-b border-primary-foreground/15 bg-primary-foreground/12";
@@ -35,7 +35,7 @@ const DOT_CLASS = "h-1.5 w-1.5 rounded-full bg-current";
 const SHARE_BUTTON_CLASS = "absolute top-1 right-3 z-20 shrink-0";
 
 const BODY_CLASS =
-  "pointer-events-none flex min-w-0 flex-1 flex-col px-dashboard-card-x py-dashboard-card-y";
+  "pointer-events-none flex min-w-0 flex-1 flex-col px-card-x py-card-y";
 const CONTENT_ROW_CLASS = "flex min-w-0 gap-2.5";
 const TEXT_CLASS = "flex min-w-0 flex-1 flex-col";
 

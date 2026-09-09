@@ -28,6 +28,19 @@ function getCurrentUserRevision(): number {
   return currentUserRevision;
 }
 
+const SERVER_CURRENT_USER_STATE: CurrentUserState = {
+  user: null,
+  loading: true,
+};
+
+function getServerCurrentUserSnapshot(): CurrentUserState {
+  return SERVER_CURRENT_USER_STATE;
+}
+
+function getServerCurrentUserRevision(): number {
+  return 0;
+}
+
 function setCurrentUserSnapshot(user: SafeUser | null): void {
   currentUserSnapshot = { user, loading: false };
   notifyCurrentUserChange();
@@ -55,12 +68,12 @@ export function useCurrentUser(): CurrentUserState {
   const revision = useSyncExternalStore(
     subscribeToCurrentUser,
     getCurrentUserRevision,
-    getCurrentUserRevision,
+    getServerCurrentUserRevision,
   );
   const state = useSyncExternalStore(
     subscribeToCurrentUser,
     getCurrentUserSnapshot,
-    getCurrentUserSnapshot,
+    getServerCurrentUserSnapshot,
   );
 
   useEffect(() => {

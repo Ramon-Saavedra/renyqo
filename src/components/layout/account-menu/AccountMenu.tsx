@@ -14,6 +14,7 @@ import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { invalidateApplicantProfile } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
 import { SavedListingsMenuLink } from "@/features/applicant/navigation/components/SavedListingsMenuLink";
 import { ProfileMenuLink } from "@/features/applicant/profile/components/ProfileMenuLink";
+import { clearListingsSearchSession } from "@/features/applicant/listings/utils/listings-search-params";
 import { logout } from "@/lib/api/auth";
 import {
   invalidateCurrentUser,
@@ -69,6 +70,7 @@ export function AccountMenu({
     setLoggingOut(true);
     try {
       await logout();
+      clearListingsSearchSession();
       invalidateCurrentUser();
       invalidateApplicantProfile();
       router.replace("/login");

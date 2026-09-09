@@ -1,5 +1,4 @@
 export const listingDetailCopy = {
-  backHref: "/listings",
   backLabel: "Zurück zu den Suchergebnissen",
   backLinkShort: "Zurück zur Suche",
 
@@ -27,6 +26,8 @@ export const listingDetailCopy = {
 
   apply: {
     label: "Bewerben",
+    anonymousLead: "Du möchtest dich auf dieses Mietobjekt bewerben?",
+    start: "Bewerbung starten",
   },
 
   save: {

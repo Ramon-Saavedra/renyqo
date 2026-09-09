@@ -14,7 +14,7 @@ interface AccentPickerProps {
 }
 
 const TRIGGER_CLASS = buttonClassWithSize("primaryGhost", "icon-sm");
-const PANEL_CLASS = "w-32 px-dashboard-parent-x py-dashboard-parent-y";
+const PANEL_CLASS = "w-32 px-parent-x py-parent-y";
 
 export function AccentPicker({ value, onChange }: AccentPickerProps) {
   const { accent } = dashboardCopy;

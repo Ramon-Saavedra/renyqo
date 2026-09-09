@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { reportListing } from "../../api/listing-report";
 import type * as listingReportApi from "../../api/listing-report";
+import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { ListingReportAction } from "./ListingReportAction";
 
 vi.mock("../../api/listing-report", async (importOriginal) => {
@@ -13,6 +14,12 @@ vi.mock("../../api/listing-report", async (importOriginal) => {
     reportListing: vi.fn(),
   };
 });
+
+vi.mock("../../hooks/useListingViewerSession", () => ({
+  useListingViewerSession: vi.fn(),
+}));
+
+const session = vi.mocked(useListingViewerSession);
 
 const created = {
   id: "report-1",
@@ -24,6 +31,29 @@ const created = {
 describe("ListingReportAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    session.mockReturnValue("applicant");
+  });
+
+  it("guides anonymous users to login without opening the report dialog", async () => {
+    const user = userEvent.setup();
+    session.mockReturnValue("anonymous");
+    render(<ListingReportAction listingId="listing-1" />);
+
+    const link = screen.getByRole("link", { name: "Melden" });
+    expect(link.getAttribute("href")).toBe("/login");
+    await user.click(link);
+
+    expect(reportListing).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Melden" })).toBeNull();
+  });
+
+  it("hides report for a non-applicant session", () => {
+    session.mockReturnValue("other");
+    render(<ListingReportAction listingId="listing-1" />);
+
+    expect(screen.queryByRole("button", { name: "Melden" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Melden" })).toBeNull();
   });
 
   it("opens the report dialog from Melden", async () => {
