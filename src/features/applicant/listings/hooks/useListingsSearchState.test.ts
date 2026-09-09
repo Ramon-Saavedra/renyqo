@@ -130,4 +130,3 @@ describe("useListingsSearchState", () => {
     expect(result.current.sort).toBe("newest");
   });
 });
-
