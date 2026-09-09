@@ -1,4 +1,6 @@
+import { ROOM_OPTIONS } from "../copy/listings";
 import type { ListingFilters, SortKey } from "../types";
+import { parseFilterInteger } from "./filter-value";
 
 export const LISTINGS_SEARCH_PATH = "/listings";
 export const LISTINGS_SEARCH_SESSION_KEY = "renyqo.listingsSearch";
@@ -8,7 +10,12 @@ export function clampListingsSearchQuery(value: string): string {
   return value.slice(0, LISTINGS_SEARCH_QUERY_MAX_LENGTH);
 }
 
-const DATE_ONLY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const ALLOWED_MIN_ROOMS = new Set(
+  ROOM_OPTIONS.map((option) => option.value).filter(
+    (value): value is number => value !== null,
+  ),
+);
 const SORT_KEYS: readonly SortKey[] = [
   "newest",
   "price-asc",
@@ -25,10 +32,14 @@ export interface SearchParamsReader {
   get(name: string): string | null;
 }
 
-function parsePositiveNumber(value: string | null): number | null {
-  if (value === null || value === "") return null;
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+function parsePositiveInteger(value: string | null): number | null {
+  if (value === null) return null;
+  return parseFilterInteger(value);
+}
+
+function parseMinRooms(value: string | null): number | null {
+  const parsed = parsePositiveInteger(value);
+  if (parsed === null || !ALLOWED_MIN_ROOMS.has(parsed)) return null;
   return parsed;
 }
 
@@ -48,7 +59,20 @@ function parseSort(value: string | null): SortKey {
 }
 
 function parseAvailableFrom(value: string | null): string | null {
-  if (value === null || !DATE_ONLY_PATTERN.test(value)) return null;
+  if (value === null) return null;
+  const match = DATE_ONLY_PATTERN.exec(value);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
   return value;
 }
 
@@ -58,9 +82,9 @@ export function parseListingsSearchParams(
   return {
     filters: {
       query: clampListingsSearchQuery((searchParams.get("query") ?? "").trim()),
-      maxColdRent: parsePositiveNumber(searchParams.get("maxRent")),
-      minRooms: parsePositiveNumber(searchParams.get("minRooms")),
-      minLivingArea: parsePositiveNumber(searchParams.get("minLivingArea")),
+      maxColdRent: parsePositiveInteger(searchParams.get("maxRent")),
+      minRooms: parseMinRooms(searchParams.get("minRooms")),
+      minLivingArea: parsePositiveInteger(searchParams.get("minLivingArea")),
       availableFrom: parseAvailableFrom(searchParams.get("availableBy")),
       onlyMatching: parseOnlyMatching(searchParams.get("onlyMatching")),
     },

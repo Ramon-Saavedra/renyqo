@@ -100,6 +100,43 @@ describe("listings search params", () => {
     });
   });
 
+  it("discards values outside the UI and contract domain", () => {
+    const parsed = parseListingsSearchParams(
+      new URLSearchParams(
+        "maxRent=1e3&minRooms=2.5&minLivingArea=80.5&availableBy=2026-99-99",
+      ),
+    );
+
+    expect(parsed.filters).toEqual(EMPTY_FILTERS);
+    expect(
+      parseListingsSearchParams(new URLSearchParams("minRooms=6")).filters
+        .minRooms,
+    ).toBeNull();
+    expect(
+      parseListingsSearchParams(new URLSearchParams("minRooms=3")).filters
+        .minRooms,
+    ).toBe(3);
+    expect(
+      parseListingsSearchParams(new URLSearchParams("maxRent=1150")).filters
+        .maxColdRent,
+    ).toBe(1150);
+    expect(
+      parseListingsSearchParams(new URLSearchParams("availableBy=2025-02-29"))
+        .filters.availableFrom,
+    ).toBeNull();
+    expect(
+      parseListingsSearchParams(new URLSearchParams("availableBy=2024-02-29"))
+        .filters.availableFrom,
+    ).toBe("2024-02-29");
+  });
+
+  it("does not restore discarded search params on the detail back link", () => {
+    persistListingsSearchQuery(
+      "minRooms=2.5&availableBy=2026-99-99&maxRent=1300",
+    );
+    expect(listingsSearchBackHref()).toBe("/listings?maxRent=1300");
+  });
+
   it("omits default sort from the serialized query", () => {
     expect(
       serializeListingsSearchQuery(filters({ query: "Köln" }), "newest"),
