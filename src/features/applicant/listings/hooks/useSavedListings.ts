@@ -13,6 +13,7 @@ export interface UseSavedListingsResult {
   readonly loadMore: () => void;
   readonly retry: () => void;
   readonly retryMore: () => void;
+  readonly removeListing: (listingId: string) => void;
 }
 
 const PAGE_SIZE = 20;
@@ -40,6 +41,7 @@ export function useSavedListings(): UseSavedListingsResult {
   const [retryCount, setRetryCount] = useState(0);
   const fetchGenerationRef = useRef(0);
   const paginationControllerRef = useRef<AbortController | null>(null);
+  const listingsRef = useRef<readonly PublicListing[]>([]);
 
   useEffect(() => {
     const { controller, isStale } = startFetch(fetchGenerationRef);
@@ -122,12 +124,32 @@ export function useSavedListings(): UseSavedListingsResult {
     loadMoreRef.current = handleLoadMore;
   });
 
+  useEffect(() => {
+    listingsRef.current = listings;
+  }, [listings]);
+
+  useEffect(() => {
+    if (listings.length > 0) return;
+    if (nextCursor === null) return;
+    if (fetchStatus !== "idle") return;
+    loadMoreRef.current();
+  }, [listings.length, nextCursor, fetchStatus]);
+
   const handleRetry = useCallback(() => {
     setRetryCount((current) => current + 1);
   }, []);
 
   const handleRetryMore = useCallback(() => {
     loadMoreRef.current();
+  }, []);
+
+  const removeListing = useCallback((listingId: string) => {
+    const current = listingsRef.current;
+    if (!current.some((item) => item.id === listingId)) return;
+    const next = current.filter((item) => item.id !== listingId);
+    listingsRef.current = next;
+    setListings(next);
+    setTotal((total) => Math.max(0, total - 1));
   }, []);
 
   return {
@@ -138,5 +160,6 @@ export function useSavedListings(): UseSavedListingsResult {
     loadMore: handleLoadMore,
     retry: handleRetry,
     retryMore: handleRetryMore,
+    removeListing,
   };
 }

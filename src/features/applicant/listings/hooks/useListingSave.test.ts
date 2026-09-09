@@ -193,4 +193,64 @@ describe("useListingSave", () => {
     expect(result.current.saved).toBe(false);
     expect(result.current.status).toBe("idle");
   });
+
+  it("notifies onSavedChange after a successful save", async () => {
+    const onSavedChange = vi.fn();
+    vi.mocked(saveListing).mockResolvedValue(saved);
+    const { result } = renderHook(() =>
+      useListingSave("listing-1", false, onSavedChange),
+    );
+
+    await act(async () => {
+      await result.current.toggle();
+    });
+
+    expect(onSavedChange).toHaveBeenCalledWith(true);
+  });
+
+  it("notifies onSavedChange after a successful unsave", async () => {
+    const onSavedChange = vi.fn();
+    vi.mocked(unsaveListing).mockResolvedValue(unsaved);
+    const { result } = renderHook(() =>
+      useListingSave("listing-1", true, onSavedChange),
+    );
+
+    await act(async () => {
+      await result.current.toggle();
+    });
+
+    expect(onSavedChange).toHaveBeenCalledWith(false);
+  });
+
+  it("does not notify onSavedChange when save fails", async () => {
+    const onSavedChange = vi.fn();
+    vi.mocked(saveListing).mockRejectedValue(new ApiError(500, "fail"));
+    const { result } = renderHook(() =>
+      useListingSave("listing-1", false, onSavedChange),
+    );
+
+    await act(async () => {
+      await result.current.toggle();
+    });
+
+    expect(onSavedChange).not.toHaveBeenCalled();
+    expect(result.current.saved).toBe(false);
+    expect(result.current.status).toBe("error");
+  });
+
+  it("does not notify onSavedChange when unsave fails", async () => {
+    const onSavedChange = vi.fn();
+    vi.mocked(unsaveListing).mockRejectedValue(new ApiError(500, "fail"));
+    const { result } = renderHook(() =>
+      useListingSave("listing-1", true, onSavedChange),
+    );
+
+    await act(async () => {
+      await result.current.toggle();
+    });
+
+    expect(onSavedChange).not.toHaveBeenCalled();
+    expect(result.current.saved).toBe(true);
+    expect(result.current.status).toBe("error");
+  });
 });

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bookmark } from "lucide-react";
+import { Heart } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingsCopy } from "../copy/listings";
@@ -19,7 +19,7 @@ export function SavedListingsEmptyState() {
   return (
     <div className={WRAPPER_CLASS}>
       <span aria-hidden="true" className={MARK_CLASS}>
-        <AppIcon icon={Bookmark} size={24} strokeWidth={1.6} decorative />
+        <AppIcon icon={Heart} size={24} strokeWidth={1.6} decorative />
       </span>
       <div className="flex flex-col items-center gap-2">
         <h2 className={TITLE_CLASS}>{listingsCopy.saved.emptyTitle}</h2>

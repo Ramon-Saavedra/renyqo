@@ -30,7 +30,18 @@ export function formatRooms(value: number): string {
   return value === 1 ? "1 Zimmer" : `${formatDecimal(value)} Zimmer`;
 }
 
+const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
 export function formatAvailability(iso: string | null): string {
   if (!iso) return "sofort";
+
+  const dateOnly = DATE_ONLY_PATTERN.exec(iso);
+  if (dateOnly) {
+    const year = Number(dateOnly[1]);
+    const month = Number(dateOnly[2]);
+    const day = Number(dateOnly[3]);
+    return DATE_FORMATTER.format(new Date(year, month - 1, day));
+  }
+
   return DATE_FORMATTER.format(new Date(iso));
 }

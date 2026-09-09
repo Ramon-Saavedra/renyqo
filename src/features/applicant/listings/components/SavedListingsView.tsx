@@ -25,14 +25,23 @@ export function SavedListingsView() {
   const profileStatus = useApplicantProfileStatus();
   const hasProfile = profileStatus === "exists";
 
-  const { listings, nextCursor, fetchStatus, loadMore, retry, retryMore } =
-    useSavedListings();
+  const {
+    listings,
+    nextCursor,
+    fetchStatus,
+    loadMore,
+    retry,
+    retryMore,
+    removeListing,
+  } = useSavedListings();
 
   const isError = fetchStatus === "error-page" || fetchStatus === "error-more";
-  const isInitialLoading = fetchStatus === "loading-page";
   const isLoadingMore = fetchStatus === "loading-more";
   const hasMore = nextCursor !== null;
-  const showGrid = listings.length > 0 || fetchStatus === "loading-page";
+  const isInitialLoading =
+    fetchStatus === "loading-page" ||
+    (listings.length === 0 && !isError && (isLoadingMore || hasMore));
+  const showEmpty = listings.length === 0 && !hasMore && fetchStatus === "idle";
 
   const eagerIds = useMemo(() => {
     const ids = new Set<string>();
@@ -65,7 +74,7 @@ export function SavedListingsView() {
 
         {isInitialLoading ? (
           <ListingsLoadingGrid />
-        ) : !showGrid && fetchStatus === "idle" ? (
+        ) : showEmpty ? (
           <SavedListingsEmptyState />
         ) : (
           <>
@@ -80,6 +89,9 @@ export function SavedListingsView() {
                     href={`/listings/${listing.id}`}
                     showMatch={hasProfile}
                     eager={eagerIds.has(listing.id)}
+                    onSavedChange={(saved) => {
+                      if (!saved) removeListing(listing.id);
+                    }}
                   />
                 </li>
               ))}

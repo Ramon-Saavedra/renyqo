@@ -57,9 +57,26 @@ describe("formatAvailability", () => {
     expect(formatAvailability("")).toBe("sofort");
   });
 
-  it("formats an ISO date in German locale", () => {
-    // Use a fixed date that formats consistently.
-    const result = formatAvailability("2026-09-01");
-    expect(result).toBe("01.09.2026");
+  it("formats a date-only ISO value on the local calendar day", () => {
+    expect(formatAvailability("2026-09-01")).toBe("01.09.2026");
+  });
+
+  it("does not shift a date-only value through UTC midnight parsing", () => {
+    const utcParsed = new Date("2026-01-01");
+    const utcFormatted = new Intl.DateTimeFormat("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(utcParsed);
+    expect(formatAvailability("2026-01-01")).toBe("01.01.2026");
+    if (utcFormatted !== "01.01.2026") {
+      expect(formatAvailability("2026-01-01")).not.toBe(utcFormatted);
+    }
+  });
+
+  it("formats an ISO datetime through the Date parser", () => {
+    expect(formatAvailability("2026-07-01T10:00:00.000Z")).toMatch(
+      /^\d{2}\.\d{2}\.\d{4}$/,
+    );
   });
 });
