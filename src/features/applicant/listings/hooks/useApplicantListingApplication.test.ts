@@ -1,5 +1,16 @@
-import { describe, expect, it } from "vitest";
-import { findCurrentApplicantListingApplication } from "./useApplicantListingApplication";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getApplicantApplications } from "../api/applicant-applications";
+import {
+  findCurrentApplicantListingApplication,
+  useApplicantListingApplication,
+} from "./useApplicantListingApplication";
+
+vi.mock("../api/applicant-applications", () => ({
+  getApplicantApplications: vi.fn(),
+}));
+
+const applications = vi.mocked(getApplicantApplications);
 
 const application = (id: string, listingId: string) => ({
   id,
@@ -32,5 +43,51 @@ describe("findCurrentApplicantListingApplication", () => {
         "listing-1",
       ),
     ).toBeNull();
+  });
+});
+
+describe("useApplicantListingApplication", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    applications.mockResolvedValue([application("a", "listing-1")]);
+  });
+
+  it("does not fetch when disabled", async () => {
+    const { result } = renderHook(() =>
+      useApplicantListingApplication("listing-1", false),
+    );
+
+    expect(result.current.status).toBe("idle");
+    expect(result.current.application).toBeNull();
+    await waitFor(() => {
+      expect(applications).not.toHaveBeenCalled();
+    });
+  });
+
+  it("fetches after becoming enabled", async () => {
+    const { result, rerender } = renderHook(
+      ({ enabled }) => useApplicantListingApplication("listing-1", enabled),
+      { initialProps: { enabled: false } },
+    );
+
+    expect(applications).not.toHaveBeenCalled();
+    rerender({ enabled: true });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("loaded");
+    });
+    expect(applications).toHaveBeenCalledTimes(1);
+  });
+
+  it("fetches when enabled", async () => {
+    const { result } = renderHook(() =>
+      useApplicantListingApplication("listing-1", true),
+    );
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("loaded");
+    });
+    expect(applications).toHaveBeenCalledTimes(1);
+    expect(result.current.application).toEqual(application("a", "listing-1"));
   });
 });
