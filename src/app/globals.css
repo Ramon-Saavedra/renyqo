@@ -181,7 +181,7 @@ html {
 .dark {
   --background: #0c0c0e;
   --background-subtle: #17171a;
-  --background-muted: #1d1d21;
+  --background-muted: #121214;
   --media-placeholder: #1f2024;
   --input: #3a3b44;
 
@@ -189,7 +189,7 @@ html {
   --foreground-secondary: #a8a6a2;
   --foreground-tertiary: #a3a09b;
 
-  --border: #34353c;
+  --border: #1C1C1F;
   --border-strong: #4c4d56;
 
   --primary: #8b9cbe;
