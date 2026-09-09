@@ -5,6 +5,10 @@ import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/form/Input";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingsCopy } from "../copy/listings";
+import {
+  LISTINGS_SEARCH_QUERY_MAX_LENGTH,
+  clampListingsSearchQuery,
+} from "../utils/listings-search-params";
 
 interface SearchFieldProps {
   value: string;
@@ -73,7 +77,10 @@ export function SearchField({ value, onChange }: SearchFieldProps) {
         placeholder={listingsCopy.console.searchPlaceholder}
         aria-label={listingsCopy.console.searchAriaLabel}
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        maxLength={LISTINGS_SEARCH_QUERY_MAX_LENGTH}
+        onChange={(event) =>
+          onChange(clampListingsSearchQuery(event.target.value))
+        }
       />
       {showHint ? (
         <span aria-hidden="true" className={HINT_CLASS}>

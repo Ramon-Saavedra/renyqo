@@ -72,6 +72,26 @@ describe("usePublicListings", () => {
     expect(result.current.listings).toHaveLength(1);
   });
 
+  it("includes the initial query on the first fetch without waiting for debounce", async () => {
+    vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+    renderHook(() =>
+      usePublicListings(
+        { ...EMPTY_FILTERS, query: "Freiburg" },
+        "newest",
+        false,
+      ),
+    );
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalled();
+    });
+
+    expect(vi.mocked(getPublicListings).mock.calls[0]?.[0]?.query).toBe(
+      "Freiburg",
+    );
+  });
+
   it("transitions to error-page on network failure", async () => {
     vi.mocked(getPublicListings).mockRejectedValue(new Error("fail"));
 
@@ -575,5 +595,196 @@ describe("usePublicListings", () => {
     });
 
     expect(result.current.fetchStatus).toBe("idle");
+  });
+
+  it("fetches the cleared query immediately when navigating to /listings without unmount", async () => {
+    vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+    const { result, rerender } = renderHook(
+      ({ filters }) => usePublicListings(filters, "newest", false),
+      {
+        initialProps: {
+          filters: {
+            ...EMPTY_FILTERS,
+            query: "Freiburg",
+            maxColdRent: 1300,
+          } as Parameters<typeof usePublicListings>[0],
+        },
+      },
+    );
+
+    await waitFor(() => {
+      expect(result.current.fetchStatus).toBe("idle");
+    });
+
+    expect(vi.mocked(getPublicListings).mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({ query: "Freiburg", maxRent: 1300 }),
+    );
+
+    rerender({ filters: EMPTY_FILTERS });
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalledTimes(2);
+    });
+
+    expect(vi.mocked(getPublicListings).mock.calls[1]?.[0]).toEqual(
+      expect.objectContaining({ query: undefined, maxRent: undefined }),
+    );
+    expect(
+      vi
+        .mocked(getPublicListings)
+        .mock.calls.some(
+          ([params]) => params?.query === "Freiburg" && params?.maxRent == null,
+        ),
+    ).toBe(false);
+  });
+
+  it("fetches a replaced query immediately instead of keeping the previous one", async () => {
+    vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+    const { rerender } = renderHook(
+      ({ query }) =>
+        usePublicListings({ ...EMPTY_FILTERS, query }, "newest", false),
+      { initialProps: { query: "Freiburg" } },
+    );
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalled();
+    });
+
+    rerender({ query: "Berlin" });
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalledTimes(2);
+    });
+
+    expect(vi.mocked(getPublicListings).mock.calls[1]?.[0]?.query).toBe(
+      "Berlin",
+    );
+  });
+
+  it("does not fetch immediately for an incremental typed query", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+      const { rerender } = renderHook(
+        ({ query }) =>
+          usePublicListings({ ...EMPTY_FILTERS, query }, "newest", false),
+        { initialProps: { query: "F" } },
+      );
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(vi.mocked(getPublicListings).mock.calls[0]?.[0]?.query).toBe("F");
+      const callsAfterFirstFetch =
+        vi.mocked(getPublicListings).mock.calls.length;
+
+      rerender({ query: "Fr" });
+      expect(getPublicListings).toHaveBeenCalledTimes(callsAfterFirstFetch);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(299);
+      });
+      expect(getPublicListings).toHaveBeenCalledTimes(callsAfterFirstFetch);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+
+      expect(vi.mocked(getPublicListings).mock.calls.at(-1)?.[0]?.query).toBe(
+        "Fr",
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("debounces burst typing from an empty query until the last keystroke settles", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+      const { rerender } = renderHook(
+        ({ query }) =>
+          usePublicListings({ ...EMPTY_FILTERS, query }, "newest", false),
+        { initialProps: { query: "" } },
+      );
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(vi.mocked(getPublicListings).mock.calls[0]?.[0]?.query).toBe(
+        undefined,
+      );
+      const callsAfterMount = vi.mocked(getPublicListings).mock.calls.length;
+
+      rerender({ query: "F" });
+      rerender({ query: "Fr" });
+
+      expect(getPublicListings).toHaveBeenCalledTimes(callsAfterMount);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(299);
+      });
+      expect(getPublicListings).toHaveBeenCalledTimes(callsAfterMount);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1);
+      });
+
+      expect(vi.mocked(getPublicListings).mock.calls.at(-1)?.[0]?.query).toBe(
+        "Fr",
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("flushes a pending typed query when other filters change", async () => {
+    vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+    const { rerender } = renderHook(
+      ({ filters }) => usePublicListings(filters, "newest", false),
+      {
+        initialProps: {
+          filters: {
+            ...EMPTY_FILTERS,
+            query: "Freiburg",
+          } as Parameters<typeof usePublicListings>[0],
+        },
+      },
+    );
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalled();
+    });
+
+    rerender({
+      filters: {
+        ...EMPTY_FILTERS,
+        query: "Freiburgs",
+        maxColdRent: 1300,
+      },
+    });
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalledTimes(2);
+    });
+
+    expect(vi.mocked(getPublicListings).mock.calls[1]?.[0]).toEqual(
+      expect.objectContaining({ query: "Freiburgs", maxRent: 1300 }),
+    );
+    expect(
+      vi
+        .mocked(getPublicListings)
+        .mock.calls.some(
+          ([params]) =>
+            params?.query === "Freiburg" && params?.maxRent === 1300,
+        ),
+    ).toBe(false);
   });
 });

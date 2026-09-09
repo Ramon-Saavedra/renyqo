@@ -10,6 +10,7 @@ interface ListingDetailMessageProps {
   tone: ListingDetailMessageTone;
   title: string;
   lead: string;
+  backHref: string;
 }
 
 const WRAPPER_CLASS =
@@ -32,6 +33,7 @@ export function ListingDetailMessage({
   tone,
   title,
   lead,
+  backHref,
 }: ListingDetailMessageProps) {
   return (
     <div
@@ -52,10 +54,7 @@ export function ListingDetailMessage({
         <p className={LEAD_CLASS}>{lead}</p>
       </div>
 
-      <Link
-        href={listingDetailCopy.backHref}
-        className={buttonClass("primary")}
-      >
+      <Link href={backHref} className={buttonClass("primary")}>
         {listingDetailCopy.backLinkShort}
       </Link>
     </div>

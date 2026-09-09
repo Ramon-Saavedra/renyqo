@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
@@ -7,6 +8,11 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ListingsTopbarActions } from "../../../navigation/components/ListingsTopbarActions";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { usePublicListingDetail } from "../../hooks/usePublicListingDetail";
+import {
+  getServerListingsSearchBackHref,
+  listingsSearchBackHref,
+  subscribeListingsSearchBackHref,
+} from "../../utils/listings-search-params";
 import { ListingDescription } from "./ListingDescription";
 import { ListingDetailHeader } from "./ListingDetailHeader";
 import { ListingDetailMessage } from "./ListingDetailMessage";
@@ -28,6 +34,11 @@ const CONTENT_CLASS = "px-gutter pt-4.5 pb-11";
 
 export function ListingDetailView({ listingId }: ListingDetailViewProps) {
   const { listing, error, status } = usePublicListingDetail(listingId);
+  const backHref = useSyncExternalStore(
+    subscribeListingsSearchBackHref,
+    listingsSearchBackHref,
+    getServerListingsSearchBackHref,
+  );
 
   return (
     <>
@@ -36,7 +47,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
       </AppTopbar>
 
       <div className={BACK_ROW_CLASS}>
-        <Link href={listingDetailCopy.backHref} className={BACK_LINK_CLASS}>
+        <Link href={backHref} className={BACK_LINK_CLASS}>
           <AppIcon icon={ArrowLeft} size={14} strokeWidth={2} decorative />
           {listingDetailCopy.backLabel}
         </Link>
@@ -50,6 +61,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
             tone="not-found"
             title={listingDetailCopy.notFoundTitle}
             lead={listingDetailCopy.notFoundLead}
+            backHref={backHref}
           />
         )}
 
@@ -58,6 +70,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
             tone="error"
             title={error ?? listingDetailCopy.errorDefault}
             lead={listingDetailCopy.errorLead}
+            backHref={backHref}
           />
         )}
 

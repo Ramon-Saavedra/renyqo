@@ -1,16 +1,15 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { buttonClass } from "@/components/ui/button/Button";
 import { FlashToast } from "@/components/ui/toast/FlashToast";
 import { ListingsTopbarActions } from "@/features/applicant/navigation/components/ListingsTopbarActions";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
+import { useListingsSearchState } from "../hooks/useListingsSearchState";
 import { usePublicListings } from "../hooks/usePublicListings";
 import type { ListingsFetchStatus } from "../hooks/usePublicListings";
 import { listingsCopy } from "../copy/listings";
-import { EMPTY_FILTERS } from "../types";
-import type { ListingFilters, SortKey } from "../types";
 import { FilterDrawer } from "./FilterDrawer";
 import { AnimatedHeroTitle } from "./AnimatedHeroTitle";
 import { ListingCard } from "./ListingCard";
@@ -34,8 +33,8 @@ const LEAD_CLASS = "mb-6 max-w-2xl text-lead text-foreground-secondary";
 const LOAD_MORE_WRAPPER_CLASS = "mt-8 flex justify-center";
 
 export function ApplicantListingsView() {
-  const [filters, setFilters] = useState<ListingFilters>(EMPTY_FILTERS);
-  const [sort, setSort] = useState<SortKey>("newest");
+  const { filters, sort, updateFilters, resetFilters, setSort } =
+    useListingsSearchState();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const profileStatus = useApplicantProfileStatus();
@@ -50,14 +49,6 @@ export function ApplicantListingsView() {
     retry,
     retryMore,
   } = usePublicListings(filters, sort, hasProfile);
-
-  const updateFilters = useCallback((patch: Partial<ListingFilters>) => {
-    setFilters((current) => ({ ...current, ...patch }));
-  }, []);
-
-  const resetFilters = useCallback(() => {
-    setFilters(EMPTY_FILTERS);
-  }, []);
 
   const isError = fetchStatus === "error-page" || fetchStatus === "error-more";
   const isInitialLoading = fetchStatus === "loading-page";
