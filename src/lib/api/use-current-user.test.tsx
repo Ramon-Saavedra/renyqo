@@ -5,6 +5,7 @@ import { getCurrentUser, type SafeUser } from "./auth";
 import { ApiError } from "./client";
 import {
   invalidateCurrentUser,
+  isConfirmedAnonymousUser,
   setCurrentUser,
   useCurrentUser,
 } from "./use-current-user";
@@ -113,5 +114,28 @@ describe("useCurrentUser", () => {
     await waitFor(() => {
       expect(screen.getByText("ada@example.com")).toBeInstanceOf(HTMLElement);
     });
+  });
+});
+
+describe("isConfirmedAnonymousUser", () => {
+  it("is true only after a resolved anonymous session", () => {
+    expect(
+      isConfirmedAnonymousUser({ user: null, loading: false, error: false }),
+    ).toBe(true);
+  });
+
+  it("is false while loading or when the lookup failed", () => {
+    expect(
+      isConfirmedAnonymousUser({ user: null, loading: true, error: false }),
+    ).toBe(false);
+    expect(
+      isConfirmedAnonymousUser({ user: null, loading: false, error: true }),
+    ).toBe(false);
+  });
+
+  it("is false for an authenticated user", () => {
+    expect(
+      isConfirmedAnonymousUser({ user, loading: false, error: false }),
+    ).toBe(false);
   });
 });

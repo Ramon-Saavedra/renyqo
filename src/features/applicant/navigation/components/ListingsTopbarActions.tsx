@@ -3,12 +3,17 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { currentUserSessionCopy } from "@/components/auth/current-user-session-copy";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { buttonClass } from "@/components/ui/button/Button";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
-import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
-import { useCurrentUser } from "@/lib/api/use-current-user";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
+import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
+import {
+  invalidateCurrentUser,
+  isConfirmedAnonymousUser,
+  useCurrentUser,
+} from "@/lib/api/use-current-user";
 
 function ProviderRedirect() {
   const router = useRouter();
@@ -35,7 +40,7 @@ function ProviderRedirect() {
 const SKELETON_CLASS = "flex items-center gap-3.5";
 
 export function ListingsTopbarActions() {
-  const { user, loading } = useCurrentUser();
+  const { user, loading, error } = useCurrentUser();
 
   if (loading) {
     return (
@@ -46,7 +51,19 @@ export function ListingsTopbarActions() {
     );
   }
 
-  if (!user) {
+  if (error) {
+    return (
+      <button
+        type="button"
+        className={buttonClass("ghost")}
+        onClick={invalidateCurrentUser}
+      >
+        {currentUserSessionCopy.retry}
+      </button>
+    );
+  }
+
+  if (isConfirmedAnonymousUser({ user, loading, error }) || !user) {
     return (
       <div className="flex items-center gap-3">
         <Link href="/login" className={buttonClass("ghost")}>

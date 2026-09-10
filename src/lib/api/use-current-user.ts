@@ -11,6 +11,16 @@ export interface CurrentUserState {
   readonly error: boolean;
 }
 
+export function isConfirmedAnonymousUser(
+  state: CurrentUserState,
+): state is CurrentUserState & {
+  readonly user: null;
+  readonly loading: false;
+  readonly error: false;
+} {
+  return !state.loading && !state.error && state.user === null;
+}
+
 const currentUserListeners = new Set<() => void>();
 let currentUserSnapshot: CurrentUserState = {
   user: null,
