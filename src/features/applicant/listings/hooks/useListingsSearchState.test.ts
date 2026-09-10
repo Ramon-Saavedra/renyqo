@@ -113,6 +113,22 @@ describe("useListingsSearchState", () => {
     expect(result.current.filters.query).toBe("Fr");
   });
 
+  it("normalizes the search query in local state, URL, and session storage", () => {
+    const { result } = renderHook(() => useListingsSearchState());
+
+    act(() => {
+      result.current.updateFilters({ query: "Berlin " });
+    });
+
+    expect(result.current.filters.query).toBe("Berlin");
+    expect(replace).toHaveBeenCalledWith("/listings?query=Berlin", {
+      scroll: false,
+    });
+    expect(sessionStorage.getItem(LISTINGS_SEARCH_SESSION_KEY)).toBe(
+      "query=Berlin",
+    );
+  });
+
   it("restores filters from back/forward after a write has settled", () => {
     const { result, rerender } = renderHook(() => useListingsSearchState());
 

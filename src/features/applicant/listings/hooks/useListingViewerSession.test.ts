@@ -35,4 +35,13 @@ describe("resolveListingViewerSession", () => {
   it("returns other for a non-applicant session", () => {
     expect(resolveListingViewerSession(provider, false)).toBe("other");
   });
+
+  it("returns error when session resolution failed", () => {
+    expect(resolveListingViewerSession(null, false, true)).toBe("error");
+    expect(resolveListingViewerSession(applicant, false, true)).toBe("error");
+  });
+
+  it("keeps loading ahead of an error flag", () => {
+    expect(resolveListingViewerSession(null, true, true)).toBe("loading");
+  });
 });

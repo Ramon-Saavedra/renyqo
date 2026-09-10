@@ -2,10 +2,16 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { buttonClass } from "@/components/ui/button/Button";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
-import { useCurrentUser } from "@/lib/api/use-current-user";
+import {
+  invalidateCurrentUser,
+  isConfirmedAnonymousUser,
+  useCurrentUser,
+} from "@/lib/api/use-current-user";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
+import { currentUserSessionCopy } from "./current-user-session-copy";
 
 interface AuthenticatedPublicRedirectProps {
   children: React.ReactNode;
@@ -30,14 +36,34 @@ function AuthSessionSkeleton() {
   );
 }
 
+function AuthSessionError() {
+  return (
+    <div
+      role="alert"
+      className="mx-auto flex w-full max-w-md flex-col items-start gap-3 px-gutter py-section"
+    >
+      <p className="text-caption text-foreground-secondary">
+        {currentUserSessionCopy.error}
+      </p>
+      <button
+        type="button"
+        className={buttonClass("outline")}
+        onClick={invalidateCurrentUser}
+      >
+        {currentUserSessionCopy.retry}
+      </button>
+    </div>
+  );
+}
+
 export function AuthenticatedPublicRedirect({
   children,
 }: AuthenticatedPublicRedirectProps) {
   const router = useRouter();
-  const { user, loading } = useCurrentUser();
+  const { user, loading, error } = useCurrentUser();
 
   useEffect(() => {
-    if (loading || !user) return;
+    if (loading || error || !user) return;
 
     let active = true;
 
@@ -61,10 +87,13 @@ export function AuthenticatedPublicRedirect({
     return () => {
       active = false;
     };
-  }, [loading, router, user]);
+  }, [error, loading, router, user]);
 
   if (loading) return <AuthSessionSkeleton />;
-  if (!user) return <>{children}</>;
+  if (error) return <AuthSessionError />;
+  if (isConfirmedAnonymousUser({ user, loading, error }) || !user) {
+    return <>{children}</>;
+  }
 
   if (isApplicantRole(user.role) || isProviderRole(user.role)) {
     return <AuthSessionSkeleton />;

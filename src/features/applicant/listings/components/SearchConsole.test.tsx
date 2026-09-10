@@ -117,4 +117,23 @@ describe("SearchConsole", () => {
     await user.click(screen.getByRole("button", { name: /Filter/ }));
     expect(onOpenDrawer).toHaveBeenCalledTimes(1);
   });
+
+  it("emits a normalized search query while keeping a trailing space in the field", async () => {
+    const user = userEvent.setup();
+    renderConsole();
+
+    await user.type(
+      screen.getByRole("searchbox", { name: "Objekte nach Ort durchsuchen" }),
+      "Berlin ",
+    );
+
+    expect(onChange).toHaveBeenLastCalledWith({ query: "Berlin" });
+    expect(
+      (
+        screen.getByRole("searchbox", {
+          name: "Objekte nach Ort durchsuchen",
+        }) as HTMLInputElement
+      ).value,
+    ).toBe("Berlin ");
+  });
 });

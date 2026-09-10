@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { reportListing } from "../../api/listing-report";
 import type * as listingReportApi from "../../api/listing-report";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { ListingReportAction } from "./ListingReportAction";
 
 vi.mock("../../api/listing-report", async (importOriginal) => {
@@ -14,12 +13,6 @@ vi.mock("../../api/listing-report", async (importOriginal) => {
     reportListing: vi.fn(),
   };
 });
-
-vi.mock("../../hooks/useListingViewerSession", () => ({
-  useListingViewerSession: vi.fn(),
-}));
-
-const session = vi.mocked(useListingViewerSession);
 
 const created = {
   id: "report-1",
@@ -31,13 +24,11 @@ const created = {
 describe("ListingReportAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    session.mockReturnValue("applicant");
   });
 
   it("guides anonymous users to login without opening the report dialog", async () => {
     const user = userEvent.setup();
-    session.mockReturnValue("anonymous");
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="anonymous" />);
 
     const link = screen.getByRole("link", { name: "Melden" });
     expect(link.getAttribute("href")).toBe("/login");
@@ -49,8 +40,14 @@ describe("ListingReportAction", () => {
   });
 
   it("hides report for a non-applicant session", () => {
-    session.mockReturnValue("other");
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="other" />);
+
+    expect(screen.queryByRole("button", { name: "Melden" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Melden" })).toBeNull();
+  });
+
+  it("hides report while the viewer session is in error", () => {
+    render(<ListingReportAction listingId="listing-1" session="error" />);
 
     expect(screen.queryByRole("button", { name: "Melden" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Melden" })).toBeNull();
@@ -58,7 +55,7 @@ describe("ListingReportAction", () => {
 
   it("opens the report dialog from Melden", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
 
@@ -69,7 +66,7 @@ describe("ListingReportAction", () => {
 
   it("locks background scroll while the dialog is open", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     expect(document.body.style.overflow).toBe("hidden");
@@ -86,7 +83,7 @@ describe("ListingReportAction", () => {
 
   it("styles report radios with design-system tokens and keeps native semantics", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
 
@@ -108,7 +105,7 @@ describe("ListingReportAction", () => {
 
   it("makes the underlying page inert while the dialog is open", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     const trigger = screen.getByRole("button", { name: "Melden" });
     await user.click(trigger);
@@ -132,7 +129,7 @@ describe("ListingReportAction", () => {
 
   it("requires detail for Sonstiges and does not submit", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Sonstiges"));
@@ -147,7 +144,7 @@ describe("ListingReportAction", () => {
   it("submits a reason without optional detail", async () => {
     const user = userEvent.setup();
     vi.mocked(reportListing).mockResolvedValue(created);
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(
@@ -172,7 +169,7 @@ describe("ListingReportAction", () => {
         resolveRequest = () => resolve(created);
       }),
     );
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Betrugsverdacht"));
@@ -189,7 +186,7 @@ describe("ListingReportAction", () => {
   it("keeps the dialog open on a 409 duplicate", async () => {
     const user = userEvent.setup();
     vi.mocked(reportListing).mockRejectedValue(new ApiError(409, "conflict"));
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Diskriminierung"));
@@ -207,7 +204,7 @@ describe("ListingReportAction", () => {
     vi.mocked(reportListing).mockRejectedValue(
       new ApiError(429, "limited", "http", "LISTING_REPORT_RATE_LIMITED"),
     );
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Unangemessene Inhalte"));
@@ -223,7 +220,7 @@ describe("ListingReportAction", () => {
 
   it("requires a reason before submitting", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByRole("button", { name: "Meldung senden" }));
@@ -237,7 +234,7 @@ describe("ListingReportAction", () => {
 
   it("clears the reason error and aria-invalid after a reason is selected", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByRole("button", { name: "Meldung senden" }));
@@ -259,7 +256,7 @@ describe("ListingReportAction", () => {
 
   it("clears the detail error and textarea invalid state after valid detail is entered", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Sonstiges"));
@@ -279,7 +276,7 @@ describe("ListingReportAction", () => {
 
   it("clears the detail error when switching away from Sonstiges", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Sonstiges"));
@@ -300,7 +297,7 @@ describe("ListingReportAction", () => {
   it("keeps the dialog open on a 401", async () => {
     const user = userEvent.setup();
     vi.mocked(reportListing).mockRejectedValue(new ApiError(401, "auth"));
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Doppeltes Inserat / Spam"));
@@ -315,7 +312,7 @@ describe("ListingReportAction", () => {
 
   it("closes on Escape and restores focus to Melden", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     const trigger = screen.getByRole("button", { name: "Melden" });
     await user.click(trigger);
@@ -335,7 +332,7 @@ describe("ListingReportAction", () => {
         resolveRequest = () => resolve(created);
       }),
     );
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(screen.getByLabelText("Betrugsverdacht"));
@@ -350,7 +347,7 @@ describe("ListingReportAction", () => {
 
   it("traps Tab focus inside the dialog", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
 
@@ -365,7 +362,7 @@ describe("ListingReportAction", () => {
 
   it("closes when the overlay is clicked and stays open when the panel is clicked", async () => {
     const user = userEvent.setup();
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     const dialog = screen.getByRole("dialog", { name: "Objekt melden" });
@@ -379,7 +376,7 @@ describe("ListingReportAction", () => {
   it("clears previous success feedback when starting a new report attempt", async () => {
     const user = userEvent.setup();
     vi.mocked(reportListing).mockResolvedValue(created);
-    render(<ListingReportAction listingId="listing-1" />);
+    render(<ListingReportAction listingId="listing-1" session="applicant" />);
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(
@@ -403,7 +400,9 @@ describe("ListingReportAction", () => {
   it("clears success feedback when the listing id changes", async () => {
     const user = userEvent.setup();
     vi.mocked(reportListing).mockResolvedValue(created);
-    const { rerender } = render(<ListingReportAction listingId="listing-1" />);
+    const { rerender } = render(
+      <ListingReportAction listingId="listing-1" session="applicant" />,
+    );
 
     await user.click(screen.getByRole("button", { name: "Melden" }));
     await user.click(
@@ -412,7 +411,7 @@ describe("ListingReportAction", () => {
     await user.click(screen.getByRole("button", { name: "Meldung senden" }));
     expect(await screen.findByRole("status")).toBeInstanceOf(HTMLElement);
 
-    rerender(<ListingReportAction listingId="listing-2" />);
+    rerender(<ListingReportAction listingId="listing-2" session="applicant" />);
     expect(screen.queryByRole("status")).toBeNull();
   });
 });

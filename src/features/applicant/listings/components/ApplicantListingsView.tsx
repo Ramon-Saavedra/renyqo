@@ -5,11 +5,13 @@ import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { buttonClass } from "@/components/ui/button/Button";
 import { FlashToast } from "@/components/ui/toast/FlashToast";
 import { ListingsTopbarActions } from "@/features/applicant/navigation/components/ListingsTopbarActions";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
+import { listingsCopy } from "../copy/listings";
+import { useListingViewerSession } from "../hooks/useListingViewerSession";
 import { useListingsSearchState } from "../hooks/useListingsSearchState";
 import { usePublicListings } from "../hooks/usePublicListings";
 import type { ListingsFetchStatus } from "../hooks/usePublicListings";
-import { listingsCopy } from "../copy/listings";
 import { FilterDrawer } from "./FilterDrawer";
 import { AnimatedHeroTitle } from "./AnimatedHeroTitle";
 import { ListingCard } from "./ListingCard";
@@ -33,6 +35,7 @@ const LEAD_CLASS = "mb-6 max-w-2xl text-lead text-foreground-secondary";
 const LOAD_MORE_WRAPPER_CLASS = "mt-8 flex justify-center";
 
 export function ApplicantListingsView() {
+  const session = useListingViewerSession();
   const { filters, sort, updateFilters, resetFilters, setSort } =
     useListingsSearchState();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -86,6 +89,15 @@ export function ApplicantListingsView() {
           onOpenDrawer={() => setDrawerOpen(true)}
         />
 
+        {session === "error" && (
+          <div className="mt-6">
+            <ListingsErrorBanner
+              message={listingsCopy.error.session}
+              onRetry={invalidateCurrentUser}
+            />
+          </div>
+        )}
+
         {isError && (
           <div className="mt-6">
             <ListingsErrorBanner
@@ -111,6 +123,7 @@ export function ApplicantListingsView() {
                   <ListingCard
                     listing={listing}
                     href={`/listings/${listing.id}`}
+                    session={session}
                     showMatch={hasProfile}
                     eager={eagerIds.has(listing.id)}
                   />

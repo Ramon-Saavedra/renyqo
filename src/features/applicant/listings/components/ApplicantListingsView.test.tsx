@@ -1,7 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
+import type * as currentUserApi from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
+import { listingsCopy } from "../copy/listings";
+import { useListingViewerSession } from "../hooks/useListingViewerSession";
 import { usePublicListings } from "../hooks/usePublicListings";
 import type { UsePublicListingsResult } from "../hooks/usePublicListings";
 import type { PublicListing } from "../types";
@@ -16,6 +20,18 @@ vi.mock("../hooks/usePublicListings", () => ({
   usePublicListings: vi.fn(),
 }));
 
+vi.mock("../hooks/useListingViewerSession", () => ({
+  useListingViewerSession: vi.fn(),
+}));
+
+vi.mock("@/lib/api/use-current-user", async (importOriginal) => {
+  const actual = await importOriginal<typeof currentUserApi>();
+  return {
+    ...actual,
+    invalidateCurrentUser: vi.fn(),
+  };
+});
+
 const replace = vi.fn();
 let searchParams = new URLSearchParams();
 
@@ -27,6 +43,8 @@ vi.mock("next/navigation", () => ({
 
 const mockUsePublicListings = vi.mocked(usePublicListings);
 const mockUseProfileStatus = vi.mocked(useApplicantProfileStatus);
+const session = vi.mocked(useListingViewerSession);
+const retrySession = vi.mocked(invalidateCurrentUser);
 
 function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
   return {
@@ -92,6 +110,7 @@ describe("ApplicantListingsView", () => {
     window.matchMedia = buildMatchMedia(true);
     mockUseProfileStatus.mockReturnValue("unavailable");
     mockUsePublicListings.mockReturnValue(mockResult());
+    session.mockReturnValue("applicant");
   });
 
   afterEach(() => {
@@ -408,6 +427,35 @@ describe("ApplicantListingsView", () => {
     });
   });
 
+  it("normalizes a trailing space in the search query before URL persistence", async () => {
+    mockUsePublicListings.mockReturnValue(
+      mockResult({ fetchStatus: "idle", listings: [buildListing()], total: 1 }),
+    );
+    renderView();
+
+    const user = userEvent.setup();
+    await user.type(
+      screen.getByRole("searchbox", { name: "Objekte nach Ort durchsuchen" }),
+      "Berlin ",
+    );
+
+    expect(replace).toHaveBeenLastCalledWith("/listings?query=Berlin", {
+      scroll: false,
+    });
+    expect(mockUsePublicListings).toHaveBeenLastCalledWith(
+      expect.objectContaining({ query: "Berlin" }),
+      "newest",
+      false,
+    );
+    expect(
+      (
+        screen.getByRole("searchbox", {
+          name: "Objekte nach Ort durchsuchen",
+        }) as HTMLInputElement
+      ).value,
+    ).toBe("Berlin ");
+  });
+
   it("applies a cleared listings URL without unmounting the view", () => {
     searchParams = new URLSearchParams("query=Freiburg&maxRent=1300");
     mockUsePublicListings.mockReturnValue(
@@ -445,5 +493,27 @@ describe("ApplicantListingsView", () => {
         .getByRole("searchbox", { name: "Objekte nach Ort durchsuchen" })
         .getAttribute("maxlength"),
     ).toBe(String(LISTINGS_SEARCH_QUERY_MAX_LENGTH));
+  });
+
+  it("shows a recoverable session error without enabling merken or anonymous login", async () => {
+    session.mockReturnValue("error");
+    mockUsePublicListings.mockReturnValue(
+      mockResult({
+        fetchStatus: "idle",
+        listings: [buildListing()],
+        total: 1,
+      }),
+    );
+    renderView();
+
+    expect(screen.getByText(listingsCopy.error.session)).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Erneut versuchen" }));
+    expect(retrySession).toHaveBeenCalledTimes(1);
   });
 });
