@@ -2,14 +2,27 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { createOnceCache } from "@/lib/utils/once-cache";
+import { ApiError } from "./client";
 import { getCurrentUser, type SafeUser } from "./auth";
 
-const currentUserCache = createOnceCache<SafeUser | null>(() =>
-  getCurrentUser().catch(() => null),
-);
+export interface CurrentUserState {
+  readonly user: SafeUser | null;
+  readonly loading: boolean;
+  readonly error: boolean;
+}
+
 const currentUserListeners = new Set<() => void>();
-let currentUserSnapshot: CurrentUserState = { user: null, loading: true };
+let currentUserSnapshot: CurrentUserState = {
+  user: null,
+  loading: true,
+  error: false,
+};
 let currentUserRevision = 0;
+let currentUserLoad: Promise<void> | null = null;
+
+const currentUserCache = createOnceCache<SafeUser | null>(() =>
+  getCurrentUser(),
+);
 
 function notifyCurrentUserChange(): void {
   for (const listener of currentUserListeners) listener();
@@ -31,6 +44,7 @@ function getCurrentUserRevision(): number {
 const SERVER_CURRENT_USER_STATE: CurrentUserState = {
   user: null,
   loading: true,
+  error: false,
 };
 
 function getServerCurrentUserSnapshot(): CurrentUserState {
@@ -41,27 +55,71 @@ function getServerCurrentUserRevision(): number {
   return 0;
 }
 
-function setCurrentUserSnapshot(user: SafeUser | null): void {
-  currentUserSnapshot = { user, loading: false };
+function isUnauthenticatedMeError(error: unknown): boolean {
+  return (
+    error instanceof ApiError && error.kind === "http" && error.status === 401
+  );
+}
+
+function publishCurrentUserSnapshot(next: CurrentUserState): void {
+  if (
+    currentUserSnapshot.user === next.user &&
+    currentUserSnapshot.loading === next.loading &&
+    currentUserSnapshot.error === next.error
+  ) {
+    return;
+  }
+  currentUserSnapshot = next;
   notifyCurrentUserChange();
+}
+
+function loadCurrentUserIntoStore(): Promise<void> {
+  if (currentUserLoad) return currentUserLoad;
+
+  const revision = currentUserRevision;
+  currentUserLoad = currentUserCache
+    .load()
+    .then((user) => {
+      if (revision !== currentUserRevision) return;
+      publishCurrentUserSnapshot({ user, loading: false, error: false });
+    })
+    .catch((error: unknown) => {
+      if (revision !== currentUserRevision) return;
+      if (isUnauthenticatedMeError(error)) {
+        currentUserCache.set(null);
+        publishCurrentUserSnapshot({
+          user: null,
+          loading: false,
+          error: false,
+        });
+        return;
+      }
+      publishCurrentUserSnapshot({
+        user: null,
+        loading: false,
+        error: true,
+      });
+    })
+    .finally(() => {
+      currentUserLoad = null;
+    });
+
+  return currentUserLoad;
 }
 
 export function setCurrentUser(user: SafeUser): void {
   currentUserRevision += 1;
+  currentUserLoad = null;
   currentUserCache.set(user);
-  setCurrentUserSnapshot(user);
+  publishCurrentUserSnapshot({ user, loading: false, error: false });
 }
 
 export function invalidateCurrentUser(): void {
   currentUserRevision += 1;
+  currentUserLoad = null;
   currentUserCache.invalidate();
-  currentUserSnapshot = { user: null, loading: true };
+  currentUserSnapshot = { user: null, loading: true, error: false };
   notifyCurrentUserChange();
-}
-
-export interface CurrentUserState {
-  user: SafeUser | null;
-  loading: boolean;
 }
 
 export function useCurrentUser(): CurrentUserState {
@@ -77,19 +135,10 @@ export function useCurrentUser(): CurrentUserState {
   );
 
   useEffect(() => {
-    let active = true;
-    const revision = currentUserRevision;
-
-    void currentUserCache.load().then((user) => {
-      if (active && revision === currentUserRevision) {
-        setCurrentUserSnapshot(user);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [revision]);
+    if (state.loading) {
+      void loadCurrentUserIntoStore();
+    }
+  }, [revision, state.loading]);
 
   return state;
 }

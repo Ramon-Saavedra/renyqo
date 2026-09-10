@@ -37,6 +37,7 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/lib/api/use-current-user", () => ({
   useCurrentUser: vi.fn(),
+  invalidateCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/features/applicant/listings/api/listing-eligibility", () => ({
@@ -130,7 +131,11 @@ describe("ListingDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
-    currentUser.mockReturnValue({ user: applicantUser, loading: false });
+    currentUser.mockReturnValue({
+      user: applicantUser,
+      loading: false,
+      error: false,
+    });
     eligibility.mockResolvedValue({
       canApply: true,
       reasons: [],
@@ -272,7 +277,7 @@ describe("ListingDetailPage", () => {
   });
 
   it("shows public listing content and an auth CTA for anonymous users", async () => {
-    currentUser.mockReturnValue({ user: null, loading: false });
+    currentUser.mockReturnValue({ user: null, loading: false, error: false });
     mockUseDetail.mockReturnValue(
       mockResult({
         status: "loaded",
@@ -321,8 +326,34 @@ describe("ListingDetailPage", () => {
     expect(reportListing).not.toHaveBeenCalled();
   });
 
+  it("keeps listing content available and hides applicant actions when the session cannot be resolved", () => {
+    currentUser.mockReturnValue({ user: null, loading: false, error: true });
+    mockUseDetail.mockReturnValue(
+      mockResult({
+        status: "loaded",
+        listing: mockListing({ matchesProfile: "match" }),
+      }),
+    );
+    render(<ListingDetailPage />);
+
+    expect(
+      screen.getByText(
+        "Dein Anmeldestatus konnte nicht geprüft werden. Bitte versuche es erneut.",
+      ),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Zimmer in Berlin")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Bewerbung starten" }),
+    ).toBeNull();
+    expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Melden" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Melden" })).toBeNull();
+  });
+
   it("hides applicant match labels for anonymous users even when the listing matches", async () => {
-    currentUser.mockReturnValue({ user: null, loading: false });
+    currentUser.mockReturnValue({ user: null, loading: false, error: false });
     mockUseDetail.mockReturnValue(
       mockResult({
         status: "loaded",

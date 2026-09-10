@@ -11,7 +11,7 @@ import type {
 } from "../../api/listing-eligibility";
 import { useListingApplication } from "../../hooks/useListingApplication";
 import { useListingEligibility } from "../../hooks/useListingEligibility";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
+import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
 import { useApplicantListingApplication } from "../../hooks/useApplicantListingApplication";
 import type {
@@ -25,6 +25,7 @@ import { MatchBadge, type MatchBadgeTone } from "../MatchBadge";
 
 interface ListingApplyBoxProps {
   listingId: string;
+  session: ListingViewerSessionStatus;
   matchesProfile: ProfileMatchResult;
   applicationStatus: ListingApplicationStatus | null;
   publicReason: ListingApplicationPublicReason | null;
@@ -89,11 +90,11 @@ function ListingAnonymousApplyCta() {
 
 export function ListingApplyBox({
   listingId,
+  session,
   matchesProfile,
   applicationStatus,
   publicReason,
 }: ListingApplyBoxProps) {
-  const session = useListingViewerSession();
   const applicant = session === "applicant";
   const { eligibility, status } = useListingEligibility(listingId, applicant);
   const { state, submit, reset } = useListingApplication(listingId);
@@ -157,7 +158,7 @@ export function ListingApplyBox({
     }
   };
 
-  if (session === "loading") {
+  if (session === "loading" || session === "error") {
     return <div className={BOX_CLASS} aria-busy="true" />;
   }
 

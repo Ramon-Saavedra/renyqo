@@ -8,6 +8,7 @@ import {
   clearListingsSearchSession,
   listingsSearchBackHref,
   listingsSearchHref,
+  normalizeListingsSearchQuery,
   parseListingsSearchParams,
   persistListingsSearchQuery,
   serializeListingsSearchQuery,
@@ -141,6 +142,15 @@ describe("listings search params", () => {
     expect(
       serializeListingsSearchQuery(filters({ query: "Köln" }), "newest"),
     ).toBe("query=K%C3%B6ln");
+  });
+
+  it("normalizes whitespace and length with a shared helper", () => {
+    expect(normalizeListingsSearchQuery("Berlin ")).toBe("Berlin");
+    expect(normalizeListingsSearchQuery("  Freiburg  ")).toBe("Freiburg");
+    const oversized = `${"a".repeat(LISTINGS_SEARCH_QUERY_MAX_LENGTH)}extra`;
+    expect(normalizeListingsSearchQuery(` ${oversized} `)).toBe(
+      "a".repeat(LISTINGS_SEARCH_QUERY_MAX_LENGTH),
+    );
   });
 
   it("trims the search query when writing and reading the URL", () => {

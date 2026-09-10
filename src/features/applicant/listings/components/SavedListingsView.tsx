@@ -4,8 +4,10 @@ import { useMemo } from "react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { buttonClass } from "@/components/ui/button/Button";
 import { ListingsTopbarActions } from "@/features/applicant/navigation/components/ListingsTopbarActions";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
 import { listingsCopy } from "../copy/listings";
+import { useListingViewerSession } from "../hooks/useListingViewerSession";
 import { useSavedListings } from "../hooks/useSavedListings";
 import { ListingCard } from "./ListingCard";
 import { ListingsErrorBanner } from "./ListingsErrorBanner";
@@ -22,6 +24,7 @@ const LEAD_CLASS = "mb-6 max-w-2xl text-lead text-foreground-secondary";
 const LOAD_MORE_WRAPPER_CLASS = "mt-8 flex justify-center";
 
 export function SavedListingsView() {
+  const session = useListingViewerSession();
   const profileStatus = useApplicantProfileStatus();
   const hasProfile = profileStatus === "exists";
 
@@ -63,6 +66,15 @@ export function SavedListingsView() {
         <h1 className={TITLE_CLASS}>{listingsCopy.saved.title}</h1>
         <p className={LEAD_CLASS}>{listingsCopy.saved.lead}</p>
 
+        {session === "error" && (
+          <div className="mt-6">
+            <ListingsErrorBanner
+              message={listingsCopy.error.session}
+              onRetry={invalidateCurrentUser}
+            />
+          </div>
+        )}
+
         {isError && (
           <div className="mt-6">
             <ListingsErrorBanner
@@ -87,6 +99,7 @@ export function SavedListingsView() {
                   <ListingCard
                     listing={listing}
                     href={`/listings/${listing.id}`}
+                    session={session}
                     showMatch={hasProfile}
                     eager={eagerIds.has(listing.id)}
                     onSavedChange={(saved) => {

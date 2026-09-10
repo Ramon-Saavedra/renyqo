@@ -123,6 +123,8 @@ export const listingsCopy = {
     message:
       "Objekte konnten nicht geladen werden. Deine Filter bleiben erhalten.",
     retry: "Erneut versuchen",
+    session:
+      "Dein Anmeldestatus konnte nicht geprüft werden. Bitte versuche es erneut.",
   },
   loading: "Objekte werden geladen …",
   saved: {

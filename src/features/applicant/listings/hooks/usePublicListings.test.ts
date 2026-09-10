@@ -92,6 +92,26 @@ describe("usePublicListings", () => {
     );
   });
 
+  it("normalizes the search query before fetching listings", async () => {
+    vi.mocked(getPublicListings).mockResolvedValue(mockResponse());
+
+    renderHook(() =>
+      usePublicListings(
+        { ...EMPTY_FILTERS, query: "Berlin " },
+        "newest",
+        false,
+      ),
+    );
+
+    await waitFor(() => {
+      expect(getPublicListings).toHaveBeenCalled();
+    });
+
+    expect(vi.mocked(getPublicListings).mock.calls[0]?.[0]?.query).toBe(
+      "Berlin",
+    );
+  });
+
   it("transitions to error-page on network failure", async () => {
     vi.mocked(getPublicListings).mockRejectedValue(new Error("fail"));
 

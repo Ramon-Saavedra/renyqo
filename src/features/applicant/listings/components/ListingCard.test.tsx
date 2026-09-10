@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { saveListing, unsaveListing } from "../api/listing-saved";
-import { useListingViewerSession } from "../hooks/useListingViewerSession";
+import type { ListingViewerSessionStatus } from "../hooks/useListingViewerSession";
 import type { PublicListing } from "../types";
 import { ListingCard } from "./ListingCard";
 
@@ -11,12 +11,6 @@ vi.mock("../api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
 }));
-
-vi.mock("../hooks/useListingViewerSession", () => ({
-  useListingViewerSession: vi.fn(),
-}));
-
-const session = vi.mocked(useListingViewerSession);
 
 function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
   return {
@@ -40,13 +34,30 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
   };
 }
 
+function renderCard(
+  listing: PublicListing = buildListing(),
+  session: ListingViewerSessionStatus = "applicant",
+  extra: Omit<
+    Parameters<typeof ListingCard>[0],
+    "listing" | "href" | "session"
+  > = {},
+) {
+  return render(
+    <ListingCard
+      listing={listing}
+      href="/listings/l1"
+      session={session}
+      {...extra}
+    />,
+  );
+}
+
 describe("ListingCard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    session.mockReturnValue("applicant");
   });
   it("renders the listing title", () => {
-    render(<ListingCard listing={buildListing()} href="/listings/l1" />);
+    renderCard();
     expect(screen.getByText("Testwohnung")).toBeInstanceOf(HTMLElement);
   });
 
@@ -54,7 +65,11 @@ describe("ListingCard", () => {
     const title =
       "Sehr langes Inserat mit einem enormen Titel der über zwei Zeilen hinausgeht und abgeschnitten werden soll";
     render(
-      <ListingCard listing={buildListing({ title })} href="/listings/l1" />,
+      <ListingCard
+        listing={buildListing({ title })}
+        href="/listings/l1"
+        session="applicant"
+      />,
     );
     const heading = screen.getByRole("heading", { level: 3, name: title });
     expect(heading.className).toContain("line-clamp-2");
@@ -63,7 +78,13 @@ describe("ListingCard", () => {
   });
 
   it("renders the location", () => {
-    render(<ListingCard listing={buildListing()} href="/listings/l1" />);
+    render(
+      <ListingCard
+        listing={buildListing()}
+        href="/listings/l1"
+        session="applicant"
+      />,
+    );
     expect(screen.getByText("Berlin, Mitte")).toBeInstanceOf(HTMLElement);
   });
 
@@ -76,6 +97,7 @@ describe("ListingCard", () => {
           availableFrom: "2026-09-01",
         })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
 
@@ -100,6 +122,7 @@ describe("ListingCard", () => {
           availableFrom: "2026-08-23",
         })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
 
@@ -120,6 +143,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ coldRent: 1200, serviceCharge: 200 })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     expect(screen.getByText(/1\.200\s*€/)).toBeInstanceOf(HTMLElement);
@@ -136,6 +160,7 @@ describe("ListingCard", () => {
           coverImageUrl: "https://res.cloudinary.com/img.jpg",
         })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     const img = document.querySelector('img[src*="res.cloudinary.com"]');
@@ -147,6 +172,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ coverImageUrl: null })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     expect(screen.getByText("Kein Foto vorhanden")).toBeInstanceOf(HTMLElement);
@@ -160,6 +186,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isNew: true })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     expect(screen.getByText("Neu")).toBeInstanceOf(HTMLElement);
@@ -170,6 +197,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isNew: false })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     expect(screen.queryByText("Neu")).toBeNull();
@@ -180,6 +208,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ matchesProfile: true })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -191,6 +220,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ matchesProfile: false })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -205,6 +235,7 @@ describe("ListingCard", () => {
           matchesProfile: true,
         })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -221,6 +252,7 @@ describe("ListingCard", () => {
           matchesProfile: true,
         })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -236,6 +268,7 @@ describe("ListingCard", () => {
           matchesProfile: false,
         })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -248,6 +281,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ matchesProfile: true })}
         href="/listings/l1"
+        session="applicant"
         showMatch={false}
       />,
     );
@@ -263,6 +297,7 @@ describe("ListingCard", () => {
           matchesProfile: true,
         })}
         href="/listings/l1"
+        session="applicant"
         showMatch={false}
       />,
     );
@@ -279,6 +314,7 @@ describe("ListingCard", () => {
           matchesProfile: true,
         })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -296,6 +332,7 @@ describe("ListingCard", () => {
           matchesProfile: true,
         })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -309,6 +346,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ matchesProfile: null })}
         href="/listings/l1"
+        session="applicant"
         showMatch
       />,
     );
@@ -323,6 +361,7 @@ describe("ListingCard", () => {
           coverImageUrl: "https://res.cloudinary.com/img.jpg",
         })}
         href="/listings/l1"
+        session="applicant"
         eager
       />,
     );
@@ -339,6 +378,7 @@ describe("ListingCard", () => {
           coverImageUrl: "https://res.cloudinary.com/img.jpg",
         })}
         href="/listings/l1"
+        session="applicant"
         eager={false}
       />,
     );
@@ -349,7 +389,13 @@ describe("ListingCard", () => {
   });
 
   it("links to the correct href", () => {
-    render(<ListingCard listing={buildListing()} href="/listings/l1" />);
+    render(
+      <ListingCard
+        listing={buildListing()}
+        href="/listings/l1"
+        session="applicant"
+      />,
+    );
     const link = screen.getByRole("link");
     expect(link.getAttribute("href")).toBe("/listings/l1");
   });
@@ -359,6 +405,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isSaved: false })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     expect(screen.getByRole("button", { name: "Merken" })).toBeInstanceOf(
@@ -372,6 +419,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isSaved: true })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
     expect(screen.getByRole("button", { name: "Gemerkt" })).toBeInstanceOf(
@@ -389,6 +437,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isSaved: false })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
 
@@ -408,6 +457,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isSaved: false })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
 
@@ -430,6 +480,7 @@ describe("ListingCard", () => {
       <ListingCard
         listing={buildListing({ isSaved: false, isNew: true })}
         href="/listings/l1"
+        session="applicant"
       />,
     );
 
@@ -443,11 +494,11 @@ describe("ListingCard", () => {
   });
 
   it("guides anonymous users to login from the card without saving", async () => {
-    session.mockReturnValue("anonymous");
     render(
       <ListingCard
         listing={buildListing({ isSaved: false })}
         href="/listings/l1"
+        session="anonymous"
       />,
     );
 
@@ -462,5 +513,18 @@ describe("ListingCard", () => {
     expect(unsaveListing).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
     expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("hides merken while the viewer session is in error", () => {
+    render(
+      <ListingCard
+        listing={buildListing({ isSaved: false })}
+        href="/listings/l1"
+        session="error"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
   });
 });

@@ -5,14 +5,18 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { ListingsTopbarActions } from "../../../navigation/components/ListingsTopbarActions";
 import { listingDetailCopy } from "../../copy/listing-detail";
+import { listingsCopy } from "../../copy/listings";
+import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { usePublicListingDetail } from "../../hooks/usePublicListingDetail";
 import {
   getServerListingsSearchBackHref,
   listingsSearchBackHref,
   subscribeListingsSearchBackHref,
 } from "../../utils/listings-search-params";
+import { ListingsErrorBanner } from "../ListingsErrorBanner";
 import { ListingDescription } from "./ListingDescription";
 import { ListingDetailHeader } from "./ListingDetailHeader";
 import { ListingDetailMessage } from "./ListingDetailMessage";
@@ -33,6 +37,7 @@ const BACK_LINK_CLASS =
 const CONTENT_CLASS = "px-gutter pt-4.5 pb-11";
 
 export function ListingDetailView({ listingId }: ListingDetailViewProps) {
+  const session = useListingViewerSession();
   const { listing, error, status } = usePublicListingDetail(listingId);
   const backHref = useSyncExternalStore(
     subscribeListingsSearchBackHref,
@@ -76,7 +81,13 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
 
         {status === "loaded" && listing && (
           <>
-            <ListingDetailHeader listing={listing} />
+            {session === "error" ? (
+              <ListingsErrorBanner
+                message={listingsCopy.error.session}
+                onRetry={invalidateCurrentUser}
+              />
+            ) : null}
+            <ListingDetailHeader listing={listing} session={session} />
 
             <ListingPhotoMosaic
               images={listing.images}

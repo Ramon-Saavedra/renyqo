@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { EMPTY_FILTERS } from "../types";
 import type { ListingFilters, SortKey } from "../types";
 import {
+  normalizeListingsSearchQuery,
   parseListingsSearchParams,
   persistListingsSearchQuery,
   serializeListingsSearchQuery,
@@ -70,7 +71,11 @@ export function useListingsSearchState(): UseListingsSearchStateResult {
 
   const updateFilters = useCallback(
     (patch: Partial<ListingFilters>) => {
-      const next = { ...filters, ...patch };
+      const next = {
+        ...filters,
+        ...patch,
+        query: normalizeListingsSearchQuery(patch.query ?? filters.query),
+      };
       setFilters(next);
       write(next, sort);
     },

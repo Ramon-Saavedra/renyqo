@@ -30,7 +30,7 @@ describe("AuthenticatedPublicRedirect", () => {
   });
 
   it("does not render public content while authentication is loading", () => {
-    currentUser.mockReturnValue({ user: null, loading: true });
+    currentUser.mockReturnValue({ user: null, loading: true, error: false });
 
     render(
       <AuthenticatedPublicRedirect>
@@ -55,6 +55,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       },
       loading: false,
+      error: false,
     });
 
     render(
@@ -80,6 +81,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       },
       loading: false,
+      error: false,
     });
     onboarding.mockResolvedValue({ nextStep: "dashboard" });
 
@@ -107,6 +109,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       },
       loading: false,
+      error: false,
     });
     onboarding.mockRejectedValue(new Error("onboarding unavailable"));
 
@@ -134,6 +137,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       } as never,
       loading: false,
+      error: false,
     });
 
     render(
@@ -148,7 +152,7 @@ describe("AuthenticatedPublicRedirect", () => {
   });
 
   it("renders public content for unauthenticated users", () => {
-    currentUser.mockReturnValue({ user: null, loading: false });
+    currentUser.mockReturnValue({ user: null, loading: false, error: false });
 
     render(
       <AuthenticatedPublicRedirect>

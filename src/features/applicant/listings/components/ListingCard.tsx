@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Home } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingsCopy } from "../copy/listings";
+import type { ListingViewerSessionStatus } from "../hooks/useListingViewerSession";
 import type { PublicListing } from "../types";
 import {
   formatArea,
@@ -19,6 +20,7 @@ import { MatchBadge } from "./MatchBadge";
 interface ListingCardProps {
   listing: PublicListing;
   href: string;
+  session: ListingViewerSessionStatus;
   showMatch?: boolean;
   eager?: boolean;
   onSavedChange?: (saved: boolean) => void;
@@ -70,6 +72,7 @@ const BADGE_SLOT_CLASS = "flex h-5 items-center";
 export function ListingCard({
   listing,
   href,
+  session,
   showMatch = true,
   eager = false,
   onSavedChange,
@@ -173,6 +176,7 @@ export function ListingCard({
       <ListingCardSaveButton
         listingId={listing.id}
         isSaved={listing.isSaved}
+        session={session}
         {...(onSavedChange ? { onSavedChange } : {})}
       />
     </div>
