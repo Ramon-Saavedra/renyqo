@@ -1,11 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { currentUserSessionCopy } from "@/components/auth/current-user-session-copy";
-import {
-  invalidateCurrentUser,
-  useCurrentUser,
-} from "@/lib/api/use-current-user";
+import { useCurrentUser } from "@/lib/api/use-current-user";
 import type * as currentUserApi from "@/lib/api/use-current-user";
 import { ListingsTopbarActions } from "./ListingsTopbarActions";
 
@@ -21,7 +17,6 @@ vi.mock("@/lib/api/use-current-user", async (importOriginal) => {
   return {
     ...actual,
     useCurrentUser: vi.fn(),
-    invalidateCurrentUser: vi.fn(),
   };
 });
 
@@ -30,7 +25,6 @@ vi.mock("@/components/layout/account-menu/AccountMenu", () => ({
 }));
 
 const currentUser = vi.mocked(useCurrentUser);
-const retrySession = vi.mocked(invalidateCurrentUser);
 
 describe("ListingsTopbarActions", () => {
   beforeEach(() => {
@@ -53,7 +47,7 @@ describe("ListingsTopbarActions", () => {
     ).toBeNull();
   });
 
-  it("does not show login or register while the session lookup is in error", async () => {
+  it("does not show login or register while the session lookup is in error", () => {
     currentUser.mockReturnValue({ user: null, loading: false, error: true });
 
     render(<ListingsTopbarActions />);
@@ -61,12 +55,9 @@ describe("ListingsTopbarActions", () => {
     expect(screen.queryByRole("link", { name: "Anmelden" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Registrieren" })).toBeNull();
     expect(screen.queryByText("account menu")).toBeNull();
-
-    const user = userEvent.setup();
-    await user.click(
-      screen.getByRole("button", { name: currentUserSessionCopy.retry }),
-    );
-    expect(retrySession).toHaveBeenCalledTimes(1);
+    expect(
+      screen.queryByRole("button", { name: currentUserSessionCopy.retry }),
+    ).toBeNull();
   });
 
   it("does not show login or register while the session is loading", () => {

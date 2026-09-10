@@ -3,14 +3,12 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { currentUserSessionCopy } from "@/components/auth/current-user-session-copy";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { buttonClass } from "@/components/ui/button/Button";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
 import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
 import {
-  invalidateCurrentUser,
   isConfirmedAnonymousUser,
   useCurrentUser,
 } from "@/lib/api/use-current-user";
@@ -39,28 +37,20 @@ function ProviderRedirect() {
 
 const SKELETON_CLASS = "flex items-center gap-3.5";
 
+function SessionPendingActions() {
+  return (
+    <span className={SKELETON_CLASS}>
+      <RenyqoSkeleton variant="pill" width={96} height={32} />
+      <RenyqoSkeleton variant="circle" width={32} height={32} />
+    </span>
+  );
+}
+
 export function ListingsTopbarActions() {
   const { user, loading, error } = useCurrentUser();
 
-  if (loading) {
-    return (
-      <span className={SKELETON_CLASS}>
-        <RenyqoSkeleton variant="pill" width={96} height={32} />
-        <RenyqoSkeleton variant="circle" width={32} height={32} />
-      </span>
-    );
-  }
-
-  if (error) {
-    return (
-      <button
-        type="button"
-        className={buttonClass("ghost")}
-        onClick={invalidateCurrentUser}
-      >
-        {currentUserSessionCopy.retry}
-      </button>
-    );
+  if (loading || error) {
+    return <SessionPendingActions />;
   }
 
   if (isConfirmedAnonymousUser({ user, loading, error }) || !user) {
