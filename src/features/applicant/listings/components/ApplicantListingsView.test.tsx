@@ -25,8 +25,7 @@ vi.mock("../hooks/useListingViewerSession", () => ({
 }));
 
 vi.mock("@/lib/api/use-current-user", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof currentUserApi>();
+  const actual = await importOriginal<typeof currentUserApi>();
   return {
     ...actual,
     invalidateCurrentUser: vi.fn(),
