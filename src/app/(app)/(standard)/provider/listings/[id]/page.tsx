@@ -1,4 +1,3 @@
-import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { ListingDetailView } from "@/features/provider/listing-detail/components/ListingDetailView";
 
 interface ProviderListingDetailPageProps {
@@ -10,9 +9,5 @@ export default async function ProviderListingDetailPage({
 }: ProviderListingDetailPageProps) {
   const { id } = await params;
 
-  return (
-    <PageShell>
-      <ListingDetailView listingId={id} />
-    </PageShell>
-  );
+  return <ListingDetailView listingId={id} />;
 }
