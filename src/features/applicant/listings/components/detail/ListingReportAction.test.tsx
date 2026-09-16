@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { reportListing } from "../../api/listing-report";
 import type * as listingReportApi from "../../api/listing-report";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { ListingReportAction } from "./ListingReportAction";
 
 vi.mock("../../api/listing-report", async (importOriginal) => {
@@ -14,12 +13,6 @@ vi.mock("../../api/listing-report", async (importOriginal) => {
     reportListing: vi.fn(),
   };
 });
-
-vi.mock("../../hooks/useListingViewerSession", () => ({
-  useListingViewerSession: vi.fn(),
-}));
-
-const session = vi.mocked(useListingViewerSession);
 
 const created = {
   id: "report-1",
@@ -31,7 +24,6 @@ const created = {
 describe("ListingReportAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    session.mockReturnValue("applicant");
   });
 
   it("guides anonymous users to login without opening the report dialog", async () => {

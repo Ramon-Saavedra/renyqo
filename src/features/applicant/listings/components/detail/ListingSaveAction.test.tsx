@@ -3,19 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { saveListing, unsaveListing } from "../../api/listing-saved";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { ListingSaveAction } from "./ListingSaveAction";
 
 vi.mock("../../api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
 }));
-
-vi.mock("../../hooks/useListingViewerSession", () => ({
-  useListingViewerSession: vi.fn(),
-}));
-
-const session = vi.mocked(useListingViewerSession);
 
 const saved = {
   saved: true as const,
@@ -30,7 +23,6 @@ const unsaved = {
 describe("ListingSaveAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    session.mockReturnValue("applicant");
   });
 
   it("guides anonymous users to login without saving", async () => {
