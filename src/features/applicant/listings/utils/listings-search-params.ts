@@ -10,6 +10,10 @@ export function clampListingsSearchQuery(value: string): string {
   return value.slice(0, LISTINGS_SEARCH_QUERY_MAX_LENGTH);
 }
 
+export function normalizeListingsSearchQuery(value: string): string {
+  return clampListingsSearchQuery(value.trim());
+}
+
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const ALLOWED_MIN_ROOMS = new Set(
   ROOM_OPTIONS.map((option) => option.value).filter(
@@ -81,7 +85,7 @@ export function parseListingsSearchParams(
 ): ListingsSearchState {
   return {
     filters: {
-      query: clampListingsSearchQuery((searchParams.get("query") ?? "").trim()),
+      query: normalizeListingsSearchQuery(searchParams.get("query") ?? ""),
       maxColdRent: parsePositiveInteger(searchParams.get("maxRent")),
       minRooms: parseMinRooms(searchParams.get("minRooms")),
       minLivingArea: parsePositiveInteger(searchParams.get("minLivingArea")),
@@ -97,7 +101,7 @@ export function serializeListingsSearchQuery(
   sort: SortKey,
 ): string {
   const params = new URLSearchParams();
-  const query = clampListingsSearchQuery(filters.query.trim());
+  const query = normalizeListingsSearchQuery(filters.query);
   if (query.length > 0) params.set("query", query);
   if (filters.maxColdRent !== null) {
     params.set("maxRent", String(filters.maxColdRent));

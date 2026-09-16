@@ -8,6 +8,7 @@ import { listingsCopy } from "../copy/listings";
 import {
   LISTINGS_SEARCH_QUERY_MAX_LENGTH,
   clampListingsSearchQuery,
+  normalizeListingsSearchQuery,
 } from "../utils/listings-search-params";
 
 interface SearchFieldProps {
@@ -37,10 +38,19 @@ const CLEAR_CLASS =
   "absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-sm text-foreground-tertiary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
 
 export function SearchField({ value, onChange }: SearchFieldProps) {
+  const [draft, setDraft] = useState(value);
+  const [prevValue, setPrevValue] = useState(value);
   const [exampleIndex, setExampleIndex] = useState(0);
   const [visible, setVisible] = useState(true);
-  const showHint = value.length === 0;
+  const showHint = draft.length === 0;
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  if (value !== prevValue) {
+    setPrevValue(value);
+    if (normalizeListingsSearchQuery(draft) !== value) {
+      setDraft(value);
+    }
+  }
 
   useEffect(() => {
     if (!showHint) return undefined;
@@ -76,11 +86,13 @@ export function SearchField({ value, onChange }: SearchFieldProps) {
         className={INPUT_CLASS}
         placeholder={listingsCopy.console.searchPlaceholder}
         aria-label={listingsCopy.console.searchAriaLabel}
-        value={value}
+        value={draft}
         maxLength={LISTINGS_SEARCH_QUERY_MAX_LENGTH}
-        onChange={(event) =>
-          onChange(clampListingsSearchQuery(event.target.value))
-        }
+        onChange={(event) => {
+          const next = clampListingsSearchQuery(event.target.value);
+          setDraft(next);
+          onChange(normalizeListingsSearchQuery(next));
+        }}
       />
       {showHint ? (
         <span aria-hidden="true" className={HINT_CLASS}>
@@ -99,7 +111,10 @@ export function SearchField({ value, onChange }: SearchFieldProps) {
           type="button"
           className={CLEAR_CLASS}
           aria-label={listingsCopy.console.searchClearLabel}
-          onClick={() => onChange("")}
+          onClick={() => {
+            setDraft("");
+            onChange("");
+          }}
         >
           <AppIcon icon={X} size={14} strokeWidth={1.8} decorative />
         </button>

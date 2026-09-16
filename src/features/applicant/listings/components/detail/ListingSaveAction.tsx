@@ -7,12 +7,13 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { useListingSave } from "../../hooks/useListingSave";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
+import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import { LISTING_LOGIN_PATH } from "../../utils/listing-auth-paths";
 
 interface ListingSaveActionProps {
   listingId: string;
   isSaved: boolean;
+  session: ListingViewerSessionStatus;
 }
 
 const WRAPPER_CLASS = "w-fit max-w-full";
@@ -22,13 +23,13 @@ const { save } = listingDetailCopy;
 export function ListingSaveAction({
   listingId,
   isSaved,
+  session,
 }: ListingSaveActionProps) {
-  const session = useListingViewerSession();
   const { saved, status, error, toggle } = useListingSave(listingId, isSaved);
   const submitting = status === "submitting";
   const label = saved ? save.savedLabel : save.label;
 
-  if (session === "other") {
+  if (session === "other" || session === "error") {
     return null;
   }
 

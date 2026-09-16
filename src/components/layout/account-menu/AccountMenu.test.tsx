@@ -2,10 +2,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getCurrentUser, logout } from "@/lib/api/auth";
-import { invalidateCurrentUser } from "@/lib/api/use-current-user";
-import { useApplicantProfileStatus } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { currentUserSessionCopy } from "@/components/auth/current-user-session-copy";
 import { LISTINGS_SEARCH_SESSION_KEY } from "@/features/applicant/listings/utils/listings-search-params";
+import { useApplicantProfileStatus } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { getCurrentUser, logout } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { AccountMenu } from "./AccountMenu";
 
 const replace = vi.fn();
@@ -129,17 +131,21 @@ describe("AccountMenu", () => {
     ).toBeNull();
   });
 
-  it("never shows a hardcoded name when the session request fails", async () => {
-    vi.mocked(getCurrentUser).mockRejectedValue(new Error("unauthorized"));
+  it("does not treat a recoverable session error as a logged-in or anonymous menu", async () => {
+    vi.mocked(getCurrentUser).mockRejectedValue(
+      new ApiError(500, "fail", "http"),
+    );
 
     render(<AccountMenu variant="full" />);
 
-    const trigger = await screen.findByRole("button", {
-      name: "Konto & Profil",
-    });
-
-    expect(trigger.textContent).not.toContain("Sabine");
-    expect(trigger.textContent).not.toContain("undefined");
+    expect(
+      await screen.findByRole("button", {
+        name: currentUserSessionCopy.retry,
+      }),
+    ).toBeInstanceOf(HTMLButtonElement);
+    expect(screen.queryByRole("button", { name: "Konto & Profil" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Anmelden" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Registrieren" })).toBeNull();
   });
 
   it("logs out and redirects to login", async () => {

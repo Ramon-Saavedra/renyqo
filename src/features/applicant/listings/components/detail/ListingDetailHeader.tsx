@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingDetailCopy } from "../../copy/listing-detail";
+import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import type { PublicListingDetail } from "../../types";
 import { formatEUR } from "../../utils/format";
 import { ListingApplyBox } from "./ListingApplyBox";
@@ -9,6 +10,7 @@ import { ListingSaveAction } from "./ListingSaveAction";
 
 interface ListingDetailHeaderProps {
   listing: PublicListingDetail;
+  session: ListingViewerSessionStatus;
 }
 
 const ROW_CLASS = "flex flex-wrap items-start justify-between gap-4 gap-y-5";
@@ -32,7 +34,10 @@ function buildAddressLine(listing: PublicListingDetail): string {
   return address.join(", ");
 }
 
-export function ListingDetailHeader({ listing }: ListingDetailHeaderProps) {
+export function ListingDetailHeader({
+  listing,
+  session,
+}: ListingDetailHeaderProps) {
   return (
     <div className={ROW_CLASS}>
       <div className="min-w-0">
@@ -66,13 +71,18 @@ export function ListingDetailHeader({ listing }: ListingDetailHeaderProps) {
         )}
 
         <div className="mt-3 flex flex-wrap items-start gap-1">
-          <ListingSaveAction listingId={listing.id} isSaved={listing.isSaved} />
-          <ListingReportAction listingId={listing.id} />
+          <ListingSaveAction
+            listingId={listing.id}
+            isSaved={listing.isSaved}
+            session={session}
+          />
+          <ListingReportAction listingId={listing.id} session={session} />
         </div>
       </div>
 
       <ListingApplyBox
         listingId={listing.id}
+        session={session}
         matchesProfile={listing.matchesProfile}
         applicationStatus={listing.applicationStatus}
         publicReason={listing.publicReason}

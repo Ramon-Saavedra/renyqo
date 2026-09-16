@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentUser } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { INITIAL_PROFILE } from "../utils/profile-validation";
 import { getApplicantProfile } from "../api/applicant-profile";
@@ -112,5 +113,33 @@ describe("useApplicantProfileStatus", () => {
       ).toBe(true),
     );
     expect(getApplicantProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not treat a recoverable session error as a missing applicant", async () => {
+    vi.mocked(getCurrentUser).mockRejectedValue(
+      new ApiError(500, "fail", "http"),
+    );
+
+    render(<StatusHarness />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("profile-status").textContent).toBe("loading"),
+    );
+    expect(getApplicantProfile).not.toHaveBeenCalled();
+  });
+
+  it("treats a confirmed anonymous session as unavailable without fetching a profile", async () => {
+    vi.mocked(getCurrentUser).mockRejectedValue(
+      new ApiError(401, "Unauthorized", "http"),
+    );
+
+    render(<StatusHarness />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("profile-status").textContent).toBe(
+        "unavailable",
+      ),
+    );
+    expect(getApplicantProfile).not.toHaveBeenCalled();
   });
 });

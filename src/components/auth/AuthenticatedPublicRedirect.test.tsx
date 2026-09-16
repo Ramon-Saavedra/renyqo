@@ -1,7 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getOnboardingState } from "@/lib/api/auth";
-import { useCurrentUser } from "@/lib/api/use-current-user";
+import {
+  invalidateCurrentUser,
+  useCurrentUser,
+} from "@/lib/api/use-current-user";
+import type * as currentUserApi from "@/lib/api/use-current-user";
+import { currentUserSessionCopy } from "./current-user-session-copy";
 import { AuthenticatedPublicRedirect } from "./AuthenticatedPublicRedirect";
 
 const replace = vi.fn();
@@ -17,11 +23,17 @@ vi.mock("@/lib/api/auth", () => ({
   ),
 }));
 
-vi.mock("@/lib/api/use-current-user", () => ({
-  useCurrentUser: vi.fn(),
-}));
+vi.mock("@/lib/api/use-current-user", async (importOriginal) => {
+  const actual = await importOriginal<typeof currentUserApi>();
+  return {
+    ...actual,
+    useCurrentUser: vi.fn(),
+    invalidateCurrentUser: vi.fn(),
+  };
+});
 
 const currentUser = vi.mocked(useCurrentUser);
+const retrySession = vi.mocked(invalidateCurrentUser);
 const onboarding = vi.mocked(getOnboardingState);
 
 describe("AuthenticatedPublicRedirect", () => {
@@ -30,7 +42,7 @@ describe("AuthenticatedPublicRedirect", () => {
   });
 
   it("does not render public content while authentication is loading", () => {
-    currentUser.mockReturnValue({ user: null, loading: true });
+    currentUser.mockReturnValue({ user: null, loading: true, error: false });
 
     render(
       <AuthenticatedPublicRedirect>
@@ -55,6 +67,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       },
       loading: false,
+      error: false,
     });
 
     render(
@@ -80,6 +93,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       },
       loading: false,
+      error: false,
     });
     onboarding.mockResolvedValue({ nextStep: "dashboard" });
 
@@ -107,6 +121,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       },
       loading: false,
+      error: false,
     });
     onboarding.mockRejectedValue(new Error("onboarding unavailable"));
 
@@ -134,6 +149,7 @@ describe("AuthenticatedPublicRedirect", () => {
         companyName: null,
       } as never,
       loading: false,
+      error: false,
     });
 
     render(
@@ -147,8 +163,8 @@ describe("AuthenticatedPublicRedirect", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("renders public content for unauthenticated users", () => {
-    currentUser.mockReturnValue({ user: null, loading: false });
+  it("renders public content for a confirmed anonymous session", () => {
+    currentUser.mockReturnValue({ user: null, loading: false, error: false });
 
     render(
       <AuthenticatedPublicRedirect>
@@ -158,5 +174,27 @@ describe("AuthenticatedPublicRedirect", () => {
 
     expect(screen.getByText("public content")).not.toBeNull();
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("does not render public content when the session lookup fails", async () => {
+    currentUser.mockReturnValue({ user: null, loading: false, error: true });
+
+    render(
+      <AuthenticatedPublicRedirect>
+        <span>public content</span>
+      </AuthenticatedPublicRedirect>,
+    );
+
+    expect(screen.queryByText("public content")).toBeNull();
+    expect(screen.getByRole("alert").textContent).toContain(
+      currentUserSessionCopy.error,
+    );
+    expect(replace).not.toHaveBeenCalled();
+
+    const user = userEvent.setup();
+    await user.click(
+      screen.getByRole("button", { name: currentUserSessionCopy.retry }),
+    );
+    expect(retrySession).toHaveBeenCalledTimes(1);
   });
 });

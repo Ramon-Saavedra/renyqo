@@ -8,7 +8,7 @@ import type {
   PublicListingsParams,
   SortKey,
 } from "../types";
-import { clampListingsSearchQuery } from "../utils/listings-search-params";
+import { normalizeListingsSearchQuery } from "../utils/listings-search-params";
 
 export type ListingsFetchStatus =
   | "idle"
@@ -125,7 +125,7 @@ export function usePublicListings(
   // Build API params from current state.
   const buildParams = useCallback(
     (cursor?: string | null): PublicListingsParams => ({
-      query: clampListingsSearchQuery(debouncedQuery) || undefined,
+      query: normalizeListingsSearchQuery(debouncedQuery) || undefined,
       maxRent: filters.maxColdRent ?? undefined,
       minRooms: filters.minRooms ?? undefined,
       minLivingArea: filters.minLivingArea ?? undefined,

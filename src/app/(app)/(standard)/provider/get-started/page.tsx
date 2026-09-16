@@ -1,6 +1,5 @@
 import { HelpCircle } from "lucide-react";
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
-import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { BenefitsSection } from "@/features/provider/empty-state/components/BenefitsSection";
@@ -14,7 +13,7 @@ export default function ProviderGetStartedPage() {
   const copy = providerEmptyStateCopy;
 
   return (
-    <PageShell>
+    <>
       <AppTopbar className="mb-section">
         <button type="button" className={buttonClass("ghost")}>
           <AppIcon icon={HelpCircle} size={14} strokeWidth={1.6} decorative />
@@ -47,6 +46,6 @@ export default function ProviderGetStartedPage() {
           items={copy.benefits.items}
         />
       </div>
-    </PageShell>
+    </>
   );
 }

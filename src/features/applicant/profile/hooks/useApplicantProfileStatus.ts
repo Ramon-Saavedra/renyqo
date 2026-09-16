@@ -55,7 +55,7 @@ export function invalidateApplicantProfile(): void {
 }
 
 export function useApplicantProfileStatus(): ApplicantProfileStatus {
-  const { user, loading: userLoading } = useCurrentUser();
+  const { user, loading: userLoading, error: userError } = useCurrentUser();
   const profileStatus = useSyncExternalStore(
     subscribeToProfileCache,
     getProfileStatusSnapshot,
@@ -65,7 +65,7 @@ export function useApplicantProfileStatus(): ApplicantProfileStatus {
   const isApplicant = isApplicantRole(user?.role);
 
   useEffect(() => {
-    if (userLoading) return undefined;
+    if (userLoading || userError) return undefined;
 
     if (!isApplicant || !user) {
       profileRequestGeneration += 1;
@@ -103,9 +103,9 @@ export function useApplicantProfileStatus(): ApplicantProfileStatus {
     return () => {
       active = false;
     };
-  }, [isApplicant, user, userLoading]);
+  }, [isApplicant, user, userError, userLoading]);
 
-  if (userLoading) return "loading";
+  if (userLoading || userError) return "loading";
   if (!isApplicant) return "unavailable";
   return profileStatus;
 }

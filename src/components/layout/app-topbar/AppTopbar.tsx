@@ -23,13 +23,14 @@ export function AppTopbar({
   logoHref = "/",
   onLogoClick,
 }: AppTopbarProps) {
-  const { user } = useCurrentUser();
+  const { user, loading, error } = useCurrentUser();
+  const sessionUser = loading || error ? null : user;
   const resolvedLogoHref =
     logoHref !== "/"
       ? logoHref
-      : isApplicantRole(user?.role)
+      : isApplicantRole(sessionUser?.role)
         ? "/listings"
-        : isProviderRole(user?.role)
+        : isProviderRole(sessionUser?.role)
           ? "/provider/dashboard"
           : logoHref;
 

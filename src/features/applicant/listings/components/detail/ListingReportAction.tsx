@@ -8,20 +8,23 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import type { ListingReportReason } from "../../api/listing-report";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import { useListingReport } from "../../hooks/useListingReport";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
+import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import { LISTING_LOGIN_PATH } from "../../utils/listing-auth-paths";
 import { ListingReportDialog } from "./ListingReportDialog";
 
 interface ListingReportActionProps {
   listingId: string;
+  session: ListingViewerSessionStatus;
 }
 
 const WRAPPER_CLASS = "w-fit max-w-full";
 
 const { report } = listingDetailCopy;
 
-export function ListingReportAction({ listingId }: ListingReportActionProps) {
-  const session = useListingViewerSession();
+export function ListingReportAction({
+  listingId,
+  session,
+}: ListingReportActionProps) {
   const [open, setOpen] = useState(false);
   const [reported, setReported] = useState(false);
   const [syncedListingId, setSyncedListingId] = useState(listingId);
@@ -36,7 +39,7 @@ export function ListingReportAction({ listingId }: ListingReportActionProps) {
   } = useListingReport(listingId);
   const pending = status === "submitting";
 
-  if (session === "other") {
+  if (session === "other" || session === "error") {
     return null;
   }
 

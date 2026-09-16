@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { invalidateCurrentUser } from "@/lib/api/use-current-user";
+import type * as currentUserApi from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
 import { saveListing, unsaveListing } from "../api/listing-saved";
 import { useListingViewerSession } from "../hooks/useListingViewerSession";
@@ -21,6 +23,14 @@ vi.mock("../hooks/useListingViewerSession", () => ({
   useListingViewerSession: vi.fn(),
 }));
 
+vi.mock("@/lib/api/use-current-user", async (importOriginal) => {
+  const actual = await importOriginal<typeof currentUserApi>();
+  return {
+    ...actual,
+    invalidateCurrentUser: vi.fn(),
+  };
+});
+
 vi.mock("../api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
@@ -29,6 +39,7 @@ vi.mock("../api/listing-saved", () => ({
 const mockUseSavedListings = vi.mocked(useSavedListings);
 const mockUseProfileStatus = vi.mocked(useApplicantProfileStatus);
 const session = vi.mocked(useListingViewerSession);
+const retrySession = vi.mocked(invalidateCurrentUser);
 
 function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
   return {
@@ -256,5 +267,30 @@ describe("SavedListingsView", () => {
     await waitFor(() => {
       expect(removeListing).toHaveBeenCalledWith("a");
     });
+  });
+
+  it("shows a recoverable session error without enabling merken or anonymous login", async () => {
+    session.mockReturnValue("error");
+    mockUseSavedListings.mockReturnValue(
+      mockResult({
+        fetchStatus: "idle",
+        listings: [buildListing({ id: "a", title: "Wohnung A" })],
+        total: 1,
+      }),
+    );
+
+    render(<SavedListingsView />);
+
+    expect(
+      screen.getByText(
+        "Dein Anmeldestatus konnte nicht geprüft werden. Bitte versuche es erneut.",
+      ),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByRole("button", { name: "Gemerkt" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "Erneut versuchen" }));
+    expect(retrySession).toHaveBeenCalledTimes(1);
   });
 });

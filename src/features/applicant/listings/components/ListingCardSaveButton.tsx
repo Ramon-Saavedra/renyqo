@@ -6,12 +6,13 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import { listingDetailCopy } from "../copy/listing-detail";
 import { useListingSave } from "../hooks/useListingSave";
-import { useListingViewerSession } from "../hooks/useListingViewerSession";
+import type { ListingViewerSessionStatus } from "../hooks/useListingViewerSession";
 import { LISTING_LOGIN_PATH } from "../utils/listing-auth-paths";
 
 interface ListingCardSaveButtonProps {
   listingId: string;
   isSaved: boolean;
+  session: ListingViewerSessionStatus;
   onSavedChange?: (saved: boolean) => void;
 }
 
@@ -29,9 +30,9 @@ const { save } = listingDetailCopy;
 export function ListingCardSaveButton({
   listingId,
   isSaved,
+  session,
   onSavedChange,
 }: ListingCardSaveButtonProps) {
-  const session = useListingViewerSession();
   const { saved, status, error, toggle } = useListingSave(
     listingId,
     isSaved,
@@ -40,7 +41,7 @@ export function ListingCardSaveButton({
   const submitting = status === "submitting";
   const label = saved ? save.savedLabel : save.label;
 
-  if (session === "other") {
+  if (session === "other" || session === "error") {
     return null;
   }
 

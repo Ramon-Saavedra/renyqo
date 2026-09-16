@@ -35,8 +35,13 @@ describe("ListingSaveAction", () => {
 
   it("guides anonymous users to login without saving", async () => {
     const user = userEvent.setup();
-    session.mockReturnValue("anonymous");
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="anonymous"
+      />,
+    );
 
     const link = screen.getByRole("link", { name: "Merken" });
     expect(link.getAttribute("href")).toBe("/login");
@@ -49,15 +54,39 @@ describe("ListingSaveAction", () => {
   });
 
   it("hides save for a non-applicant session", () => {
-    session.mockReturnValue("other");
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="other"
+      />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
+  });
+
+  it("hides save while the viewer session is in error", () => {
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="error"
+      />,
+    );
 
     expect(screen.queryByRole("button", { name: "Merken" })).toBeNull();
     expect(screen.queryByRole("link", { name: "Merken" })).toBeNull();
   });
 
   it("renders Merken when the listing is not saved", () => {
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="applicant"
+      />,
+    );
 
     expect(screen.getByRole("button", { name: "Merken" })).toBeInstanceOf(
       HTMLButtonElement,
@@ -69,7 +98,13 @@ describe("ListingSaveAction", () => {
   });
 
   it("renders Gemerkt when the listing is saved", () => {
-    render(<ListingSaveAction listingId="listing-1" isSaved={true} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={true}
+        session="applicant"
+      />,
+    );
 
     expect(screen.getByRole("button", { name: "Gemerkt" })).toBeInstanceOf(
       HTMLButtonElement,
@@ -80,7 +115,13 @@ describe("ListingSaveAction", () => {
   it("saves with PUT from Merken", async () => {
     const user = userEvent.setup();
     vi.mocked(saveListing).mockResolvedValue(saved);
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="applicant"
+      />,
+    );
 
     await user.click(screen.getByRole("button", { name: "Merken" }));
 
@@ -94,7 +135,13 @@ describe("ListingSaveAction", () => {
   it("unsaves with DELETE from Gemerkt", async () => {
     const user = userEvent.setup();
     vi.mocked(unsaveListing).mockResolvedValue(unsaved);
-    render(<ListingSaveAction listingId="listing-1" isSaved={true} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={true}
+        session="applicant"
+      />,
+    );
 
     await user.click(screen.getByRole("button", { name: "Gemerkt" }));
 
@@ -113,7 +160,13 @@ describe("ListingSaveAction", () => {
         resolveRequest = () => resolve(saved);
       }),
     );
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="applicant"
+      />,
+    );
 
     const button = screen.getByRole("button", { name: "Merken" });
     await user.click(button);
@@ -130,7 +183,13 @@ describe("ListingSaveAction", () => {
   it("keeps Merken and shows an error when save fails", async () => {
     const user = userEvent.setup();
     vi.mocked(saveListing).mockRejectedValue(new ApiError(500, "fail"));
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="applicant"
+      />,
+    );
 
     await user.click(screen.getByRole("button", { name: "Merken" }));
 
@@ -145,7 +204,13 @@ describe("ListingSaveAction", () => {
   it("keeps Gemerkt and shows an unsave error when remove fails", async () => {
     const user = userEvent.setup();
     vi.mocked(unsaveListing).mockRejectedValue(new ApiError(500, "fail"));
-    render(<ListingSaveAction listingId="listing-1" isSaved={true} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={true}
+        session="applicant"
+      />,
+    );
 
     await user.click(screen.getByRole("button", { name: "Gemerkt" }));
 
@@ -160,7 +225,13 @@ describe("ListingSaveAction", () => {
   it("shows save auth copy on 401", async () => {
     const user = userEvent.setup();
     vi.mocked(saveListing).mockRejectedValue(new ApiError(401, "auth"));
-    render(<ListingSaveAction listingId="listing-1" isSaved={false} />);
+    render(
+      <ListingSaveAction
+        listingId="listing-1"
+        isSaved={false}
+        session="applicant"
+      />,
+    );
 
     await user.click(screen.getByRole("button", { name: "Merken" }));
 

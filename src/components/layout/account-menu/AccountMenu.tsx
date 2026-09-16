@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { currentUserSessionCopy } from "@/components/auth/current-user-session-copy";
 import { Avatar } from "@/components/ui/avatar/Avatar";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -59,7 +60,7 @@ export function AccountMenu({
   className,
 }: AccountMenuProps) {
   const router = useRouter();
-  const { user, loading } = useCurrentUser();
+  const { user, loading, error } = useCurrentUser();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
@@ -78,6 +79,18 @@ export function AccountMenu({
       setLoggingOut(false);
       setLogoutError(userMenuCopy.logoutError);
     }
+  }
+
+  if (error) {
+    return (
+      <button
+        type="button"
+        className={buttonClassWithSize("ghost", "sm")}
+        onClick={invalidateCurrentUser}
+      >
+        {currentUserSessionCopy.retry}
+      </button>
+    );
   }
 
   const name = user ? toTitleCase(user.name) : "";

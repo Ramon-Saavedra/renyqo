@@ -6,9 +6,12 @@ import { useRouter } from "next/navigation";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { buttonClass } from "@/components/ui/button/Button";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
-import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
-import { useCurrentUser } from "@/lib/api/use-current-user";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
+import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
+import {
+  isConfirmedAnonymousUser,
+  useCurrentUser,
+} from "@/lib/api/use-current-user";
 
 function ProviderRedirect() {
   const router = useRouter();
@@ -34,19 +37,23 @@ function ProviderRedirect() {
 
 const SKELETON_CLASS = "flex items-center gap-3.5";
 
-export function ListingsTopbarActions() {
-  const { user, loading } = useCurrentUser();
+function SessionPendingActions() {
+  return (
+    <span className={SKELETON_CLASS}>
+      <RenyqoSkeleton variant="pill" width={96} height={32} />
+      <RenyqoSkeleton variant="circle" width={32} height={32} />
+    </span>
+  );
+}
 
-  if (loading) {
-    return (
-      <span className={SKELETON_CLASS}>
-        <RenyqoSkeleton variant="pill" width={96} height={32} />
-        <RenyqoSkeleton variant="circle" width={32} height={32} />
-      </span>
-    );
+export function ListingsTopbarActions() {
+  const { user, loading, error } = useCurrentUser();
+
+  if (loading || error) {
+    return <SessionPendingActions />;
   }
 
-  if (!user) {
+  if (isConfirmedAnonymousUser({ user, loading, error }) || !user) {
     return (
       <div className="flex items-center gap-3">
         <Link href="/login" className={buttonClass("ghost")}>

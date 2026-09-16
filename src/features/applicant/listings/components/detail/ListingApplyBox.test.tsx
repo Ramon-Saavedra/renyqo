@@ -1,6 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useListingViewerSession } from "../../hooks/useListingViewerSession";
 import { ListingApplyBox } from "./ListingApplyBox";
 
 const eligibility = vi.fn();
@@ -8,9 +7,6 @@ const application = vi.fn();
 const existing = vi.fn();
 const withdrawal = vi.fn();
 
-vi.mock("../../hooks/useListingViewerSession", () => ({
-  useListingViewerSession: vi.fn(),
-}));
 vi.mock("../../hooks/useListingEligibility", () => ({
   useListingEligibility: (...args: unknown[]) => eligibility(...args),
 }));
@@ -23,8 +19,6 @@ vi.mock("../../hooks/useApplicantListingApplication", () => ({
 vi.mock("../../hooks/useListingWithdrawal", () => ({
   useListingWithdrawal: () => withdrawal(),
 }));
-
-const session = vi.mocked(useListingViewerSession);
 
 const baseEligibility = {
   status: "loaded",
@@ -63,7 +57,6 @@ function setup(
       | null;
   } = {},
 ) {
-  session.mockReturnValue("applicant");
   eligibility.mockReturnValue({
     ...baseEligibility,
     eligibility: { ...baseEligibility.eligibility, canApply },
@@ -78,6 +71,7 @@ function setup(
   render(
     <ListingApplyBox
       listingId="l"
+      session="applicant"
       matchesProfile="unknown"
       applicationStatus={listingState.applicationStatus ?? null}
       publicReason={listingState.publicReason ?? null}
@@ -88,11 +82,9 @@ function setup(
 describe("ListingApplyBox", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    session.mockReturnValue("applicant");
   });
 
   it("shows register and login instead of eligibility for anonymous users", () => {
-    session.mockReturnValue("anonymous");
     eligibility.mockReturnValue(baseEligibility);
     application.mockReturnValue(idle);
     existing.mockReturnValue({
@@ -104,6 +96,7 @@ describe("ListingApplyBox", () => {
     render(
       <ListingApplyBox
         listingId="l"
+        session="anonymous"
         matchesProfile="unknown"
         applicationStatus={null}
         publicReason={null}
@@ -154,7 +147,6 @@ describe("ListingApplyBox", () => {
   });
 
   it("hides match badges for anonymous users even when matchesProfile is match", () => {
-    session.mockReturnValue("anonymous");
     eligibility.mockReturnValue(baseEligibility);
     application.mockReturnValue(idle);
     existing.mockReturnValue({
@@ -166,6 +158,7 @@ describe("ListingApplyBox", () => {
     render(
       <ListingApplyBox
         listingId="l"
+        session="anonymous"
         matchesProfile="match"
         applicationStatus={null}
         publicReason={null}
@@ -182,7 +175,6 @@ describe("ListingApplyBox", () => {
   });
 
   it("keeps the apply box busy while the session is loading", () => {
-    session.mockReturnValue("loading");
     eligibility.mockReturnValue({
       status: "idle",
       eligibility: null,
@@ -197,6 +189,40 @@ describe("ListingApplyBox", () => {
     const { container } = render(
       <ListingApplyBox
         listingId="l"
+        session="loading"
+        matchesProfile="unknown"
+        applicationStatus={null}
+        publicReason={null}
+      />,
+    );
+
+    expect(container.querySelector("[aria-busy='true']")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Bewerbung starten" }),
+    ).toBeNull();
+    expect(eligibility).toHaveBeenCalledWith("l", false);
+    expect(existing).toHaveBeenCalledWith("l", false);
+  });
+
+  it("keeps the apply box busy and hides anonymous CTAs when the session is in error", () => {
+    eligibility.mockReturnValue({
+      status: "idle",
+      eligibility: null,
+    });
+    application.mockReturnValue(idle);
+    existing.mockReturnValue({
+      application: null,
+      status: "idle",
+      refresh: vi.fn(),
+    });
+    withdrawal.mockReturnValue(idleWithdraw);
+    const { container } = render(
+      <ListingApplyBox
+        listingId="l"
+        session="error"
         matchesProfile="unknown"
         applicationStatus={null}
         publicReason={null}
@@ -215,7 +241,6 @@ describe("ListingApplyBox", () => {
   });
 
   it("hides applicant apply actions for a non-applicant session", () => {
-    session.mockReturnValue("other");
     eligibility.mockReturnValue(baseEligibility);
     application.mockReturnValue(idle);
     existing.mockReturnValue({
@@ -227,6 +252,7 @@ describe("ListingApplyBox", () => {
     render(
       <ListingApplyBox
         listingId="l"
+        session="other"
         matchesProfile="match"
         applicationStatus={null}
         publicReason={null}
@@ -281,7 +307,6 @@ describe("ListingApplyBox", () => {
   );
 
   it("does not block warnings when eligibility allows applying", () => {
-    session.mockReturnValue("applicant");
     eligibility.mockReturnValue({
       status: "loaded",
       eligibility: {
@@ -299,6 +324,7 @@ describe("ListingApplyBox", () => {
     render(
       <ListingApplyBox
         listingId="l"
+        session="applicant"
         matchesProfile="unknown"
         applicationStatus={null}
         publicReason={null}
@@ -312,7 +338,6 @@ describe("ListingApplyBox", () => {
 
   it("submits once on repeated clicks", () => {
     const submit = vi.fn().mockResolvedValue(undefined);
-    session.mockReturnValue("applicant");
     eligibility.mockReturnValue(baseEligibility);
     application.mockReturnValue({ state: { status: "idle" }, submit });
     existing.mockReturnValue({
@@ -324,6 +349,7 @@ describe("ListingApplyBox", () => {
     render(
       <ListingApplyBox
         listingId="l"
+        session="applicant"
         matchesProfile="unknown"
         applicationStatus={null}
         publicReason={null}
