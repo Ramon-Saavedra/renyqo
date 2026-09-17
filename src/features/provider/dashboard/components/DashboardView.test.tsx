@@ -128,6 +128,14 @@ function mockExitedState(
 }
 
 describe("DashboardView", () => {
+  it("keeps the dashboard viewport and internal-scroll shell", () => {
+    const { container } = render(<DashboardView objects={objects} />);
+    const dashboardShell = container.querySelector("[data-accent]");
+
+    expect(dashboardShell?.className).toContain("lg:h-dvh");
+    expect(dashboardShell?.className).toContain("lg:overflow-hidden");
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();

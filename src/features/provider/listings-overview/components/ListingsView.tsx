@@ -9,7 +9,6 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useRouter } from "next/navigation";
-import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { ApiError } from "@/lib/api/client";
 import {
   archiveProviderListing,
@@ -27,11 +26,11 @@ import type {
 import { ListingRow } from "./ListingRow";
 import { ListingsEmptyState } from "./ListingsEmptyState";
 import { ListingsLoadingSkeleton } from "./ListingsLoadingSkeleton";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { ListingsHero } from "./ListingsHero";
 import { ListingsToolbar } from "./ListingsToolbar";
 import { ListingsTopbarActions } from "./ListingsTopbarActions";
-import { ListingsTrustLine } from "./ListingsTrustLine";
+import { NewListingAction } from "./ListingsHero";
+import { PROVIDER_STICKY_ACTIONS_CLASS } from "@/features/provider/topbar-classes";
 import { ListSummary } from "./ListSummary";
 import { StatusFilter } from "./StatusFilter";
 
@@ -279,14 +278,16 @@ export function ListingsView({
 
   return (
     <>
-      <AppTopbar logoHref="/provider/dashboard" className="mb-section">
-        <ListingsTopbarActions />
-        <AccountMenu />
-      </AppTopbar>
-
       <div className="px-gutter">
+        <div className="mb-section flex justify-end">
+          <ListingsTopbarActions />
+        </div>
+        <div
+          className={`${PROVIDER_STICKY_ACTIONS_CLASS} mb-4 flex justify-end py-1`}
+        >
+          <NewListingAction />
+        </div>
         <ListingsHero />
-        <ListingsTrustLine />
 
         <div className="mb-4 flex">
           <ListingsToolbar value={search} onChange={setSearch} />

@@ -1,14 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { MouseEvent } from "react";
+import { createPortal } from "react-dom";
 import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { createListingCopy, SECTION_IDS } from "../copy/create-listing";
 import { useActiveStepFromScroll } from "../hooks/useActiveStepFromScroll";
 import { useAutoTitle } from "../hooks/useAutoTitle";
@@ -79,8 +78,26 @@ function areDraftsEqual(left: ListingDraft, right: ListingDraft): boolean {
   );
 }
 
+function subscribeToProviderTopbarActions() {
+  return () => {};
+}
+
+function getProviderTopbarActionsTarget(): HTMLElement | null {
+  const target = document.getElementById("provider-topbar-actions");
+  return target instanceof HTMLElement ? target : null;
+}
+
+function getServerTopbarActionsTarget(): null {
+  return null;
+}
+
 export function CreateListingForm() {
   const router = useRouter();
+  const topbarActionsTarget = useSyncExternalStore(
+    subscribeToProviderTopbarActions,
+    getProviderTopbarActionsTarget,
+    getServerTopbarActionsTarget,
+  );
   const [cleanDraft, setCleanDraft] = useState<ListingDraft>(INITIAL_DRAFT);
   const [cleanStatus, setCleanStatus] = useState<ListingSaveStatus>("idle");
   const [hasSaveError, setHasSaveError] = useState(false);
@@ -190,6 +207,23 @@ export function CreateListingForm() {
     [hasUnsavedChanges],
   );
 
+  useEffect(() => {
+    const guardLogoNavigation = (event: globalThis.MouseEvent) => {
+      if (!hasUnsavedChanges || !(event.target instanceof Element)) return;
+      const logoLink = event.target.closest(
+        "header a[href='/provider/dashboard']",
+      );
+      if (!logoLink) return;
+      event.preventDefault();
+      setShowSaveBeforeLeaveError(false);
+      setPendingHref(createListingCopy.headerNav.dashboardHref);
+    };
+
+    document.addEventListener("click", guardLogoNavigation, true);
+    return () =>
+      document.removeEventListener("click", guardLogoNavigation, true);
+  }, [hasUnsavedChanges]);
+
   const keepEditing = useCallback(() => {
     if (submitStatus === "saving") return;
     setShowSaveBeforeLeaveError(false);
@@ -266,25 +300,21 @@ export function CreateListingForm() {
 
   return (
     <>
-      <AppTopbar
-        className="sticky top-0 z-30 mb-section bg-background"
-        logoHref={createListingCopy.headerNav.dashboardHref}
-        onLogoClick={(event) =>
-          guardNavigation(event, createListingCopy.headerNav.dashboardHref)
-        }
-      >
-        <TopbarActions
-          status={saveStatus}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          onBackClick={(event) =>
-            guardNavigation(event, createListingCopy.topbar.backHref)
-          }
-        />
-        <AccountMenu />
-      </AppTopbar>
+      {topbarActionsTarget
+        ? createPortal(
+            <TopbarActions
+              status={saveStatus}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              onBackClick={(event) =>
+                guardNavigation(event, createListingCopy.topbar.backHref)
+              }
+            />,
+            topbarActionsTarget,
+          )
+        : null}
 
       <div className="px-gutter">
         <CreateListingHero title={heroTitle} />

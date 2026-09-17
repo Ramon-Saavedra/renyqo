@@ -96,7 +96,8 @@ html {
   --text-action--letter-spacing: -0.005em;
 
   --spacing-page: min(80%, 1280px);
-  --spacing-section: 4rem;
+  --spacing-provider-topbar: 5rem;
+  --spacing-section: 2rem;
   --spacing-parent-x: 1rem;
   --spacing-parent-y: 0.75rem;
   --spacing-card-x: 1rem;

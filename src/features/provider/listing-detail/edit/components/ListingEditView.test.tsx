@@ -1,19 +1,22 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
-import { updateListing } from "@/lib/api/listings";
+import {
+  deleteListingImage,
+  reorderListingImages,
+  updateListing,
+  uploadListingImage,
+} from "@/lib/api/listings";
 import type { ListingDetail } from "../../types";
 import { listingEditCopy } from "../copy";
-import { getProviderListing } from "../../api/provider-listing-detail";
 import { ListingEditView } from "./ListingEditView";
 
 vi.mock("@/lib/api/listings", () => ({
+  deleteListingImage: vi.fn(),
+  reorderListingImages: vi.fn(),
   updateListing: vi.fn(),
-}));
-
-vi.mock("../../api/provider-listing-detail", () => ({
-  getProviderListing: vi.fn(),
+  uploadListingImage: vi.fn(),
 }));
 
 const LISTING: ListingDetail = {
@@ -41,28 +44,303 @@ const LISTING: ListingDetail = {
   suitableForPeopleCount: 2,
   petsPolicy: "BY_ARRANGEMENT",
   smokingPolicy: "NOT_ALLOWED",
-  images: [],
+  images: [
+    {
+      id: "image-1",
+      secureUrl: "https://example.com/cover.jpg",
+      position: 0,
+      isCover: true,
+    },
+    {
+      id: "image-2",
+      secureUrl: "https://example.com/second.jpg",
+      position: 1,
+      isCover: false,
+    },
+  ],
   createdAt: null,
   updatedAt: null,
   publishedAt: null,
 };
 
-function renderEditView() {
+function renderEditView(onDirtyChange?: (dirty: boolean) => void) {
   const onCancel = vi.fn();
   const onSaved = vi.fn();
 
-  render(
-    <ListingEditView listing={LISTING} onCancel={onCancel} onSaved={onSaved} />,
+  const view = render(
+    <ListingEditView
+      listing={LISTING}
+      onCancel={onCancel}
+      onSaved={onSaved}
+      {...(onDirtyChange ? { onDirtyChange } : {})}
+    />,
   );
 
-  return { onCancel, onSaved };
+  return { ...view, onCancel, onSaved };
 }
 
 describe("ListingEditView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(updateListing).mockResolvedValue(undefined);
-    vi.mocked(getProviderListing).mockResolvedValue(LISTING);
+    vi.mocked(deleteListingImage).mockResolvedValue(undefined);
+    vi.mocked(reorderListingImages).mockResolvedValue(undefined);
+    vi.mocked(uploadListingImage).mockResolvedValue({
+      id: "image-3",
+      secureUrl: "https://example.com/third.jpg",
+      position: 2,
+      isCover: false,
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("keeps save disabled on entry and after a field is reverted", async () => {
+    const user = userEvent.setup();
+    renderEditView();
+    const save = screen.getByRole("button", { name: listingEditCopy.save });
+    const title = screen.getByRole("textbox", {
+      name: listingEditCopy.fields.title,
+    });
+
+    expect((save as HTMLButtonElement).disabled).toBe(true);
+    await user.clear(title);
+    await user.type(title, "Renovierte Wohnung");
+    expect((save as HTMLButtonElement).disabled).toBe(false);
+    await user.clear(title);
+    await user.type(title, LISTING.title);
+    expect((save as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("tracks image order as dirty and clean when restored", async () => {
+    renderEditView();
+    const save = screen.getByRole("button", { name: listingEditCopy.save });
+    const first = screen.getByRole("button", { name: "Bild 1" }).parentElement;
+    const second = screen.getByRole("button", { name: "Bild 2" }).parentElement;
+
+    expect(first?.getAttribute("draggable")).toBe("true");
+    expect(second?.getAttribute("draggable")).toBe("true");
+    fireEvent.dragStart(first!, {
+      dataTransfer: { effectAllowed: "", setData: vi.fn() },
+    });
+    fireEvent.drop(second!, { dataTransfer: { dropEffect: "" } });
+    await waitFor(() =>
+      expect((save as HTMLButtonElement).disabled).toBe(false),
+    );
+    await waitFor(() => expect(reorderListingImages).toHaveBeenCalledTimes(1));
+
+    fireEvent.dragStart(second!, {
+      dataTransfer: { effectAllowed: "", setData: vi.fn() },
+    });
+    fireEvent.drop(first!, { dataTransfer: { dropEffect: "" } });
+    await waitFor(() => expect(reorderListingImages).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect((save as HTMLButtonElement).disabled).toBe(true),
+    );
+  });
+
+  it("moves an image with accessible controls and keeps focus on it", async () => {
+    const user = userEvent.setup();
+    renderEditView();
+
+    const moveNext = screen.getByRole("button", {
+      name: "Bild 1 nach hinten verschieben",
+    });
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Bild 1 nach vorne verschieben",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Bild 2 nach hinten verschieben",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+
+    await user.click(moveNext);
+
+    expect(reorderListingImages).toHaveBeenCalledWith("listing-1", [
+      "image-2",
+      "image-1",
+    ]);
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", {
+        name: "Bild 2 nach vorne verschieben",
+      }),
+    );
+    expect(
+      await screen.findByText("Bild wurde auf Position 2 verschoben."),
+    ).toBeInstanceOf(HTMLElement);
+    const announcement = screen.getByText(
+      "Bild wurde auf Position 2 verschoben.",
+    );
+    expect(announcement.getAttribute("role")).toBe("status");
+    expect(announcement.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("moves an image with keyboard activation", async () => {
+    const user = userEvent.setup();
+    renderEditView();
+    const moveNext = screen.getByRole("button", {
+      name: "Bild 1 nach hinten verschieben",
+    });
+    moveNext.focus();
+
+    await user.keyboard("{Enter}");
+
+    expect(reorderListingImages).toHaveBeenCalledWith("listing-1", [
+      "image-2",
+      "image-1",
+    ]);
+  });
+
+  it("keeps the successfully reordered cover in the saved listing", async () => {
+    const user = userEvent.setup();
+    const onSaved = vi.fn();
+    render(
+      <ListingEditView
+        listing={LISTING}
+        onCancel={vi.fn()}
+        onSaved={onSaved}
+      />,
+    );
+    const first = screen.getByRole("button", { name: "Bild 1" }).parentElement;
+    const second = screen.getByRole("button", { name: "Bild 2" }).parentElement;
+
+    fireEvent.dragStart(first!, {
+      dataTransfer: { effectAllowed: "", setData: vi.fn() },
+    });
+    fireEvent.drop(second!, { dataTransfer: { dropEffect: "" } });
+    await waitFor(() => expect(reorderListingImages).toHaveBeenCalledTimes(1));
+    expect(reorderListingImages).toHaveBeenLastCalledWith("listing-1", [
+      "image-2",
+      "image-1",
+    ]);
+    await user.click(
+      screen.getByRole("button", { name: listingEditCopy.save }),
+    );
+
+    expect(onSaved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        images: [LISTING.images[1], LISTING.images[0]],
+      }),
+    );
+  });
+
+  it("keeps added and deleted images synchronized with the saved listing", async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:third-image"),
+      revokeObjectURL: vi.fn(),
+    });
+    const { container, onSaved } = renderEditView();
+    const fileInput =
+      container.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!fileInput) throw new Error("Image upload input was not rendered");
+
+    const photo = new File(["image"], "third.jpg", { type: "image/jpeg" });
+    fireEvent.change(fileInput, { target: { files: [photo] } });
+    await waitFor(() =>
+      expect(uploadListingImage).toHaveBeenCalledWith("listing-1", photo),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Bild 3" })).toBeInstanceOf(
+        HTMLElement,
+      ),
+    );
+    expect(screen.getByText("1 Foto hinzugefügt.").getAttribute("role")).toBe(
+      "status",
+    );
+    await user.click(screen.getByRole("button", { name: "Bild 2 entfernen" }));
+    await waitFor(() =>
+      expect(deleteListingImage).toHaveBeenCalledWith("listing-1", "image-2"),
+    );
+    await user.click(
+      screen.getByRole("button", { name: listingEditCopy.save }),
+    );
+
+    expect(onSaved).toHaveBeenCalledWith(
+      expect.objectContaining({
+        images: [LISTING.images[0], expect.objectContaining({ id: "image-3" })],
+      }),
+    );
+  });
+
+  it("reports upload failures and skipped photos with actual counts", async () => {
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:failed-image"),
+      revokeObjectURL: vi.fn(),
+    });
+    vi.mocked(uploadListingImage).mockRejectedValue(new Error("failed"));
+    const { container } = renderEditView();
+    const fileInput =
+      container.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!fileInput) throw new Error("Image upload input was not rendered");
+
+    const files = Array.from(
+      { length: 11 },
+      (_, index) =>
+        new File([`image-${index}`], `photo-${index}.jpg`, {
+          type: "image/jpeg",
+        }),
+    );
+    fireEvent.change(fileInput, { target: { files } });
+
+    const feedback = await screen.findByRole("alert");
+    expect(feedback.textContent).toBe(
+      "10 Fotos konnten nicht hochgeladen werden. 1 Foto wegen des Limits übersprungen.",
+    );
+    expect(feedback.className).toContain("text-warning");
+    expect(feedback.className).not.toContain("text-success");
+    expect(uploadListingImage).toHaveBeenCalledTimes(10);
+  });
+
+  it("keeps an image after deletion fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(deleteListingImage).mockRejectedValue(new Error("failed"));
+    renderEditView();
+
+    await user.click(screen.getByRole("button", { name: "Bild 2 entfernen" }));
+
+    const feedback = await screen.findByRole("alert");
+    expect(feedback.textContent).toBe(
+      "Das Foto konnte nicht entfernt werden. Bitte erneut versuchen.",
+    );
+    expect(feedback.className).toContain("text-warning");
+    expect(feedback.className).not.toContain("text-success");
+    expect(
+      screen.getByRole("button", { name: "Bild 2 entfernen" }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
+  it("restores the previous cover and reports a failed reorder", async () => {
+    vi.mocked(reorderListingImages).mockRejectedValue(new Error("failed"));
+    renderEditView();
+    const first = screen.getByRole("button", { name: "Bild 1" }).parentElement;
+    const second = screen.getByRole("button", { name: "Bild 2" }).parentElement;
+
+    fireEvent.dragStart(first!, {
+      dataTransfer: { effectAllowed: "", setData: vi.fn() },
+    });
+    fireEvent.drop(second!, { dataTransfer: { dropEffect: "" } });
+
+    expect(
+      await screen.findByText(
+        "Die Reihenfolge konnte nicht gespeichert werden.",
+      ),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen
+        .getByRole("button", { name: "Bild 1" })
+        .querySelector("img")
+        ?.getAttribute("src"),
+    ).toContain("cover.jpg");
   });
 
   it("saves changed fields and shows the saved notice", async () => {

@@ -132,12 +132,30 @@ describe("ListingsView", () => {
     expect(getProviderListings).not.toHaveBeenCalled();
   });
 
-  it("links the logo to the provider dashboard", () => {
+  it("keeps the page-specific back link to the dashboard", () => {
     renderView();
 
     expect(
-      screen.getByRole("link", { name: "Renyqo" }).getAttribute("href"),
+      screen
+        .getByRole("link", { name: "Zurück zum Dashboard" })
+        .getAttribute("href"),
     ).toBe("/provider/dashboard");
+  });
+
+  it("keeps the create-listing action sticky beneath the Provider topbar", () => {
+    renderView();
+    const action = screen.getByRole("link", {
+      name: "Weiteres Mietobjekt anlegen",
+    });
+    const actionBar = action.parentElement;
+
+    expect(actionBar?.className).toContain("sticky top-provider-topbar z-20");
+  });
+
+  it("omits the informational requirements banner", () => {
+    renderView();
+
+    expect(screen.queryByText(/Anforderungen sind/)).toBeNull();
   });
 
   it("shows a loading state while fetching backend listings", () => {
