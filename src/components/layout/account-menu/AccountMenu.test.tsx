@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -274,4 +274,62 @@ describe("AccountMenu", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
   });
+
+  it.each([
+    {
+      destination: "/applicant/profile",
+      linkName: "Bewerbungsprofil bearbeiten",
+      activation: "mouse",
+    },
+    {
+      destination: "/applicant/saved",
+      linkName: "Gemerkt",
+      activation: "mouse",
+    },
+    {
+      destination: "/applicant/profile",
+      linkName: "Bewerbungsprofil bearbeiten",
+      activation: "keyboard",
+    },
+    {
+      destination: "/applicant/saved",
+      linkName: "Gemerkt",
+      activation: "keyboard",
+    },
+  ] as const)(
+    "closes the account popover after $activation navigation to $destination",
+    async ({ destination, linkName, activation }) => {
+      const user = userEvent.setup();
+      vi.mocked(getCurrentUser).mockResolvedValue(APPLICANT_USER);
+
+      render(<AccountMenu />);
+
+      const trigger = await screen.findByRole("button", {
+        name: "Konto & Profil",
+      });
+      await user.click(trigger);
+      const dialog = screen.getByRole("dialog", { name: "Konto & Profil" });
+      const link = screen.getByRole("link", { name: linkName });
+
+      expect(
+        new URL(link.getAttribute("href") ?? "", "http://localhost").pathname,
+      ).toBe(destination);
+      link.addEventListener("click", (event) => event.preventDefault(), {
+        once: true,
+      });
+      if (activation === "keyboard") {
+        await waitFor(() => expect(document.activeElement).toBe(dialog));
+        link.focus();
+        await user.keyboard("{Enter}");
+      } else {
+        await user.click(link);
+      }
+
+      expect(
+        screen.queryByRole("dialog", { name: "Konto & Profil" }),
+      ).toBeNull();
+      expect(dialog.contains(document.activeElement)).toBe(false);
+      expect(document.activeElement).toBe(trigger);
+    },
+  );
 });

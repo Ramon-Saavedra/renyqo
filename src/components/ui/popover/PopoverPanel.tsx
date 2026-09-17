@@ -18,6 +18,7 @@ interface PopoverPanelProps {
   panelClassName?: string | undefined;
   align?: "left" | "right";
   onClose?: () => void;
+  closeOnLinkClick?: boolean;
 }
 
 interface PopoverRenderProps {
@@ -48,6 +49,7 @@ export function PopoverPanel({
   panelClassName,
   align = "right",
   onClose,
+  closeOnLinkClick = false,
 }: PopoverPanelProps) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -133,6 +135,15 @@ export function PopoverPanel({
           role="dialog"
           aria-label={ariaLabel}
           tabIndex={-1}
+          onClickCapture={(event) => {
+            if (
+              closeOnLinkClick &&
+              event.target instanceof Element &&
+              event.target.closest("a[href]")
+            ) {
+              close();
+            }
+          }}
           className={cn(
             PANEL_BASE_CLASS,
             align === "left" ? "left-0" : "right-0",
