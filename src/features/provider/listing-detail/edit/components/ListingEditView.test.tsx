@@ -141,6 +141,65 @@ describe("ListingEditView", () => {
     );
   });
 
+  it("moves an image with accessible controls and keeps focus on it", async () => {
+    const user = userEvent.setup();
+    renderEditView();
+
+    const moveNext = screen.getByRole("button", {
+      name: "Bild 1 nach hinten verschieben",
+    });
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Bild 1 nach vorne verschieben",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Bild 2 nach hinten verschieben",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+
+    await user.click(moveNext);
+
+    expect(reorderListingImages).toHaveBeenCalledWith("listing-1", [
+      "image-2",
+      "image-1",
+    ]);
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", {
+        name: "Bild 2 nach vorne verschieben",
+      }),
+    );
+    expect(
+      await screen.findByText("Bild wurde auf Position 2 verschoben."),
+    ).toBeInstanceOf(HTMLElement);
+    const announcement = screen.getByText(
+      "Bild wurde auf Position 2 verschoben.",
+    );
+    expect(announcement.getAttribute("role")).toBe("status");
+    expect(announcement.getAttribute("aria-live")).toBe("polite");
+  });
+
+  it("moves an image with keyboard activation", async () => {
+    const user = userEvent.setup();
+    renderEditView();
+    const moveNext = screen.getByRole("button", {
+      name: "Bild 1 nach hinten verschieben",
+    });
+    moveNext.focus();
+
+    await user.keyboard("{Enter}");
+
+    expect(reorderListingImages).toHaveBeenCalledWith("listing-1", [
+      "image-2",
+      "image-1",
+    ]);
+  });
+
   it("keeps the successfully reordered cover in the saved listing", async () => {
     const user = userEvent.setup();
     const onSaved = vi.fn();
@@ -195,6 +254,9 @@ describe("ListingEditView", () => {
         HTMLElement,
       ),
     );
+    expect(screen.getByText("1 Foto hinzugefügt.").getAttribute("role")).toBe(
+      "status",
+    );
     await user.click(screen.getByRole("button", { name: "Bild 2 entfernen" }));
     await waitFor(() =>
       expect(deleteListingImage).toHaveBeenCalledWith("listing-1", "image-2"),
@@ -210,6 +272,35 @@ describe("ListingEditView", () => {
     );
   });
 
+  it("reports upload failures and skipped photos with actual counts", async () => {
+    vi.stubGlobal("URL", {
+      createObjectURL: vi.fn(() => "blob:failed-image"),
+      revokeObjectURL: vi.fn(),
+    });
+    vi.mocked(uploadListingImage).mockRejectedValue(new Error("failed"));
+    const { container } = renderEditView();
+    const fileInput =
+      container.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!fileInput) throw new Error("Image upload input was not rendered");
+
+    const files = Array.from(
+      { length: 11 },
+      (_, index) =>
+        new File([`image-${index}`], `photo-${index}.jpg`, {
+          type: "image/jpeg",
+        }),
+    );
+    fireEvent.change(fileInput, { target: { files } });
+
+    const feedback = await screen.findByRole("alert");
+    expect(feedback.textContent).toBe(
+      "10 Fotos konnten nicht hochgeladen werden. 1 Foto wegen des Limits übersprungen.",
+    );
+    expect(feedback.className).toContain("text-warning");
+    expect(feedback.className).not.toContain("text-success");
+    expect(uploadListingImage).toHaveBeenCalledTimes(10);
+  });
+
   it("keeps an image after deletion fails", async () => {
     const user = userEvent.setup();
     vi.mocked(deleteListingImage).mockRejectedValue(new Error("failed"));
@@ -217,11 +308,12 @@ describe("ListingEditView", () => {
 
     await user.click(screen.getByRole("button", { name: "Bild 2 entfernen" }));
 
-    expect(
-      await screen.findByText(
-        "Das Foto konnte nicht entfernt werden. Bitte erneut versuchen.",
-      ),
-    ).toBeInstanceOf(HTMLElement);
+    const feedback = await screen.findByRole("alert");
+    expect(feedback.textContent).toBe(
+      "Das Foto konnte nicht entfernt werden. Bitte erneut versuchen.",
+    );
+    expect(feedback.className).toContain("text-warning");
+    expect(feedback.className).not.toContain("text-success");
     expect(
       screen.getByRole("button", { name: "Bild 2 entfernen" }),
     ).toBeInstanceOf(HTMLElement);

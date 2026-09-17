@@ -29,6 +29,7 @@ interface ListingEditViewProps {
   onCancel: () => void;
   onSaved: (updated: ListingDetail) => void;
   onDirtyChange?: (dirty: boolean) => void;
+  onMutationPendingChange?: (pending: boolean) => void;
 }
 
 const COLUMN_CONTAINER = "flex flex-col gap-5 lg:flex-row lg:items-start";
@@ -45,6 +46,7 @@ export function ListingEditView({
   onCancel,
   onSaved,
   onDirtyChange,
+  onMutationPendingChange,
 }: ListingEditViewProps) {
   const [currentImages, setCurrentImages] = useState<readonly ListingImage[]>(
     () => listing.images,
@@ -73,23 +75,30 @@ export function ListingEditView({
   const totalDirty = isDirty || photosModified;
 
   useLayoutEffect(() => {
-    onDirtyChange?.(totalDirty);
+    onDirtyChange?.(totalDirty || imagesPending);
     return () => onDirtyChange?.(false);
-  }, [totalDirty, onDirtyChange]);
+  }, [totalDirty, imagesPending, onDirtyChange]);
+
+  useLayoutEffect(() => {
+    onMutationPendingChange?.(imagesPending);
+    return () => onMutationPendingChange?.(false);
+  }, [imagesPending, onMutationPendingChange]);
 
   const handleCancel = useCallback(() => {
+    if (imagesPending) return;
     if (totalDirty) {
       setShowDiscardModal(true);
       return;
     }
     onCancel();
-  }, [totalDirty, onCancel]);
+  }, [imagesPending, totalDirty, onCancel]);
 
   const keepEditing = useCallback(() => setShowDiscardModal(false), []);
   const confirmDiscard = useCallback(() => {
+    if (imagesPending) return;
     setShowDiscardModal(false);
     onCancel();
-  }, [onCancel]);
+  }, [imagesPending, onCancel]);
 
   const handleImagesChange = useCallback(
     (images: readonly ListingImage[]) => {
@@ -128,7 +137,7 @@ export function ListingEditView({
           <button
             type="button"
             onClick={handleCancel}
-            disabled={saving || saved}
+            disabled={imagesPending || saving || saved}
             className={cn(buttonClass("secondary"), ACTION_BUTTON_CLASS)}
           >
             {listingEditCopy.cancel}

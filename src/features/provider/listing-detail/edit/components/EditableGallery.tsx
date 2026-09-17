@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import Image from "next/image";
 import {
   ChevronLeft,
@@ -47,11 +53,26 @@ const MAIN_CLICK_CLASS = "cursor-pointer";
 const THUMB_WRAP = "relative aspect-square";
 const THUMB_BUTTON =
   "block h-full w-full cursor-pointer rounded-sm focus-visible:outline-none focus-visible:shadow-focus";
+const MOVE_BUTTON =
+  "absolute bottom-0.5 z-10 grid h-6 w-6 cursor-pointer place-items-center rounded-sm border-0 bg-black/55 text-white focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-30";
 const THUMB_FRAME =
   "relative block h-full w-full overflow-hidden rounded-sm border-2 border-transparent bg-background-muted";
 const THUMB_ACTIVE = "border-primary";
 const THUMB_DRAG_OVER = "border-primary border-dashed";
 const MAX_PHOTOS = 12;
+
+type FeedbackVariant = "success" | "error" | "neutral";
+
+interface GalleryFeedback {
+  message: string;
+  variant: FeedbackVariant;
+}
+
+const FEEDBACK_VARIANT_CLASS: Record<FeedbackVariant, string> = {
+  success: "bg-success/10 text-success",
+  error: "border border-warning/20 bg-warning/10 text-warning",
+  neutral: "bg-background-muted text-foreground-secondary",
+};
 
 export function EditableGallery({
   listingId,
@@ -67,10 +88,11 @@ export function EditableGallery({
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<GalleryFeedback | null>(null);
   const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlsRef = useRef<Map<string, string>>(new Map());
+  const focusedControlRef = useRef<string | null>(null);
   const photosRef = useRef<ListingImage[]>(photos);
   const mutationPending = uploading || reordering || deletingIds.size > 0;
 
@@ -83,11 +105,40 @@ export function EditableGallery({
     photosRef.current = photos;
   }, [photos]);
 
-  const showFeedback = useCallback((msg: string) => {
-    setFeedback(msg);
-    if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-    feedbackTimerRef.current = setTimeout(() => setFeedback(null), 2000);
-  }, []);
+  useLayoutEffect(() => {
+    const controlId = focusedControlRef.current;
+    if (!controlId || mutationPending) return;
+    focusedControlRef.current = null;
+    const moveControls = Array.from(
+      document.querySelectorAll<HTMLButtonElement>("[data-image-move-control]"),
+    );
+    const preferredControl = moveControls.find(
+      (control) => control.dataset.imageMoveControl === controlId,
+    );
+    if (preferredControl?.disabled) {
+      const separatorIndex = controlId.lastIndexOf(":");
+      const imageId = controlId.slice(0, separatorIndex);
+      const direction = controlId.slice(separatorIndex + 1);
+      const fallbackDirection = direction === "next" ? "previous" : "next";
+      const fallbackControlId = `${imageId}:${fallbackDirection}`;
+      moveControls
+        .find(
+          (control) => control.dataset.imageMoveControl === fallbackControlId,
+        )
+        ?.focus();
+      return;
+    }
+    preferredControl?.focus();
+  }, [mutationPending, photos]);
+
+  const showFeedback = useCallback(
+    (message: string, variant: FeedbackVariant) => {
+      setFeedback({ message, variant });
+      if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = setTimeout(() => setFeedback(null), 2000);
+    },
+    [],
+  );
 
   const revokePreviewUrl = useCallback((tempId: string) => {
     const url = previewUrlsRef.current.get(tempId);
@@ -127,6 +178,7 @@ export function EditableGallery({
         });
         showFeedback(
           "Das Foto konnte nicht entfernt werden. Bitte erneut versuchen.",
+          "error",
         );
         return;
       }
@@ -141,7 +193,7 @@ export function EditableGallery({
       if (active >= next.length && active > 0) {
         setActive(next.length - 1);
       }
-      showFeedback("Bild entfernt");
+      showFeedback("Bild entfernt", "success");
     },
     [listingId, active, showFeedback, onImagesChange],
   );
@@ -153,7 +205,7 @@ export function EditableGallery({
 
       const remaining = MAX_PHOTOS - photosRef.current.length;
       if (remaining <= 0) {
-        showFeedback(`Maximal ${MAX_PHOTOS} Fotos erlaubt`);
+        showFeedback(`Maximal ${MAX_PHOTOS} Fotos erlaubt`, "error");
         return;
       }
 
@@ -205,19 +257,27 @@ export function EditableGallery({
       onImagesChange?.(updated);
       setUploading(false);
 
+      const skippedCount = selected.length - toUpload.length;
+      const uploadMessages: string[] = [];
       if (successCount > 0) {
-        showFeedback(
+        uploadMessages.push(
           `${successCount} Foto${successCount !== 1 ? "s" : ""} hinzugefügt`,
         );
       }
       if (failureCount > 0) {
-        showFeedback("Einige Fotos konnten nicht hochgeladen werden.");
-      }
-      if (toUpload.length < selected.length) {
-        showFeedback(
-          `${toUpload.length} Foto${toUpload.length !== 1 ? "s" : ""} hochgeladen, ${selected.length - toUpload.length} übersprungen (max. ${MAX_PHOTOS})`,
+        uploadMessages.push(
+          `${failureCount} Foto${failureCount !== 1 ? "s" : ""} ${failureCount === 1 ? "konnte" : "konnten"} nicht hochgeladen werden`,
         );
       }
+      if (skippedCount > 0) {
+        uploadMessages.push(
+          `${skippedCount} Foto${skippedCount !== 1 ? "s" : ""} wegen des Limits übersprungen`,
+        );
+      }
+      showFeedback(
+        `${uploadMessages.join(". ")}.`,
+        failureCount > 0 ? "error" : skippedCount > 0 ? "neutral" : "success",
+      );
     },
     [listingId, showFeedback, onImagesChange, revokePreviewUrl],
   );
@@ -244,51 +304,60 @@ export function EditableGallery({
     setDragOverIndex(null);
   }, []);
 
-  const handleDrop = useCallback(
-    (index: number) => async (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragOverIndex(null);
-      if (mutationPending || dragIndex === null || dragIndex === index) return;
+  const reorderPhotos = useCallback(
+    async (fromIndex: number, toIndex: number, focusControlId?: string) => {
+      if (mutationPending || fromIndex === toIndex) return;
       const prev = photosRef.current;
-      if (dragIndex < 0 || dragIndex >= prev.length) {
-        setDragIndex(null);
+      if (
+        fromIndex < 0 ||
+        fromIndex >= prev.length ||
+        toIndex < 0 ||
+        toIndex >= prev.length
+      ) {
         return;
       }
       const next = [...prev];
-      const [moved] = next.splice(dragIndex, 1);
-      if (!moved) {
-        setDragIndex(null);
-        return;
-      }
-      next.splice(index, 0, moved);
+      const [moved] = next.splice(fromIndex, 1);
+      if (!moved) return;
+      next.splice(toIndex, 0, moved);
+      focusedControlRef.current = focusControlId ?? null;
       setPhotos(next);
       onImagesChange?.(next);
-      setDragIndex(null);
-      setActive(index);
+      setActive(toIndex);
       setReordering(true);
       try {
         await reorderListingImages(
           listingId,
-          next.map((p) => p.id),
+          next.map((photo) => photo.id),
         );
-        showFeedback("Reihenfolge geändert");
+        showFeedback(
+          `Bild wurde auf Position ${toIndex + 1} verschoben.`,
+          "success",
+        );
       } catch {
         setPhotos(prev);
         onImagesChange?.(prev);
         setActive(Math.min(active, Math.max(prev.length - 1, 0)));
-        showFeedback("Die Reihenfolge konnte nicht gespeichert werden.");
+        showFeedback(
+          "Die Reihenfolge konnte nicht gespeichert werden.",
+          "error",
+        );
       } finally {
         setReordering(false);
       }
     },
-    [
-      active,
-      dragIndex,
-      listingId,
-      onImagesChange,
-      showFeedback,
-      mutationPending,
-    ],
+    [active, listingId, mutationPending, onImagesChange, showFeedback],
+  );
+
+  const handleDrop = useCallback(
+    (index: number) => (e: React.DragEvent) => {
+      e.preventDefault();
+      setDragOverIndex(null);
+      if (mutationPending || dragIndex === null || dragIndex === index) return;
+      void reorderPhotos(dragIndex, index);
+      setDragIndex(null);
+    },
+    [dragIndex, mutationPending, reorderPhotos],
   );
 
   const hasImages = photos.length > 0;
@@ -404,8 +473,15 @@ export function EditableGallery({
       </div>
 
       {feedback ? (
-        <div className="rounded-sm bg-success/10 px-3 py-1.5 text-center text-caption font-medium text-success">
-          {feedback}
+        <div
+          role={feedback.variant === "error" ? "alert" : "status"}
+          aria-live={feedback.variant === "error" ? "assertive" : "polite"}
+          className={cn(
+            "rounded-sm px-3 py-1.5 text-center text-caption font-medium",
+            FEEDBACK_VARIANT_CLASS[feedback.variant],
+          )}
+        >
+          {feedback.message}
         </div>
       ) : null}
 
@@ -470,6 +546,40 @@ export function EditableGallery({
                   size={10}
                   strokeWidth={1.8}
                   className={deletingIds.has(photo.id) ? "animate-spin" : ""}
+                  decorative
+                />
+              </button>
+              <button
+                type="button"
+                data-image-move-control={`${photo.id}:previous`}
+                aria-label={`Bild ${index + 1} nach vorne verschieben`}
+                onClick={() =>
+                  void reorderPhotos(index, index - 1, `${photo.id}:previous`)
+                }
+                disabled={mutationPending || index === 0}
+                className={cn(MOVE_BUTTON, "left-0.5")}
+              >
+                <AppIcon
+                  icon={ChevronLeft}
+                  size={12}
+                  strokeWidth={1.8}
+                  decorative
+                />
+              </button>
+              <button
+                type="button"
+                data-image-move-control={`${photo.id}:next`}
+                aria-label={`Bild ${index + 1} nach hinten verschieben`}
+                onClick={() =>
+                  void reorderPhotos(index, index + 1, `${photo.id}:next`)
+                }
+                disabled={mutationPending || index === photos.length - 1}
+                className={cn(MOVE_BUTTON, "right-0.5")}
+              >
+                <AppIcon
+                  icon={ChevronRight}
+                  size={12}
+                  strokeWidth={1.8}
                   decorative
                 />
               </button>

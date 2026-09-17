@@ -69,6 +69,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
   const [reloadKey, setReloadKey] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditDirty, setIsEditDirty] = useState(false);
+  const [isEditMutationPending, setIsEditMutationPending] = useState(false);
   const [pendingLeave, setPendingLeave] = useState(false);
 
   useEffect(() => {
@@ -128,6 +129,11 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
     [],
   );
 
+  const handleEditMutationPendingChange = useCallback(
+    (pending: boolean) => setIsEditMutationPending(pending),
+    [],
+  );
+
   const enterEditMode = useCallback(() => {
     setActionError(null);
     setIsEditing(true);
@@ -145,25 +151,42 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
   }, []);
 
   const handleBackClick = useCallback(() => {
+    if (isEditMutationPending) return;
     if (isEditDirty) {
       setPendingLeave(true);
     } else {
       router.push(listingDetailCopy.backHref);
     }
-  }, [isEditDirty, router]);
+  }, [isEditDirty, isEditMutationPending, router]);
 
   const confirmLeave = useCallback(() => {
+    if (isEditMutationPending) return;
     setPendingLeave(false);
     setIsEditing(false);
     setIsEditDirty(false);
     router.push(listingDetailCopy.backHref);
-  }, [router]);
+  }, [isEditMutationPending, router]);
 
   const cancelLeave = useCallback(() => setPendingLeave(false), []);
 
   useEffect(() => {
     const guardLogoNavigation = (event: MouseEvent) => {
-      if (!isEditDirty || !(event.target instanceof Element)) return;
+      if (!(event.target instanceof Element)) return;
+      const accountMenuButton = event.target.closest(
+        "header [role='dialog'] button",
+      );
+      if (isEditMutationPending && accountMenuButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      const anchor = event.target.closest("a[href]");
+      if (isEditMutationPending && anchor) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+      if (!isEditDirty) return;
       const logoLink = event.target.closest(
         "header a[href='/provider/dashboard']",
       );
@@ -175,7 +198,27 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
     document.addEventListener("click", guardLogoNavigation, true);
     return () =>
       document.removeEventListener("click", guardLogoNavigation, true);
-  }, [isEditDirty]);
+  }, [isEditDirty, isEditMutationPending]);
+
+  useEffect(() => {
+    if (!isEditMutationPending) return;
+    const currentUrl = window.location.href;
+    const currentHistoryState = window.history.state;
+    const handlePopState = (event: PopStateEvent) => {
+      event.stopImmediatePropagation();
+      window.history.pushState(currentHistoryState, "", currentUrl);
+    };
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("popstate", handlePopState, true);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("popstate", handlePopState, true);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isEditMutationPending]);
 
   return (
     <>
@@ -183,7 +226,11 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
         <div className="mb-4 flex justify-end">
           <ListingsTopbarActions
             {...(isEditing && isEditDirty
-              ? { onBackClick: () => setPendingLeave(true) }
+              ? {
+                  onBackClick: () => {
+                    if (!isEditMutationPending) setPendingLeave(true);
+                  },
+                }
               : {})}
           />
         </div>
@@ -213,6 +260,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
             onCancel={exitEditMode}
             onSaved={handleEditSaved}
             onDirtyChange={handleEditDirtyChange}
+            onMutationPendingChange={handleEditMutationPendingChange}
           />
         ) : (
           <>
