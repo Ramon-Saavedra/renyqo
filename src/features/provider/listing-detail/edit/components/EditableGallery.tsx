@@ -24,6 +24,7 @@ interface EditableGalleryProps {
   listingId: string;
   images: readonly ListingImage[];
   onImagesChange?: (images: readonly ListingImage[]) => void;
+  onMutationPendingChange?: (pending: boolean) => void;
   className?: string;
 }
 
@@ -56,11 +57,13 @@ export function EditableGallery({
   listingId,
   images,
   onImagesChange,
+  onMutationPendingChange,
   className,
 }: EditableGalleryProps) {
   const [photos, setPhotos] = useState<ListingImage[]>(() => [...images]);
   const [active, setActive] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [reordering, setReordering] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -69,6 +72,13 @@ export function EditableGallery({
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlsRef = useRef<Map<string, string>>(new Map());
   const photosRef = useRef<ListingImage[]>(photos);
+  const mutationPending = uploading || reordering || deletingIds.size > 0;
+
+  useEffect(() => {
+    onMutationPendingChange?.(mutationPending);
+    return () => onMutationPendingChange?.(false);
+  }, [mutationPending, onMutationPendingChange]);
+
   useEffect(() => {
     photosRef.current = photos;
   }, [photos]);
@@ -109,7 +119,17 @@ export function EditableGallery({
       setDeletingIds((prev) => new Set(prev).add(photo.id));
       try {
         await deleteListingImage(listingId, photo.id);
-      } catch {}
+      } catch {
+        setDeletingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(photo.id);
+          return next;
+        });
+        showFeedback(
+          "Das Foto konnte nicht entfernt werden. Bitte erneut versuchen.",
+        );
+        return;
+      }
       setDeletingIds((prev) => {
         const next = new Set(prev);
         next.delete(photo.id);
@@ -159,6 +179,7 @@ export function EditableGallery({
       setActive(updated.length - 1);
 
       let successCount = 0;
+      let failureCount = 0;
 
       for (const p of provisionals) {
         try {
@@ -170,6 +191,7 @@ export function EditableGallery({
           }
           successCount += 1;
         } catch {
+          failureCount += 1;
           const idx = updated.findIndex((img) => img.id === p.id);
           if (idx !== -1) {
             updated.splice(idx, 1);
@@ -187,6 +209,9 @@ export function EditableGallery({
         showFeedback(
           `${successCount} Foto${successCount !== 1 ? "s" : ""} hinzugefügt`,
         );
+      }
+      if (failureCount > 0) {
+        showFeedback("Einige Fotos konnten nicht hochgeladen werden.");
       }
       if (toUpload.length < selected.length) {
         showFeedback(
@@ -220,10 +245,10 @@ export function EditableGallery({
   }, []);
 
   const handleDrop = useCallback(
-    (index: number) => (e: React.DragEvent) => {
+    (index: number) => async (e: React.DragEvent) => {
       e.preventDefault();
       setDragOverIndex(null);
-      if (dragIndex === null || dragIndex === index) return;
+      if (mutationPending || dragIndex === null || dragIndex === index) return;
       const prev = photosRef.current;
       if (dragIndex < 0 || dragIndex >= prev.length) {
         setDragIndex(null);
@@ -238,15 +263,32 @@ export function EditableGallery({
       next.splice(index, 0, moved);
       setPhotos(next);
       onImagesChange?.(next);
-      reorderListingImages(
-        listingId,
-        next.map((p) => p.id),
-      ).catch(() => {});
       setDragIndex(null);
       setActive(index);
-      showFeedback("Reihenfolge geändert");
+      setReordering(true);
+      try {
+        await reorderListingImages(
+          listingId,
+          next.map((p) => p.id),
+        );
+        showFeedback("Reihenfolge geändert");
+      } catch {
+        setPhotos(prev);
+        onImagesChange?.(prev);
+        setActive(Math.min(active, Math.max(prev.length - 1, 0)));
+        showFeedback("Die Reihenfolge konnte nicht gespeichert werden.");
+      } finally {
+        setReordering(false);
+      }
     },
-    [dragIndex, listingId, showFeedback, onImagesChange],
+    [
+      active,
+      dragIndex,
+      listingId,
+      onImagesChange,
+      showFeedback,
+      mutationPending,
+    ],
   );
 
   const hasImages = photos.length > 0;
@@ -377,7 +419,7 @@ export function EditableGallery({
             <div
               key={photo.id}
               className={THUMB_WRAP}
-              draggable
+              draggable={!mutationPending}
               onDragStart={handleDragStart(index)}
               onDragOver={handleDragOver(index)}
               onDragLeave={handleDragLeave}
@@ -420,7 +462,7 @@ export function EditableGallery({
                   e.stopPropagation();
                   handleRemove(photo);
                 }}
-                disabled={uploading || deletingIds.has(photo.id)}
+                disabled={mutationPending}
                 className="absolute top-0.5 right-0.5 grid h-4.5 w-4.5 cursor-pointer place-items-center rounded-sm border-0 bg-black/55 text-white focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-30"
               >
                 <AppIcon
@@ -436,7 +478,7 @@ export function EditableGallery({
           {photos.length < MAX_PHOTOS ? (
             <button
               type="button"
-              disabled={uploading}
+              disabled={mutationPending}
               onClick={() => inputRef.current?.click()}
               aria-label="Foto hinzufügen"
               className="flex aspect-square cursor-pointer items-center justify-center rounded-sm border border-dashed border-border-strong bg-background-muted text-foreground-tertiary hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:shadow-focus disabled:opacity-50"

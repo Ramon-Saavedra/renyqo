@@ -2,6 +2,7 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import ProviderLayout from "@/app/(app)/(standard)/provider/layout";
 import { CreateListingForm } from "./CreateListingForm";
 
 const mockPush = vi.hoisted(() => vi.fn());
@@ -9,8 +10,17 @@ const mockCreateListingDraft = vi.hoisted(() => vi.fn());
 const mockPublishListing = vi.hoisted(() => vi.fn());
 const mockGetProviderListings = vi.hoisted(() => vi.fn());
 
+function renderCreateListingForm() {
+  return render(
+    <ProviderLayout>
+      <CreateListingForm />
+    </ProviderLayout>,
+  );
+}
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  usePathname: () => "/provider/listings/new",
 }));
 
 vi.mock("@/lib/api/listings", () => ({
@@ -34,7 +44,7 @@ describe("CreateListingForm", () => {
   });
 
   it("renders the first-listing title when the provider has no listings", async () => {
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     expect(
       await screen.findByRole("heading", {
@@ -47,7 +57,7 @@ describe("CreateListingForm", () => {
   it("renders the next-listing title when the provider already has listings", async () => {
     mockGetProviderListings.mockResolvedValue([{ id: "listing-1" }]);
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     expect(
       await screen.findByRole("heading", {
@@ -60,7 +70,7 @@ describe("CreateListingForm", () => {
   it("supports undo and redo keyboard shortcuts for local draft changes", async () => {
     const user = userEvent.setup();
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     const cityInput = screen.getByPlaceholderText("Berlin");
 
@@ -87,18 +97,8 @@ describe("CreateListingForm", () => {
     expect((cityInput as HTMLInputElement).value).toBe("Berlin");
   });
 
-  it("shows unsaved changes after editing without autosave copy", async () => {
-    render(<CreateListingForm />);
-
-    const topbar = document.querySelector("header");
-
-    expect(topbar).toBeInstanceOf(HTMLElement);
-    expect(
-      within(topbar as HTMLElement).queryByText("Automatisch gespeichert"),
-    ).toBeNull();
-    expect(
-      within(topbar as HTMLElement).queryByText("Wird gespeichert"),
-    ).toBeNull();
+  it("shows unsaved changes after editing", async () => {
+    renderCreateListingForm();
 
     fireEvent.change(screen.getByPlaceholderText("Berlin"), {
       target: { value: "Berlin" },
@@ -107,51 +107,33 @@ describe("CreateListingForm", () => {
     expect(screen.getByText("Ungespeicherte Änderungen")).toBeInstanceOf(
       HTMLElement,
     );
-    expect(
-      within(topbar as HTMLElement).queryByText("Automatisch gespeichert"),
-    ).toBeNull();
   });
 
   it("removes the unsaved state when edits return to the clean draft", async () => {
     const user = userEvent.setup();
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
-    const topbar = document.querySelector("header");
     const cityInput = screen.getByPlaceholderText("Berlin");
 
-    expect(topbar).toBeInstanceOf(HTMLElement);
     expect(cityInput).toBeInstanceOf(HTMLInputElement);
 
     await user.type(cityInput, "Berlin");
 
-    expect(
-      within(topbar as HTMLElement).getByText("Ungespeicherte Änderungen"),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Ungespeicherte Änderungen")).toBeInstanceOf(
+      HTMLElement,
+    );
 
     await user.clear(cityInput);
 
-    expect(
-      within(topbar as HTMLElement).queryByText("Ungespeicherte Änderungen"),
-    ).toBeNull();
-  });
-
-  it("keeps the topbar sticky for lower form inputs", () => {
-    render(<CreateListingForm />);
-
-    const topbar = document.querySelector("header");
-
-    expect(topbar).toBeInstanceOf(HTMLElement);
-    expect(topbar?.className).toContain("sticky");
-    expect(topbar?.className).toContain("top-0");
-    expect(topbar?.className).toContain("z-30");
+    expect(screen.queryByText("Ungespeicherte Änderungen")).toBeNull();
   });
 
   it("shows saved after a successful manual draft save", async () => {
     const user = userEvent.setup();
     mockCreateListingDraft.mockResolvedValue({ id: "draft-1" });
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     await fillMinimumDraft(user);
     await user.click(
@@ -165,7 +147,7 @@ describe("CreateListingForm", () => {
   it("shows an empty draft message without calling the backend", async () => {
     const user = userEvent.setup();
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     await user.click(
       screen.getByRole("button", { name: "Als Entwurf speichern" }),
@@ -182,7 +164,7 @@ describe("CreateListingForm", () => {
     const user = userEvent.setup();
     mockCreateListingDraft.mockRejectedValue(new Error("server down"));
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     await fillMinimumDraft(user);
     await user.click(
@@ -198,7 +180,7 @@ describe("CreateListingForm", () => {
     const user = userEvent.setup();
     const confirmSpy = vi.spyOn(window, "confirm");
 
-    render(<CreateListingForm />);
+    renderCreateListingForm();
 
     await user.type(screen.getByPlaceholderText("Berlin"), "Berlin");
     await user.click(screen.getByRole("link", { name: "Zurück" }));
@@ -221,7 +203,7 @@ describe("CreateListingForm", () => {
     });
 
     try {
-      render(<CreateListingForm />);
+      renderCreateListingForm();
 
       fireEvent.click(screen.getByRole("button", { name: "Veröffentlichen" }));
 
@@ -241,9 +223,39 @@ describe("CreateListingForm", () => {
   it("opens the unsaved-changes modal before provider logo navigation", async () => {
     const user = userEvent.setup();
 
-    render(<CreateListingForm />);
+    render(
+      <ProviderLayout>
+        <CreateListingForm />
+      </ProviderLayout>,
+    );
+
+    const topbarElement = screen
+      .getAllByRole("banner")
+      .find((element) => element.querySelector("#provider-topbar-actions"));
+    if (!topbarElement) throw new Error("Provider topbar was not rendered");
+    const topbar = within(topbarElement);
+    expect(topbar.getByText("Entwurf · Nicht öffentlich")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(topbar.getByRole("button", { name: "Rückgängig" })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(topbar.getByRole("button", { name: "Wiederholen" })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(topbar.getByRole("link", { name: "Zurück" })).toBeInstanceOf(
+      HTMLElement,
+    );
 
     await user.type(screen.getByPlaceholderText("Berlin"), "Berlin");
+    await user.click(topbar.getByRole("button", { name: "Rückgängig" }));
+    expect(
+      (screen.getByPlaceholderText("Berlin") as HTMLInputElement).value,
+    ).toBe("Berl");
+    await user.click(topbar.getByRole("button", { name: "Wiederholen" }));
+    expect(
+      (screen.getByPlaceholderText("Berlin") as HTMLInputElement).value,
+    ).toBe("Berlin");
     await user.click(screen.getByRole("link", { name: "Renyqo" }));
     await user.click(
       screen.getByRole("button", { name: "Ohne Speichern verlassen" }),

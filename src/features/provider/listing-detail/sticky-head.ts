@@ -1,1 +1,3 @@
-export const STICKY_HEAD_CLASS = "sticky top-0 z-30 mb-6 bg-background";
+import { PROVIDER_STICKY_ACTIONS_CLASS } from "../topbar-classes";
+
+export const STICKY_HEAD_CLASS = `${PROVIDER_STICKY_ACTIONS_CLASS} mb-6`;

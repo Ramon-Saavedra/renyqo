@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Pencil } from "lucide-react";
-import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button/Button";
@@ -25,7 +24,6 @@ import { ListingEditView } from "../edit/components/ListingEditView";
 import type { DetailAction, ListingDetail } from "../types";
 import { AddressCard } from "./AddressCard";
 import { DescriptionCard } from "./DescriptionCard";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 import { DetailActionButton, ACTION_BUTTON_LAYOUT } from "./DetailActionButton";
 import { DetailErrorState } from "./DetailErrorState";
 import { DetailHead, buildActions } from "./DetailHead";
@@ -163,32 +161,32 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
 
   const cancelLeave = useCallback(() => setPendingLeave(false), []);
 
-  const handleLogoClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (isEditDirty) {
-        e.preventDefault();
-        setPendingLeave(true);
-      }
-    },
-    [isEditDirty],
-  );
+  useEffect(() => {
+    const guardLogoNavigation = (event: MouseEvent) => {
+      if (!isEditDirty || !(event.target instanceof Element)) return;
+      const logoLink = event.target.closest(
+        "header a[href='/provider/dashboard']",
+      );
+      if (!logoLink) return;
+      event.preventDefault();
+      setPendingLeave(true);
+    };
+
+    document.addEventListener("click", guardLogoNavigation, true);
+    return () =>
+      document.removeEventListener("click", guardLogoNavigation, true);
+  }, [isEditDirty]);
 
   return (
     <>
-      <AppTopbar
-        logoHref="/provider/dashboard"
-        className="mb-6"
-        {...(isEditing && isEditDirty ? { onLogoClick: handleLogoClick } : {})}
-      >
-        <ListingsTopbarActions
-          {...(isEditing && isEditDirty
-            ? { onBackClick: () => setPendingLeave(true) }
-            : {})}
-        />
-        <AccountMenu />
-      </AppTopbar>
-
       <div className={BODY_CLASS}>
+        <div className="mb-4 flex justify-end">
+          <ListingsTopbarActions
+            {...(isEditing && isEditDirty
+              ? { onBackClick: () => setPendingLeave(true) }
+              : {})}
+          />
+        </div>
         {isEditing ? (
           <button
             type="button"

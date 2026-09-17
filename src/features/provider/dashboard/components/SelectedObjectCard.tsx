@@ -184,7 +184,7 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
               </span>
             )}
             <Link
-              href="/provider/listings/new"
+              href={`/provider/listings/${object.id}`}
               className={ACTION_CLASS}
               aria-label={copy.edit}
               onClick={stopCardNavigation}

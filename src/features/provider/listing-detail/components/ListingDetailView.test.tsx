@@ -66,17 +66,6 @@ describe("ListingDetailView", () => {
     vi.mocked(getProviderListing).mockResolvedValue(BASE);
   });
 
-  it("links the logo to the provider dashboard", async () => {
-    render(<ListingDetailView listingId="listing-1" />);
-
-    expect(
-      screen.getByRole("link", { name: "Renyqo" }).getAttribute("href"),
-    ).toBe("/provider/dashboard");
-    expect(await screen.findByText("Wohnung in Berlin")).toBeInstanceOf(
-      HTMLElement,
-    );
-  });
-
   it("enters edit mode from the listing detail", async () => {
     const user = userEvent.setup();
     render(<ListingDetailView listingId="listing-1" />);
@@ -87,5 +76,10 @@ describe("ListingDetailView", () => {
     expect(
       await screen.findByRole("textbox", { name: "Objekttitel" }),
     ).toBeInstanceOf(HTMLInputElement);
+    expect(
+      screen
+        .getByRole("button", { name: "Speichern" })
+        .closest("[class*='sticky']")?.className,
+    ).toContain("sticky top-provider-topbar z-20");
   });
 });

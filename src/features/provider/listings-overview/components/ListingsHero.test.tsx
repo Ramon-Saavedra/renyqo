@@ -4,16 +4,17 @@ import { describe, expect, it } from "vitest";
 import { ListingsHero } from "./ListingsHero";
 
 describe("ListingsHero", () => {
-  it("renders the page heading and new-listing link", () => {
+  it("renders the page heading", () => {
     render(<ListingsHero />);
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Meine Objekte" }),
     ).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("/ provider / listings")).toBeNull();
     expect(
-      screen
-        .getByRole("link", { name: "Weiteres Mietobjekt anlegen" })
-        .getAttribute("href"),
-    ).toBe("/provider/listings/new");
+      screen.queryByText(
+        "Verwalte deine Mietobjekte, Entwürfe und archivierten Einträge an einem Ort.",
+      ),
+    ).toBeNull();
   });
 });
