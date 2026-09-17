@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { buttonClass } from "@/components/ui/button/Button";
-import { ListingsTopbarActions } from "@/features/applicant/navigation/components/ListingsTopbarActions";
 import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
 import { listingsCopy } from "../copy/listings";
@@ -57,84 +55,78 @@ export function SavedListingsView() {
   }, [listings]);
 
   return (
-    <>
-      <AppTopbar>
-        <ListingsTopbarActions />
-      </AppTopbar>
+    <div className={CONTENT_CLASS}>
+      <h1 className={TITLE_CLASS}>{listingsCopy.saved.title}</h1>
+      <p className={LEAD_CLASS}>{listingsCopy.saved.lead}</p>
 
-      <div className={CONTENT_CLASS}>
-        <h1 className={TITLE_CLASS}>{listingsCopy.saved.title}</h1>
-        <p className={LEAD_CLASS}>{listingsCopy.saved.lead}</p>
+      {session === "error" && (
+        <div className="mt-6">
+          <ListingsErrorBanner
+            message={listingsCopy.error.session}
+            onRetry={invalidateCurrentUser}
+          />
+        </div>
+      )}
 
-        {session === "error" && (
-          <div className="mt-6">
-            <ListingsErrorBanner
-              message={listingsCopy.error.session}
-              onRetry={invalidateCurrentUser}
-            />
-          </div>
-        )}
+      {isError && (
+        <div className="mt-6">
+          <ListingsErrorBanner
+            message={listingsCopy.saved.error}
+            onRetry={fetchStatus === "error-more" ? retryMore : retry}
+          />
+        </div>
+      )}
 
-        {isError && (
-          <div className="mt-6">
-            <ListingsErrorBanner
-              message={listingsCopy.saved.error}
-              onRetry={fetchStatus === "error-more" ? retryMore : retry}
-            />
-          </div>
-        )}
+      {isInitialLoading ? (
+        <ListingsLoadingGrid />
+      ) : showEmpty ? (
+        <SavedListingsEmptyState />
+      ) : (
+        <>
+          <ul
+            className={LISTING_GRID_CLASS}
+            aria-label={listingsCopy.saved.gridAriaLabel}
+          >
+            {listings.map((listing) => (
+              <li key={listing.id}>
+                <ListingCard
+                  listing={listing}
+                  href={`/listings/${listing.id}`}
+                  session={session}
+                  showMatch={hasProfile}
+                  eager={eagerIds.has(listing.id)}
+                  onSavedChange={(saved) => {
+                    if (!saved) removeListing(listing.id);
+                  }}
+                />
+              </li>
+            ))}
+          </ul>
 
-        {isInitialLoading ? (
-          <ListingsLoadingGrid />
-        ) : showEmpty ? (
-          <SavedListingsEmptyState />
-        ) : (
-          <>
-            <ul
-              className={LISTING_GRID_CLASS}
-              aria-label={listingsCopy.saved.gridAriaLabel}
-            >
-              {listings.map((listing) => (
-                <li key={listing.id}>
-                  <ListingCard
-                    listing={listing}
-                    href={`/listings/${listing.id}`}
-                    session={session}
-                    showMatch={hasProfile}
-                    eager={eagerIds.has(listing.id)}
-                    onSavedChange={(saved) => {
-                      if (!saved) removeListing(listing.id);
-                    }}
-                  />
-                </li>
-              ))}
-            </ul>
+          {hasMore && !isError && !isLoadingMore && (
+            <div className={LOAD_MORE_WRAPPER_CLASS}>
+              <button
+                type="button"
+                className={buttonClass("outline")}
+                onClick={loadMore}
+              >
+                {listingsCopy.results.loadMore}
+              </button>
+            </div>
+          )}
 
-            {hasMore && !isError && !isLoadingMore && (
-              <div className={LOAD_MORE_WRAPPER_CLASS}>
-                <button
-                  type="button"
-                  className={buttonClass("outline")}
-                  onClick={loadMore}
-                >
-                  {listingsCopy.results.loadMore}
-                </button>
-              </div>
-            )}
-
-            {isLoadingMore && (
-              <div className={LOAD_MORE_WRAPPER_CLASS}>
-                <span
-                  className="text-caption text-foreground-tertiary"
-                  aria-live="polite"
-                >
-                  {listingsCopy.loading}
-                </span>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </>
+          {isLoadingMore && (
+            <div className={LOAD_MORE_WRAPPER_CLASS}>
+              <span
+                className="text-caption text-foreground-tertiary"
+                aria-live="polite"
+              >
+                {listingsCopy.loading}
+              </span>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }

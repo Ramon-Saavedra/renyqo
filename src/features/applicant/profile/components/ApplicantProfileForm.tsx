@@ -1,8 +1,6 @@
 "use client";
 
 import { CheckCircle2, Shield } from "lucide-react";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
-import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { Note } from "@/components/ui/form/Note";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -38,9 +36,9 @@ export function ApplicantProfileForm() {
   const copy = applicantProfileCopy;
 
   return (
-    <>
-      <AppTopbar className="sticky top-0 z-30 mb-section bg-background">
-        {saveStatus === "saved" && (
+    <div className="mt-section px-gutter">
+      {saveStatus === "saved" && (
+        <div className="mb-section flex justify-end">
           <span className={SAVED_PIP_CLASS} aria-live="polite">
             <AppIcon
               icon={CheckCircle2}
@@ -50,66 +48,63 @@ export function ApplicantProfileForm() {
             />
             <span className="sr-only lg:not-sr-only">{copy.topbar.saved}</span>
           </span>
-        )}
-        <AccountMenu />
-      </AppTopbar>
+        </div>
+      )}
 
-      <div className="px-gutter">
-        <ApplicantProfileHero />
+      <ApplicantProfileHero />
 
-        {loadFailed && (
-          <FormAlert
-            variant="error"
-            message={copy.actions.loadError}
-            className="mb-4.5"
-          />
-        )}
+      {loadFailed && (
+        <FormAlert
+          variant="error"
+          message={copy.actions.loadError}
+          className="mb-4.5"
+        />
+      )}
 
-        {saveStatus === "error" && <ProfileSaveErrorBanner onRetry={save} />}
+      {saveStatus === "error" && <ProfileSaveErrorBanner onRetry={save} />}
 
-        <div className="listing-grid">
-          <ProfileChecklist
-            missing={missing}
-            complete={complete}
-            variant="rail"
-          />
+      <div className="listing-grid">
+        <ProfileChecklist
+          missing={missing}
+          complete={complete}
+          variant="rail"
+        />
 
-          <div className={COLUMN_CLASS}>
-            <RenyqoReveal
-              loading={loading}
-              skeleton={<ProfileSectionSkeleton rows={1} paired />}
-            >
-              <HouseholdSection
-                draft={draft}
-                setField={setField}
-                errors={errors}
+        <div className={COLUMN_CLASS}>
+          <RenyqoReveal
+            loading={loading}
+            skeleton={<ProfileSectionSkeleton rows={1} paired />}
+          >
+            <HouseholdSection
+              draft={draft}
+              setField={setField}
+              errors={errors}
+            />
+          </RenyqoReveal>
+
+          <RenyqoReveal
+            loading={loading}
+            stagger={0.12}
+            skeleton={<ProfileSectionSkeleton rows={2} paired />}
+          >
+            <DocumentsSection draft={draft} setField={setField} />
+          </RenyqoReveal>
+
+          {!loading && (
+            <>
+              <Note icon={Shield}>{copy.note.body}</Note>
+
+              <ProfileActionsBar
+                missing={missing}
+                complete={complete}
+                canSave={canSave}
+                saveStatus={saveStatus}
+                onSave={save}
               />
-            </RenyqoReveal>
-
-            <RenyqoReveal
-              loading={loading}
-              stagger={0.12}
-              skeleton={<ProfileSectionSkeleton rows={2} paired />}
-            >
-              <DocumentsSection draft={draft} setField={setField} />
-            </RenyqoReveal>
-
-            {!loading && (
-              <>
-                <Note icon={Shield}>{copy.note.body}</Note>
-
-                <ProfileActionsBar
-                  missing={missing}
-                  complete={complete}
-                  canSave={canSave}
-                  saveStatus={saveStatus}
-                  onSave={save}
-                />
-              </>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }
