@@ -105,6 +105,7 @@ export function AccountMenu({
       ariaLabel={userMenuCopy.settings}
       {...(className ? { className } : {})}
       panelClassName={PANEL_CLASS}
+      closeOnLinkClick={isApplicant}
       trigger={({ triggerProps, triggerRef }) => (
         <button
           {...triggerProps}
