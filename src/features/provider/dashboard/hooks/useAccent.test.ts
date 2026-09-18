@@ -12,6 +12,7 @@ describe("useAccent", () => {
   it("returns the default accent when storage is empty", () => {
     const { result } = renderHook(() => useAccent());
 
+    expect(DEFAULT_ACCENT).toBe("schiefer");
     expect(result.current).toBe(DEFAULT_ACCENT);
   });
 

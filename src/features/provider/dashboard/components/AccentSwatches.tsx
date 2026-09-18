@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils/cn";
-import { ACCENTS } from "../copy/dashboard";
+import { ACCENTS, DEFAULT_ACCENT } from "../copy/dashboard";
 import type { AccentId } from "../copy/dashboard";
 
 interface AccentSwatchesProps {
@@ -12,7 +12,9 @@ const GRID_CLASS = "grid grid-cols-3 justify-items-center gap-2";
 const OPTION_CLASS =
   "group flex h-6 w-6 cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:shadow-focus";
 const SWATCH_CLASS =
-  "h-4 w-4 rounded-sm bg-primary transition-transform group-hover:scale-110";
+  "h-4 w-4 rounded-sm transition-transform group-hover:scale-110";
+const SWATCH_PRIMARY_CLASS = "bg-primary";
+const SWATCH_DEFAULT_CLASS = "bg-primary-default";
 const SWATCH_ACTIVE_CLASS =
   "scale-110 ring-1 ring-foreground ring-offset-2 ring-offset-background";
 
@@ -39,6 +41,9 @@ export function AccentSwatches({
             aria-hidden="true"
             className={cn(
               SWATCH_CLASS,
+              option.id === DEFAULT_ACCENT
+                ? SWATCH_DEFAULT_CLASS
+                : SWATCH_PRIMARY_CLASS,
               option.id === value && SWATCH_ACTIVE_CLASS,
             )}
           />

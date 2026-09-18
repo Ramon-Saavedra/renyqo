@@ -53,6 +53,15 @@ describe("AccentPicker", () => {
         .getByRole("radio", { name: "Salbeigrün" })
         .getAttribute("aria-checked"),
     ).toBe("false");
+
+    expect(
+      screen.getByRole("radio", { name: "Schiefer" }).querySelector("span")
+        ?.className,
+    ).toContain("bg-primary-default");
+    expect(
+      screen.getByRole("radio", { name: "Salbeigrün" }).querySelector("span")
+        ?.className,
+    ).toContain("bg-primary");
   });
 
   it("emits selected accent ids", async () => {
