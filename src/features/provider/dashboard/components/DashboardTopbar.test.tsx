@@ -53,7 +53,7 @@ describe("DashboardTopbar", () => {
   it("keeps a single account control", async () => {
     render(<DashboardTopbar />);
 
-    await screen.findByText("Mara Lehmann");
+    await screen.findByText("Lehmann");
 
     expect(
       screen.getAllByRole("button", { name: "Konto & Profil" }),
@@ -63,7 +63,7 @@ describe("DashboardTopbar", () => {
   it("does not render the accent selector", async () => {
     render(<DashboardTopbar />);
 
-    await screen.findByText("Mara Lehmann");
+    await screen.findByText("Lehmann");
 
     expect(screen.queryByText("Akzentfarbe anpassen")).toBeNull();
   });

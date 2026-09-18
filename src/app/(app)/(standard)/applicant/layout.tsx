@@ -1,4 +1,5 @@
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { APP_TOPBAR_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
 
 export default function ApplicantLayout({
@@ -8,7 +9,9 @@ export default function ApplicantLayout({
 }) {
   return (
     <>
-      <AppTopbar className="sticky top-0 z-30 w-full self-start bg-background">
+      <AppTopbar
+        className={`${APP_TOPBAR_CLASS} w-full self-start bg-background`}
+      >
         <AccountMenu />
       </AppTopbar>
       {children}

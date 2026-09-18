@@ -1,10 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { buttonClass } from "@/components/ui/button/Button";
 import { FlashToast } from "@/components/ui/toast/FlashToast";
-import { ListingsTopbarActions } from "@/features/applicant/navigation/components/ListingsTopbarActions";
 import { invalidateCurrentUser } from "@/lib/api/use-current-user";
 import { useApplicantProfileStatus } from "../../profile/hooks/useApplicantProfileStatus";
 import { listingsCopy } from "../copy/listings";
@@ -12,9 +10,15 @@ import { useListingViewerSession } from "../hooks/useListingViewerSession";
 import { useListingsSearchState } from "../hooks/useListingsSearchState";
 import { usePublicListings } from "../hooks/usePublicListings";
 import type { ListingsFetchStatus } from "../hooks/usePublicListings";
+import {
+  LISTINGS_CONTENT_CLASS,
+  LISTINGS_LEAD_CLASS,
+  LISTINGS_TITLE_CLASS,
+} from "./listings-layout-classes";
 import { FilterDrawer } from "./FilterDrawer";
 import { AnimatedHeroTitle } from "./AnimatedHeroTitle";
 import { ListingCard } from "./ListingCard";
+import { LISTING_GRID_CLASS } from "./listing-grid-classes";
 import { ListingsEmptyState } from "./ListingsEmptyState";
 import { ListingsErrorBanner } from "./ListingsErrorBanner";
 import { ListingsLoadingGrid } from "./ListingsLoadingGrid";
@@ -24,14 +28,7 @@ import { SearchConsole } from "./SearchConsole";
 
 export type { ListingsFetchStatus };
 
-const LISTING_GRID_CLASS =
-  "grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6";
-
 const RETURN_TO = "/listings";
-const CONTENT_CLASS = "px-gutter pt-10";
-const TITLE_CLASS =
-  "mb-2.5 max-w-2xl font-display text-heading-xl font-medium text-foreground";
-const LEAD_CLASS = "mb-6 max-w-2xl text-lead text-foreground-secondary";
 const LOAD_MORE_WRAPPER_CLASS = "mt-8 flex justify-center";
 
 export function ApplicantListingsView() {
@@ -72,15 +69,11 @@ export function ApplicantListingsView() {
 
   return (
     <>
-      <AppTopbar>
-        <ListingsTopbarActions />
-      </AppTopbar>
-
-      <div className={CONTENT_CLASS}>
+      <div className={LISTINGS_CONTENT_CLASS}>
         <ProfileNotice returnTo={RETURN_TO} />
 
-        <AnimatedHeroTitle className={TITLE_CLASS} />
-        <p className={LEAD_CLASS}>{listingsCopy.hero.lead}</p>
+        <AnimatedHeroTitle className={LISTINGS_TITLE_CLASS} />
+        <p className={LISTINGS_LEAD_CLASS}>{listingsCopy.hero.lead}</p>
 
         <SearchConsole
           filters={filters}

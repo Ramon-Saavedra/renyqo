@@ -149,7 +149,7 @@ describe("ListingsView", () => {
     });
     const actionBar = action.parentElement;
 
-    expect(actionBar?.className).toContain("sticky top-provider-topbar z-20");
+    expect(actionBar?.className).toContain("sticky top-app-topbar z-20");
   });
 
   it("omits the informational requirements banner", () => {

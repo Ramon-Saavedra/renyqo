@@ -18,6 +18,11 @@ import { AvailabilityFilter } from "./AvailabilityFilter";
 import { FilterSelect } from "./FilterSelect";
 import { SearchField } from "./SearchField";
 import { filterChipClass } from "./filter-chip";
+import {
+  SEARCH_CONSOLE_CLASS,
+  SEARCH_CONSOLE_DESKTOP_ONLY_CLASS,
+  SEARCH_CONSOLE_DIVIDER_CLASS,
+} from "./search-console-classes";
 
 interface SearchConsoleProps {
   filters: ListingFilters;
@@ -25,13 +30,6 @@ interface SearchConsoleProps {
   onChange: (patch: Partial<ListingFilters>) => void;
   onOpenDrawer: () => void;
 }
-
-const CONSOLE_CLASS =
-  "flex flex-wrap items-center gap-2.5 rounded-md border border-border bg-primary px-parent-x py-parent-y";
-
-const DIVIDER_CLASS = "mx-1 hidden h-6 w-px bg-border xl:block";
-
-const DESKTOP_ONLY_CLASS = "hidden xl:inline-flex";
 
 const COUNT_CLASS =
   "inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 font-mono text-meta tracking-normal text-primary-foreground";
@@ -46,13 +44,13 @@ export function SearchConsole({
 
   return (
     <section aria-label={listingsCopy.console.ariaLabel}>
-      <div className={CONSOLE_CLASS}>
+      <div className={SEARCH_CONSOLE_CLASS}>
         <SearchField
           value={filters.query}
           onChange={(query) => onChange({ query })}
         />
 
-        <span aria-hidden="true" className={DIVIDER_CLASS} />
+        <span aria-hidden="true" className={SEARCH_CONSOLE_DIVIDER_CLASS} />
 
         <FilterSelect
           label={listingsCopy.filters.coldRent}
@@ -77,7 +75,7 @@ export function SearchConsole({
           value={filters.minLivingArea}
           options={AREA_OPTIONS}
           onChange={(minLivingArea) => onChange({ minLivingArea })}
-          className={DESKTOP_ONLY_CLASS}
+          className={SEARCH_CONSOLE_DESKTOP_ONLY_CLASS}
           custom={{
             optionLabel: listingsCopy.filters.customValue,
             suffix: listingsCopy.filters.areaSuffix,
@@ -88,7 +86,7 @@ export function SearchConsole({
         <AvailabilityFilter
           value={filters.availableFrom}
           onChange={(availableFrom) => onChange({ availableFrom })}
-          className={DESKTOP_ONLY_CLASS}
+          className={SEARCH_CONSOLE_DESKTOP_ONLY_CLASS}
         />
 
         <button
@@ -110,7 +108,7 @@ export function SearchConsole({
 
         {showMatchToggle && (
           <>
-            <span aria-hidden="true" className={DIVIDER_CLASS} />
+            <span aria-hidden="true" className={SEARCH_CONSOLE_DIVIDER_CLASS} />
 
             <button
               type="button"

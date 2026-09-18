@@ -34,9 +34,11 @@ describe("SearchConsole", () => {
 
   it("renders the search field", () => {
     renderConsole();
-    expect(
-      screen.getByLabelText("Objekte nach Ort durchsuchen"),
-    ).toBeInstanceOf(HTMLElement);
+    const search = screen.getByLabelText("Objekte nach Ort durchsuchen");
+    expect(search).toBeInstanceOf(HTMLElement);
+    expect(search.getAttribute("placeholder")).toBe(
+      listingsCopy.console.searchPlaceholder,
+    );
   });
 
   it("renders filter select buttons", () => {

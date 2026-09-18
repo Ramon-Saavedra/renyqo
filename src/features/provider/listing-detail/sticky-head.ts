@@ -1,3 +1,3 @@
-import { PROVIDER_STICKY_ACTIONS_CLASS } from "../topbar-classes";
+import { APP_TOPBAR_STICKY_OFFSET_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 
-export const STICKY_HEAD_CLASS = `${PROVIDER_STICKY_ACTIONS_CLASS} mb-6`;
+export const STICKY_HEAD_CLASS = `${APP_TOPBAR_STICKY_OFFSET_CLASS} mb-6`;

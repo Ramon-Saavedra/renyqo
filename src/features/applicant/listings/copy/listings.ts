@@ -62,8 +62,6 @@ export const listingsCopy = {
     searchPlaceholder: "Ort, Stadtteil oder Postleitzahl",
     searchAriaLabel: "Objekte nach Ort durchsuchen",
     searchClearLabel: "Suche leeren",
-    examplePrefix: "z. B.",
-    examples: ["Freiburg", "Rieselfeld", "3 Zimmer", "Haustiere erlaubt"],
     onlyMatching: "Nur passende Objekte",
     onlyMatchingHint:
       "Zeigt nur Objekte, deren Anforderungen zu deinem Bewerbungsprofil passen.",
