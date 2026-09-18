@@ -35,7 +35,7 @@ export function PasswordField({
       {...props}
       disabled={disabled}
       type={visible ? "text" : "password"}
-      inputClassName="pr-11"
+      inputClassName="pr-11 [&::-ms-reveal]:hidden"
       trailing={
         <button
           type="button"

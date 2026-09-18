@@ -31,6 +31,14 @@ describe("PasswordField", () => {
       expect(screen.getByLabelText("Passwort").className).toContain("pr-11");
     });
 
+    it("hides Edge's native reveal control on the password input", () => {
+      render(<PasswordField id="pw" label="Passwort" />);
+
+      expect(screen.getByLabelText("Passwort").className).toContain(
+        "[&::-ms-reveal]:hidden",
+      );
+    });
+
     it("renders the hint when provided", () => {
       render(
         <PasswordField id="pw" label="Passwort" hint="Mindestens 8 Zeichen" />,
