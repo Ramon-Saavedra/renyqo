@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import { useRouter } from "next/navigation";
+import { APP_TOPBAR_STICKY_OFFSET_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 import { ApiError } from "@/lib/api/client";
 import {
   archiveProviderListing,
@@ -30,7 +31,6 @@ import { ListingsHero } from "./ListingsHero";
 import { ListingsToolbar } from "./ListingsToolbar";
 import { ListingsTopbarActions } from "./ListingsTopbarActions";
 import { NewListingAction } from "./ListingsHero";
-import { PROVIDER_STICKY_ACTIONS_CLASS } from "@/features/provider/topbar-classes";
 import { ListSummary } from "./ListSummary";
 import { StatusFilter } from "./StatusFilter";
 
@@ -283,7 +283,7 @@ export function ListingsView({
           <ListingsTopbarActions />
         </div>
         <div
-          className={`${PROVIDER_STICKY_ACTIONS_CLASS} mb-4 flex justify-end py-1`}
+          className={`${APP_TOPBAR_STICKY_OFFSET_CLASS} mb-4 flex justify-end py-1`}
         >
           <NewListingAction />
         </div>

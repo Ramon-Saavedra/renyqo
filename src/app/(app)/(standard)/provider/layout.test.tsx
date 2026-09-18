@@ -47,7 +47,7 @@ describe("ProviderLayout", () => {
       HTMLElement,
     );
     expect(screen.getByRole("banner").className).toContain("sticky top-0 z-30");
-    expect(screen.getByRole("banner").className).toContain("h-provider-topbar");
+    expect(screen.getByRole("banner").className).toContain("h-app-topbar");
   });
 
   it.each([

@@ -62,12 +62,14 @@ describe("AccountMenu", () => {
     vi.mocked(useApplicantProfileStatus).mockReturnValue("exists");
   });
 
-  it("renders the authenticated name and company in the full variant", async () => {
+  it("highlights the second name and renders company in the full variant", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(COMPANY_USER);
 
     render(<AccountMenu variant="full" />);
 
-    expect(await screen.findByText("Mara Lehmann")).not.toBeNull();
+    const secondName = await screen.findByText("Lehmann");
+    expect(secondName.className).toContain("text-primary");
+    expect(secondName.className).toContain("font-semibold");
     expect(screen.getByText("Lehmann Wohnen")).not.toBeNull();
   });
 
@@ -76,7 +78,7 @@ describe("AccountMenu", () => {
 
     render(<AccountMenu variant="full" />);
 
-    expect(await screen.findByText("Nora Keller")).not.toBeNull();
+    expect(await screen.findByText("Keller")).not.toBeNull();
     expect(screen.queryByText("Lehmann Wohnen")).toBeNull();
   });
 

@@ -97,7 +97,7 @@ describe("ListingDetailView", () => {
       screen
         .getByRole("button", { name: "Speichern" })
         .closest("[class*='sticky']")?.className,
-    ).toContain("sticky top-provider-topbar z-20");
+    ).toContain("sticky top-app-topbar z-20");
   });
 
   it("blocks detail exits while an image deletion is pending", async () => {

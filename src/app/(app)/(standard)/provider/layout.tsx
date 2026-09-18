@@ -1,5 +1,5 @@
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
-import { PROVIDER_TOPBAR_HEIGHT_CLASS } from "@/features/provider/topbar-classes";
+import { APP_TOPBAR_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 import { ProviderAccountMenu } from "./ProviderAccountMenu";
 
 export default function ProviderLayout({
@@ -11,7 +11,7 @@ export default function ProviderLayout({
     <>
       <AppTopbar
         logoHref="/provider/dashboard"
-        className={`sticky top-0 z-30 mb-section bg-background ${PROVIDER_TOPBAR_HEIGHT_CLASS}`}
+        className={`${APP_TOPBAR_CLASS} mb-section bg-background`}
       >
         <div id="provider-topbar-actions" className="contents" />
         <ProviderAccountMenu />

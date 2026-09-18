@@ -27,6 +27,7 @@ import { userMenuCopy } from "./copy/user-menu";
 
 interface AccountMenuProps {
   variant?: "compact" | "full";
+  nameVisibility?: "wide" | "tablet";
   className?: string;
 }
 
@@ -35,7 +36,8 @@ const TRIGGER_COMPACT_CLASS =
 const TRIGGER_FULL_CLASS =
   "flex h-6.5 max-w-48 cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent p-0 text-left hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus sm:h-11 sm:max-w-64 sm:gap-3";
 const AVATAR_FULL_CLASS = "h-7 w-7 sm:h-8 sm:w-8";
-const META_CLASS = "hidden max-w-36 flex-col leading-tight 2xl:flex";
+const META_WIDE_CLASS = "hidden max-w-36 flex-col leading-tight 2xl:flex";
+const META_TABLET_CLASS = "hidden max-w-36 flex-col leading-tight md:flex";
 const NAME_CLASS = "truncate text-caption font-medium text-foreground";
 const COMPANY_CLASS = "truncate text-caption text-foreground-tertiary";
 const PANEL_CLASS = "w-72 p-3";
@@ -57,6 +59,7 @@ const LOGOUT_BUTTON_CLASS = cn(
 
 export function AccountMenu({
   variant = "compact",
+  nameVisibility = "wide",
   className,
 }: AccountMenuProps) {
   const router = useRouter();
@@ -94,10 +97,13 @@ export function AccountMenu({
   }
 
   const name = user ? toTitleCase(user.name) : "";
+  const nameParts = name.split(" ");
   const initials = getInitials(name);
   const company = user?.companyName ?? null;
   const isApplicant = isApplicantRole(user?.role);
   const isFull = variant === "full";
+  const metaClass =
+    nameVisibility === "tablet" ? META_TABLET_CLASS : META_WIDE_CLASS;
   const avatarClass = isFull ? AVATAR_FULL_CLASS : undefined;
 
   return (
@@ -122,8 +128,20 @@ export function AccountMenu({
             />
           )}
           {isFull && name && (
-            <span className={META_CLASS}>
-              <span className={NAME_CLASS}>{name}</span>
+            <span className={metaClass}>
+              <span className={NAME_CLASS}>
+                {nameParts.length > 1 ? (
+                  <>
+                    {nameParts[0]}{" "}
+                    <span className="font-semibold text-primary">
+                      {nameParts[1]}
+                    </span>
+                    {nameParts.length > 2 && ` ${nameParts.slice(2).join(" ")}`}
+                  </>
+                ) : (
+                  name
+                )}
+              </span>
               {company && <span className={COMPANY_CLASS}>{company}</span>}
             </span>
           )}

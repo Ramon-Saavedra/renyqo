@@ -158,7 +158,7 @@ describe("DashboardView", () => {
 
     render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(screen.getByText("Anzahl Objekte")).not.toBeNull();
     expect(screen.getByText("Aktive Bewerbungen")).not.toBeNull();
     expect(screen.queryByText("Neue Bewerbungen")).toBeNull();
@@ -174,7 +174,7 @@ describe("DashboardView", () => {
   it("shows authoritative ACTIVE counts without progressive selection cache", async () => {
     render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(screen.getAllByText("1 / 5 aktiv").length).toBeGreaterThan(0);
     expect(screen.getAllByText("0 / 5 aktiv").length).toBeGreaterThan(0);
   });
@@ -185,7 +185,7 @@ describe("DashboardView", () => {
 
     render(<DashboardView objects={objects} />);
 
-    await screen.findByText("Ramon Saavedra");
+    await screen.findByText("Saavedra");
     const secondObjectButton = screen.getAllByRole("button", {
       name: /Zweite Wohnung/i,
     })[0];
@@ -210,7 +210,7 @@ describe("DashboardView", () => {
 
     render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(screen.getByText("Zweite Wohnung in Hamburg")).not.toBeNull();
     expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
   });
@@ -219,7 +219,7 @@ describe("DashboardView", () => {
     const user = userEvent.setup();
     render(<DashboardView objects={objects} />);
 
-    await screen.findByText("Ramon Saavedra");
+    await screen.findByText("Saavedra");
     await user.type(
       screen.getByRole("searchbox", { name: "Mietobjekte durchsuchen" }),
       "nicht vorhanden",
@@ -234,7 +234,7 @@ describe("DashboardView", () => {
     const user = userEvent.setup();
     render(<DashboardView objects={objects} />);
 
-    await screen.findByText("Ramon Saavedra");
+    await screen.findByText("Saavedra");
     await user.type(
       screen.getByRole("searchbox", { name: "Mietobjekte durchsuchen" }),
       "Zweite",
@@ -247,7 +247,7 @@ describe("DashboardView", () => {
   it("keeps the dashboard layout when there is no backend data", async () => {
     render(<DashboardView />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(getProviderDashboardObjects).toHaveBeenCalledTimes(1);
     expect(screen.getAllByText("Meine Mietobjekte · 0").length).toBeGreaterThan(
       0,
@@ -304,7 +304,7 @@ describe("DashboardView", () => {
     mockApplicationsState({ isLoading: true });
     const { rerender } = render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(screen.queryByText("Anna A.")).toBeNull();
 
     mockApplicationsState({ hasError: true });
@@ -321,7 +321,7 @@ describe("DashboardView", () => {
     const user = userEvent.setup();
     render(<DashboardView objects={objects} />);
 
-    await screen.findByText("Ramon Saavedra");
+    await screen.findByText("Saavedra");
     await user.click(screen.getByRole("button", { name: /Ausblenden/i }));
 
     const reopenButton = screen.getByRole("button", {
@@ -353,7 +353,7 @@ describe("DashboardView", () => {
 
     render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(screen.getByText("Kürzlich ausgeschieden")).not.toBeNull();
     expect(screen.getByText("Familie Weber")).not.toBeNull();
     expect(screen.getByText("7")).not.toBeNull();
@@ -368,7 +368,7 @@ describe("DashboardView", () => {
 
     const { container } = render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(container.getElementsByClassName("sk-circle").length).toBe(5);
   });
 
@@ -377,7 +377,7 @@ describe("DashboardView", () => {
 
     render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Ramon Saavedra")).not.toBeNull();
+    expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(
       screen.getByText(
         "Kürzlich ausgeschiedene Bewerbungen konnten nicht geladen werden.",
@@ -389,7 +389,7 @@ describe("DashboardView", () => {
     const user = userEvent.setup();
     render(<DashboardView objects={objects} />);
 
-    await screen.findByText("Ramon Saavedra");
+    await screen.findByText("Saavedra");
     const secondObjectButton = screen.getAllByRole("button", {
       name: /Zweite Wohnung/i,
     })[0];

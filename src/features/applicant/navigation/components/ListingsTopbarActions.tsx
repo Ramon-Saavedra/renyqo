@@ -67,7 +67,7 @@ export function ListingsTopbarActions() {
   }
 
   if (isApplicantRole(user.role)) {
-    return <AccountMenu />;
+    return <AccountMenu variant="full" nameVisibility="tablet" />;
   }
 
   if (isProviderRole(user.role)) {
