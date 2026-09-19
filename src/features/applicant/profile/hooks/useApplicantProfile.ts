@@ -7,6 +7,7 @@ import { safeListingsReturnTo } from "@/lib/utils/safe-redirect";
 import { useCurrentUser } from "@/lib/api/use-current-user";
 import { setApplicantProfileCache } from "./useApplicantProfileStatus";
 import {
+  getApplicantIntroductionValidationError,
   getApplicantProfile,
   saveApplicantProfile,
 } from "../api/applicant-profile";
@@ -46,6 +47,9 @@ export function useApplicantProfile(): UseApplicantProfileResult {
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
   const [saveStatus, setSaveStatus] = useState<ProfileSaveStatus>("idle");
+  const [introductionServerError, setIntroductionServerError] = useState<
+    string | undefined
+  >();
   const savingRef = useRef(false);
 
   useEffect(() => {
@@ -75,6 +79,7 @@ export function useApplicantProfile(): UseApplicantProfileResult {
       value: ApplicantProfileDraft[K],
     ) => {
       setDraft((previous) => ({ ...previous, [field]: value }));
+      if (field === "introduction") setIntroductionServerError(undefined);
       setSaveStatus((previous) =>
         previous === "saved" || previous === "error" ? "idle" : previous,
       );
@@ -88,6 +93,7 @@ export function useApplicantProfile(): UseApplicantProfileResult {
     }
 
     savingRef.current = true;
+    setIntroductionServerError(undefined);
     setSaveStatus("saving");
     saveApplicantProfile(draft)
       .then(() => {
@@ -96,8 +102,23 @@ export function useApplicantProfile(): UseApplicantProfileResult {
         setFlash(applicantProfileCopy.actions.savedFlash);
         router.replace(safeListingsReturnTo(searchParams.get("returnTo")));
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         savingRef.current = false;
+        const introductionError =
+          getApplicantIntroductionValidationError(error);
+        if (introductionError === "required") {
+          setIntroductionServerError(
+            applicantProfileCopy.validation.introductionRequired,
+          );
+        } else if (introductionError === "tooLong") {
+          setIntroductionServerError(
+            applicantProfileCopy.validation.introductionTooLong,
+          );
+        } else if (introductionError === "invalid") {
+          setIntroductionServerError(
+            applicantProfileCopy.validation.introductionInvalid,
+          );
+        }
         setSaveStatus("error");
       });
   }, [draft, loadFailed, loading, router, searchParams, user?.id]);
@@ -109,7 +130,12 @@ export function useApplicantProfile(): UseApplicantProfileResult {
     loadFailed,
     saveStatus,
     save,
-    errors: getProfileErrors(draft),
+    errors: {
+      ...getProfileErrors(draft),
+      ...(introductionServerError
+        ? { introduction: introductionServerError }
+        : {}),
+    },
     missing: getMissingProfileFields(draft),
     complete: isProfileComplete(draft),
     canSave: !loading && !loadFailed && canSaveProfile(draft),

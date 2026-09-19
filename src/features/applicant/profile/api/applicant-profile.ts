@@ -8,6 +8,7 @@ import type { YesNoOption } from "../copy/applicant-profile";
 const APPLICANT_PROFILE_PATH = "/api/v1/applicant/profile";
 
 export interface ApplicantProfileResponse {
+  readonly introduction: string | null;
   readonly householdNetIncome: number | null;
   readonly incomeProofAvailable: boolean | null;
   readonly schufaAvailable: boolean | null;
@@ -19,6 +20,7 @@ export interface ApplicantProfileResponse {
 }
 
 export interface ApplicantProfilePayload {
+  readonly introduction: string;
   readonly householdNetIncome: number | null;
   readonly incomeProofAvailable: boolean | null;
   readonly schufaAvailable: boolean | null;
@@ -48,6 +50,10 @@ export function toDraft(
   response: Partial<ApplicantProfileResponse>,
 ): ApplicantProfileDraft {
   return {
+    introduction:
+      typeof response.introduction === "string"
+        ? response.introduction
+        : INITIAL_PROFILE.introduction,
     income:
       typeof response.householdNetIncome === "number"
         ? String(response.householdNetIncome)
@@ -73,6 +79,7 @@ export function toPayload(
   const income = draft.income.trim();
 
   return {
+    introduction: draft.introduction.trim(),
     householdNetIncome: income === "" ? null : Number.parseInt(income, 10),
     incomeProofAvailable: fromYesNo(draft.incomeProof),
     schufaAvailable: fromYesNo(draft.schufa),
@@ -81,6 +88,65 @@ export function toPayload(
     hasPets: fromYesNo(draft.pets),
     isSmoker: fromYesNo(draft.smoker),
   };
+}
+
+export type ApplicantIntroductionValidationError =
+  | "required"
+  | "tooLong"
+  | "invalid";
+
+export function getApplicantIntroductionValidationError(
+  error: unknown,
+): ApplicantIntroductionValidationError | null {
+  if (!(error instanceof ApiError) || ![400, 422].includes(error.status)) {
+    return null;
+  }
+
+  const details = error.details;
+  if (!details || typeof details !== "object") return null;
+
+  const data = details as Record<string, unknown>;
+  const code = typeof data.code === "string" ? data.code : error.code;
+  if (code === "INTRODUCTION_TOO_LONG") return "tooLong";
+  if (code === "INTRODUCTION_REQUIRED") return "required";
+
+  const fieldErrors = data.fieldErrors ?? data.errors;
+  if (fieldErrors && typeof fieldErrors === "object") {
+    if (!Object.prototype.hasOwnProperty.call(fieldErrors, "introduction")) {
+      return null;
+    }
+    const introductionError = (fieldErrors as Record<string, unknown>)
+      .introduction;
+    const fieldMessages = Array.isArray(introductionError)
+      ? introductionError
+      : [introductionError];
+    if (
+      fieldMessages.some(
+        (message) =>
+          typeof message === "string" &&
+          /(long|length|string|characters|zeichen|max|shorter)/i.test(message),
+      )
+    ) {
+      return "tooLong";
+    }
+    return "invalid";
+  }
+
+  const messages = data.message;
+  const values = Array.isArray(messages) ? messages : [messages];
+  for (const message of values) {
+    if (typeof message !== "string" || !/introduction/i.test(message)) {
+      continue;
+    }
+    if (/(long|length|string|characters|zeichen|max|shorter)/i.test(message)) {
+      return "tooLong";
+    }
+    if (/(empty|blank|required|whitespace)/i.test(message)) {
+      return "required";
+    }
+    return "invalid";
+  }
+  return null;
 }
 
 export async function getApplicantProfile(): Promise<ApplicantProfileDraft | null> {
