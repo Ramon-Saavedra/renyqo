@@ -10,6 +10,7 @@ import { useApplicantProfile } from "../hooks/useApplicantProfile";
 import { ApplicantProfileHero } from "./ApplicantProfileHero";
 import { DocumentsSection } from "./DocumentsSection";
 import { HouseholdSection } from "./HouseholdSection";
+import { IntroductionSection } from "./IntroductionSection";
 import { ProfileActionsBar } from "./ProfileActionsBar";
 import { ProfileChecklist } from "./ProfileChecklist";
 import { ProfileSaveErrorBanner } from "./ProfileSaveErrorBanner";
@@ -61,7 +62,9 @@ export function ApplicantProfileForm() {
         />
       )}
 
-      {saveStatus === "error" && <ProfileSaveErrorBanner onRetry={save} />}
+      {saveStatus === "error" && !errors.introduction && (
+        <ProfileSaveErrorBanner onRetry={save} />
+      )}
 
       <div className="listing-grid">
         <ProfileChecklist
@@ -73,7 +76,8 @@ export function ApplicantProfileForm() {
         <div className={COLUMN_CLASS}>
           <RenyqoReveal
             loading={loading}
-            skeleton={<ProfileSectionSkeleton rows={1} paired />}
+            stagger={0.12}
+            skeleton={<ProfileSectionSkeleton rows={2} paired />}
           >
             <HouseholdSection
               draft={draft}
@@ -90,18 +94,28 @@ export function ApplicantProfileForm() {
             <DocumentsSection draft={draft} setField={setField} />
           </RenyqoReveal>
 
-          {!loading && (
-            <>
-              <Note icon={Shield}>{copy.note.body}</Note>
+          {!loading && <Note icon={Shield}>{copy.note.body}</Note>}
 
-              <ProfileActionsBar
-                missing={missing}
-                complete={complete}
-                canSave={canSave}
-                saveStatus={saveStatus}
-                onSave={save}
-              />
-            </>
+          <RenyqoReveal
+            loading={loading}
+            stagger={0.18}
+            skeleton={<ProfileSectionSkeleton rows={1} paired />}
+          >
+            <IntroductionSection
+              draft={draft}
+              setField={setField}
+              error={errors.introduction}
+            />
+          </RenyqoReveal>
+
+          {!loading && (
+            <ProfileActionsBar
+              missing={missing}
+              complete={complete}
+              canSave={canSave}
+              saveStatus={saveStatus}
+              onSave={save}
+            />
           )}
         </div>
       </div>

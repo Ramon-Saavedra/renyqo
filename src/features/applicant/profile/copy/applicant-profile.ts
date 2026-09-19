@@ -4,7 +4,11 @@ export type YesNoOption = (typeof YES_NO_OPTIONS)[number] | "";
 export const SMOKER_OPTIONS = ["ja", "nein"] as const;
 export type SmokerOption = (typeof SMOKER_OPTIONS)[number] | "";
 
-export const PROFILE_SECTION_IDS = ["sec-household", "sec-documents"] as const;
+export const PROFILE_SECTION_IDS = [
+  "sec-household",
+  "sec-documents",
+  "sec-introduction",
+] as const;
 export type ProfileSectionId = (typeof PROFILE_SECTION_IDS)[number];
 
 export const applicantProfileCopy = {
@@ -21,6 +25,18 @@ export const applicantProfileCopy = {
     kickerAside: "Für passende Anfragen",
     title: "Dein Bewerbungsprofil",
     lead: "Vervollständige die Angaben, die für passende Bewerbungen benötigt werden. Dauert weniger als 2 Minuten.",
+  },
+  introduction: {
+    num: "03 · PERSÖNLICH",
+    title: "Ein paar Worte über dich oder euch",
+    description:
+      "Ein persönlicher Eindruck hilft Anbietern, euch ein wenig kennenzulernen.",
+    field: {
+      label: "Ein paar Worte",
+      placeholder: "Was möchtest du über dich oder euch erzählen?",
+      guidance: "Erzähl uns etwas Lustiges über dich oder euch",
+      counterSuffix: "/100",
+    },
   },
   saveError: {
     title: "Profil konnte nicht gespeichert werden",
@@ -104,6 +120,7 @@ export const applicantProfileCopy = {
       "Dein Profil konnte nicht geladen werden. Deine Angaben werden beim Speichern übernommen.",
   },
   missingLabels: {
+    introduction: "Ein paar Worte",
     income: "Haushaltsnettoeinkommen",
     incomeProof: "Einkommensnachweis",
     schufa: "SCHUFA-Auskunft",
@@ -111,6 +128,9 @@ export const applicantProfileCopy = {
     smoker: "Raucher?",
   },
   validation: {
+    introductionRequired: "Bitte erzähl uns kurz etwas über dich oder euch.",
+    introductionTooLong: "Dein Text darf höchstens 100 Zeichen lang sein.",
+    introductionInvalid: "Bitte verwende keine spitzen Klammern (< oder >).",
     income: "Bitte einen Betrag über 0 € angeben.",
   },
 } as const;

@@ -16,18 +16,28 @@ vi.mock("next/navigation", () => ({
 vi.mock("../api/applicant-profile", () => ({
   getApplicantProfile: vi.fn(),
   saveApplicantProfile: vi.fn(),
+  getApplicantIntroductionValidationError: vi.fn(() => null),
 }));
 
 const api = await import("../api/applicant-profile");
 const getApplicantProfile = vi.mocked(api.getApplicantProfile);
 const saveApplicantProfile = vi.mocked(api.saveApplicantProfile);
+const getApplicantIntroductionValidationError = vi.mocked(
+  api.getApplicantIntroductionValidationError,
+);
+
+const VALID_PROFILE = {
+  ...INITIAL_PROFILE,
+  introduction: "Ich suche ein ruhiges Zuhause.",
+};
 
 function Harness() {
-  const { save, saveStatus, loading } = useApplicantProfile();
+  const { save, saveStatus, loading, errors } = useApplicantProfile();
 
   return (
     <div>
       <span data-testid="status">{loading ? "loading" : saveStatus}</span>
+      <span data-testid="introduction-error">{errors.introduction}</span>
       <button type="button" onClick={save}>
         save
       </button>
@@ -50,7 +60,7 @@ describe("useApplicantProfile save flow", () => {
     vi.clearAllMocks();
     sessionStorage.clear();
     searchParams = new URLSearchParams();
-    getApplicantProfile.mockResolvedValue(INITIAL_PROFILE);
+    getApplicantProfile.mockResolvedValue(VALID_PROFILE);
     saveApplicantProfile.mockResolvedValue(undefined);
   });
 
@@ -134,6 +144,15 @@ describe("useApplicantProfile save flow", () => {
     expect(saveApplicantProfile).not.toHaveBeenCalled();
   });
 
+  it("does not save a legacy profile until an introduction is provided", async () => {
+    getApplicantProfile.mockResolvedValueOnce(INITIAL_PROFILE);
+    const button = await renderHarness();
+
+    await userEvent.setup().click(button);
+
+    expect(saveApplicantProfile).not.toHaveBeenCalled();
+  });
+
   it("stays on the page and re-enables saving after a failure", async () => {
     saveApplicantProfile.mockRejectedValueOnce(new Error("boom"));
     const user = userEvent.setup();
@@ -150,5 +169,20 @@ describe("useApplicantProfile save flow", () => {
 
     await waitFor(() => expect(saveApplicantProfile).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/listings"));
+  });
+
+  it("maps a backend introduction validation error to the field", async () => {
+    getApplicantIntroductionValidationError.mockReturnValue("tooLong");
+    saveApplicantProfile.mockRejectedValueOnce(new Error("raw backend detail"));
+    const button = await renderHarness();
+
+    await userEvent.setup().click(button);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("introduction-error").textContent).toBe(
+        "Dein Text darf höchstens 100 Zeichen lang sein.",
+      ),
+    );
+    expect(screen.queryByText("raw backend detail")).toBeNull();
   });
 });
