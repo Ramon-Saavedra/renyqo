@@ -23,4 +23,22 @@ describe("RenyqoSkeleton", () => {
     expect(el?.classList.contains("sk-circle")).toBe(true);
     expect(el?.style.width).toBe("50%");
   });
+
+  it("renders the branded text variant with its requested dimensions", () => {
+    const { container } = render(
+      <RenyqoSkeleton variant="text" width="75%" height={13} />,
+    );
+    const el = container.querySelector<HTMLElement>(".sk-text");
+    const content = container.querySelector(".sk-text-content");
+
+    expect(el).toBeInstanceOf(HTMLElement);
+    expect(el?.style.width).toBe("75%");
+    expect(el?.style.height).toBe("13px");
+    expect(content?.textContent).toBe("Renyqo Renyqo Renyqo Renyqo Renyqo ");
+  });
+
+  it("preserves the pill variant", () => {
+    const { container } = render(<RenyqoSkeleton variant="pill" />);
+    expect(container.querySelector(".sk-pill")).toBeInstanceOf(HTMLElement);
+  });
 });

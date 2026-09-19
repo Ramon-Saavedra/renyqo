@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils/cn";
+import "./RenyqoLoadingDots.css";
 
 export interface RenyqoLoadingDotsProps {
   /** Optional processing label rendered before the dots (already localized). */

@@ -1,0 +1,53 @@
+.align-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 10px;
+}
+.align-dots i {
+  display: block;
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: var(--primary);
+  opacity: 0.5;
+  animation: rq-align-dot 2.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+.align-dots i:nth-child(1) {
+  animation-delay: 0s;
+}
+.align-dots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.align-dots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.align-dots-current i {
+  background: currentColor;
+}
+@keyframes rq-align-dot {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  35% {
+    transform: translateY(-3px);
+    opacity: 0.95;
+  }
+  65% {
+    transform: translateY(1px);
+    opacity: 0.95;
+  }
+  85% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .align-dots i {
+    animation: none;
+  }
+}

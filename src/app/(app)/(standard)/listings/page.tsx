@@ -24,7 +24,12 @@ function ListingsPageFallback() {
       <p className={LISTINGS_LEAD_CLASS}>{listingsCopy.hero.lead}</p>
       <ListingsSearchConsoleSkeleton />
       <div className={LISTINGS_RESULTS_CLASS}>
-        <RenyqoSkeleton width={100} height={11} />
+        <RenyqoSkeleton
+          variant="text"
+          width={100}
+          height={11}
+          className="font-mono text-meta uppercase"
+        />
         <RenyqoSkeleton variant="pill" width={88} height={34} />
       </div>
       <ListingsLoadingGrid />

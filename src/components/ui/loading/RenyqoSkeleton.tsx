@@ -1,7 +1,8 @@
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils/cn";
+import "./RenyqoSkeleton.css";
 
-export type RenyqoSkeletonVariant = "box" | "circle" | "pill";
+export type RenyqoSkeletonVariant = "box" | "circle" | "pill" | "text";
 
 export interface RenyqoSkeletonProps {
   variant?: RenyqoSkeletonVariant;
@@ -16,7 +17,10 @@ const VARIANT_CLASS: Record<RenyqoSkeletonVariant, string> = {
   box: "sk",
   circle: "sk-circle",
   pill: "sk-pill",
+  text: "sk-text",
 };
+
+const TEXT_PATTERN = "Renyqo Renyqo Renyqo Renyqo Renyqo ";
 
 function toSize(value: number | string | undefined): string | undefined {
   if (value === undefined) return undefined;
@@ -40,6 +44,10 @@ export function RenyqoSkeleton({
       aria-hidden="true"
       className={cn("block", VARIANT_CLASS[variant], className)}
       style={{ width: toSize(width), height: toSize(height), ...style }}
-    />
+    >
+      {variant === "text" && (
+        <span className="sk-text-content">{TEXT_PATTERN}</span>
+      )}
+    </span>
   );
 }
