@@ -19,9 +19,19 @@ const BODY_CLASS = "flex min-h-0 flex-1 flex-col gap-1";
 
 const TITLE_CLASS = "flex min-h-10 flex-col justify-center gap-1";
 
+const TITLE_SKELETON_CLASS = "font-display text-caption font-medium";
+
+const LOCATION_SKELETON_CLASS = "font-mono text-meta tracking-normal";
+
 const STATS_CLASS = "flex flex-wrap items-center gap-x-1";
 
+const STATS_SKELETON_CLASS = "font-mono text-meta tracking-normal";
+
 const PRICE_ROW_CLASS = "mt-auto flex flex-wrap items-baseline gap-x-1.5";
+
+const PRICE_SKELETON_CLASS = "font-mono text-body font-semibold";
+
+const PRICE_LABEL_SKELETON_CLASS = "text-meta tracking-normal";
 
 export function ListingsLoadingGrid({ count = 10 }: ListingsLoadingGridProps) {
   return (
@@ -43,26 +53,63 @@ export function ListingsLoadingGrid({ count = 10 }: ListingsLoadingGridProps) {
                 </div>
                 <div className={BODY_CLASS}>
                   <div className={TITLE_CLASS}>
-                    <RenyqoSkeleton width="82%" height={13} />
-                    <RenyqoSkeleton width="58%" height={13} />
-                  </div>
-                  <RenyqoSkeleton width="54%" height={11} />
-                  <div className={STATS_CLASS}>
-                    <RenyqoSkeleton width="23%" height={11} />
-                    <RenyqoSkeleton width="33%" height={11} />
                     <RenyqoSkeleton
+                      variant="text"
+                      width="82%"
+                      height={13}
+                      className={TITLE_SKELETON_CLASS}
+                    />
+                    <RenyqoSkeleton
+                      variant="text"
+                      width="58%"
+                      height={13}
+                      className={TITLE_SKELETON_CLASS}
+                    />
+                  </div>
+                  <RenyqoSkeleton
+                    variant="text"
+                    width="54%"
+                    height={11}
+                    className={LOCATION_SKELETON_CLASS}
+                  />
+                  <div className={STATS_CLASS}>
+                    <RenyqoSkeleton
+                      variant="text"
+                      width="23%"
+                      height={11}
+                      className={STATS_SKELETON_CLASS}
+                    />
+                    <RenyqoSkeleton
+                      variant="text"
+                      width="33%"
+                      height={11}
+                      className={STATS_SKELETON_CLASS}
+                    />
+                    <RenyqoSkeleton
+                      variant="text"
                       width="57%"
                       height={11}
-                      className="basis-full"
+                      className={`basis-full ${STATS_SKELETON_CLASS}`}
                     />
                   </div>
                   <div className={PRICE_ROW_CLASS}>
-                    <RenyqoSkeleton width="34%" height={14} />
-                    <RenyqoSkeleton width="26%" height={11} />
                     <RenyqoSkeleton
+                      variant="text"
+                      width="34%"
+                      height={14}
+                      className={PRICE_SKELETON_CLASS}
+                    />
+                    <RenyqoSkeleton
+                      variant="text"
+                      width="26%"
+                      height={11}
+                      className={PRICE_LABEL_SKELETON_CLASS}
+                    />
+                    <RenyqoSkeleton
+                      variant="text"
                       width="53%"
                       height={11}
-                      className="basis-full"
+                      className={`basis-full ${PRICE_LABEL_SKELETON_CLASS}`}
                     />
                   </div>
                 </div>

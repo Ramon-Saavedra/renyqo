@@ -30,7 +30,7 @@ export interface RenyqoRevealProps {
 /**
  * Skeleton veil from the Renyqo loading system: a calm surface, a single light
  * sweep and a soft ring pulse — no spinner. Timings/animations are defined once
- * in globals.css; the cascade is driven by the `--rq-stagger` custom property,
+ * in RenyqoSkeleton.css; the cascade is driven by the `--rq-stagger` custom property,
  * so nothing is hardcoded per page.
  */
 export function RenyqoReveal({

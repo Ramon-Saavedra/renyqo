@@ -62,9 +62,10 @@ export function ListingsSearchConsoleSkeleton() {
               <AppIcon icon={Search} size={15} strokeWidth={1.6} decorative />
             </span>
             <RenyqoSkeleton
+              variant="text"
               width="44%"
               height={11}
-              className="absolute top-1/2 left-10 -translate-y-1/2"
+              className="absolute top-1/2 left-10 -translate-y-1/2 text-caption"
             />
           </div>
         </div>
