@@ -26,6 +26,7 @@ export function IntroductionSection({
   error,
 }: IntroductionSectionProps) {
   const copy = applicantProfileCopy.introduction;
+  const errorId = "applicant-introduction-error";
 
   return (
     <SectionCard
@@ -53,11 +54,13 @@ export function IntroductionSection({
           required
           maxLength={APPLICANT_INTRODUCTION_MAX_LENGTH}
           aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           placeholder={copy.field.placeholder}
           onChange={(event) => setField("introduction", event.target.value)}
         />
         {error ? (
           <div
+            id={errorId}
             role="alert"
             className="flex items-center gap-1.5 text-caption leading-normal text-foreground-tertiary"
           >

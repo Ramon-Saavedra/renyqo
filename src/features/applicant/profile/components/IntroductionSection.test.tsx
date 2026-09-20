@@ -63,6 +63,9 @@ describe("IntroductionSection", () => {
   it("renders the friendly guidance", () => {
     render(<IntroductionSection draft={INITIAL_PROFILE} setField={vi.fn()} />);
 
+    const textarea = screen.getByRole("textbox");
+    expect(textarea.getAttribute("aria-describedby")).toBeNull();
+    expect(document.getElementById("applicant-introduction-error")).toBeNull();
     expect(
       screen.getByText("Erzähl uns etwas Lustiges über dich oder euch"),
     ).toBeInstanceOf(HTMLElement);
@@ -98,7 +101,14 @@ describe("IntroductionSection", () => {
       />,
     );
 
-    expect(screen.getByRole("alert").textContent).toBe(
+    const textarea = screen.getByRole("textbox");
+    const error = screen.getByRole("alert");
+    expect(textarea.getAttribute("aria-invalid")).toBe("true");
+    expect(textarea.getAttribute("aria-describedby")).toBe(
+      "applicant-introduction-error",
+    );
+    expect(error.getAttribute("id")).toBe("applicant-introduction-error");
+    expect(error.textContent).toContain(
       "Bitte erzähl uns kurz etwas über dich oder euch.",
     );
     expect(
