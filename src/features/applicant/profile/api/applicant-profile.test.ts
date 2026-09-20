@@ -1,28 +1,38 @@
-import { ApiError } from "@/lib/api/client";
-import { describe, expect, it } from "vitest";
+import { ApiError, apiGet } from "@/lib/api/client";
+import type * as ApiClient from "@/lib/api/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { INITIAL_PROFILE } from "../utils/profile-validation";
 import {
   getApplicantIntroductionValidationError,
+  getApplicantProfile,
+  ApplicantProfileContractError,
   toDraft,
   toPayload,
 } from "./applicant-profile";
 
+vi.mock("@/lib/api/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof ApiClient>();
+  return { ...actual, apiGet: vi.fn() };
+});
+
+const validResponse = {
+  introduction: "Ich suche ein Zuhause.",
+  householdNetIncome: 3200,
+  incomeProofAvailable: true,
+  schufaAvailable: false,
+  peopleCount: 3,
+  adultsCount: 2,
+  childrenCount: 1,
+  hasPets: true,
+  isSmoker: false,
+};
+
 describe("applicant-profile mapping", () => {
+  beforeEach(() => vi.clearAllMocks());
+
   it("maps a populated response onto the draft", () => {
-    expect(
-      toDraft({
-        introduction: "Ich suche ein Zuhause.",
-        householdNetIncome: 3200,
-        incomeProofAvailable: true,
-        schufaAvailable: false,
-        peopleCount: 3,
-        adultsCount: 2,
-        childrenCount: 1,
-        hasPets: true,
-        isSmoker: false,
-      }),
-    ).toEqual({
+    expect(toDraft(validResponse)).toEqual({
       introduction: "Ich suche ein Zuhause.",
       income: "3200",
       adults: 2,
@@ -35,21 +45,70 @@ describe("applicant-profile mapping", () => {
   });
 
   it("normalizes a legacy null introduction to an empty draft value", () => {
-    expect(toDraft({ introduction: null }).introduction).toBe("");
+    expect(toDraft({ ...validResponse, introduction: null }).introduction).toBe(
+      "",
+    );
   });
 
-  it("falls back to the initial draft for an empty profile", () => {
-    expect(toDraft({})).toEqual(INITIAL_PROFILE);
+  it("preserves a valid introduction from the API response", async () => {
+    vi.mocked(apiGet).mockResolvedValue(validResponse);
+
+    await expect(getApplicantProfile()).resolves.toMatchObject({
+      introduction: "Ich suche ein Zuhause.",
+    });
+  });
+
+  it("normalizes a legacy null introduction from the API response", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      ...validResponse,
+      introduction: null,
+    });
+
+    await expect(getApplicantProfile()).resolves.toMatchObject({
+      introduction: "",
+    });
+  });
+
+  it.each([42, {}, [], true])(
+    "rejects an invalid API introduction value: %s",
+    async (introduction) => {
+      vi.mocked(apiGet).mockResolvedValue({ ...validResponse, introduction });
+
+      await expect(getApplicantProfile()).rejects.toBeInstanceOf(
+        ApplicantProfileContractError,
+      );
+    },
+  );
+
+  it("rejects an API response with a missing introduction", async () => {
+    const responseWithoutIntroduction = Object.fromEntries(
+      Object.entries(validResponse).filter(([key]) => key !== "introduction"),
+    );
+    vi.mocked(apiGet).mockResolvedValue(responseWithoutIntroduction);
+
+    await expect(getApplicantProfile()).rejects.toBeInstanceOf(
+      ApplicantProfileContractError,
+    );
+  });
+
+  it("uses the empty draft when the profile endpoint returns 404", async () => {
+    vi.mocked(apiGet).mockRejectedValue(new ApiError(404, "not found"));
+
+    await expect(getApplicantProfile()).resolves.toBeNull();
   });
 
   it("round-trips the smoker boolean", () => {
-    expect(toDraft({ isSmoker: true }).smoker).toBe("ja");
-    expect(toDraft({ isSmoker: false }).smoker).toBe("nein");
+    expect(toDraft({ ...validResponse, isSmoker: true }).smoker).toBe("ja");
+    expect(toDraft({ ...validResponse, isSmoker: false }).smoker).toBe("nein");
     expect(toPayload({ ...INITIAL_PROFILE, smoker: "ja" }).isSmoker).toBe(true);
   });
 
   it("clamps out-of-range household counts", () => {
-    const draft = toDraft({ adultsCount: 99, childrenCount: -4 });
+    const draft = toDraft({
+      ...validResponse,
+      adultsCount: 99,
+      childrenCount: -4,
+    });
 
     expect(draft.adults).toBe(8);
     expect(draft.children).toBe(0);
@@ -96,7 +155,7 @@ describe("applicant-profile mapping", () => {
       getApplicantIntroductionValidationError(
         new ApiError(422, "validation failed", "http", null, {
           message: [
-            "introduction must be shorter than or equal to 100 characters",
+            "introduction must be shorter than or equal to 250 characters",
           ],
         }),
       ),

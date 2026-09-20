@@ -6,7 +6,10 @@ import { Textarea } from "@/components/ui/form/Textarea";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { SectionCard } from "@/components/ui/section-card/SectionCard";
 import { applicantProfileCopy } from "../copy/applicant-profile";
-import type { ApplicantProfileDraft } from "../utils/profile-validation";
+import {
+  APPLICANT_INTRODUCTION_MAX_LENGTH,
+  type ApplicantProfileDraft,
+} from "../utils/profile-validation";
 
 interface IntroductionSectionProps {
   draft: ApplicantProfileDraft;
@@ -16,8 +19,6 @@ interface IntroductionSectionProps {
   ) => void;
   error?: string | undefined;
 }
-
-const MAX_INTRODUCTION_LENGTH = 100;
 
 export function IntroductionSection({
   draft,
@@ -41,6 +42,7 @@ export function IntroductionSection({
           <span className="font-mono text-meta tabular-nums text-foreground-tertiary">
             {draft.introduction.length}
             {copy.field.counterSuffix}
+            {APPLICANT_INTRODUCTION_MAX_LENGTH}
           </span>
         }
       >
@@ -49,7 +51,7 @@ export function IntroductionSection({
           rows={3}
           value={draft.introduction}
           required
-          maxLength={MAX_INTRODUCTION_LENGTH}
+          maxLength={APPLICANT_INTRODUCTION_MAX_LENGTH}
           aria-invalid={error ? true : undefined}
           placeholder={copy.field.placeholder}
           onChange={(event) => setField("introduction", event.target.value)}

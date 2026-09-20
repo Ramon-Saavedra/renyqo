@@ -3,8 +3,11 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { INITIAL_PROFILE } from "../utils/profile-validation";
-import type { ApplicantProfileDraft } from "../utils/profile-validation";
+import {
+  APPLICANT_INTRODUCTION_MAX_LENGTH,
+  INITIAL_PROFILE,
+  type ApplicantProfileDraft,
+} from "../utils/profile-validation";
 import { IntroductionSection } from "./IntroductionSection";
 
 function StatefulIntroductionSection({
@@ -37,7 +40,9 @@ describe("IntroductionSection", () => {
     if (textbox instanceof HTMLTextAreaElement) {
       expect(textbox.value).toBe("Bereits eingetragen.");
     }
-    expect(screen.getByText("20/100")).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByText(`20/${APPLICANT_INTRODUCTION_MAX_LENGTH}`),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("updates the value and counter while typing", async () => {
@@ -46,9 +51,13 @@ describe("IntroductionSection", () => {
 
     await user.type(screen.getByRole("textbox"), "Hallo");
 
-    expect(screen.getByText("5/100")).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByText(`5/${APPLICANT_INTRODUCTION_MAX_LENGTH}`),
+    ).toBeInstanceOf(HTMLElement);
 
-    expect(screen.getByRole("textbox").getAttribute("maxlength")).toBe("100");
+    expect(screen.getByRole("textbox").getAttribute("maxlength")).toBe(
+      String(APPLICANT_INTRODUCTION_MAX_LENGTH),
+    );
   });
 
   it("renders the friendly guidance", () => {

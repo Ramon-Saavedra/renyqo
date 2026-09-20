@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  APPLICANT_INTRODUCTION_MAX_LENGTH,
   canSaveProfile,
   formatHouseholdSize,
   getHouseholdSize,
@@ -53,22 +54,39 @@ describe("profile-validation", () => {
     ).toBe("Bitte erzähl uns kurz etwas über dich oder euch.");
   });
 
-  it("accepts an introduction with exactly 100 characters", () => {
+  it("accepts an introduction with exactly 250 characters", () => {
     expect(
       getProfileErrors({
         ...COMPLETE_PROFILE,
-        introduction: "a".repeat(100),
+        introduction: "a".repeat(APPLICANT_INTRODUCTION_MAX_LENGTH),
       }),
     ).toEqual({});
+    expect(
+      canSaveProfile({
+        ...COMPLETE_PROFILE,
+        introduction: "a".repeat(APPLICANT_INTRODUCTION_MAX_LENGTH),
+      }),
+    ).toBe(true);
   });
 
-  it("rejects an introduction longer than 100 characters", () => {
+  it("rejects an introduction longer than 250 characters", () => {
+    const profile = {
+      ...COMPLETE_PROFILE,
+      introduction: "a".repeat(APPLICANT_INTRODUCTION_MAX_LENGTH + 1),
+    };
+    expect(getProfileErrors(profile).introduction).toBe(
+      "Dein Text darf höchstens 250 Zeichen lang sein.",
+    );
+    expect(canSaveProfile(profile)).toBe(false);
+  });
+
+  it("trims whitespace before checking the introduction length", () => {
     expect(
       getProfileErrors({
         ...COMPLETE_PROFILE,
-        introduction: "a".repeat(101),
-      }).introduction,
-    ).toBe("Dein Text darf höchstens 100 Zeichen lang sein.");
+        introduction: `  ${"a".repeat(APPLICANT_INTRODUCTION_MAX_LENGTH)}  `,
+      }),
+    ).toEqual({});
   });
 
   it("rejects angle brackets in an introduction", () => {

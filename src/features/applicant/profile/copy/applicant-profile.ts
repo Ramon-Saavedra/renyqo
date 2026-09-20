@@ -35,7 +35,7 @@ export const applicantProfileCopy = {
       label: "Ein paar Worte",
       placeholder: "Was möchtest du über dich oder euch erzählen?",
       guidance: "Erzähl uns etwas Lustiges über dich oder euch",
-      counterSuffix: "/100",
+      counterSuffix: "/",
     },
   },
   saveError: {
@@ -129,7 +129,8 @@ export const applicantProfileCopy = {
   },
   validation: {
     introductionRequired: "Bitte erzähl uns kurz etwas über dich oder euch.",
-    introductionTooLong: "Dein Text darf höchstens 100 Zeichen lang sein.",
+    introductionTooLong: (maxLength: number) =>
+      `Dein Text darf höchstens ${maxLength} Zeichen lang sein.`,
     introductionInvalid: "Bitte verwende keine spitzen Klammern (< oder >).",
     income: "Bitte einen Betrag über 0 € angeben.",
   },

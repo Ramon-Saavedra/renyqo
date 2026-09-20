@@ -16,6 +16,7 @@ import {
   canSaveProfile,
   getMissingProfileFields,
   getProfileErrors,
+  APPLICANT_INTRODUCTION_MAX_LENGTH,
   INITIAL_PROFILE,
   isProfileComplete,
   type ApplicantProfileDraft,
@@ -112,7 +113,9 @@ export function useApplicantProfile(): UseApplicantProfileResult {
           );
         } else if (introductionError === "tooLong") {
           setIntroductionServerError(
-            applicantProfileCopy.validation.introductionTooLong,
+            applicantProfileCopy.validation.introductionTooLong(
+              APPLICANT_INTRODUCTION_MAX_LENGTH,
+            ),
           );
         } else if (introductionError === "invalid") {
           setIntroductionServerError(

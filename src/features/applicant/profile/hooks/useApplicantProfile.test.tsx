@@ -180,7 +180,7 @@ describe("useApplicantProfile save flow", () => {
 
     await waitFor(() =>
       expect(screen.getByTestId("introduction-error").textContent).toBe(
-        "Dein Text darf höchstens 100 Zeichen lang sein.",
+        "Dein Text darf höchstens 250 Zeichen lang sein.",
       ),
     );
     expect(screen.queryByText("raw backend detail")).toBeNull();

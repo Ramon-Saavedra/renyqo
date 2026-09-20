@@ -4,6 +4,8 @@ import {
   type YesNoOption,
 } from "../copy/applicant-profile";
 
+export const APPLICANT_INTRODUCTION_MAX_LENGTH = 250;
+
 export interface ApplicantProfileDraft {
   introduction: string;
   income: string;
@@ -78,9 +80,11 @@ export function getProfileErrors(
       introduction: applicantProfileCopy.validation.introductionRequired,
     };
   }
-  if (introduction.length > 100) {
+  if (introduction.length > APPLICANT_INTRODUCTION_MAX_LENGTH) {
     return {
-      introduction: applicantProfileCopy.validation.introductionTooLong,
+      introduction: applicantProfileCopy.validation.introductionTooLong(
+        APPLICANT_INTRODUCTION_MAX_LENGTH,
+      ),
     };
   }
   if (introduction.includes("<") || introduction.includes(">")) {

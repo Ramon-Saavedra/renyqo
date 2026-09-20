@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { ApiError, apiGet, apiPatch } from "@/lib/api/client";
 import {
   INITIAL_PROFILE,
@@ -7,17 +8,21 @@ import type { YesNoOption } from "../copy/applicant-profile";
 
 const APPLICANT_PROFILE_PATH = "/api/v1/applicant/profile";
 
-export interface ApplicantProfileResponse {
-  readonly introduction: string | null;
-  readonly householdNetIncome: number | null;
-  readonly incomeProofAvailable: boolean | null;
-  readonly schufaAvailable: boolean | null;
-  readonly peopleCount: number | null;
-  readonly adultsCount: number | null;
-  readonly childrenCount: number | null;
-  readonly hasPets: boolean | null;
-  readonly isSmoker: boolean | null;
-}
+const applicantProfileResponseSchema = z.object({
+  introduction: z.string().nullable(),
+  householdNetIncome: z.number().nullable(),
+  incomeProofAvailable: z.boolean().nullable(),
+  schufaAvailable: z.boolean().nullable(),
+  peopleCount: z.number().nullable(),
+  adultsCount: z.number().nullable(),
+  childrenCount: z.number().nullable(),
+  hasPets: z.boolean().nullable(),
+  isSmoker: z.boolean().nullable(),
+});
+
+export type ApplicantProfileResponse = z.infer<
+  typeof applicantProfileResponseSchema
+>;
 
 export interface ApplicantProfilePayload {
   readonly introduction: string;
@@ -28,6 +33,13 @@ export interface ApplicantProfilePayload {
   readonly childrenCount: number;
   readonly hasPets: boolean | null;
   readonly isSmoker: boolean | null;
+}
+
+export class ApplicantProfileContractError extends Error {
+  constructor() {
+    super("Invalid applicant profile response");
+    this.name = "ApplicantProfileContractError";
+  }
 }
 
 function toYesNo(value: boolean | null): YesNoOption {
@@ -47,13 +59,13 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function toDraft(
-  response: Partial<ApplicantProfileResponse>,
+  response: ApplicantProfileResponse,
 ): ApplicantProfileDraft {
   return {
     introduction:
-      typeof response.introduction === "string"
-        ? response.introduction
-        : INITIAL_PROFILE.introduction,
+      response.introduction === null
+        ? INITIAL_PROFILE.introduction
+        : response.introduction,
     income:
       typeof response.householdNetIncome === "number"
         ? String(response.householdNetIncome)
@@ -151,10 +163,10 @@ export function getApplicantIntroductionValidationError(
 
 export async function getApplicantProfile(): Promise<ApplicantProfileDraft | null> {
   try {
-    const response = await apiGet<ApplicantProfileResponse>(
-      APPLICANT_PROFILE_PATH,
-    );
-    return toDraft(response);
+    const response = await apiGet<unknown>(APPLICANT_PROFILE_PATH);
+    const parsed = applicantProfileResponseSchema.safeParse(response);
+    if (!parsed.success) throw new ApplicantProfileContractError();
+    return toDraft(parsed.data);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;
