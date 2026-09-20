@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { ApiError, apiGet, apiPatch } from "@/lib/api/client";
 import {
   INITIAL_PROFILE,
@@ -7,18 +8,24 @@ import type { YesNoOption } from "../copy/applicant-profile";
 
 const APPLICANT_PROFILE_PATH = "/api/v1/applicant/profile";
 
-export interface ApplicantProfileResponse {
-  readonly householdNetIncome: number | null;
-  readonly incomeProofAvailable: boolean | null;
-  readonly schufaAvailable: boolean | null;
-  readonly peopleCount: number | null;
-  readonly adultsCount: number | null;
-  readonly childrenCount: number | null;
-  readonly hasPets: boolean | null;
-  readonly isSmoker: boolean | null;
-}
+const applicantProfileResponseSchema = z.object({
+  introduction: z.string().nullable(),
+  householdNetIncome: z.number().nullable(),
+  incomeProofAvailable: z.boolean().nullable(),
+  schufaAvailable: z.boolean().nullable(),
+  peopleCount: z.number().nullable(),
+  adultsCount: z.number().nullable(),
+  childrenCount: z.number().nullable(),
+  hasPets: z.boolean().nullable(),
+  isSmoker: z.boolean().nullable(),
+});
+
+export type ApplicantProfileResponse = z.infer<
+  typeof applicantProfileResponseSchema
+>;
 
 export interface ApplicantProfilePayload {
+  readonly introduction: string;
   readonly householdNetIncome: number | null;
   readonly incomeProofAvailable: boolean | null;
   readonly schufaAvailable: boolean | null;
@@ -26,6 +33,13 @@ export interface ApplicantProfilePayload {
   readonly childrenCount: number;
   readonly hasPets: boolean | null;
   readonly isSmoker: boolean | null;
+}
+
+export class ApplicantProfileContractError extends Error {
+  constructor() {
+    super("Invalid applicant profile response");
+    this.name = "ApplicantProfileContractError";
+  }
 }
 
 function toYesNo(value: boolean | null): YesNoOption {
@@ -45,9 +59,13 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function toDraft(
-  response: Partial<ApplicantProfileResponse>,
+  response: ApplicantProfileResponse,
 ): ApplicantProfileDraft {
   return {
+    introduction:
+      response.introduction === null
+        ? INITIAL_PROFILE.introduction
+        : response.introduction,
     income:
       typeof response.householdNetIncome === "number"
         ? String(response.householdNetIncome)
@@ -73,6 +91,7 @@ export function toPayload(
   const income = draft.income.trim();
 
   return {
+    introduction: draft.introduction.trim(),
     householdNetIncome: income === "" ? null : Number.parseInt(income, 10),
     incomeProofAvailable: fromYesNo(draft.incomeProof),
     schufaAvailable: fromYesNo(draft.schufa),
@@ -83,12 +102,71 @@ export function toPayload(
   };
 }
 
+export type ApplicantIntroductionValidationError =
+  | "required"
+  | "tooLong"
+  | "invalid";
+
+export function getApplicantIntroductionValidationError(
+  error: unknown,
+): ApplicantIntroductionValidationError | null {
+  if (!(error instanceof ApiError) || ![400, 422].includes(error.status)) {
+    return null;
+  }
+
+  const details = error.details;
+  if (!details || typeof details !== "object") return null;
+
+  const data = details as Record<string, unknown>;
+  const code = typeof data.code === "string" ? data.code : error.code;
+  if (code === "INTRODUCTION_TOO_LONG") return "tooLong";
+  if (code === "INTRODUCTION_REQUIRED") return "required";
+
+  const fieldErrors = data.fieldErrors ?? data.errors;
+  if (fieldErrors && typeof fieldErrors === "object") {
+    if (!Object.prototype.hasOwnProperty.call(fieldErrors, "introduction")) {
+      return null;
+    }
+    const introductionError = (fieldErrors as Record<string, unknown>)
+      .introduction;
+    const fieldMessages = Array.isArray(introductionError)
+      ? introductionError
+      : [introductionError];
+    if (
+      fieldMessages.some(
+        (message) =>
+          typeof message === "string" &&
+          /(long|length|string|characters|zeichen|max|shorter)/i.test(message),
+      )
+    ) {
+      return "tooLong";
+    }
+    return "invalid";
+  }
+
+  const messages = data.message;
+  const values = Array.isArray(messages) ? messages : [messages];
+  for (const message of values) {
+    if (typeof message !== "string" || !/introduction/i.test(message)) {
+      continue;
+    }
+    if (/(long|length|string|characters|zeichen|max|shorter)/i.test(message)) {
+      return "tooLong";
+    }
+    if (/(empty|blank|required|whitespace)/i.test(message)) {
+      return "required";
+    }
+    return "invalid";
+  }
+  return null;
+}
+
 export async function getApplicantProfile(): Promise<ApplicantProfileDraft | null> {
   try {
-    const response = await apiGet<ApplicantProfileResponse>(
-      APPLICANT_PROFILE_PATH,
-    );
-    return toDraft(response);
+    const response = await apiGet<unknown>(APPLICANT_PROFILE_PATH);
+    const parsed = applicantProfileResponseSchema.safeParse(response);
+    if (!parsed.success) throw new ApplicantProfileContractError();
+    return toDraft(parsed.data);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;

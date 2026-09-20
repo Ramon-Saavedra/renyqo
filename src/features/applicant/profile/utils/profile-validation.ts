@@ -4,7 +4,10 @@ import {
   type YesNoOption,
 } from "../copy/applicant-profile";
 
+export const APPLICANT_INTRODUCTION_MAX_LENGTH = 250;
+
 export interface ApplicantProfileDraft {
+  introduction: string;
   income: string;
   adults: number;
   children: number;
@@ -15,10 +18,12 @@ export interface ApplicantProfileDraft {
 }
 
 export interface ApplicantProfileErrors {
+  introduction?: string;
   income?: string;
 }
 
 export const INITIAL_PROFILE: ApplicantProfileDraft = {
+  introduction: "",
   income: "",
   adults: 1,
   children: 0,
@@ -32,6 +37,10 @@ export const PROFILE_CHECKLIST_ITEMS: ReadonlyArray<{
   label: string;
   targetId: string;
 }> = [
+  {
+    label: applicantProfileCopy.missingLabels.introduction,
+    targetId: "applicant-introduction",
+  },
   {
     label: applicantProfileCopy.missingLabels.income,
     targetId: "household-income",
@@ -65,6 +74,25 @@ export function formatHouseholdSize(size: number): string {
 export function getProfileErrors(
   draft: ApplicantProfileDraft,
 ): ApplicantProfileErrors {
+  const introduction = draft.introduction.trim();
+  if (introduction === "") {
+    return {
+      introduction: applicantProfileCopy.validation.introductionRequired,
+    };
+  }
+  if (introduction.length > APPLICANT_INTRODUCTION_MAX_LENGTH) {
+    return {
+      introduction: applicantProfileCopy.validation.introductionTooLong(
+        APPLICANT_INTRODUCTION_MAX_LENGTH,
+      ),
+    };
+  }
+  if (introduction.includes("<") || introduction.includes(">")) {
+    return {
+      introduction: applicantProfileCopy.validation.introductionInvalid,
+    };
+  }
+
   const income = draft.income.trim();
   if (income !== "" && Number.parseInt(income, 10) <= 0) {
     return { income: applicantProfileCopy.validation.income };
@@ -78,6 +106,7 @@ export function getMissingProfileFields(
   const labels = applicantProfileCopy.missingLabels;
   const missing: string[] = [];
 
+  if (draft.introduction.trim() === "") missing.push(labels.introduction);
   if (draft.income.trim() === "") missing.push(labels.income);
   if (draft.incomeProof === "") missing.push(labels.incomeProof);
   if (draft.schufa === "") missing.push(labels.schufa);
