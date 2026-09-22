@@ -17,9 +17,6 @@ export function FlagChip({ warning }: { warning: CandidateWarning }) {
     top: number;
     width: number | undefined;
     placement: "center" | "end";
-    background: string;
-    borderColor: string;
-    color: string;
   } | null>(null);
 
   useLayoutEffect(() => {
@@ -31,7 +28,6 @@ export function FlagChip({ warning }: { warning: CandidateWarning }) {
       const rect = trigger.getBoundingClientRect();
       const card = trigger.closest("[data-rq-candidate-card]");
       const cardRect = card?.getBoundingClientRect();
-      const styles = getComputedStyle(trigger);
       setPosition({
         left: cardRect ? cardRect.right - 8 : rect.left + rect.width / 2,
         top: rect.bottom + 1,
@@ -40,9 +36,6 @@ export function FlagChip({ warning }: { warning: CandidateWarning }) {
             ? Math.min(cardRect.width - 16, 180)
             : undefined,
         placement: cardRect ? "end" : "center",
-        background: styles.getPropertyValue("--rq-tip-bg").trim() || "#08281D",
-        borderColor: styles.getPropertyValue("--rq-tip-bd").trim() || "#2A7A5C",
-        color: styles.getPropertyValue("--rq-tip-tx").trim() || "#EAF5F0",
       });
     };
 
@@ -61,30 +54,20 @@ export function FlagChip({ warning }: { warning: CandidateWarning }) {
           <span
             id={tooltipId}
             role="tooltip"
+            className="border-border-strong bg-background text-foreground fixed z-20 border text-[10.5px] leading-none font-normal whitespace-normal shadow-card"
             style={{
-              position: "fixed",
               top: position.top,
               left: position.left,
-              zIndex: 20,
-              background: position.background,
-              border: `1px solid ${position.borderColor}`,
-              color: position.color,
-              fontSize: 10.5,
-              lineHeight: 1,
-              whiteSpace: "normal",
-              overflowWrap: "anywhere",
               boxSizing: "border-box",
               width: position.width,
+              overflowWrap: "anywhere",
               padding: "5px 8px",
               borderRadius: 5,
-              boxShadow: "0 6px 18px -6px rgba(0,0,0,.6)",
-              opacity: isOpen ? 1 : 0,
               pointerEvents: "none",
               transform:
                 position.placement === "end"
                   ? "translateX(-100%)"
                   : "translateX(-50%)",
-              transition: "opacity 150ms ease, transform 150ms ease",
             }}
           >
             {label}
@@ -108,25 +91,10 @@ export function FlagChip({ warning }: { warning: CandidateWarning }) {
         onKeyDown={(event) => {
           if (event.key === "Escape") setIsOpen(false);
         }}
-        style={{
-          position: "relative",
-          flex: "0 0 auto",
-          width: 19,
-          height: 19,
-          borderRadius: 5,
-          background: "var(--rq-warn-ico-bg)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "default",
-        }}
+        className="text-warning relative flex shrink-0 items-center justify-center"
+        style={{ width: 44, height: 44, borderRadius: 4, cursor: "default" }}
       >
-        <Icon
-          size={12}
-          strokeWidth={2}
-          aria-hidden="true"
-          style={{ color: "var(--rq-warn-ico)" }}
-        />
+        <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
       </span>
       {tooltip}
     </>

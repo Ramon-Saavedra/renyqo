@@ -2,16 +2,17 @@
 
 import { useRef, useState } from "react";
 import { UserRoundX } from "lucide-react";
+import { Button } from "@/components/ui/button/Button";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
-import { FormAlert } from "@/components/ui/form/FormAlert";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { dashboardCopy } from "../copy/dashboard";
 import { useCandidateRejection } from "../hooks/useCandidateRejection";
 import { useRequestTabRefresh } from "../hooks/TabRefreshProvider";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import type { Candidate, DashboardObject, WaitingCountState } from "../types";
+import { mapApplicantToPreview } from "../utils/applicant-format";
+import { ApplicantPreviewModal } from "./ApplicantPreviewModal";
 import { CandidateLane } from "./CandidateLane";
-import { useColorScheme } from "./candidate-lane-hooks";
 
 interface CandidatesSectionProps {
   object: DashboardObject | null;
@@ -26,26 +27,24 @@ interface RejectedApplicationsState {
   readonly applicationIds: readonly string[];
 }
 
-const PANEL_CLASS = "rounded-md bg-background-muted px-parent-x py-parent-y";
-const HEAD_CLASS = "mb-4 flex flex-col gap-1.5";
-const TITLE_CLASS = "font-display text-heading-md font-medium text-foreground";
-const LEAD_CLASS = "max-w-md text-caption text-foreground-tertiary";
+const HEAD_CLASS = "flex flex-wrap items-baseline gap-x-3.5 gap-y-1.5";
+const TITLE_CLASS =
+  "font-mono text-meta font-medium uppercase tracking-wide text-primary";
+const LEAD_CLASS = "mt-1 max-w-md text-caption text-foreground-tertiary";
 
-const DRAFT_CLASS =
-  "rounded-md border border-dashed border-border-strong bg-background-muted px-card-x py-12 text-center text-caption text-foreground-secondary";
+const DRAFT_CLASS = "mt-3 max-w-md text-body text-foreground-secondary";
 
-const LOADING_LANE_CLASS = "flex flex-col gap-2 lg:flex-row";
+const LOADING_GRID_CLASS =
+  "mt-4 grid grid-cols-2 gap-3 @min-[640px]:grid-cols-3 @min-[1024px]:grid-cols-6";
 const SKELETON_SLOT_CLASS =
-  "flex h-16 min-w-0 flex-1 items-center gap-3 rounded-md border border-border bg-background-muted px-card-x py-card-y";
+  "flex min-w-0 flex-col gap-3 rounded-md bg-background-subtle px-card-x py-card-y";
 
 function renderLoadingSlots() {
   return Array.from({ length: MAX_ACTIVE_APPLICATIONS }).map((_, index) => (
     <div key={`loading-${index}`} className={SKELETON_SLOT_CLASS}>
       <RenyqoSkeleton variant="circle" width={32} height={32} />
-      <div className="flex h-9 min-w-0 flex-1 flex-col justify-center gap-1">
-        <RenyqoSkeleton height={12} className="w-full max-w-32" />
-        <RenyqoSkeleton height={11} className="w-full max-w-24" />
-      </div>
+      <RenyqoSkeleton variant="text" height={15} className="w-24" />
+      <RenyqoSkeleton variant="text" height={12} className="w-16" />
     </div>
   ));
 }
@@ -64,10 +63,12 @@ function CandidatesSectionContent({
   hasError,
 }: CandidatesSectionProps) {
   const { candidates: copy, waitingQueue: waitingCopy } = dashboardCopy;
-  const colorScheme = useColorScheme();
   const requestRefresh = useRequestTabRefresh();
   const { state, rejectCandidate, reset } = useCandidateRejection();
   const [candidateToReject, setCandidateToReject] = useState<Candidate | null>(
+    null,
+  );
+  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(
     null,
   );
   const [rejectedApplications, setRejectedApplications] =
@@ -77,9 +78,6 @@ function CandidatesSectionContent({
     });
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const candidateLaneRef = useRef<HTMLElement>(null);
-  if (rejectedApplications.candidates !== candidates) {
-    setRejectedApplications({ candidates, applicationIds: [] });
-  }
   const rejectedApplicationIds =
     rejectedApplications.candidates === candidates
       ? rejectedApplications.applicationIds
@@ -109,10 +107,10 @@ function CandidatesSectionContent({
     const rejected = await rejectCandidate(candidateToReject.id);
     if (!rejected) return;
 
-    setRejectedApplications((current) => ({
-      candidates: current.candidates,
-      applicationIds: [...current.applicationIds, candidateToReject.id],
-    }));
+    setRejectedApplications({
+      candidates,
+      applicationIds: [...rejectedApplicationIds, candidateToReject.id],
+    });
     setCandidateToReject(null);
     setSuccessMessage(copy.rejectSuccess);
     requestRefresh();
@@ -120,28 +118,19 @@ function CandidatesSectionContent({
 
   if (object?.status === "draft") {
     return (
-      <section id="bewerbungen">
-        <div className={PANEL_CLASS}>
-          <div className={HEAD_CLASS}>
-            <h3 className={TITLE_CLASS}>{copy.title}</h3>
-            <p className={LEAD_CLASS}>{copy.lead}</p>
-          </div>
-          <p className={DRAFT_CLASS}>{copy.draftEmpty}</p>
-        </div>
+      <section id="bewerbungen" className="mt-11">
+        <h3 className={TITLE_CLASS}>{copy.title}</h3>
+        <p className={LEAD_CLASS}>{copy.lead}</p>
+        <p className={DRAFT_CLASS}>{copy.draftEmpty}</p>
       </section>
     );
   }
 
   if (isLoading) {
     return (
-      <section id="bewerbungen" className="mb-6">
-        <div className={PANEL_CLASS}>
-          <div className={HEAD_CLASS}>
-            <h3 className={TITLE_CLASS}>{copy.title}</h3>
-            <p className={LEAD_CLASS}>{copy.lead}</p>
-          </div>
-          <div className={LOADING_LANE_CLASS}>{renderLoadingSlots()}</div>
-        </div>
+      <section id="bewerbungen" className="mt-11" aria-busy="true">
+        <h3 className={TITLE_CLASS}>{copy.title}</h3>
+        <div className={LOADING_GRID_CLASS}>{renderLoadingSlots()}</div>
       </section>
     );
   }
@@ -152,43 +141,67 @@ function CandidatesSectionContent({
         ref={candidateLaneRef}
         id="bewerbungen"
         tabIndex={-1}
-        className="mb-6"
+        className="mt-11"
       >
-        {hasError ? (
-          <FormAlert
-            variant="error"
-            message={copy.loadError}
-            className="mb-3"
-          />
-        ) : null}
-        {waitingCountState.status === "error" ? (
-          <p
-            role="status"
-            aria-label={waitingCopy.loadError}
-            aria-live="polite"
-            className="mb-3 text-caption text-foreground-tertiary"
-          >
-            {waitingCopy.loadError}
-          </p>
-        ) : null}
+        <div className={HEAD_CLASS}>
+          <h3 className={TITLE_CLASS}>{copy.title}</h3>
+          <span className="text-caption font-medium text-primary">
+            {copy.slotLabel(shown.length, MAX_ACTIVE_APPLICATIONS)}
+          </span>
+        </div>
+
         {successMessage ? (
           <p role="status" aria-live="polite" className="sr-only">
             {successMessage}
           </p>
         ) : null}
-        <CandidateLane
-          actives={shown}
-          waitingCount={
-            waitingCountState.status === "success" ? waitingCountState.count : 0
-          }
-          announceWaitingStatus={waitingCountState.status !== "error"}
-          capacity={MAX_ACTIVE_APPLICATIONS}
-          theme={colorScheme}
-          onRejectCandidate={openRejectConfirmation}
-          rejectingApplicationId={
-            state.status === "submitting" ? state.applicationId : null
-          }
-        />
+
+        {hasError ? (
+          <div role="alert" className="mt-3 max-w-md">
+            <p className="mb-3 text-body text-foreground-secondary">
+              {copy.loadError}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+            >
+              {copy.reloadAction}
+            </Button>
+          </div>
+        ) : shown.length === 0 ? (
+          <p className="mt-3 max-w-md text-body text-foreground-secondary">
+            {copy.noApplicants}
+          </p>
+        ) : (
+          <div className="mt-4">
+            {waitingCountState.status === "error" ? (
+              <p
+                role="status"
+                aria-label={waitingCopy.loadError}
+                aria-live="polite"
+                className="mb-3 text-caption text-foreground-tertiary"
+              >
+                {waitingCopy.loadError}
+              </p>
+            ) : null}
+            <CandidateLane
+              actives={shown}
+              waitingCount={
+                waitingCountState.status === "success"
+                  ? waitingCountState.count
+                  : 0
+              }
+              announceWaitingStatus={waitingCountState.status !== "error"}
+              capacity={MAX_ACTIVE_APPLICATIONS}
+              onOpenPreview={setPreviewCandidate}
+              onRejectCandidate={openRejectConfirmation}
+              rejectingApplicationId={
+                state.status === "submitting" ? state.applicationId : null
+              }
+            />
+          </div>
+        )}
       </section>
       <ConfirmationModal
         open={candidateToReject !== null}
@@ -206,6 +219,12 @@ function CandidatesSectionContent({
         error={state.status === "error" ? copy.rejectError : null}
         icon={UserRoundX}
         focusFallbackRef={candidateLaneRef}
+      />
+      <ApplicantPreviewModal
+        applicant={
+          previewCandidate ? mapApplicantToPreview(previewCandidate) : null
+        }
+        onClose={() => setPreviewCandidate(null)}
       />
     </>
   );

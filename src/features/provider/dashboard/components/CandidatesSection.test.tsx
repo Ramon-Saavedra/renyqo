@@ -34,6 +34,9 @@ const publishedObject: DashboardObject = {
   updatedAt: "02.07.2026, 12:00",
   status: "published",
   activeApplicationsCount: 1,
+  needsAttention: false,
+  attentionReason: null,
+  openQuestionsCount: 0,
 };
 
 const draftObject: DashboardObject = {
@@ -50,6 +53,8 @@ const candidates: readonly Candidate[] = [
     name: "Anna Lehmann",
     household: "2 Personen",
     warnings: [],
+    introduction: null,
+    activeAtLabel: null,
   },
 ];
 
@@ -60,6 +65,8 @@ const candidateWithBothWarnings: Candidate = {
   name: "Anna Berger",
   household: "2 Personen",
   warnings: ["pets_by_arrangement", "smoking_by_arrangement"],
+  introduction: null,
+  activeAtLabel: null,
 };
 
 const candidateWithSmokingWarning: Candidate = {
@@ -69,6 +76,8 @@ const candidateWithSmokingWarning: Candidate = {
   name: "Anna Sommer",
   household: "2 Personen",
   warnings: ["smoking_by_arrangement"],
+  introduction: null,
+  activeAtLabel: null,
 };
 
 const fiveCandidates: readonly Candidate[] = Array.from(
@@ -80,6 +89,8 @@ const fiveCandidates: readonly Candidate[] = Array.from(
     name: `Candidate ${index + 1}`,
     household: "2 Personen",
     warnings: [],
+    introduction: null,
+    activeAtLabel: null,
   }),
 );
 
@@ -91,6 +102,8 @@ const fifoCandidates: readonly Candidate[] = [
     name: "FIFO Anna",
     household: "1 Person",
     warnings: [],
+    introduction: null,
+    activeAtLabel: null,
   },
   {
     id: "candidate-fifo-2",
@@ -99,6 +112,8 @@ const fifoCandidates: readonly Candidate[] = [
     name: "FIFO Bruno",
     household: "2 Personen",
     warnings: [],
+    introduction: null,
+    activeAtLabel: null,
   },
   {
     id: "candidate-fifo-3",
@@ -107,6 +122,8 @@ const fifoCandidates: readonly Candidate[] = [
     name: "FIFO Clara",
     household: "3 Personen",
     warnings: [],
+    introduction: null,
+    activeAtLabel: null,
   },
 ];
 
@@ -134,7 +151,7 @@ describe("CandidatesSection", () => {
     expect(screen.getByText("1 / 5 aktiv")).not.toBeNull();
   });
 
-  it("renders one active candidate and four empty slots", () => {
+  it("renders one active candidate without fake empty slots", () => {
     render(
       <CandidatesSection
         object={publishedObject}
@@ -146,8 +163,10 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.getByText("Anna Lehmann")).not.toBeNull();
-    expect(screen.getByText("Anna Lehmann").closest("article")).not.toBeNull();
-    expect(screen.getAllByText("Platz frei")).toHaveLength(4);
+    expect(
+      screen.getByText("Anna Lehmann").closest("[data-rq-candidate-card]"),
+    ).not.toBeNull();
+    expect(screen.queryByText("Platz frei")).toBeNull();
   });
 
   it("cancels candidate rejection without calling the backend", async () => {
@@ -240,7 +259,7 @@ describe("CandidatesSection", () => {
     expect(screen.getByText("Anna Lehmann")).not.toBeNull();
   });
 
-  it("keeps a confirmed rejection hidden when active data changed during submission", async () => {
+  it("shows the candidate again when the active data reference changes", async () => {
     const user = userEvent.setup();
     let resolveRejection: (() => void) | undefined;
     const rejection = new Promise<void>((resolve) => {
@@ -278,7 +297,7 @@ describe("CandidatesSection", () => {
     });
 
     await waitFor(() => {
-      expect(screen.queryByText("Anna Lehmann")).toBeNull();
+      expect(screen.getByText("Anna Lehmann")).not.toBeNull();
     });
   });
 
@@ -391,7 +410,9 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(screen.getAllByText("Platz frei")).toHaveLength(5);
+    expect(
+      screen.getByText("Noch keine Bewerbungen", { exact: false }),
+    ).not.toBeNull();
   });
 
   it("renders five active candidate cards without empty slots", () => {
@@ -435,6 +456,8 @@ describe("CandidatesSection", () => {
         name: `Candidate ${index + 1}`,
         household: "2 Personen",
         warnings: [],
+        introduction: null,
+        activeAtLabel: null,
       }),
     );
 
@@ -457,7 +480,7 @@ describe("CandidatesSection", () => {
     render(
       <CandidatesSection
         object={publishedObject}
-        candidates={candidates}
+        candidates={fiveCandidates}
         waitingCountState={{ status: "success", count: 0 }}
         isLoading={false}
         hasError={false}
@@ -472,7 +495,7 @@ describe("CandidatesSection", () => {
     render(
       <CandidatesSection
         object={publishedObject}
-        candidates={candidates}
+        candidates={fiveCandidates}
         waitingCountState={{ status: "success", count: 1 }}
         isLoading={false}
         hasError={false}
@@ -486,7 +509,7 @@ describe("CandidatesSection", () => {
     render(
       <CandidatesSection
         object={publishedObject}
-        candidates={candidates}
+        candidates={fiveCandidates}
         waitingCountState={{ status: "success", count: 3 }}
         isLoading={false}
         hasError={false}
@@ -496,8 +519,8 @@ describe("CandidatesSection", () => {
     expect(screen.getByRole("status", { name: "+3 warten" })).not.toBeNull();
   });
 
-  it("uses the active candidate count for the first waiting position", () => {
-    const { rerender } = render(
+  it("does not render a waiting queue below capacity", () => {
+    render(
       <CandidatesSection
         object={publishedObject}
         candidates={candidates}
@@ -507,26 +530,14 @@ describe("CandidatesSection", () => {
       />,
     );
 
-    expect(screen.getByText("Nr. 2 von 6")).not.toBeNull();
-
-    rerender(
-      <CandidatesSection
-        object={publishedObject}
-        candidates={[]}
-        waitingCountState={{ status: "success", count: 5 }}
-        isLoading={false}
-        hasError={false}
-      />,
-    );
-
-    expect(screen.getByText("Nr. 1 von 5")).not.toBeNull();
+    expect(screen.queryByText("in Warteschlange")).toBeNull();
   });
 
   it("shows waiting-count error without rendering a fake zero", () => {
     render(
       <CandidatesSection
         object={publishedObject}
-        candidates={candidates}
+        candidates={fiveCandidates}
         waitingCountState={{ status: "error" }}
         isLoading={false}
         hasError={false}
@@ -549,7 +560,7 @@ describe("CandidatesSection", () => {
     render(
       <CandidatesSection
         object={publishedObject}
-        candidates={candidates}
+        candidates={fiveCandidates}
         waitingCountState={{ status: "success", count: 2 }}
         isLoading={false}
         hasError={false}
@@ -557,9 +568,8 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.getByRole("status", { name: "+2 warten" })).not.toBeNull();
-    const queueLabel = screen.getByText("in Warteschlange");
-    const teaser = queueLabel.parentElement;
-    expect(teaser?.textContent).toBe("in Warteschlange");
+    expect(screen.getAllByText("+2 warten").length).toBeGreaterThan(0);
+    expect(screen.getByRole("img", { name: /Warteschlange/ })).not.toBeNull();
     expect(screen.queryByText(/waiting applicant/i)).toBeNull();
     expect(screen.queryAllByText(/@/)).toHaveLength(0);
     expect(screen.queryByLabelText(/klären/)).toBeNull();
@@ -596,10 +606,12 @@ describe("CandidatesSection", () => {
     );
 
     expect(screen.queryByText("Anna Lehmann")).toBeNull();
-    expect(screen.getAllByText("Platz frei")).toHaveLength(5);
+    expect(
+      screen.getByText("Noch keine Bewerbungen", { exact: false }),
+    ).not.toBeNull();
   });
 
-  it("shows an application error while still rendering active candidates", () => {
+  it("shows an application error instead of candidate cards", () => {
     render(
       <CandidatesSection
         object={publishedObject}
@@ -615,10 +627,10 @@ describe("CandidatesSection", () => {
         "Bewerbungen konnten nicht geladen werden. Bitte versuche es gleich erneut.",
       ),
     ).not.toBeNull();
-    expect(screen.getByText("Anna Lehmann")).not.toBeNull();
+    expect(screen.queryByText("Anna Lehmann")).toBeNull();
     expect(
-      screen.getByText("Warteschlange konnte nicht geladen werden."),
-    ).not.toBeNull();
+      screen.queryByText("Warteschlange konnte nicht geladen werden."),
+    ).toBeNull();
   });
 
   it("shows loading placeholders instead of candidate cards", () => {
@@ -634,6 +646,7 @@ describe("CandidatesSection", () => {
 
     expect(screen.queryByText("Anna Lehmann")).toBeNull();
     expect(screen.queryByText("Platz frei")).toBeNull();
-    expect(container.getElementsByClassName("sk").length).toBeGreaterThan(0);
+    expect(container.getElementsByClassName("sk-circle").length).toBe(5);
+    expect(container.getElementsByClassName("sk-text").length).toBe(10);
   });
 });
