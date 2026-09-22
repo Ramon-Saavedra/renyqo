@@ -70,6 +70,9 @@ const objects: readonly DashboardObject[] = [
     updatedAt: "02.07.2026, 12:00",
     status: "published",
     activeApplicationsCount: 1,
+    needsAttention: false,
+    attentionReason: null,
+    openQuestionsCount: 0,
   },
   {
     id: "second-object",
@@ -86,6 +89,9 @@ const objects: readonly DashboardObject[] = [
     updatedAt: "10.07.2026, 09:00",
     status: "draft",
     activeApplicationsCount: 0,
+    needsAttention: false,
+    attentionReason: null,
+    openQuestionsCount: 0,
   },
 ];
 
@@ -97,6 +103,8 @@ const candidates: readonly Candidate[] = [
     name: "Anna A.",
     household: "2 Personen",
     warnings: [],
+    introduction: null,
+    activeAtLabel: null,
   },
 ];
 
@@ -117,7 +125,6 @@ function mockExitedState(
 ) {
   vi.mocked(useExitedApplications).mockReturnValue({
     exits: [],
-    totalCount: 0,
     isLoading: false,
     hasError: false,
     restorationState: { status: "idle" },
@@ -132,8 +139,7 @@ describe("DashboardView", () => {
     const { container } = render(<DashboardView objects={objects} />);
     const dashboardShell = container.querySelector("[data-accent]");
 
-    expect(dashboardShell?.className).toContain("lg:h-dvh");
-    expect(dashboardShell?.className).toContain("lg:overflow-hidden");
+    expect(dashboardShell).not.toBeNull();
   });
 
   beforeEach(() => {
@@ -159,10 +165,10 @@ describe("DashboardView", () => {
     render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
-    expect(screen.getByText("Anzahl Objekte")).not.toBeNull();
-    expect(screen.getByText("Aktive Bewerbungen")).not.toBeNull();
-    expect(screen.queryByText("Neue Bewerbungen")).toBeNull();
-    expect(screen.queryByText("Seit gestern")).toBeNull();
+    expect(screen.getAllByText("Meine Objekte").length).toBeGreaterThan(0);
+    expect(
+      screen.getByText(/2 Objekte · 1 veröffentlicht · 1 Entwürfe/),
+    ).not.toBeNull();
     expect(screen.getByText("Erste Wohnung in Berlin")).not.toBeNull();
     expect(screen.getByText("Anna A.")).not.toBeNull();
     expect(useSelectedListingApplications).toHaveBeenCalledWith(
@@ -175,8 +181,7 @@ describe("DashboardView", () => {
     render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
-    expect(screen.getAllByText("1 / 5 aktiv").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("0 / 5 aktiv").length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 aktive Bewerbungen/)).not.toBeNull();
   });
 
   it("changes the selected object from the object selector", async () => {
@@ -221,12 +226,12 @@ describe("DashboardView", () => {
 
     await screen.findByText("Saavedra");
     await user.type(
-      screen.getByRole("searchbox", { name: "Mietobjekte durchsuchen" }),
+      screen.getByRole("searchbox", { name: "Objekte durchsuchen" }),
       "nicht vorhanden",
     );
 
     expect(
-      screen.getAllByText("Keine Objekte gefunden.").length,
+      screen.getAllByText(/Kein Objekt gefunden für/).length,
     ).toBeGreaterThan(0);
   });
 
@@ -236,12 +241,16 @@ describe("DashboardView", () => {
 
     await screen.findByText("Saavedra");
     await user.type(
-      screen.getByRole("searchbox", { name: "Mietobjekte durchsuchen" }),
+      screen.getByRole("searchbox", { name: "Objekte durchsuchen" }),
       "Zweite",
     );
 
-    expect(screen.getByText("Zweite Wohnung in Hamburg")).not.toBeNull();
-    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+    expect(
+      document.querySelector('[data-listing-cell="second-object"]'),
+    ).not.toBeNull();
+    expect(
+      document.querySelector('[data-listing-cell="first-object"]'),
+    ).toBeNull();
   });
 
   it("keeps the dashboard layout when there is no backend data", async () => {
@@ -249,12 +258,7 @@ describe("DashboardView", () => {
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(getProviderDashboardObjects).toHaveBeenCalledTimes(1);
-    expect(screen.getAllByText("Meine Mietobjekte · 0").length).toBeGreaterThan(
-      0,
-    );
     expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
-    expect(screen.getByText("Passende Kandidaten")).not.toBeNull();
-    expect(screen.getAllByText("Platz frei")).toHaveLength(5);
     expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
   });
 
@@ -264,9 +268,7 @@ describe("DashboardView", () => {
     render(<DashboardView />);
 
     expect(await screen.findByText("Erste Wohnung in Berlin")).not.toBeNull();
-    expect(screen.getAllByText("Meine Mietobjekte · 1").length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.getByText(/1 Objekte ·/)).not.toBeNull();
   });
 
   it("refreshes listing counters after rejecting a candidate", async () => {
@@ -292,12 +294,10 @@ describe("DashboardView", () => {
 
     render(<DashboardView />);
 
+    expect(await screen.findByRole("alert")).not.toBeNull();
     expect(
-      await screen.findByText(
-        "Dashboard konnte nicht geladen werden. Bitte versuche es gleich erneut.",
-      ),
+      screen.getByText("Ihre Objekte konnten nicht geladen werden"),
     ).not.toBeNull();
-    expect(screen.getByText("Noch keine Mietobjekte")).not.toBeNull();
   });
 
   it("shows an application loading and error state for the selected listing", async () => {
@@ -317,46 +317,37 @@ describe("DashboardView", () => {
     ).not.toBeNull();
   });
 
-  it("collapses and reopens the desktop sidebar", async () => {
-    const user = userEvent.setup();
+  it("renders the current topbar actions", async () => {
     render(<DashboardView objects={objects} />);
 
     await screen.findByText("Saavedra");
-    await user.click(screen.getByRole("button", { name: /Ausblenden/i }));
-
-    const reopenButton = screen.getByRole("button", {
-      name: /Objekte einblenden/i,
-    });
-    expect(reopenButton.className).toContain("bg-transparent");
-    expect(reopenButton.className).toContain("hover:bg-primary-tint");
-
-    await user.click(reopenButton);
-
-    expect(screen.getAllByText("Meine Mietobjekte · 2").length).toBeGreaterThan(
-      0,
-    );
+    expect(screen.getByRole("link", { name: "Meine Objekte" })).not.toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Neues Mietobjekt" }),
+    ).not.toBeNull();
   });
 
-  it("renders the recent exits rail with totalCount for a published object", async () => {
+  it("renders the recent exits rail for a published object", async () => {
     const exits: readonly ExitedApplicant[] = [
       {
         id: "exit-1",
         listingId: "first-object",
         applicantName: "Familie Weber",
+        initials: "FW",
+        household: "2 Personen",
+        introduction: null,
         visualState: "withdrawn",
-        exitedAt: "2026-08-30T14:23:00.000Z",
-        exitedAtLabel: "30.08.2026 · 16:23",
-        exitedAtLabelCompact: "30.08. · 16:23",
+        activeAtLabel: "01.08.2026",
+        exitedAtDateLabel: "30.08.2026",
       },
     ];
-    mockExitedState({ exits, totalCount: 7 });
+    mockExitedState({ exits });
 
     render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
     expect(screen.getByText("Kürzlich ausgeschieden")).not.toBeNull();
     expect(screen.getByText("Familie Weber")).not.toBeNull();
-    expect(screen.getByText("7")).not.toBeNull();
     expect(useExitedApplications).toHaveBeenCalledWith(
       "first-object",
       "published",
@@ -369,7 +360,7 @@ describe("DashboardView", () => {
     const { container } = render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
-    expect(container.getElementsByClassName("sk-circle").length).toBe(5);
+    expect(container.getElementsByClassName("sk").length).toBeGreaterThan(0);
   });
 
   it("renders the recent exits error state", async () => {

@@ -51,7 +51,10 @@ export function DashboardSearch({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={ariaLabel}
-        className={inputClass}
+        className={cn(
+          inputClass,
+          "[&::-webkit-search-cancel-button]:appearance-none",
+        )}
       />
       {value && (
         <Button

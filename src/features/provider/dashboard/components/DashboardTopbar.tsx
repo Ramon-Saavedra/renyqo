@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LayoutGrid, Plus } from "lucide-react";
-import { buttonClass } from "@/components/ui/button/Button";
+import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { Logo } from "@/components/ui/logo/Logo";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
@@ -10,13 +10,13 @@ const ICON_SIZE = 15;
 const ICON_STROKE = 1.7;
 
 const BAR_CLASS =
-  "mb-4 flex shrink-0 items-center gap-x-3 border-b border-border px-3 py-3.5 sm:mb-0 sm:gap-x-6 sm:py-4 lg:px-gutter";
+  "sticky top-0 z-40 flex h-app-topbar shrink-0 items-center gap-x-3 border-b border-border bg-background px-3 sm:gap-x-6 lg:px-gutter";
 
 const ACTIONS_CLASS = "ml-auto flex items-center gap-2";
 const TOPBAR_ICON_ACTION_CLASS =
-  "h-6.5 w-6.5 justify-center rounded-sm px-0 sm:h-11 sm:w-auto sm:rounded-md";
-const GHOST_LINK_CLASS = `${buttonClass("ghost")} ${TOPBAR_ICON_ACTION_CLASS} border border-border-strong text-body sm:gap-2 sm:px-4.5`;
-const PRIMARY_LINK_CLASS = `${TOPBAR_ICON_ACTION_CLASS} inline-flex cursor-pointer items-center border border-primary bg-primary text-action font-medium text-primary-foreground hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-focus sm:gap-2 sm:px-4.5`;
+  "justify-center rounded-sm px-0 sm:h-11 sm:w-auto sm:rounded-md";
+const GHOST_LINK_CLASS = `${buttonClassWithSize("ghost", "icon-sm")} ${TOPBAR_ICON_ACTION_CLASS} text-body sm:gap-2 sm:px-4.5`;
+const PRIMARY_LINK_CLASS = `h-8 w-8 ${TOPBAR_ICON_ACTION_CLASS} inline-flex cursor-pointer items-center border border-primary bg-primary text-action font-medium text-primary-foreground hover:border-primary-hover hover:bg-primary-hover focus-visible:outline-none focus-visible:shadow-focus sm:gap-2 sm:px-4.5`;
 
 const PROFILE_CLASS = "ml-1 border-l border-border pl-3 sm:pl-4";
 

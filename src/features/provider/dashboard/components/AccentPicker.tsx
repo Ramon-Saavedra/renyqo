@@ -13,7 +13,7 @@ interface AccentPickerProps {
   onChange: (accent: AccentId) => void;
 }
 
-const TRIGGER_CLASS = buttonClassWithSize("primaryGhost", "icon-sm");
+const TRIGGER_CLASS = buttonClassWithSize("inverseGhost", "icon-md");
 const PANEL_CLASS = "w-32 px-parent-x py-parent-y";
 
 export function AccentPicker({ value, onChange }: AccentPickerProps) {
@@ -31,7 +31,7 @@ export function AccentPicker({ value, onChange }: AccentPickerProps) {
           className={TRIGGER_CLASS}
           title={accent.label}
         >
-          <AppIcon icon={Blend} size={16} strokeWidth={1.8} decorative />
+          <AppIcon icon={Blend} size={17} strokeWidth={1.7} decorative />
         </button>
       )}
     >
