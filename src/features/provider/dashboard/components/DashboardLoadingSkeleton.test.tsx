@@ -1,11 +1,7 @@
 import { render } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
-
-vi.mock("./DashboardTopbar", () => ({
-  DashboardTopbar: () => <div />,
-}));
 
 describe("DashboardLoadingSkeleton", () => {
   it("renders dashboard loading placeholders", () => {
@@ -14,21 +10,14 @@ describe("DashboardLoadingSkeleton", () => {
     expect(container.getElementsByClassName("sk").length).toBeGreaterThan(0);
   });
 
-  it("includes recent-exit placeholders without the outer loading ring", () => {
+  it("uses text skeletons for backend content and keeps the loading ring", () => {
     const { container } = render(<DashboardLoadingSkeleton />);
-
-    const recentExitsSkeleton = container.querySelector(
-      'section[aria-label="Kürzlich ausgeschieden"]',
+    expect(container.getElementsByClassName("sk-text").length).toBeGreaterThan(
+      0,
     );
-
-    expect(recentExitsSkeleton).toBeInstanceOf(HTMLElement);
+    expect(container.querySelector(".reveal-wrap")).not.toBeNull();
     expect(
-      recentExitsSkeleton?.getElementsByClassName("sk-circle").length,
-    ).toBe(5);
-    expect(
-      container
-        .querySelector(".reveal-wrap")
-        ?.classList.contains("reveal-ring"),
-    ).toBe(false);
+      container.querySelector('section[aria-label="Kürzlich ausgeschieden"]'),
+    ).toBeNull();
   });
 });

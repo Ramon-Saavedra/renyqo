@@ -4,65 +4,113 @@ import { RenyqoReveal } from "@/components/ui/loading/RenyqoReveal";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { dashboardCopy } from "../copy/dashboard";
 
-function SidebarSkeleton() {
+function TopbarSkeleton() {
   return (
-    <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-72 lg:shrink-0 lg:flex-col lg:border-x lg:border-border">
-      <div className="flex items-start justify-between gap-3 px-parent-x py-parent-y">
-        <div className="flex min-w-0 flex-col gap-1">
-          <RenyqoSkeleton height={10} width={64} />
-          <RenyqoSkeleton height={10} width={24} />
-        </div>
-        <RenyqoSkeleton width={28} height={28} className="rounded-sm" />
+    <div className="flex h-app-topbar shrink-0 items-center gap-3 border-b border-border px-3 lg:px-gutter">
+      <RenyqoSkeleton width={100} height={22} className="rounded-sm" />
+      <div className="ml-auto flex items-center gap-2">
+        <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:min-w-16 sm:w-auto sm:rounded-md" />
+        <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:min-w-14 sm:w-auto sm:rounded-md" />
+        <RenyqoSkeleton width={32} height={32} className="ml-1 rounded-md" />
       </div>
-      <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-parent-x pb-parent-y">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <li
-            key={`sidebar-slot-${index}`}
-            className="flex flex-1 flex-col gap-2 rounded-md border border-border bg-background-muted px-card-x py-card-y"
-          >
-            <div className="flex items-center gap-1.5">
-              <RenyqoSkeleton width={6} height={6} variant="circle" />
-              <RenyqoSkeleton height={9} width={56} />
-            </div>
-            <div className="flex min-w-0 gap-2.5">
-              <RenyqoSkeleton width={60} height={60} className="rounded-sm" />
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5 justify-center">
-                <RenyqoSkeleton height={11} width="85%" />
-                <RenyqoSkeleton height={10} width="70%" />
-                <RenyqoSkeleton height={10} width="50%" />
-              </div>
-            </div>
-            <div className="mt-auto flex items-center justify-between border-t border-border pt-2.5">
-              <RenyqoSkeleton width={88} height={8} />
-              <RenyqoSkeleton width={32} height={8} />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </aside>
+    </div>
   );
 }
 
-function TopbarSkeleton() {
+function MatrixSkeleton() {
   return (
-    <div className="mb-4 flex shrink-0 items-center gap-x-3 border-b border-border px-3 py-3.5 sm:mb-0 sm:gap-x-6 sm:py-4 lg:px-gutter">
-      <RenyqoSkeleton variant="pill" width={110} height={22} />
-      <div className="ml-auto flex items-center gap-2">
-        <RenyqoSkeleton
-          width={28}
-          height={28}
-          className="rounded-sm border border-border-strong sm:h-11 sm:w-auto sm:min-w-16 sm:rounded-md"
-        />
-        <RenyqoSkeleton
-          width={28}
-          height={28}
-          className="rounded-sm border border-border-strong sm:h-11 sm:w-auto sm:min-w-14 sm:rounded-md"
-        />
-        <RenyqoSkeleton
-          width={32}
-          height={32}
-          className="ml-1 rounded-sm border border-border sm:ml-0"
-        />
+    <div className="scrollbar-slim flex flex-nowrap items-start gap-x-3 overflow-x-scroll px-1 pt-2 pb-1">
+      {Array.from({ length: 10 }).map((_, index) => (
+        <div
+          key={`matrix-cell-${index}`}
+          className="flex w-22 shrink-0 flex-col gap-1.5 @min-[640px]:w-24"
+        >
+          <RenyqoSkeleton height={64} className="w-full rounded-md" />
+          <RenyqoSkeleton variant="text" height={11} width="80%" />
+          <RenyqoSkeleton variant="text" height={9} width="45%" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SelectedObjectSkeleton() {
+  return (
+    <div className="flex flex-col gap-3 pt-6">
+      <RenyqoSkeleton variant="text" width={140} height={11} />
+      <div className="flex flex-wrap items-start gap-card-x">
+        <div className="min-w-0 flex-1 basis-75">
+          <div className="mt-2 flex items-center gap-card-x">
+            <RenyqoSkeleton
+              width={80}
+              height={80}
+              className="hidden rounded-md sm:block"
+            />
+            <div className="min-w-0 flex-1">
+              <RenyqoSkeleton variant="text" width="60%" height={28} />
+              <RenyqoSkeleton
+                variant="text"
+                width="35%"
+                height={14}
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <RenyqoSkeleton width={90} height={44} className="rounded-md" />
+          <RenyqoSkeleton width={90} height={44} className="rounded-md" />
+          <RenyqoSkeleton width={90} height={44} className="rounded-md" />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-card-x gap-y-card-y">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <RenyqoSkeleton
+            key={`fact-${index}`}
+            variant="text"
+            width={72}
+            height={13}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ApplicantsSkeleton() {
+  return (
+    <div className="mt-11 flex flex-col gap-3.5">
+      <div className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1.5">
+        <RenyqoSkeleton variant="text" width={110} height={11} />
+        <RenyqoSkeleton variant="text" width={76} height={12} />
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={`applicant-${index}`}
+            className="flex min-w-0 flex-col gap-3 rounded-md border border-border/50 bg-background-muted px-card-x py-card-y"
+          >
+            <RenyqoSkeleton width={32} height={32} className="rounded-md" />
+            <RenyqoSkeleton variant="text" height={15} width="70%" />
+            <RenyqoSkeleton variant="text" height={12} width="45%" />
+            <div className="mt-1 flex items-center justify-between border-t border-border px-1.5 pt-1.5">
+              <RenyqoSkeleton width={24} height={24} className="rounded-md" />
+              <RenyqoSkeleton width={24} height={24} className="rounded-md" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <div className="flex min-w-13 flex-1 items-center gap-0.75">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <RenyqoSkeleton
+              key={`capacity-slot-${index}`}
+              height={2}
+              className="flex-1 rounded-full"
+            />
+          ))}
+        </div>
+        <RenyqoSkeleton variant="text" width={70} height={11} />
       </div>
     </div>
   );
@@ -70,131 +118,61 @@ function TopbarSkeleton() {
 
 function ContentSkeleton() {
   return (
-    <div className="flex w-full flex-col px-3 pt-1 lg:px-gutter">
-      <div className="mb-3 flex justify-end">
-        <RenyqoSkeleton variant="pill" width={120} height={20} />
-      </div>
-
-      <div className="relative mb-6 w-full">
+    <div className="flex w-full flex-col px-3 pt-7 pb-16 lg:px-gutter">
+      <div className="mb-6 flex flex-col gap-2 rounded-md border border-border px-parent-x py-parent-y sm:flex-row sm:items-center">
         <RenyqoSkeleton
-          height={40}
-          className="rounded-md border border-border-strong bg-input"
+          height={38}
+          className="w-full rounded-md bg-primary-foreground/20 sm:min-w-45 sm:flex-1"
         />
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
+          <RenyqoSkeleton width={100} height={38} className="rounded-md" />
+          <RenyqoSkeleton width={100} height={38} className="rounded-md" />
+        </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-1.5 md:max-w-2xl md:gap-2.5">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div
-            key={`stat-${index}`}
-            className="flex flex-col gap-2 rounded-md border border-border bg-background-muted px-card-x py-card-y"
-          >
-            <RenyqoSkeleton width={72} height={8} />
-            <RenyqoSkeleton height={22} width={40} />
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-6 overflow-hidden rounded-md">
-        <div className="flex flex-col gap-3 px-card-x py-card-y">
-          <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
+        <RenyqoSkeleton variant="text" width={110} height={12} />
+        <div className="flex flex-wrap items-center gap-2">
+          {Array.from({ length: 4 }).map((_, index) => (
             <RenyqoSkeleton
-              width={80}
-              height={80}
-              className="hidden rounded-md sm:block"
+              key={`listing-stat-${index}`}
+              variant="text"
+              width={index === 0 ? 64 : 82}
+              height={13}
             />
-            <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <RenyqoSkeleton width={120} height={9} />
-              <RenyqoSkeleton width="90%" height={18} />
-              <RenyqoSkeleton width="60%" height={12} />
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-x-4 gap-y-2.5 px-card-x py-card-y">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <div key={`cell-${index}`} className="flex flex-col gap-1">
-              <RenyqoSkeleton width={72} height={8} />
-              <RenyqoSkeleton width={56} height={14} />
-            </div>
           ))}
         </div>
       </div>
 
-      <div className="mb-6 rounded-md bg-background-muted px-parent-x py-parent-y">
-        <div className="mb-4 flex flex-col gap-1.5">
-          <RenyqoSkeleton width={180} height={18} />
-          <RenyqoSkeleton width={260} height={11} className="max-w-full" />
-        </div>
-        <div className="flex flex-col gap-2 lg:flex-row">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={`lane-${index}`}
-              className="flex h-16 min-w-0 flex-1 items-center gap-3 rounded-md border border-border bg-background-muted px-card-x py-card-y"
-            >
-              <RenyqoSkeleton width={32} height={32} variant="circle" />
-              <div className="flex h-9 min-w-0 flex-1 flex-col justify-center gap-1">
-                <RenyqoSkeleton height={12} width="80%" className="max-w-32" />
-                <RenyqoSkeleton height={11} width="60%" className="max-w-24" />
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="mt-4">
+        <MatrixSkeleton />
       </div>
 
-      <section
-        aria-label={dashboardCopy.recentExits.title}
-        className="rounded-md bg-background-muted px-parent-x py-parent-y"
-      >
-        <RenyqoSkeleton width={128} height={11} className="mb-1" />
-        <div className="mb-3 flex items-center gap-2">
-          <RenyqoSkeleton width={152} height={10} />
-        </div>
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div
-              key={`recent-exit-${index}`}
-              className="flex h-12 min-w-0 items-center gap-2 rounded-md bg-background px-card-x sm:h-13"
-            >
-              <RenyqoSkeleton variant="circle" width={12} height={12} />
-              <RenyqoSkeleton height={11} className="w-full max-w-20" />
-            </div>
-          ))}
-        </div>
-      </section>
+      <SelectedObjectSkeleton />
+      <ApplicantsSkeleton />
     </div>
   );
 }
 
-function ShellSkeleton() {
-  return (
-    <div className="flex flex-col lg:h-dvh lg:overflow-hidden lg:flex-row">
-      <SidebarSkeleton />
-      <div className="min-w-0 flex-1 lg:flex lg:h-dvh lg:min-h-0 lg:flex-col lg:overflow-hidden">
-        <TopbarSkeleton />
-        <div className="lg:min-h-0 lg:flex-1 lg:overflow-y-auto scrollbar-slim">
-          <ContentSkeleton />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Global first-load state for the provider dashboard (Renyqo pattern 01): a
- * single vertical light sweep across the whole shell instead of a spinner.
- */
 export function DashboardLoadingSkeleton() {
   return (
     <PageShell className="lg:pb-0">
-      <div className="px-gutter pt-4">
-        <div className="mb-3 flex justify-end">
-          <RenyqoLoadingDots label={dashboardCopy.loading} />
+      <div>
+        <TopbarSkeleton />
+        <div className="pt-2">
+          <div className="mb-3 flex justify-end">
+            <RenyqoLoadingDots
+              label={dashboardCopy.loading}
+              className="sr-only"
+            />
+          </div>
+          <RenyqoReveal
+            loading
+            vertical
+            showRingPulse={false}
+            skeleton={<ContentSkeleton />}
+          />
         </div>
-        <RenyqoReveal
-          loading
-          vertical
-          showRingPulse={false}
-          skeleton={<ShellSkeleton />}
-        />
       </div>
     </PageShell>
   );

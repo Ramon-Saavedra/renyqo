@@ -13,12 +13,10 @@ import type { DashboardObjectStatus, ExitedApplicant } from "../types";
 
 interface ExitedData {
   readonly exits: readonly ExitedApplicant[];
-  readonly totalCount: number;
 }
 
 interface UseExitedApplicationsResult {
   readonly exits: readonly ExitedApplicant[];
-  readonly totalCount: number;
   readonly isLoading: boolean;
   readonly hasError: boolean;
   readonly restorationState: CandidateRestorationState;
@@ -28,7 +26,6 @@ interface UseExitedApplicationsResult {
 
 const IDLE_DATA: ExitedData = {
   exits: [],
-  totalCount: 0,
 };
 
 export function useExitedApplications(
@@ -46,7 +43,6 @@ export function useExitedApplications(
     return {
       data: {
         exits: mapExitedApplicationsToExits(response.items),
-        totalCount: response.totalCount,
       },
       hasError: false,
     };
@@ -72,7 +68,6 @@ export function useExitedApplications(
 
         return {
           exits: current.exits.filter((exit) => exit.id !== applicationId),
-          totalCount: Math.max(0, current.totalCount - 1),
         };
       });
       requestRefresh();
@@ -83,7 +78,6 @@ export function useExitedApplications(
 
   return {
     exits: data.exits,
-    totalCount: data.totalCount,
     isLoading,
     hasError,
     restorationState,

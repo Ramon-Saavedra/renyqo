@@ -27,6 +27,9 @@ const withdrawn = {
   applicantName: "Familie Weber",
   status: "WITHDRAWN" as const,
   publicReason: null,
+  peopleCount: 2,
+  introduction: null,
+  activeAt: "2026-08-01T10:00:00.000Z",
   exitedAt: "2026-08-30T14:23:00.000Z",
 };
 
@@ -63,7 +66,6 @@ describe("useExitedApplications", () => {
 
     expect(result.current).toMatchObject({
       exits: [],
-      totalCount: 0,
       isLoading: false,
       hasError: false,
       restorationState: { status: "idle" },
@@ -99,7 +101,6 @@ describe("useExitedApplications", () => {
     expect(result.current.exits).toHaveLength(1);
     expect(result.current.exits[0]?.applicantName).toBe("Familie Weber");
     expect(result.current.exits[0]?.visualState).toBe("withdrawn");
-    expect(result.current.totalCount).toBe(1);
     expect(result.current.hasError).toBe(false);
   });
 
@@ -145,7 +146,6 @@ describe("useExitedApplications", () => {
     rerender({ listingId: "listing-1", listingStatus: "draft" });
     expect(result.current).toMatchObject({
       exits: [],
-      totalCount: 0,
       isLoading: false,
       hasError: false,
       restorationState: { status: "idle" },
@@ -179,7 +179,6 @@ describe("useExitedApplications", () => {
     await waitFor(() => {
       expect(result.current.exits[0]?.id).toBe("exit-2");
     });
-    expect(result.current.totalCount).toBe(1);
 
     await act(async () => {
       resolveFirst?.({ items: [], totalCount: 0 });
@@ -187,7 +186,6 @@ describe("useExitedApplications", () => {
     });
 
     expect(result.current.exits[0]?.id).toBe("exit-2");
-    expect(result.current.totalCount).toBe(1);
   });
 
   it("refetches exits on window focus keeping existing data visible", async () => {
@@ -215,7 +213,6 @@ describe("useExitedApplications", () => {
     await waitFor(() => {
       expect(result.current.exits[0]?.id).toBe("exit-2");
     });
-    expect(result.current.totalCount).toBe(2);
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -248,7 +245,6 @@ describe("useExitedApplications", () => {
     await waitFor(() => {
       expect(result.current.exits[0]?.id).toBe("exit-2");
     });
-    expect(result.current.totalCount).toBe(2);
   });
 
   it("preserves exits when a silent refresh fails", async () => {
@@ -272,7 +268,6 @@ describe("useExitedApplications", () => {
     });
 
     expect(result.current.exits[0]?.id).toBe("exit-1");
-    expect(result.current.totalCount).toBe(1);
     expect(result.current.isLoading).toBe(false);
   });
 
@@ -303,7 +298,6 @@ describe("useExitedApplications", () => {
 
     expect(restoreProviderApplication).toHaveBeenCalledWith("exit-1");
     expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
-    expect(result.current.totalCount).toBe(1);
   });
 
   it("ignores an older refresh after restoration when the authoritative refresh fails", async () => {
@@ -358,7 +352,6 @@ describe("useExitedApplications", () => {
     });
 
     expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
-    expect(result.current.totalCount).toBe(1);
 
     await act(async () => {
       rejectAuthoritativeRefresh?.(new Error("network"));
@@ -369,10 +362,9 @@ describe("useExitedApplications", () => {
       expect(result.current.hasError).toBe(true);
     });
     expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
-    expect(result.current.totalCount).toBe(1);
   });
 
-  it("never decrements the confirmed exited count below zero", async () => {
+  it("removes a restored exit after the restore succeeds", async () => {
     vi.mocked(getProviderExitedApplications)
       .mockResolvedValueOnce({ items: [withdrawn], totalCount: 0 })
       .mockRejectedValueOnce(new Error("network"));
@@ -395,7 +387,6 @@ describe("useExitedApplications", () => {
     });
 
     expect(result.current.exits).toEqual([]);
-    expect(result.current.totalCount).toBe(0);
   });
 
   it("shows a loading state when returning to a published listing from draft", async () => {
@@ -425,7 +416,6 @@ describe("useExitedApplications", () => {
     rerender({ listingId: "listing-1", listingStatus: "draft" });
     expect(result.current).toMatchObject({
       exits: [],
-      totalCount: 0,
       isLoading: false,
       hasError: false,
       restorationState: { status: "idle" },
@@ -449,7 +439,6 @@ describe("useExitedApplications", () => {
 
     expect(result.current).toMatchObject({
       exits: [],
-      totalCount: 0,
       isLoading: false,
       hasError: false,
       restorationState: { status: "idle" },
