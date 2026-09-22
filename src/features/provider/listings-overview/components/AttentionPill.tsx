@@ -8,7 +8,7 @@ interface AttentionPillProps {
   reason: NonNullAttentionReason;
 }
 
-const REASON_LABELS: Record<NonNullAttentionReason, string> = {
+export const REASON_LABELS: Record<NonNullAttentionReason, string> = {
   open_questions: "Rückfragen offen",
   manual_review: "Manuelle Prüfung",
   missing_data: "Daten unvollständig",

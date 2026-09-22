@@ -47,6 +47,13 @@ html {
     --exit-provider-discarded-muted-fg
   );
 
+  --color-queue-1: var(--success);
+  --color-queue-2: var(--queue-2);
+  --color-queue-3: var(--queue-3);
+  --color-queue-4: var(--queue-4);
+  --color-queue-5: var(--queue-5);
+  --color-queue-6: var(--danger);
+
   --radius: var(--radius-md);
   --radius-sm: var(--radius-md);
   --radius-md: 4px;
@@ -158,18 +165,23 @@ html {
   --warning-vivid: #fa8714;
   --danger: #dc2626;
 
-  --exit-withdrawn-bg: #e2e9e6;
-  --exit-withdrawn-fg: #46554f;
-  --exit-provider-discarded-bg: #f4dfd8;
-  --exit-provider-discarded-fg: #8f4f40;
+  --exit-withdrawn-bg: #c5d5e6;
+  --exit-withdrawn-fg: #29496b;
+  --exit-provider-discarded-bg: #edb9ab;
+  --exit-provider-discarded-fg: #713a2e;
   --exit-provider-discarded-muted-fg: #744437;
+
+  --queue-2: #a8861f;
+  --queue-3: #a86a24;
+  --queue-4: #b4551c;
+  --queue-5: #c33f22;
 
   --watermark-opacity-peak: 0.35;
   --watermark-cycle-duration: 120s;
 
   --focus-ring: 0 0 0 3px rgb(83 103 131 / 0.18);
   --card-shadow:
-    0 1px 2px rgb(14 14 14 / 0.04), 0 4px 12px rgb(14 14 14 / 0.05);
+    0 2px 5px rgb(14 14 14 / 0.1), 0 10px 24px rgb(14 14 14 / 0.12);
   --card-shadow-hover:
     0 8px 18px rgb(14 14 14 / 0.1), 0 20px 44px rgb(14 14 14 / 0.14);
 
@@ -207,16 +219,21 @@ html {
   --warning-vivid: #f59527;
   --danger: #f87171;
 
-  --exit-withdrawn-bg: #303b37;
-  --exit-withdrawn-fg: #b9c8c2;
+  --exit-withdrawn-bg: #1e3a5f;
+  --exit-withdrawn-fg: #bfdbfe;
   --exit-provider-discarded-bg: #442e29;
   --exit-provider-discarded-fg: #e0a08e;
   --exit-provider-discarded-muted-fg: #d29a88;
 
+  --queue-2: #cfb96a;
+  --queue-3: #d2a36a;
+  --queue-4: #dd8a52;
+  --queue-5: #ea7458;
+
   --watermark-opacity-peak: 0.5;
 
   --focus-ring: 0 0 0 3px rgb(83 103 131 / 0.25);
-  --card-shadow: 0 2px 6px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.3);
+  --card-shadow: 0 3px 8px rgb(0 0 0 / 0.55), 0 14px 32px rgb(0 0 0 / 0.5);
   --card-shadow-hover:
     0 8px 18px rgb(0 0 0 / 0.7), 0 22px 48px rgb(0 0 0 / 0.85);
 }
@@ -687,10 +704,10 @@ body {
   .loading-btn.is-loading::after,
   .rq-check,
   .rq-fade-in {
-    animation: none !important;
+    animation: none;
   }
   .ai-glow:hover,
   .ai-glow:focus-visible {
-    animation: none !important;
+    animation: none;
   }
 }
