@@ -1,6 +1,6 @@
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
 import type { ListingOverviewItem } from "@/features/provider/listings-overview/types";
-import { type DashboardObject, type DashboardObjectStatus } from "../types";
+import type { DashboardObject } from "../types";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
   day: "2-digit",
@@ -16,16 +16,6 @@ const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("de-DE", {
   minute: "2-digit",
   timeZone: "Europe/Berlin",
 });
-
-function normalizeStatus(
-  status: ListingOverviewItem["status"],
-): DashboardObjectStatus {
-  return status === "draft" ? "draft" : "published";
-}
-
-function isDashboardListing(listing: ListingOverviewItem): boolean {
-  return listing.status === "published" || listing.status === "draft";
-}
 
 function formatAvailableFrom(value: string | null): string | null {
   if (!value) return null;
@@ -55,9 +45,12 @@ function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
     availableFrom: formatAvailableFrom(listing.availableFrom ?? null),
     publishedAt: formatDateTime(listing.publishedAt),
     updatedAt: formatDateTime(listing.updatedAt),
-    status: normalizeStatus(listing.status),
+    status: listing.status,
     activeApplicationsCount: listing.activeApplicationsCount,
     coverImageUrl: listing.coverImageUrl ?? null,
+    needsAttention: listing.needsAttention,
+    attentionReason: listing.attentionReason,
+    openQuestionsCount: listing.openQuestionsCount,
   };
 }
 
@@ -65,5 +58,5 @@ export async function getProviderDashboardObjects(): Promise<
   readonly DashboardObject[]
 > {
   const listings = await getProviderListings();
-  return listings.filter(isDashboardListing).map(mapDashboardObject);
+  return listings.map(mapDashboardObject);
 }

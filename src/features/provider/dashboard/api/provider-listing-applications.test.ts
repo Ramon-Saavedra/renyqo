@@ -15,6 +15,7 @@ const baseApplicant = {
   name: "Anna Lehmann",
   peopleCount: 2,
   warnings: [],
+  introduction: null,
 };
 
 const activeApplication = {
@@ -105,7 +106,7 @@ describe("getProviderActiveApplications", () => {
     ]);
   });
 
-  it("accepts an omitted activeAt", async () => {
+  it("rejects an omitted activeAt", async () => {
     const applicationWithoutActiveAt = {
       id: activeApplication.id,
       listingId: activeApplication.listingId,
@@ -114,9 +115,9 @@ describe("getProviderActiveApplications", () => {
     };
     vi.mocked(apiGet).mockResolvedValue([applicationWithoutActiveAt]);
 
-    await expect(getProviderActiveApplications("listing-1")).resolves.toEqual([
-      applicationWithoutActiveAt,
-    ]);
+    await expect(
+      getProviderActiveApplications("listing-1"),
+    ).rejects.toBeInstanceOf(ProviderListingApplicationsContractError);
   });
 
   it("rejects an unknown warning value", async () => {

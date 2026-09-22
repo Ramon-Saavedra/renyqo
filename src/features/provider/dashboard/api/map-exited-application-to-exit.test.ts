@@ -11,6 +11,9 @@ const withdrawn: ProviderExitedApplication = {
   applicantName: "Familie Weber",
   status: "WITHDRAWN",
   publicReason: null,
+  peopleCount: 2,
+  introduction: null,
+  activeAt: "2026-08-01T10:00:00.000Z",
   exitedAt: "2026-08-30T14:23:00.000Z",
 };
 
@@ -20,6 +23,9 @@ const discarded: ProviderExitedApplication = {
   applicantName: "Jonas Brandt",
   status: "REJECTED",
   publicReason: "NOT_SELECTED",
+  peopleCount: 1,
+  introduction: null,
+  activeAt: "2026-08-02T10:00:00.000Z",
   exitedAt: "2026-08-30T11:05:00.000Z",
 };
 
@@ -29,6 +35,9 @@ const noLongerEligible: ProviderExitedApplication = {
   applicantName: "Marlene Kaufmann",
   status: "REJECTED",
   publicReason: "PROFILE_NO_LONGER_ELIGIBLE",
+  peopleCount: null,
+  introduction: null,
+  activeAt: "2026-08-03T10:00:00.000Z",
   exitedAt: "2026-08-29T18:40:00.000Z",
 };
 
@@ -38,6 +47,9 @@ const listingRented: ProviderExitedApplication = {
   applicantName: "Tobias Hein",
   status: "REJECTED",
   publicReason: "LISTING_RENTED",
+  peopleCount: 3,
+  introduction: null,
+  activeAt: "2026-08-04T10:00:00.000Z",
   exitedAt: "2026-08-29T09:12:00.000Z",
 };
 
@@ -47,6 +59,9 @@ const rejectedWithoutReason: ProviderExitedApplication = {
   applicantName: "Petra Lindt",
   status: "REJECTED",
   publicReason: null,
+  peopleCount: 2,
+  introduction: null,
+  activeAt: "2026-08-05T10:00:00.000Z",
   exitedAt: "2026-08-28T16:57:00.000Z",
 };
 
@@ -81,10 +96,16 @@ describe("mapExitedApplicationToExit", () => {
     );
   });
 
-  it("formats exitedAt into full and compact German date/time labels", () => {
+  it("formats lifecycle dates using dashboard labels", () => {
     const exit = mapExitedApplicationToExit(withdrawn);
-    expect(exit.exitedAtLabel).toBe("30.08.2026 · 16:23");
-    expect(exit.exitedAtLabelCompact).toBe("30.08. · 16:23");
+    expect(exit.exitedAtDateLabel).toBe("30.08.2026");
+    expect(exit.activeAtLabel).toBe("01.08.2026");
+  });
+
+  it("formats activeAt using the active applicant date label", () => {
+    expect(mapExitedApplicationToExit(withdrawn).activeAtLabel).toBe(
+      "01.08.2026",
+    );
   });
 });
 

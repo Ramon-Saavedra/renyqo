@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { apiGet } from "@/lib/api/client";
+import { APPLICANT_INTRODUCTION_MAX_LENGTH } from "../types";
 
 const providerApplicantSummarySchema = z.object({
   name: z.string(),
   peopleCount: z.number().int().nonnegative().nullable(),
   warnings: z.array(z.enum(["pets_by_arrangement", "smoking_by_arrangement"])),
+  introduction: z.string().max(APPLICANT_INTRODUCTION_MAX_LENGTH).nullable(),
 });
 
 const providerActiveApplicationSchema = z.object({
@@ -12,7 +14,7 @@ const providerActiveApplicationSchema = z.object({
   listingId: z.string().min(1),
   status: z.literal("ACTIVE"),
   applicant: providerApplicantSummarySchema,
-  activeAt: z.string().nullable().optional(),
+  activeAt: z.string().datetime().nullable(),
 });
 
 const providerActiveApplicationsResponseSchema = z

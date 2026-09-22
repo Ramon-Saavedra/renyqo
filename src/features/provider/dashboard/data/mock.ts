@@ -16,6 +16,9 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     updatedAt: "18.06.2026, 16:20",
     status: "published",
     activeApplicationsCount: 3,
+    needsAttention: false,
+    attentionReason: null,
+    openQuestionsCount: 0,
   },
   {
     id: "obj-prenzlberg",
@@ -32,6 +35,9 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     updatedAt: "02.07.2026, 11:05",
     status: "published",
     activeApplicationsCount: 5,
+    needsAttention: false,
+    attentionReason: null,
+    openQuestionsCount: 0,
   },
   {
     id: "obj-maybachufer",
@@ -48,6 +54,9 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     updatedAt: "06.07.2026, 08:10",
     status: "published",
     activeApplicationsCount: 2,
+    needsAttention: false,
+    attentionReason: null,
+    openQuestionsCount: 0,
   },
   {
     id: "obj-karlshorst",
@@ -64,5 +73,8 @@ export const MOCK_OBJECTS: readonly DashboardObject[] = [
     updatedAt: "09.07.2026, 13:40",
     status: "draft",
     activeApplicationsCount: 0,
+    needsAttention: false,
+    attentionReason: null,
+    openQuestionsCount: 0,
   },
 ];
