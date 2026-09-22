@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { apiGet } from "@/lib/api/client";
+import { APPLICANT_INTRODUCTION_MAX_LENGTH } from "../types";
 
 const providerExitedApplicationStatusSchema = z.enum(["WITHDRAWN", "REJECTED"]);
 
@@ -11,8 +12,11 @@ const providerExitedApplicationSchema = z.object({
   id: z.string().min(1),
   listingId: z.string().min(1),
   applicantName: z.string().min(1),
+  peopleCount: z.number().int().nonnegative().nullable(),
+  introduction: z.string().max(APPLICANT_INTRODUCTION_MAX_LENGTH).nullable(),
   status: providerExitedApplicationStatusSchema,
   publicReason: providerExitedApplicationPublicReasonSchema,
+  activeAt: z.string().datetime(),
   exitedAt: z.string().datetime(),
 });
 

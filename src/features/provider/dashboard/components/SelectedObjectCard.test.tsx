@@ -35,35 +35,32 @@ const publishedObject: DashboardObject = {
   updatedAt: "01.07.2026, 09:15",
   status: "published",
   activeApplicationsCount: 3,
+  needsAttention: false,
+  attentionReason: null,
+  openQuestionsCount: 0,
 };
 
 describe("SelectedObjectCard", () => {
   it("renders selected object details and actions", () => {
     render(<SelectedObjectCard object={publishedObject} />);
 
-    const typeChip = screen.getByText("Wohnung");
+    const typeChip = screen.getByText(/· Wohnung/);
     expect(typeChip).not.toBeNull();
-    expect(typeChip.closest("section")).toBeNull();
-    expect(screen.getByText("Aktuell ausgewählt")).not.toBeNull();
+    expect(screen.getByText("Ausgewähltes Objekt")).not.toBeNull();
     expect(screen.getByText("Wohnung Mitte Berlin")).not.toBeNull();
     expect(screen.getByText("Torstraße 1, 10119 Berlin")).not.toBeNull();
     expect(screen.getByText("60 m²")).not.toBeNull();
     expect(screen.getByText("900 €")).not.toBeNull();
-    expect(screen.getByText("3 / 5 aktiv")).not.toBeNull();
     const editLink = screen.getByRole("link", { name: /Bearbeiten/i });
     const previewLink = screen.getByRole("link", { name: /Vorschau/i });
     expect(editLink.getAttribute("href")).toBe("/provider/listings/object-1");
-    expect(editLink.className).toContain("bg-transparent");
-    expect(editLink.className).toContain("hover:bg-primary-foreground/20");
+    expect(editLink.className).toContain("bg-primary");
+    expect(editLink.className).toContain("hover:bg-primary-hover");
     expect(previewLink.className).toContain("bg-transparent");
-    expect(previewLink.className).toContain("hover:bg-primary-foreground/20");
-    const mobileShare = document.querySelector(
-      'summary[aria-label="Link kopieren"]',
-    );
-    expect(mobileShare).toBeInstanceOf(HTMLElement);
-    if (!(mobileShare instanceof HTMLElement)) return;
-    expect(mobileShare.className).toContain("bg-transparent");
-    expect(mobileShare.className).toContain("hover:bg-primary-foreground/20");
+    expect(previewLink.className).toContain("hover:bg-background-muted");
+    const shareButton = screen.getByRole("button", { name: "Teilen" });
+    expect(shareButton.className).toContain("bg-transparent");
+    expect(shareButton.className).toContain("hover:bg-background-muted");
     expect(screen.getByText("02.07.2026, 13:00")).not.toBeNull();
     expect(screen.getByText("Veröffentlicht am")).not.toBeNull();
   });
@@ -77,6 +74,9 @@ describe("SelectedObjectCard", () => {
           publishedAt: null,
           updatedAt: "05.07.2026, 14:30",
           activeApplicationsCount: 0,
+          needsAttention: false,
+          attentionReason: null,
+          openQuestionsCount: 0,
         }}
       />,
     );
@@ -92,8 +92,6 @@ describe("SelectedObjectCard", () => {
         object={{ ...publishedObject, activeApplicationsCount: 1 }}
       />,
     );
-
-    expect(screen.getByText("1 / 5 aktiv")).not.toBeNull();
   });
 
   it("renders draft status and an empty availability label", () => {
@@ -104,12 +102,14 @@ describe("SelectedObjectCard", () => {
           availableFrom: null,
           status: "draft",
           activeApplicationsCount: 0,
+          needsAttention: false,
+          attentionReason: null,
+          openQuestionsCount: 0,
         }}
       />,
     );
 
     expect(screen.getByText("Offen")).not.toBeNull();
     expect(screen.getByText("Entwurf")).not.toBeNull();
-    expect(screen.getByText("0 / 5 aktiv")).not.toBeNull();
   });
 });

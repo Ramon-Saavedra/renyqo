@@ -7,11 +7,12 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
-import { buttonClassWithSize } from "@/components/ui/button/Button";
-import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { Button } from "@/components/ui/button/Button";
+import { FormAlert } from "@/components/ui/form/FormAlert";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { useExitedApplications } from "../hooks/useExitedApplications";
@@ -27,12 +28,9 @@ import { CandidatesSection } from "./CandidatesSection";
 import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
 import { DashboardSearch } from "./DashboardSearch";
 import { DashboardTopbar } from "./DashboardTopbar";
-import { ObjectSelectorMobile } from "./ObjectSelectorMobile";
-import { ObjectSidebar } from "./ObjectSidebar";
+import { ListingMatrix } from "./ListingMatrix";
 import { RecentExitsRail } from "./RecentExitsRail";
-import { SelectedObjectEmptyCard } from "./SelectedObjectEmptyCard";
 import { SelectedObjectCard } from "./SelectedObjectCard";
-import { StatCards } from "./StatCards";
 
 interface DashboardViewProps {
   objects?: readonly DashboardObject[];
@@ -41,18 +39,6 @@ interface DashboardViewProps {
 interface DashboardViewContentProps {
   objects?: readonly DashboardObject[] | undefined;
 }
-
-const SHELL_CLASS = "flex flex-col lg:h-dvh lg:overflow-hidden lg:flex-row";
-const MAIN_CLASS =
-  "min-w-0 flex-1 lg:flex lg:h-dvh lg:min-h-0 lg:flex-col lg:overflow-hidden";
-const CONTENT_CLASS =
-  "px-3 pt-1 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-gutter scrollbar-slim";
-
-const REOPEN_CLASS = buttonClassWithSize(
-  "primaryGhost",
-  "icon-sm",
-  "sticky top-0 z-10 hidden self-start border-r border-b border-border lg:inline-flex lg:rounded-br-md",
-);
 
 function getStoredSelectedObjectId() {
   return window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY);
@@ -112,7 +98,6 @@ function DashboardViewContent({
   const objects = initialObjects ?? loadedObjects;
   const [search, setSearch] = useState("");
   const selectedId = useStoredSelectedObjectId();
-  const [collapsed, setCollapsed] = useState(false);
   const accent = useAccent();
 
   useEffect(() => {
@@ -143,7 +128,7 @@ function DashboardViewContent({
     };
   }, [refreshRevision, shouldLoadObjects]);
 
-  const filteredObjects = useMemo(() => {
+  const matrixObjects = useMemo(() => {
     const needle = search.trim().toLowerCase();
     if (!needle) return objects;
     return objects.filter(
@@ -156,11 +141,8 @@ function DashboardViewContent({
   }, [objects, search]);
 
   const selected = useMemo(
-    () =>
-      filteredObjects.find((o) => o.id === selectedId) ??
-      filteredObjects[0] ??
-      null,
-    [filteredObjects, selectedId],
+    () => objects.find((o) => o.id === selectedId) ?? objects[0] ?? null,
+    [objects, selectedId],
   );
 
   const {
@@ -175,7 +157,6 @@ function DashboardViewContent({
 
   const {
     exits: recentExits,
-    totalCount: recentExitsTotalCount,
     isLoading: isExitedApplicationsLoading,
     hasError: hasExitedApplicationsError,
     restorationState,
@@ -183,11 +164,8 @@ function DashboardViewContent({
     resetRestoration,
   } = useExitedApplications(selected?.id ?? null, selected?.status ?? null);
 
-  const publishedObjects = objects.filter(
-    (o) => o.status === "published",
-  ).length;
-  const draftObjects = objects.filter((o) => o.status === "draft").length;
-
+  const publishedCount = objects.filter((o) => o.status === "published").length;
+  const draftCount = objects.filter((o) => o.status === "draft").length;
   const activeApplications = objects.reduce(
     (total, object) => total + object.activeApplicationsCount,
     0,
@@ -197,103 +175,150 @@ function DashboardViewContent({
     return <DashboardLoadingSkeleton />;
   }
 
+  if (loadError && objects.length === 0) {
+    return (
+      <PageShell className="lg:pb-0">
+        <div data-accent={accent}>
+          <DashboardTopbar />
+          <div role="alert" className="px-3 pt-21 lg:px-gutter">
+            <p className="font-mono text-meta font-medium uppercase tracking-wide text-danger">
+              {dashboardCopy.fullError.eyebrow}
+            </p>
+            <h1 className="mt-3.5 text-heading-xl font-normal tracking-tight text-foreground">
+              {dashboardCopy.fullError.title}
+            </h1>
+            <p className="mt-2.5 max-w-md text-body text-foreground-secondary">
+              {dashboardCopy.fullError.body}
+            </p>
+            <Button
+              type="button"
+              className="mt-6"
+              onClick={() => window.location.reload()}
+            >
+              {dashboardCopy.fullError.retry}
+            </Button>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (objects.length === 0) {
+    return (
+      <PageShell className="lg:pb-0">
+        <div data-accent={accent}>
+          <DashboardTopbar />
+          <div className="px-3 pt-21 lg:px-gutter">
+            <h1 className="text-heading-xl font-normal tracking-tight text-foreground">
+              {dashboardCopy.object.emptyTitle}
+            </h1>
+            <p className="mt-2.5 max-w-md text-body text-foreground-secondary">
+              {dashboardCopy.object.emptyAddress}
+            </p>
+            <Link
+              href={dashboardCopy.topbar.newListingHref}
+              className="mt-6 inline-flex min-h-11 items-center rounded-md bg-primary px-4.5 text-action font-medium text-primary-foreground hover:bg-primary-hover"
+            >
+              {dashboardCopy.topbar.newListing}
+            </Link>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell className="lg:pb-0">
-      <div className={SHELL_CLASS} data-accent={accent}>
-        {collapsed ? (
-          <button
-            type="button"
-            onClick={() => setCollapsed(false)}
-            aria-label={dashboardCopy.sidebar.reopen}
-            className={REOPEN_CLASS}
-          >
-            <AppIcon
-              icon={ChevronRight}
-              size={12}
-              strokeWidth={1.8}
-              decorative
-            />
-          </button>
-        ) : (
-          <ObjectSidebar
-            objects={filteredObjects}
-            totalCount={objects.length}
-            selectedId={selected?.id ?? null}
-            onSelect={setStoredSelectedObjectId}
-            onCollapse={() => setCollapsed(true)}
-          />
-        )}
+      <div data-accent={accent}>
+        <DashboardTopbar />
 
-        <div className={MAIN_CLASS}>
-          <DashboardTopbar />
-
-          <div className={CONTENT_CLASS}>
-            <ObjectSelectorMobile
-              objects={filteredObjects}
-              totalCount={objects.length}
-              selectedId={selected?.id ?? null}
-              onSelect={setStoredSelectedObjectId}
-            />
-
-            <div className="flex justify-end">
-              <AccentPicker value={accent} onChange={setStoredAccent} />
-            </div>
-
-            <div className="mt-3 mb-6">
+        <div className="@container px-3 pt-7 pb-16 lg:px-gutter">
+          <div className="mb-6 flex flex-col gap-2 rounded-md border border-border bg-primary px-parent-x py-parent-y sm:flex-row sm:items-center">
+            <div className="w-full sm:max-w-90 sm:min-w-45 sm:flex-1">
               <DashboardSearch
                 value={search}
                 onChange={setSearch}
                 placeholder={dashboardCopy.topbar.searchPlaceholder}
                 ariaLabel={dashboardCopy.topbar.searchAria}
                 clearLabel={dashboardCopy.topbar.searchClear}
+                dense
               />
             </div>
-
-            <div className="mb-6">
-              <StatCards
-                totalObjects={objects.length}
-                publishedObjects={publishedObjects}
-                draftObjects={draftObjects}
-                activeApplications={activeApplications}
-              />
-            </div>
-
-            {loadError ? (
-              <FormAlert
-                variant="error"
-                message={dashboardCopy.error}
-                className="mb-6"
-              />
-            ) : null}
-
-            {selected ? (
-              <SelectedObjectCard object={selected} />
-            ) : (
-              <SelectedObjectEmptyCard />
-            )}
-            <CandidatesSection
-              object={selected}
-              candidates={selectedCandidates}
-              waitingCountState={waitingCountState}
-              isLoading={isApplicationsLoading}
-              hasError={hasApplicationsError}
-            />
-
-            {selected && selected.status !== "draft" ? (
-              <div className="pb-6">
-                <RecentExitsRail
-                  key={selected.id}
-                  exits={recentExits}
-                  totalCount={recentExitsTotalCount}
-                  isLoading={isExitedApplicationsLoading}
-                  hasError={hasExitedApplicationsError}
-                  restorationState={restorationState}
-                  onRestore={restoreCandidate}
-                  onResetRestoration={resetRestoration}
+            <div className="flex w-full items-center justify-between gap-2 sm:ml-auto sm:w-auto sm:justify-end">
+              <Link
+                href={dashboardCopy.topbar.objectsHref}
+                className="flex min-h-11 items-center gap-1.5 rounded-md px-2.5 text-action font-medium text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              >
+                {dashboardCopy.matrix.allObjects}
+                <AppIcon
+                  icon={ArrowUpRight}
+                  size={14}
+                  strokeWidth={2}
+                  decorative
                 />
-              </div>
+              </Link>
+              <AccentPicker value={accent} onChange={setStoredAccent} />
+            </div>
+          </div>
+
+          {loadError ? (
+            <FormAlert
+              variant="error"
+              message={dashboardCopy.error}
+              className="mb-4"
+            />
+          ) : null}
+          <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2">
+            <h2 className="font-mono text-meta font-medium uppercase tracking-wide text-foreground-tertiary">
+              {dashboardCopy.matrix.heading}
+            </h2>
+            <span className="text-caption text-foreground-tertiary">
+              {dashboardCopy.matrix.statsLine(
+                objects.length,
+                publishedCount,
+                draftCount,
+                activeApplications,
+              )}
+            </span>
+          </div>
+
+          <div className="mt-4">
+            <ListingMatrix
+              objects={matrixObjects}
+              selectedId={selected?.id ?? null}
+              onSelect={setStoredSelectedObjectId}
+            />
+            {matrixObjects.length === 0 ? (
+              <p
+                role="status"
+                className="text-caption text-foreground-tertiary"
+              >
+                {dashboardCopy.matrix.noMatch(search)}
+              </p>
             ) : null}
           </div>
+
+          {selected ? <SelectedObjectCard object={selected} /> : null}
+
+          <CandidatesSection
+            object={selected}
+            candidates={selectedCandidates}
+            waitingCountState={waitingCountState}
+            isLoading={isApplicationsLoading}
+            hasError={hasApplicationsError}
+          />
+
+          {selected && selected.status !== "draft" ? (
+            <RecentExitsRail
+              key={selected.id}
+              exits={recentExits}
+              isLoading={isExitedApplicationsLoading}
+              hasError={hasExitedApplicationsError}
+              restorationState={restorationState}
+              onRestore={restoreCandidate}
+              onResetRestoration={resetRestoration}
+            />
+          ) : null}
         </div>
       </div>
     </PageShell>

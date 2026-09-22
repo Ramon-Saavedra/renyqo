@@ -22,7 +22,7 @@ describe("AccentPicker", () => {
     ).toContain("bg-transparent");
     expect(
       screen.getByRole("button", { name: "Akzentfarbe anpassen" }).className,
-    ).toContain("hover:bg-primary-tint");
+    ).toContain("hover:bg-primary-foreground/20");
     expect(
       screen
         .getByRole("button", { name: "Akzentfarbe anpassen" })

@@ -23,6 +23,7 @@ const baseApplicant = {
   name: "Anna Lehmann",
   peopleCount: 2,
   warnings: [],
+  introduction: null,
 };
 
 describe("useSelectedListingApplications", () => {

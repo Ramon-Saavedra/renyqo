@@ -1,37 +1,15 @@
+import {
+  buildInitials,
+  DASHBOARD_DATE_FORMATTER,
+  formatActiveAtLabel,
+  formatHousehold,
+} from "../utils/applicant-format";
 import type {
   ProviderExitedApplication,
   ProviderExitedApplicationPublicReason,
   ProviderExitedApplicationStatus,
 } from "./provider-exited-applications";
 import type { ExitedApplicant, ExitedApplicantVisualState } from "../types";
-
-const FULL_DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "numeric",
-  timeZone: "Europe/Berlin",
-});
-
-const COMPACT_DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
-  day: "2-digit",
-  month: "2-digit",
-  timeZone: "Europe/Berlin",
-});
-
-const TIME_FORMATTER = new Intl.DateTimeFormat("de-DE", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Europe/Berlin",
-});
-
-function formatExitedAt(iso: string): { full: string; compact: string } {
-  const date = new Date(iso);
-  const time = TIME_FORMATTER.format(date);
-  return {
-    full: `${FULL_DATE_FORMATTER.format(date)} · ${time}`,
-    compact: `${COMPACT_DATE_FORMATTER.format(date)} · ${time}`,
-  };
-}
 
 function deriveVisualState(
   status: ProviderExitedApplicationStatus,
@@ -45,18 +23,21 @@ function deriveVisualState(
 export function mapExitedApplicationToExit(
   application: ProviderExitedApplication,
 ): ExitedApplicant {
-  const { full, compact } = formatExitedAt(application.exitedAt);
   return {
     id: application.id,
     listingId: application.listingId,
     applicantName: application.applicantName,
+    initials: buildInitials(application.applicantName),
+    household: formatHousehold(application.peopleCount),
+    introduction: application.introduction,
     visualState: deriveVisualState(
       application.status,
       application.publicReason,
     ),
-    exitedAt: application.exitedAt,
-    exitedAtLabel: full,
-    exitedAtLabelCompact: compact,
+    activeAtLabel: formatActiveAtLabel(application.activeAt),
+    exitedAtDateLabel: DASHBOARD_DATE_FORMATTER.format(
+      new Date(application.exitedAt),
+    ),
   };
 }
 

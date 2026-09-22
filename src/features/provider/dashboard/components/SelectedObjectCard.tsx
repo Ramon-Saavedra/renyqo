@@ -1,16 +1,24 @@
-import type { MouseEvent } from "react";
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarDays, Eye, Home, MapPin, Pencil, Share2 } from "lucide-react";
-import { buttonClassWithSize } from "@/components/ui/button/Button";
-import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
+import {
+  AlertTriangle,
+  Eye,
+  Home,
+  Pencil,
+  Share2,
+  type LucideIcon,
+} from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
+import { OBJECT_TYPE_LABEL } from "@/lib/api/listings";
 import {
   formatArea,
   formatEUR,
 } from "@/features/provider/listings-overview/utils/format";
+import { REASON_LABELS } from "@/features/provider/listings-overview/components/AttentionPill";
 import { siteConfig } from "@/config/site";
-import { TypeChip } from "@/components/ui/type-chip/TypeChip";
 import { dashboardCopy, OBJECT_STATUS_LABEL } from "../copy/dashboard";
 import type { DashboardObject } from "../types";
 import { ShareButtons } from "./ShareButtons";
@@ -19,56 +27,45 @@ interface SelectedObjectCardProps {
   object: DashboardObject;
 }
 
-const CARD_CLASS =
-  "mb-6 overflow-hidden rounded-md border border-primary bg-primary shadow-card";
-const HEAD_CLASS =
-  "flex flex-col gap-3 border-b border-primary-foreground/20 px-card-x py-card-y xl:flex-row xl:items-start xl:justify-between";
-const HEAD_LEFT_CLASS = "flex w-full min-w-0 gap-4 xl:flex-1";
-const THUMB_CLASS =
-  "hidden h-20 w-20 shrink-0 items-center justify-center rounded-md bg-primary-foreground/15 text-primary-foreground/70 sm:flex";
-const THUMB_IMAGE_CLASS =
-  "hidden h-20 w-20 shrink-0 rounded-md border border-primary-foreground/20 object-cover sm:block";
-const KICKER_CLASS =
-  "inline-flex items-center gap-2 font-mono text-meta uppercase text-primary-foreground/80";
-const KICKER_PIP_CLASS = "h-1.5 w-1.5 rounded-full bg-primary-foreground";
-const KICKER_ROW_CLASS = "relative flex items-center justify-between gap-3";
-const MOBILE_SHARE_WRAP_CLASS = "relative lg:hidden";
-const MOBILE_SHARE_BUTTON_CLASS = buttonClassWithSize(
-  "inverseGhost",
-  "icon-xs",
-);
-const MOBILE_SHARE_PANEL_CLASS = "absolute right-0 top-full z-20 pt-1.5";
-const OBJ_TITLE_CLASS =
-  "mb-1 pt-1.5 font-display text-heading-md font-medium text-primary-foreground xl:text-title";
-const ADDR_CLASS =
-  "flex items-center gap-1.5 text-body text-primary-foreground/80";
-const ACTIONS_CLASS = "flex shrink-0 items-start gap-2";
-const ACTION_CLASS = buttonClassWithSize("inverseGhost", "icon-sm");
-const ACTION_ICON_SIZE = 15;
-const ACTION_ICON_STROKE = 1.7;
-const TIMESTAMP_WRAP_CLASS = "flex items-center gap-2";
-const TIMESTAMP_BADGE_CLASS =
-  "border-primary-foreground/30 bg-primary-foreground/15 text-primary-foreground";
-const TIMESTAMP_CAPTION_CLASS =
-  "text-xs leading-tight text-primary-foreground/75";
+const STATUS_DOT_CLASS: Record<DashboardObject["status"], string> = {
+  published: "bg-success",
+  draft: "bg-foreground-tertiary",
+  paused: "bg-warning",
+  archived: "bg-border-strong",
+};
 
-const GRID_CLASS =
-  "grid grid-cols-2 gap-x-4 gap-y-2.5 px-card-x py-card-y sm:grid-cols-3 xl:grid-cols-6";
-const CELL_CLASS =
-  "flex flex-col gap-1 xl:border-r xl:border-primary-foreground/20 xl:pr-4 xl:last:border-r-0 xl:last:pr-0";
-const DT_CLASS = "font-mono text-meta uppercase text-primary-foreground/75";
-const DD_CLASS = "font-display text-brand font-medium text-primary-foreground";
-const STATUS_CLASS =
-  "inline-flex items-center gap-1.5 font-display text-brand font-medium text-primary-foreground";
-const STATUS_PIP_CLASS = "h-1.5 w-1.5 rounded-full bg-primary-foreground";
+const STATUS_TEXT_CLASS: Record<DashboardObject["status"], string> = {
+  published: "text-success",
+  draft: "text-foreground-tertiary",
+  paused: "text-warning",
+  archived: "text-foreground-tertiary",
+};
 
-function resolveApplicationsDisplay(object: DashboardObject): string {
-  return dashboardCopy.object.applicationsValue(object.activeApplicationsCount);
+const ACTION_CLASS =
+  "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-action font-medium";
+const PRIMARY_ACTION_CLASS = `${ACTION_CLASS} bg-primary text-primary-foreground hover:bg-primary-hover`;
+const SECONDARY_ACTION_CLASS = `${ACTION_CLASS} bg-transparent text-foreground-secondary hover:bg-background-muted hover:text-foreground`;
+const DISABLED_SECONDARY_ACTION_CLASS = `${ACTION_CLASS} border border-border text-foreground-tertiary cursor-not-allowed`;
+
+function resolveAttentionText(object: DashboardObject): string | null {
+  if (!object.needsAttention || !object.attentionReason) return null;
+  if (
+    object.attentionReason === "open_questions" &&
+    object.openQuestionsCount > 0
+  ) {
+    return dashboardCopy.attention.openQuestions(object.openQuestionsCount);
+  }
+  return REASON_LABELS[object.attentionReason];
+}
+
+function ActionIcon({ icon: Icon }: { icon: LucideIcon }) {
+  return <AppIcon icon={Icon} size={16} strokeWidth={1.7} decorative />;
 }
 
 export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   const { object: copy } = dashboardCopy;
   const isDraft = object.status === "draft";
+  const isArchived = object.status === "archived";
   const shareUrl = `${siteConfig.url}/objekt/${object.id}`;
   const listingsHref = `/provider/listings?selected=${encodeURIComponent(
     object.id,
@@ -79,163 +76,153 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
     ? copy.updatedCaption
     : copy.publishedCaption;
 
-  const stats = [
-    { id: "area", dt: copy.livingArea, dd: formatArea(object.livingArea) },
-    { id: "rooms", dt: copy.rooms, dd: object.rooms },
-    { id: "rent", dt: copy.coldRent, dd: formatEUR(object.coldRent) },
+  const attentionText = resolveAttentionText(object);
+
+  const facts = [
+    { id: "rent", label: copy.coldRent, value: formatEUR(object.coldRent) },
+    {
+      id: "area",
+      label: copy.livingArea,
+      value: formatArea(object.livingArea),
+    },
+    { id: "rooms", label: copy.rooms, value: object.rooms },
     {
       id: "free",
-      dt: copy.availableFrom,
-      dd: object.availableFrom ?? copy.availableFromEmpty,
-    },
-    {
-      id: "apps",
-      dt: copy.applications,
-      dd: resolveApplicationsDisplay(object),
+      label: copy.availableFrom,
+      value: object.availableFrom ?? copy.availableFromEmpty,
     },
   ];
-  const stopCardNavigation = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-  };
 
   return (
-    <>
-      {object.objectType ? (
-        <div className="mb-1 flex">
-          <TypeChip objectType={object.objectType} />
-        </div>
-      ) : null}
-      <section className={CARD_CLASS}>
-        <div className={HEAD_CLASS}>
-          <div className={HEAD_LEFT_CLASS}>
+    <section className="mt-section py-parent-y">
+      <h2 className="mb-parent-y font-display text-heading-md font-medium text-foreground">
+        {copy.sectionHeading}
+      </h2>
+      <div className="flex flex-wrap items-start gap-card-x">
+        <div className="min-w-0 flex-1 basis-75">
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT_CLASS[object.status]}`}
+            />
+            <span
+              className={`font-mono text-meta font-medium uppercase tracking-wide ${STATUS_TEXT_CLASS[object.status]}`}
+            >
+              {OBJECT_STATUS_LABEL[object.status]}
+            </span>
+            {object.objectType ? (
+              <span className="font-mono text-meta uppercase tracking-wide text-foreground-tertiary">
+                · {OBJECT_TYPE_LABEL[object.objectType]}
+              </span>
+            ) : null}
+          </span>
+          <div className="mt-2 flex items-center gap-card-x">
             {object.coverImageUrl ? (
               <Image
                 src={object.coverImageUrl}
                 alt=""
                 aria-hidden="true"
-                width={160}
-                height={160}
+                width={80}
+                height={80}
                 quality={90}
-                className={THUMB_IMAGE_CLASS}
+                className="hidden h-20 w-20 shrink-0 rounded-md border border-border object-cover sm:block"
               />
             ) : (
-              <div aria-hidden="true" className={THUMB_CLASS}>
+              <div
+                aria-hidden="true"
+                className="hidden h-20 w-20 shrink-0 items-center justify-center rounded-md bg-background-muted text-foreground-tertiary sm:flex"
+              >
                 <AppIcon icon={Home} size={26} strokeWidth={1.4} decorative />
               </div>
             )}
-            <div className="min-w-0 flex-1">
-              <div className={KICKER_ROW_CLASS}>
-                <span className={KICKER_CLASS}>
-                  <span aria-hidden="true" className={KICKER_PIP_CLASS} />
-                  {copy.kicker}
-                </span>
-                {!isDraft && (
-                  <details
-                    className={MOBILE_SHARE_WRAP_CLASS}
-                    onClick={stopCardNavigation}
-                  >
-                    <summary
-                      className={MOBILE_SHARE_BUTTON_CLASS}
-                      aria-label={dashboardCopy.sidebar.share.copyAria}
-                    >
-                      <AppIcon
-                        icon={Share2}
-                        size={13}
-                        strokeWidth={1.7}
-                        decorative
-                      />
-                    </summary>
-                    <div className={MOBILE_SHARE_PANEL_CLASS}>
-                      <ShareButtons
-                        title={object.fullTitle}
-                        shareUrl={shareUrl}
-                        variant="popover"
-                      />
-                    </div>
-                  </details>
-                )}
-              </div>
-              <h2 className={OBJ_TITLE_CLASS}>{object.fullTitle}</h2>
-              <span className={ADDR_CLASS}>
-                <AppIcon
-                  icon={MapPin}
-                  size={13}
-                  strokeWidth={1.6}
-                  decorative
-                  className="text-primary-foreground/70"
-                />
+            <div className="min-w-0">
+              <h1 className="text-heading-lg font-normal tracking-tight text-foreground text-pretty">
+                {object.fullTitle}
+              </h1>
+              <p className="mt-1 text-body text-foreground-secondary">
                 {object.address}
-              </span>
+              </p>
             </div>
           </div>
-
-          <div className={ACTIONS_CLASS}>
-            {timestampValue && (
-              <span className={TIMESTAMP_WRAP_CLASS}>
-                <span className={TIMESTAMP_CAPTION_CLASS}>
-                  {timestampCaption}
-                </span>
-                <DateTimeBadge
-                  value={timestampValue}
-                  title={`${timestampCaption} ${timestampValue}`}
-                  icon={CalendarDays}
-                  className={TIMESTAMP_BADGE_CLASS}
-                />
-              </span>
-            )}
-            <Link
-              href={`/provider/listings/${object.id}`}
-              className={ACTION_CLASS}
-              aria-label={copy.edit}
-              onClick={stopCardNavigation}
+          {attentionText ? (
+            <p
+              role="status"
+              className="mt-2.5 flex items-center gap-1.75 text-caption text-warning"
             >
               <AppIcon
-                icon={Pencil}
-                size={ACTION_ICON_SIZE}
-                strokeWidth={ACTION_ICON_STROKE}
+                icon={AlertTriangle}
+                size={14}
+                strokeWidth={1.8}
                 decorative
+                className="shrink-0"
               />
-            </Link>
-            <Link
-              href={listingsHref}
-              className={ACTION_CLASS}
-              aria-label={copy.preview}
-              onClick={stopCardNavigation}
-            >
-              <AppIcon
-                icon={Eye}
-                size={ACTION_ICON_SIZE}
-                strokeWidth={ACTION_ICON_STROKE}
-                decorative
-              />
-            </Link>
-          </div>
+              {attentionText}
+            </p>
+          ) : null}
         </div>
 
-        <dl className={GRID_CLASS}>
-          {stats.map((stat) => (
-            <div key={stat.id} className={CELL_CLASS}>
-              <dt className={DT_CLASS}>{stat.dt}</dt>
-              <dd className={DD_CLASS}>{stat.dd}</dd>
-            </div>
-          ))}
-          <div className={CELL_CLASS}>
-            <dt className={DT_CLASS}>{copy.status}</dt>
-            <dd>
-              {isDraft ? (
-                <span className="font-display text-brand font-medium text-primary-foreground/85">
-                  {OBJECT_STATUS_LABEL.draft}
-                </span>
-              ) : (
-                <span className={STATUS_CLASS}>
-                  <span aria-hidden="true" className={STATUS_PIP_CLASS} />
-                  {OBJECT_STATUS_LABEL.published}
-                </span>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Link href={listingsHref} className={SECONDARY_ACTION_CLASS}>
+            <ActionIcon icon={Eye} />
+            {copy.preview}
+          </Link>
+          {isArchived ? (
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className={DISABLED_SECONDARY_ACTION_CLASS}
+            >
+              <ActionIcon icon={Share2} />
+              {copy.share}
+            </button>
+          ) : (
+            <PopoverPanel
+              ariaLabel={copy.share}
+              align="right"
+              panelClassName="mt-1.5"
+              trigger={({ triggerProps, triggerRef }) => (
+                <button
+                  {...triggerProps}
+                  ref={triggerRef}
+                  className={SECONDARY_ACTION_CLASS}
+                >
+                  <ActionIcon icon={Share2} />
+                  {copy.share}
+                </button>
               )}
-            </dd>
-          </div>
-        </dl>
-      </section>
-    </>
+            >
+              <ShareButtons
+                title={object.fullTitle}
+                shareUrl={shareUrl}
+                variant="popover"
+              />
+            </PopoverPanel>
+          )}
+          <Link
+            href={`/provider/listings/${object.id}`}
+            className={PRIMARY_ACTION_CLASS}
+          >
+            <ActionIcon icon={Pencil} />
+            {copy.edit}
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-parent-y flex flex-wrap gap-x-card-x gap-y-card-y font-mono text-caption">
+        {facts.map((fact) => (
+          <span key={fact.id} className="inline-flex items-baseline gap-2">
+            <span className="text-foreground-tertiary">{fact.label}</span>
+            <span className="text-foreground">{fact.value}</span>
+          </span>
+        ))}
+        {timestampValue ? (
+          <span className="inline-flex items-baseline gap-2">
+            <span className="text-foreground-tertiary">{timestampCaption}</span>
+            <span className="text-foreground">{timestampValue}</span>
+          </span>
+        ) : null}
+      </div>
+    </section>
   );
 }

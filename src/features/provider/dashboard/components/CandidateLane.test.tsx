@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import type { Candidate } from "../types";
 import { CandidateLane } from "./CandidateLane";
 
@@ -10,197 +10,98 @@ const candidate: Candidate = {
   name: "Anna Lehmann",
   household: "2 Personen",
   warnings: [],
+  introduction: null,
+  activeAtLabel: null,
 };
 
-class ResizeObserverMock {
-  private target: Element | null = null;
-
-  constructor(private readonly callback: ResizeObserverCallback) {}
-
-  observe(target: Element) {
-    this.target = target;
-  }
-
-  unobserve() {
-    this.target = null;
-  }
-
-  disconnect() {
-    this.target = null;
-  }
-
-  notify(width: number) {
-    if (!this.target) return;
-    const entry: ResizeObserverEntry = {
-      borderBoxSize: [],
-      contentBoxSize: [],
-      contentRect: new DOMRectReadOnly(0, 0, width, 0),
-      devicePixelContentBoxSize: [],
-      target: this.target,
-    };
-    this.callback([entry], this);
-  }
-}
+const fullCandidateSet = Array.from({ length: 5 }, (_, index) => ({
+  ...candidate,
+  id: `candidate-${index + 1}`,
+}));
 
 describe("CandidateLane", () => {
-  let observers: ResizeObserverMock[];
-
-  beforeEach(() => {
-    observers = [];
-    vi.stubGlobal(
-      "ResizeObserver",
-      class extends ResizeObserverMock {
-        constructor(callback: ResizeObserverCallback) {
-          super(callback);
-          observers.push(this);
-        }
-      },
-    );
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  it("uses the light palette when requested", () => {
-    const { container } = render(
-      <CandidateLane actives={[candidate]} waitingCount={0} theme="light" />,
-    );
-
-    const lane = container.firstElementChild;
-    if (!(lane instanceof HTMLElement))
-      throw new Error("Candidate lane is missing");
-
-    expect(lane.style.getPropertyValue("--rq-lane-edge")).toBe("#E5E5E5");
-  });
-
   it("announces waiting count changes", () => {
     const { rerender } = render(
-      <CandidateLane actives={[candidate]} waitingCount={1} theme="dark" />,
+      <CandidateLane
+        actives={fullCandidateSet}
+        waitingCount={1}
+        onOpenPreview={vi.fn()}
+      />,
     );
-
-    const status = screen.getByRole("status", { name: "+1 wartet" });
-    expect(status.getAttribute("aria-live")).toBe("polite");
-    expect(status.getAttribute("aria-atomic")).toBe("true");
-
+    expect(
+      screen
+        .getByRole("status", { name: "+1 wartet" })
+        .getAttribute("aria-live"),
+    ).toBe("polite");
     rerender(
-      <CandidateLane actives={[candidate]} waitingCount={2} theme="dark" />,
+      <CandidateLane
+        actives={fullCandidateSet}
+        waitingCount={2}
+        onOpenPreview={vi.fn()}
+      />,
     );
-
     expect(screen.getByRole("status", { name: "+2 warten" })).not.toBeNull();
   });
 
-  it("does not announce a waiting status when the count is unavailable", () => {
+  it("does not announce a waiting status when disabled", () => {
     render(
       <CandidateLane
         actives={[candidate]}
         waitingCount={0}
         announceWaitingStatus={false}
-        theme="dark"
+        onOpenPreview={vi.fn()}
       />,
     );
-
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  it("marks a candidate card with a smoking warning using a warning border", () => {
-    const candidateWithWarning: Candidate = {
-      ...candidate,
-      warnings: ["smoking_by_arrangement"],
-    };
-
+  it("keeps the candidate card target used by flag positioning", () => {
     const { container } = render(
-      <CandidateLane actives={[candidateWithWarning]} waitingCount={0} />,
+      <CandidateLane
+        actives={[{ ...candidate, warnings: ["smoking_by_arrangement"] }]}
+        waitingCount={0}
+        onOpenPreview={vi.fn()}
+      />,
     );
-
-    const card = container.querySelector("[data-rq-candidate-card]");
-    if (!(card instanceof HTMLElement))
-      throw new Error("Candidate card is missing");
-
-    expect(card.className).toContain("border-t-2");
-    expect(card.className).toContain("border-t-warning-vivid");
+    expect(container.querySelector("[data-rq-candidate-card]")).not.toBeNull();
   });
 
-  it("marks a candidate card with a pet warning using a warning border", () => {
-    const candidateWithWarning: Candidate = {
-      ...candidate,
-      warnings: ["pets_by_arrangement"],
-    };
-
-    const { container } = render(
-      <CandidateLane actives={[candidateWithWarning]} waitingCount={0} />,
+  it("opens the candidate preview from the profile action", () => {
+    const onOpenPreview = vi.fn();
+    render(
+      <CandidateLane
+        actives={[candidate]}
+        waitingCount={0}
+        onOpenPreview={onOpenPreview}
+      />,
     );
-
-    const card = container.querySelector("[data-rq-candidate-card]");
-    if (!(card instanceof HTMLElement))
-      throw new Error("Candidate card is missing");
-
-    expect(card.className).toContain("border-t-2");
-    expect(card.className).toContain("border-t-warning-vivid");
+    fireEvent.click(screen.getByRole("button", { name: /Anna Lehmann/ }));
+    expect(onOpenPreview).toHaveBeenCalledWith(candidate);
   });
 
-  it("marks a candidate card with both warnings using a single warning border", () => {
-    const candidateWithWarnings: Candidate = {
-      ...candidate,
-      warnings: ["smoking_by_arrangement", "pets_by_arrangement"],
-    };
-
-    const { container } = render(
-      <CandidateLane actives={[candidateWithWarnings]} waitingCount={0} />,
-    );
-
-    const card = container.querySelector("[data-rq-candidate-card]");
-    if (!(card instanceof HTMLElement))
-      throw new Error("Candidate card is missing");
-
-    expect(card.className).toContain("border-t-2");
-    expect(card.className).toContain("border-t-warning-vivid");
-  });
-
-  it("does not apply a warning border when a candidate has no warning", () => {
-    const { container } = render(
-      <CandidateLane actives={[candidate]} waitingCount={0} />,
-    );
-
-    const card = container.querySelector("[data-rq-candidate-card]");
-    if (!(card instanceof HTMLElement))
-      throw new Error("Candidate card is missing");
-
-    expect(card.className).not.toContain("border-t-2");
-    expect(card.className).not.toContain("border-t-warning-vivid");
-  });
-
-  it("exposes candidate rejection through an accessible icon action", () => {
+  it("exposes candidate rejection through an accessible action", () => {
     const onRejectCandidate = vi.fn();
     const { rerender } = render(
       <CandidateLane
         actives={[candidate]}
         waitingCount={0}
+        onOpenPreview={vi.fn()}
         onRejectCandidate={onRejectCandidate}
         rejectingApplicationId={candidate.id}
       />,
     );
-
     const rejectButton = screen.getByRole("button", {
       name: "Anna Lehmann ablehnen",
     });
-
-    expect(rejectButton).toBeInstanceOf(HTMLButtonElement);
     expect((rejectButton as HTMLButtonElement).disabled).toBe(true);
-    expect(rejectButton.className).toContain("bg-transparent");
-    expect(rejectButton.className).toContain("hover:bg-danger/10");
-    expect(rejectButton.querySelector("svg")?.getAttribute("width")).toBe("12");
-    expect(rejectButton.className).toContain("h-6");
-    expect(rejectButton.className).toContain("w-6");
-    expect(rejectButton.getAttribute("title")).toBe("Anna Lehmann ablehnen");
-
+    expect(rejectButton.getAttribute("aria-busy")).toBe("true");
     fireEvent.click(rejectButton);
     expect(onRejectCandidate).not.toHaveBeenCalled();
-
     rerender(
       <CandidateLane
         actives={[candidate]}
         waitingCount={0}
+        onOpenPreview={vi.fn()}
         onRejectCandidate={onRejectCandidate}
       />,
     );
@@ -208,36 +109,5 @@ describe("CandidateLane", () => {
       screen.getByRole("button", { name: "Anna Lehmann ablehnen" }),
     );
     expect(onRejectCandidate).toHaveBeenCalledWith(candidate);
-  });
-
-  it("preserves responsive lane direction without a message action", () => {
-    const { container } = render(
-      <CandidateLane actives={[candidate]} waitingCount={0} theme="dark" />,
-    );
-
-    const observer = observers[0];
-    if (!observer) throw new Error("Resize observer is missing");
-
-    act(() => {
-      observer.notify(800);
-    });
-
-    const fields = Array.from(container.querySelectorAll("div")).find(
-      (element) => element.style.alignItems === "stretch",
-    );
-    const lane = container.firstElementChild;
-    if (!(lane instanceof HTMLElement))
-      throw new Error("Candidate lane is missing");
-
-    expect(fields?.style.flexDirection).toBe("row");
-    expect(container.querySelector(".lucide-message-square")).toBeNull();
-
-    act(() => {
-      observer.notify(640);
-    });
-
-    expect(fields?.style.flexDirection).toBe("column");
-    expect(container.querySelector(".lucide-message-square")).toBeNull();
-    expect(lane.style.getPropertyValue("--rq-teaser-h")).toBe("104px");
   });
 });

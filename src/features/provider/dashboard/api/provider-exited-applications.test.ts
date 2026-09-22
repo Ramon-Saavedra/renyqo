@@ -14,8 +14,11 @@ const withdrawnApplication = {
   id: "exit-1",
   listingId: "listing-1",
   applicantName: "Familie Weber",
+  peopleCount: 2,
+  introduction: null,
   status: "WITHDRAWN" as const,
   publicReason: null,
+  activeAt: "2026-08-01T10:00:00.000Z",
   exitedAt: "2026-08-30T14:23:00.000Z",
 };
 
@@ -23,8 +26,11 @@ const discardedApplication = {
   id: "exit-2",
   listingId: "listing-1",
   applicantName: "Jonas Brandt",
+  peopleCount: 1,
+  introduction: null,
   status: "REJECTED" as const,
   publicReason: "NOT_SELECTED" as const,
+  activeAt: "2026-08-02T10:00:00.000Z",
   exitedAt: "2026-08-30T11:05:00.000Z",
 };
 

@@ -23,6 +23,7 @@ function buildApplication(
       name: "Anna Lehmann",
       peopleCount: 2,
       warnings: [],
+      introduction: null,
       ...applicantOverrides,
     },
     ...applicationOverrides,
@@ -41,6 +42,8 @@ describe("mapActiveApplicationToCandidate", () => {
       name: "Anna Lehmann",
       household: "2 Personen",
       warnings: [],
+      introduction: null,
+      activeAtLabel: null,
     });
   });
 

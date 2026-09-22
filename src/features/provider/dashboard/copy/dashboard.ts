@@ -1,4 +1,5 @@
 import { MAX_ACTIVE_APPLICATIONS, type DashboardObjectStatus } from "../types";
+import { STATUS_META } from "@/features/provider/listings-overview/copy/listings";
 
 export const ACCENTS = [
   { id: "schiefer", label: "Schiefer" },
@@ -24,14 +25,30 @@ export function isAccentId(value: string | null): value is AccentId {
 }
 
 export const OBJECT_STATUS_LABEL: Record<DashboardObjectStatus, string> = {
-  published: "Veröffentlicht",
-  draft: "Entwurf",
+  published: STATUS_META.published.label,
+  draft: STATUS_META.draft.label,
+  paused: STATUS_META.paused.label,
+  archived: STATUS_META.archived.label,
 };
+
+export const OBJECT_STATUS_SHORT_LABEL: Record<DashboardObjectStatus, string> =
+  {
+    published: "Aktiv",
+    draft: "Entwurf",
+    paused: "Pausiert",
+    archived: "Archiv",
+  };
 
 export const dashboardCopy = {
   loading: "Dashboard wird vorbereitet …",
   error:
     "Dashboard konnte nicht geladen werden. Bitte versuche es gleich erneut.",
+  fullError: {
+    eyebrow: "Verbindungsfehler",
+    title: "Ihre Objekte konnten nicht geladen werden",
+    body: "Es gehen keine Daten verloren. Bitte versuche es erneut.",
+    retry: "Erneut versuchen",
+  },
   profile: {
     name: "Sabine Kessler",
     company: "Kessler Immobilien GbR",
@@ -40,8 +57,8 @@ export const dashboardCopy = {
     logoutError: "Abmeldung fehlgeschlagen. Bitte versuche es erneut.",
   },
   topbar: {
-    searchPlaceholder: "Adresse oder Titel suchen …",
-    searchAria: "Mietobjekte durchsuchen",
+    searchPlaceholder: "Objekt suchen…",
+    searchAria: "Objekte durchsuchen",
     searchClear: "Suche leeren",
     objects: "Meine Objekte",
     objectsHref: "/provider/listings",
@@ -49,17 +66,6 @@ export const dashboardCopy = {
     newListingHref: "/provider/listings/new",
   },
   sidebar: {
-    heading: "Meine Mietobjekte",
-    collapse: "Ausblenden",
-    reopen: "Objekte einblenden",
-    searchPlaceholder: "Objekte filtern …",
-    searchAria: "Objekte filtern",
-    searchClear: "Filter leeren",
-    empty: "Keine Objekte gefunden.",
-    rentSuffix: "kalt",
-    rentLabel: "Kaltmiete",
-    applications: "Bewerbungen",
-    draftNotice: "Noch nicht veröffentlicht",
     share: {
       aria: "Objekt teilen",
       whatsapp: "WhatsApp",
@@ -73,44 +79,73 @@ export const dashboardCopy = {
     label: "Akzentfarbe anpassen",
     ariaLabel: "Akzentfarbe wählen",
   },
-  stats: {
-    objects: "Anzahl Objekte",
-    objectsFoot: (published: number, drafts: number) =>
-      `${published} veröffentlicht · ${drafts} Entwurf`,
-    activeApplications: "Aktive Bewerbungen",
-    drafts: "Entwürfe",
-    draftsFoot: "Bereit zur Veröffentlichung",
+  matrix: {
+    heading: "Meine Objekte",
+    statsLine: (
+      total: number,
+      published: number,
+      drafts: number,
+      activeApplications: number,
+    ) =>
+      `${total} Objekte · ${published} veröffentlicht · ${drafts} Entwürfe · ${activeApplications} aktive Bewerbungen`,
+    allObjects: "Alle Objekte",
+    noMatch: (query: string) => `Kein Objekt gefunden für „${query}".`,
+    previewAction: (short: string) => `Vorschau zu ${short}`,
+    selectAction: "Auswählen",
+    openListing: "Objekt öffnen",
+    cellAria: (
+      short: string,
+      status: string,
+      active: number,
+      selected: boolean,
+    ) =>
+      selected
+        ? `${short}, ${status}, ${active} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen, aktuell ausgewählt`
+        : `${short}, ${status}, ${active} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen — als aktuelles Objekt auswählen`,
+  },
+  attention: {
+    openQuestions: (count: number) =>
+      count === 1 ? "1 offene Bewerberfrage" : `${count} offene Bewerberfragen`,
+  },
+  preview: {
+    close: "Schließen",
   },
   object: {
-    kicker: "Aktuell ausgewählt",
+    sectionHeading: "Ausgewähltes Objekt",
     emptyTitle: "Noch keine Mietobjekte",
     emptyAddress: "Lege ein Mietobjekt an, um Details zu sehen.",
     edit: "Bearbeiten",
     preview: "Vorschau",
+    share: "Teilen",
     publishedCaption: "Veröffentlicht am",
     updatedCaption: "Zuletzt bearbeitet am",
     livingArea: "Wohnfläche",
     rooms: "Zimmer",
     coldRent: "Kaltmiete",
     availableFrom: "Frei ab",
-    applications: "Bewerbungen",
-    applicationsValue: (active: number) =>
-      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktiv`,
     availableFromEmpty: "Offen",
-    status: "Status",
   },
   candidates: {
-    title: "Passende Kandidaten",
+    title: "Aktive Bewerber",
     lead: `Nur passende Bewerbungen werden aktiv angezeigt — höchstens ${MAX_ACTIVE_APPLICATIONS} pro Objekt.`,
+    slotLabel: (active: number, capacity: number) =>
+      `${active} / ${capacity} aktiv`,
     draftEmpty:
       "Dieses Objekt ist noch ein Entwurf. Veröffentliche es, um passende Bewerbungen zu erhalten.",
+    noApplicants:
+      "Noch keine Bewerbungen. Teile den Objektlink, damit die ersten Anfragen eingehen.",
     loadError:
       "Bewerbungen konnten nicht geladen werden. Bitte versuche es gleich erneut.",
-    freeSlot: "Platz frei",
-    slot: (position: number) => `Platz ${String(position).padStart(2, "0")}`,
+    reloadAction: "Bewerber neu laden",
     householdOne: "1 Person",
     householdMany: (count: number) => `${count} Personen`,
     householdUnavailable: "Haushalt nicht angegeben",
+    previewAction: (
+      name: string,
+      household: string,
+      warningLabels: readonly string[],
+    ) =>
+      `Bewerbung von ${name}, ${household}${warningLabels.length ? `, ${warningLabels.join(", ")}` : ""}, öffnen`,
     rejectAction: (name: string) => `${name} ablehnen`,
     rejectTitle: "Bewerber ablehnen?",
     rejectText: (name: string) =>
@@ -124,27 +159,33 @@ export const dashboardCopy = {
   },
   waitingQueue: {
     badge: (count: number) => (count === 1 ? "+1 wartet" : `+${count} warten`),
+    queueBadge: (count: number) => `+${count}`,
     queueLabel: "in Warteschlange",
     queuePosition: (position: number, total: number) =>
       `Nr. ${position} von ${total}`,
+    queueTooltip: (count: number) =>
+      `${count} Bewerber warten auf einen freien Platz.`,
+    queueAria: (count: number, tierIndex: number) =>
+      `Warteschlange: ${count} Bewerber warten auf einen freien Platz, Druckstufe ${tierIndex} von 6`,
     capacity: (max: number) => `Kapazität ${max}`,
-    capacityWithQueue: (max: number) => `Kapazität ${max} · FIFO`,
+    capacityWithQueue: (max: number) => `Kapazität ${max}`,
     loadError: "Warteschlange konnte nicht geladen werden.",
   },
   recentExits: {
     title: "Kürzlich ausgeschieden",
     helper:
       "Hier erscheinen nur Bewerber, die zuvor zu den 5 aktiven Bewerbungen gehört haben.",
-    empty: "Noch keine ausgeschiedenen Bewerber",
     loadError:
       "Kürzlich ausgeschiedene Bewerbungen konnten nicht geladen werden.",
-    more: (count: number) => `+${count} weitere`,
-    stateLabel: {
-      withdrawn: "Bewerbung zurückgezogen",
-      provider_discarded: "Von dir abgelehnt",
-      system_removed: "Nicht mehr verfügbar",
+    reasonLabel: {
+      withdrawn: "Zurückgezogen",
+      provider_discarded: "Abgelehnt",
+      system_removed: "Systemseitig entfernt",
     },
-    restoreAction: (name: string) => `${name} wieder aufnehmen`,
+    viewLabel: "Profil ansehen",
+    viewAction: (name: string) => `Profil ansehen — ${name}`,
+    restoreLabel: "Wiederherstellen",
+    restoreAction: (name: string) => `Wiederherstellen — ${name}`,
     restoreTitle: "Bewerber wieder aufnehmen?",
     restoreText: (name: string) =>
       `Möchtest du ${name} wieder in die Bewerbungen aufnehmen?`,
