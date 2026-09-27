@@ -12,7 +12,7 @@ import type { DragEvent } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
-import { Home, Maximize2, X } from "lucide-react";
+import { GripVertical, Home, Maximize2, X } from "lucide-react";
 import { Button } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import {
@@ -20,13 +20,37 @@ import {
   formatEUR,
 } from "@/features/provider/listings-overview/utils/format";
 import { dashboardCopy, OBJECT_STATUS_SHORT_LABEL } from "../copy/dashboard";
+import { useListingApplicantNames } from "../hooks/useListingApplicantNames";
+import type { ListingApplicantPreview } from "../hooks/useListingApplicantNames";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import type { DashboardObject, DashboardObjectStatus } from "../types";
+import {
+  ListingApplicantPreviewProvider,
+  ListingApplicantSlots,
+} from "./ListingApplicantSlots";
+import { ListingPositionControl } from "./ListingPositionControl";
+import { ListingPositionDialog } from "./ListingPositionDialog";
 
 interface ListingMatrixProps {
   objects: readonly DashboardObject[];
+  orderObjects?: readonly DashboardObject[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onReorder?: (
+    listingId: string,
+    position: number,
+  ) => Promise<void | "refresh-failed">;
+  preloadedApplicants?:
+    | {
+        readonly listingId: string;
+        readonly status: "loading";
+      }
+    | {
+        readonly listingId: string;
+        readonly status: "ready";
+        readonly previews: readonly ListingApplicantPreview[];
+      }
+    | null;
 }
 
 const STATUS_DOT_CLASS: Record<DashboardObjectStatus, string> = {
@@ -39,9 +63,20 @@ const STATUS_DOT_CLASS: Record<DashboardObjectStatus, string> = {
 const DIMMED_STATUS: readonly DashboardObjectStatus[] = ["draft", "archived"];
 
 const GRID_CLASS =
-  "scrollbar-slim flex flex-nowrap items-start gap-x-3 gap-y-4 overflow-x-scroll px-1 pt-2 pb-1";
+  "scrollbar-slim flex flex-nowrap items-start gap-x-3 gap-y-4 overflow-x-auto px-1 pt-2 pb-1";
 
-const CELL_WIDTH_CLASS = "w-22 shrink-0 @min-[640px]:w-24";
+const CELL_WIDTH_CLASS = "w-28 shrink-0";
+
+function moveIdToPosition(
+  ids: readonly string[],
+  listingId: string,
+  position: number,
+): string[] {
+  const next = ids.filter((id) => id !== listingId);
+  const index = Math.min(Math.max(position, 1), next.length + 1) - 1;
+  next.splice(index, 0, listingId);
+  return next;
+}
 
 const PREVIEW_CLOSE_BUTTON_CLASS =
   "absolute top-2 right-2 z-10 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm bg-background text-foreground-secondary shadow-card hover:text-foreground";
@@ -60,11 +95,25 @@ function useIsCompactViewport(): boolean {
   return isCompact;
 }
 
-function ListingThumb({ object }: { object: DashboardObject }) {
+function ListingThumb({
+  object,
+  selected,
+  label,
+  onSelect,
+}: {
+  object: DashboardObject;
+  selected: boolean;
+  label: string;
+  onSelect: () => void;
+}) {
   const dimmed = DIMMED_STATUS.includes(object.status);
   return (
-    <span
-      className={`relative block h-16 w-full overflow-hidden rounded-md bg-media-placeholder ${dimmed ? "opacity-60" : ""}`}
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
+      aria-label={label}
+      className={`relative block h-16 w-full cursor-pointer overflow-hidden rounded-md bg-media-placeholder focus-visible:outline-none focus-visible:shadow-focus ${dimmed ? "opacity-60" : ""}`}
     >
       {object.coverImageUrl ? (
         <Image
@@ -73,6 +122,7 @@ function ListingThumb({ object }: { object: DashboardObject }) {
           aria-hidden="true"
           fill
           sizes="96px"
+          draggable={false}
           className="object-cover"
         />
       ) : (
@@ -80,7 +130,7 @@ function ListingThumb({ object }: { object: DashboardObject }) {
           <AppIcon icon={Home} size={18} strokeWidth={1.5} decorative />
         </span>
       )}
-    </span>
+    </button>
   );
 }
 
@@ -99,7 +149,11 @@ function ListingPreviewContent({
 }: ListingPreviewProps) {
   const copy = dashboardCopy.matrix;
   const status = OBJECT_STATUS_SHORT_LABEL[object.status];
-  const metaLine = `${formatEUR(object.coldRent)} · ${formatArea(object.livingArea)} · ${object.rooms} · ${object.activeApplicationsCount}/${MAX_ACTIVE_APPLICATIONS} aktiv`;
+  const shownActive = Math.min(
+    object.activeApplicationsCount,
+    MAX_ACTIVE_APPLICATIONS,
+  );
+  const metaLine = `${formatEUR(object.coldRent)} · ${formatArea(object.livingArea)} · ${object.rooms} · ${shownActive}/${MAX_ACTIVE_APPLICATIONS} aktiv`;
   const href = `/provider/listings/${object.id}`;
 
   return (
@@ -176,17 +230,23 @@ function ListingPreviewContent({
 
 export function ListingMatrix({
   objects,
+  orderObjects,
   selectedId,
   onSelect,
+  onReorder = async () => undefined,
+  preloadedApplicants = null,
 }: ListingMatrixProps) {
   const copy = dashboardCopy.matrix;
   const [openId, setOpenId] = useState<string | null>(null);
-  const [orderIds, setOrderIds] = useState<readonly string[]>(() =>
-    objects.map((object) => object.id),
-  );
+  const [localOrder, setLocalOrder] = useState<{
+    readonly signature: string;
+    readonly ids: readonly string[];
+  } | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const lastDragOverIdRef = useRef<string | null>(null);
   const suppressClickAfterDragRef = useRef(false);
+  const reorderInFlightRef = useRef(false);
+  const committedOrderIdsRef = useRef<readonly string[] | null>(null);
   const openObject = objects.find((object) => object.id === openId) ?? null;
   const popoverRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -195,6 +255,51 @@ export function ListingMatrix({
     top: number;
     left: number;
   } | null>(null);
+  const [reorderPendingId, setReorderPendingId] = useState<string | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
+  const [reorderAnnouncement, setReorderAnnouncement] = useState("");
+  const [positionObjectId, setPositionObjectId] = useState<string | null>(null);
+  const [positionTrigger, setPositionTrigger] = useState<HTMLElement | null>(
+    null,
+  );
+  const {
+    ensureLoaded,
+    adoptLoaded,
+    holdListing,
+    releaseListing,
+    getState: getApplicantNamesState,
+  } = useListingApplicantNames();
+  const authorityObjects = orderObjects ?? objects;
+
+  useEffect(() => {
+    if (!preloadedApplicants) return undefined;
+    if (preloadedApplicants.status === "loading") {
+      holdListing(preloadedApplicants.listingId);
+      return () => releaseListing(preloadedApplicants.listingId);
+    }
+    adoptLoaded(preloadedApplicants.listingId, preloadedApplicants.previews);
+    return undefined;
+  }, [adoptLoaded, holdListing, preloadedApplicants, releaseListing]);
+
+  const closePositionDialog = useCallback(
+    (restoreFocus = true) => {
+      setPositionObjectId(null);
+      if (restoreFocus) positionTrigger?.focus();
+    },
+    [positionTrigger],
+  );
+
+  const togglePositionDialog = useCallback(
+    (id: string, trigger: HTMLElement) => {
+      if (positionObjectId === id) {
+        closePositionDialog();
+        return;
+      }
+      setPositionObjectId(id);
+      setPositionTrigger(trigger);
+    },
+    [closePositionDialog, positionObjectId],
+  );
 
   const updatePopoverPosition = useCallback(() => {
     if (!openId || isCompactViewport) return;
@@ -242,9 +347,31 @@ export function ListingMatrix({
     };
   }, [isCompactViewport, openId, updatePopoverPosition]);
 
+  const serverOrderIds = useMemo(
+    () =>
+      [...authorityObjects]
+        .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+        .map((object) => object.id),
+    [authorityObjects],
+  );
+  const serverOrderSignature = useMemo(
+    () =>
+      authorityObjects
+        .map((object) => `${object.id}:${object.displayOrder ?? ""}`)
+        .join("|"),
+    [authorityObjects],
+  );
+  useEffect(() => {
+    committedOrderIdsRef.current = null;
+  }, [serverOrderSignature]);
+  const orderIds =
+    localOrder?.signature === serverOrderSignature
+      ? localOrder.ids
+      : serverOrderIds;
+
   const orderedObjects = useMemo(() => {
-    const byId = new Map(objects.map((object) => [object.id, object]));
-    const objectIds = objects.map((object) => object.id);
+    const byId = new Map(authorityObjects.map((object) => [object.id, object]));
+    const objectIds = authorityObjects.map((object) => object.id);
     const objectIdSet = new Set(objectIds);
     const kept = orderIds.filter((id) => objectIdSet.has(id));
     const keptSet = new Set(kept);
@@ -252,9 +379,61 @@ export function ListingMatrix({
     return [...kept, ...added]
       .map((id) => byId.get(id))
       .filter((object): object is DashboardObject => object !== undefined);
-  }, [orderIds, objects]);
+  }, [authorityObjects, orderIds]);
+  const visibleIds = useMemo(
+    () => new Set(objects.map((object) => object.id)),
+    [objects],
+  );
+  const orderedVisibleObjects = useMemo(
+    () => orderedObjects.filter((object) => visibleIds.has(object.id)),
+    [orderedObjects, visibleIds],
+  );
 
-  function handleDragStart(event: DragEvent<HTMLDivElement>, id: string) {
+  const positionObject =
+    orderedObjects.find((object) => object.id === positionObjectId) ?? null;
+
+  async function persistReorder(listingId: string, position: number) {
+    if (reorderInFlightRef.current) return;
+    const listing = authorityObjects.find((object) => object.id === listingId);
+    const baselineIds = committedOrderIdsRef.current ?? serverOrderIds;
+    const currentPosition = baselineIds.indexOf(listingId) + 1;
+    if (!listing || currentPosition <= 0 || currentPosition === position)
+      return;
+
+    const nextIds = moveIdToPosition(baselineIds, listingId, position);
+    reorderInFlightRef.current = true;
+    setReorderError(null);
+    setReorderPendingId(listingId);
+    setLocalOrder({ signature: serverOrderSignature, ids: nextIds });
+    try {
+      const outcome = await onReorder(listingId, position);
+      if (outcome === "refresh-failed") {
+        committedOrderIdsRef.current = nextIds;
+        setReorderError(
+          "Die Reihenfolge wurde gespeichert, aber die Übersicht konnte nicht aktualisiert werden. Bitte versuche es gleich erneut.",
+        );
+        return;
+      }
+      setReorderAnnouncement(
+        `Objekt wurde auf Position ${position} verschoben.`,
+      );
+    } catch {
+      committedOrderIdsRef.current = null;
+      setReorderError(
+        "Die Objekt-Reihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      );
+      setLocalOrder(null);
+    } finally {
+      reorderInFlightRef.current = false;
+      setReorderPendingId(null);
+    }
+  }
+
+  function handleDragStart(event: DragEvent<HTMLElement>, id: string) {
+    if (reorderInFlightRef.current) {
+      event.preventDefault();
+      return;
+    }
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", id);
     lastDragOverIdRef.current = null;
@@ -270,11 +449,17 @@ export function ListingMatrix({
     )
       return;
     lastDragOverIdRef.current = overId;
-    setOrderIds((current) => {
-      const knownIds = new Set(current);
+    setLocalOrder((current) => {
+      const currentIds =
+        current?.signature === serverOrderSignature
+          ? current.ids
+          : serverOrderIds;
+      const knownIds = new Set(currentIds);
       const currentWithObjects = [
-        ...current,
-        ...objects.map((object) => object.id).filter((id) => !knownIds.has(id)),
+        ...currentIds,
+        ...authorityObjects
+          .map((object) => object.id)
+          .filter((id) => !knownIds.has(id)),
       ];
       const from = currentWithObjects.indexOf(draggedId);
       const to = currentWithObjects.indexOf(overId);
@@ -282,7 +467,7 @@ export function ListingMatrix({
       const next = [...currentWithObjects];
       next.splice(from, 1);
       next.splice(to, 0, draggedId);
-      return next;
+      return { signature: serverOrderSignature, ids: next };
     });
   }
 
@@ -293,6 +478,16 @@ export function ListingMatrix({
     window.setTimeout(() => {
       suppressClickAfterDragRef.current = false;
     }, 0);
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    if (!draggedId) return;
+    const listingId = draggedId;
+    const position =
+      orderedObjects.findIndex((object) => object.id === listingId) + 1;
+    handleDragEnd();
+    if (position > 0) void persistReorder(listingId, position);
   }
 
   function handleSelect(id: string) {
@@ -339,131 +534,204 @@ export function ListingMatrix({
   }, [openObject]);
 
   return (
-    <div className={GRID_CLASS}>
-      {orderedObjects.map((object) => {
-        const selected = object.id === selectedId;
-        const isOpen = object.id === openId;
-        const status = OBJECT_STATUS_SHORT_LABEL[object.status];
-        const popoverId = `listing-preview-${object.id}`;
+    <div className="relative">
+      {reorderError ? (
+        <div role="alert" className="mb-2 text-caption text-danger">
+          {reorderError}
+        </div>
+      ) : null}
+      <div aria-live="polite" className="sr-only">
+        {reorderAnnouncement}
+      </div>
+      <ListingApplicantPreviewProvider>
+        <div className={GRID_CLASS}>
+          {orderedVisibleObjects.map((object) => {
+            const selected = object.id === selectedId;
+            const isOpen = object.id === openId;
+            const status = OBJECT_STATUS_SHORT_LABEL[object.status];
+            const popoverId = `listing-preview-${object.id}`;
+            const selectLabel = copy.cellAria(
+              object.title,
+              status,
+              object.activeApplicationsCount,
+              selected,
+            );
 
-        return (
-          <div
-            key={object.id}
-            data-listing-cell={object.id}
-            draggable
-            onDragStart={(event) => handleDragStart(event, object.id)}
-            onDragOver={(event) => handleDragOver(event, object.id)}
-            onDrop={(event) => {
-              event.preventDefault();
-              if (draggedId) handleDragEnd();
-            }}
-            onDragEnd={handleDragEnd}
-            className={`group relative cursor-grab active:cursor-grabbing ${CELL_WIDTH_CLASS} ${draggedId === object.id ? "opacity-40" : ""}`}
-          >
-            <button
-              type="button"
-              onClick={() => handleSelect(object.id)}
-              aria-pressed={selected}
-              aria-label={copy.cellAria(
-                object.title,
-                status,
-                object.activeApplicationsCount,
-                selected,
-              )}
-              className="block w-full cursor-pointer rounded-md text-left focus-visible:outline-none focus-visible:shadow-focus"
-            >
-              <span
-                className={`block rounded-md ${selected ? "ring-2 ring-primary" : "ring-1 ring-border"}`}
-              >
-                <ListingThumb object={object} />
-              </span>
-              <span
-                className={`mt-1.5 block truncate text-caption font-medium ${selected ? "text-foreground" : "text-foreground-secondary"}`}
-              >
-                {object.title}
-              </span>
-              <span className="mt-0.5 flex items-center gap-1">
-                <span
-                  aria-hidden="true"
-                  className={`h-1.25 w-1.25 shrink-0 rounded-full ${STATUS_DOT_CLASS[object.status]}`}
-                />
-                <span className="truncate font-mono text-meta text-foreground-tertiary">
-                  {status}
-                </span>
-              </span>
-            </button>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-md"
-              aria-haspopup="dialog"
-              aria-expanded={isOpen}
-              aria-controls={isOpen ? popoverId : undefined}
-              aria-label={copy.previewAction(object.title)}
-              onClick={(event) => {
-                if (suppressClickAfterDragRef.current) {
-                  suppressClickAfterDragRef.current = false;
-                  return;
-                }
-                if (!isCompactViewport) {
-                  const cell = event.currentTarget.closest<HTMLElement>(
-                    "[data-listing-cell]",
-                  );
-                  if (cell) {
-                    const rect = cell.getBoundingClientRect();
-                    setPopoverPosition({
-                      top: rect.bottom + 8,
-                      left: rect.left,
-                    });
+            return (
+              <div
+                key={object.id}
+                data-listing-cell={object.id}
+                onDragStart={(event) => {
+                  const target = event.target;
+                  if (!(target instanceof Element)) return;
+                  if (target.closest("button[draggable]")) return;
+                  if (
+                    target !== event.currentTarget &&
+                    target.getAttribute("data-listing-cell") !== object.id
+                  ) {
+                    return;
                   }
-                }
-                setOpenId((current) =>
-                  current === object.id ? null : object.id,
-                );
-              }}
-              className={`absolute -top-1.5 -right-1.5 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100 ${isOpen ? "opacity-100" : ""}`}
-            >
-              <AppIcon
-                icon={Maximize2}
-                size={13}
-                strokeWidth={2.2}
-                decorative
-              />
-            </Button>
-          </div>
-        );
-      })}
+                  handleDragStart(event, object.id);
+                }}
+                onDragOver={(event) => handleDragOver(event, object.id)}
+                onDrop={handleDrop}
+                onDragEnd={handleDragEnd}
+                className={`group relative rounded-md border px-2 py-1 ${CELL_WIDTH_CLASS} ${selected ? "border-primary" : "border-border"} ${draggedId === object.id ? "opacity-40" : ""}`}
+              >
+                <div className="mb-1 flex h-6 w-full items-center justify-between">
+                  <button
+                    type="button"
+                    draggable
+                    disabled={reorderPendingId !== null}
+                    aria-label={`Position von ${object.title} per Drag-and-drop ändern`}
+                    title={copy.dragHandleTitle}
+                    onDragStart={(event) => {
+                      event.stopPropagation();
+                      handleDragStart(event, object.id);
+                    }}
+                    className="inline-flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded-sm bg-transparent p-0 text-foreground-secondary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <AppIcon
+                      icon={GripVertical}
+                      size={14}
+                      strokeWidth={1.8}
+                      decorative
+                    />
+                  </button>
+                  <ListingPositionControl
+                    object={object}
+                    pending={reorderPendingId !== null}
+                    open={positionObjectId === object.id}
+                    dialogId={`listing-position-${object.id}`}
+                    onToggle={(trigger) =>
+                      togglePositionDialog(object.id, trigger)
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-2xs"
+                    aria-haspopup="dialog"
+                    aria-expanded={isOpen}
+                    aria-controls={isOpen ? popoverId : undefined}
+                    aria-label={copy.previewAction(object.title)}
+                    title={copy.previewHandleTitle}
+                    onClick={(event) => {
+                      if (suppressClickAfterDragRef.current) {
+                        suppressClickAfterDragRef.current = false;
+                        return;
+                      }
+                      if (!isCompactViewport) {
+                        const cell = event.currentTarget.closest<HTMLElement>(
+                          "[data-listing-cell]",
+                        );
+                        if (cell) {
+                          const rect = cell.getBoundingClientRect();
+                          setPopoverPosition({
+                            top: rect.bottom + 8,
+                            left: rect.left,
+                          });
+                        }
+                      }
+                      setOpenId((current) =>
+                        current === object.id ? null : object.id,
+                      );
+                    }}
+                    className="shrink-0"
+                  >
+                    <AppIcon
+                      icon={Maximize2}
+                      size={14}
+                      strokeWidth={1.8}
+                      decorative
+                    />
+                  </Button>
+                </div>
+                <div className="mb-1">
+                  <ListingThumb
+                    object={object}
+                    selected={selected}
+                    label={selectLabel}
+                    onSelect={() => handleSelect(object.id)}
+                  />
+                </div>
+                <div>
+                  <span
+                    className={`mt-1.5 block truncate text-caption font-medium ${selected ? "text-foreground" : "text-foreground-secondary"}`}
+                  >
+                    {object.title}
+                  </span>
+                  <span className="mt-0.5 flex items-center gap-1">
+                    <span
+                      aria-hidden="true"
+                      className={`h-1.25 w-1.25 shrink-0 rounded-full ${STATUS_DOT_CLASS[object.status]}`}
+                    />
+                    <span className="truncate font-mono text-meta text-foreground-tertiary">
+                      {status}
+                    </span>
+                  </span>
+                </div>
+                <div className="mt-1">
+                  <ListingApplicantSlots
+                    listingId={object.id}
+                    activeApplicationsCount={object.activeApplicationsCount}
+                    applicantsState={getApplicantNamesState(object.id)}
+                    onInteraction={
+                      object.status === "draft" ? () => undefined : ensureLoaded
+                    }
+                  />
+                </div>
+              </div>
+            );
+          })}
 
-      {openObject && (isCompactViewport || popoverPosition)
-        ? createPortal(
-            <div
-              ref={popoverRef}
-              id={`listing-preview-${openObject.id}`}
-              role="dialog"
-              aria-label={copy.previewAction(openObject.title)}
-              tabIndex={-1}
-              className={
-                isCompactViewport
-                  ? "fixed top-1/2 left-1/2 z-30 max-h-[80dvh] w-72.5 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md border border-border bg-background shadow-card"
-                  : "fixed z-30 w-72.5 overflow-hidden rounded-md border border-border bg-background shadow-card"
+          {positionObject ? (
+            <ListingPositionDialog
+              object={positionObject}
+              objects={orderedObjects}
+              pending={reorderPendingId !== null}
+              trigger={positionTrigger}
+              onClose={closePositionDialog}
+              onMove={(position) =>
+                void persistReorder(positionObject.id, position)
               }
-              style={
-                isCompactViewport
-                  ? undefined
-                  : { top: popoverPosition?.top, left: popoverPosition?.left }
-              }
-            >
-              <ListingPreviewContent
-                object={openObject}
-                selected={openObject.id === selectedId}
-                onSelect={onSelect}
-                onClose={() => setOpenId(null)}
-              />
-            </div>,
-            document.body,
-          )
-        : null}
+            />
+          ) : null}
+
+          {openObject && (isCompactViewport || popoverPosition)
+            ? createPortal(
+                <div
+                  ref={popoverRef}
+                  id={`listing-preview-${openObject.id}`}
+                  role="dialog"
+                  aria-label={copy.previewAction(openObject.title)}
+                  tabIndex={-1}
+                  className={
+                    isCompactViewport
+                      ? "fixed top-1/2 left-1/2 z-30 max-h-[80dvh] w-72.5 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md border border-border bg-background shadow-card"
+                      : "fixed z-30 w-72.5 overflow-hidden rounded-md border border-border bg-background shadow-card"
+                  }
+                  style={
+                    isCompactViewport
+                      ? undefined
+                      : {
+                          top: popoverPosition?.top,
+                          left: popoverPosition?.left,
+                        }
+                  }
+                >
+                  <ListingPreviewContent
+                    object={openObject}
+                    selected={openObject.id === selectedId}
+                    onSelect={onSelect}
+                    onClose={() => setOpenId(null)}
+                  />
+                </div>,
+                document.body,
+              )
+            : null}
+        </div>
+      </ListingApplicantPreviewProvider>
     </div>
   );
 }

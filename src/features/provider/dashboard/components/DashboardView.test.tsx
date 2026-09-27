@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getCurrentUser } from "@/lib/api/auth";
+import { moveProviderListingToPosition } from "@/features/provider/listings-overview/api/provider-listings";
 import { rejectProviderApplication } from "../api/provider-application-rejection";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
@@ -42,6 +43,10 @@ vi.mock("../api/provider-dashboard", () => ({
   getProviderDashboardObjects: vi.fn(),
 }));
 
+vi.mock("@/features/provider/listings-overview/api/provider-listings", () => ({
+  moveProviderListingToPosition: vi.fn(),
+}));
+
 vi.mock("../api/provider-application-rejection", () => ({
   rejectProviderApplication: vi.fn(),
 }));
@@ -53,6 +58,59 @@ vi.mock("../hooks/useSelectedListingApplications", () => ({
 vi.mock("../hooks/useExitedApplications", () => ({
   useExitedApplications: vi.fn(),
 }));
+
+function deferred<T>() {
+  let resolvePromise: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((resolve) => {
+    resolvePromise = resolve;
+  });
+  return {
+    promise,
+    resolve: (value: T) => {
+      resolvePromise(value);
+    },
+  };
+}
+
+function withDisplayOrder(
+  source: DashboardObject,
+  id: string,
+  title: string,
+  displayOrder: number,
+): DashboardObject {
+  return {
+    ...source,
+    id,
+    title,
+    fullTitle: title,
+    address: title,
+    district: title,
+    displayOrder,
+  };
+}
+
+function reorderFixtures(): readonly [
+  DashboardObject,
+  DashboardObject,
+  DashboardObject,
+] {
+  const base = objects[0];
+  if (!base) throw new Error("Missing dashboard fixture");
+  return [
+    withDisplayOrder(base, "alpha", "Alpha", 1),
+    withDisplayOrder(base, "beta", "Beta", 2),
+    withDisplayOrder(base, "gamma", "Gamma", 3),
+  ];
+}
+
+function listingCellOrder(): string[] {
+  return Array.from(
+    document.querySelectorAll<HTMLElement>("[data-listing-cell]"),
+  ).flatMap((cell) => {
+    const id = cell.dataset.listingCell;
+    return id ? [id] : [];
+  });
+}
 
 const objects: readonly DashboardObject[] = [
   {
@@ -146,6 +204,7 @@ describe("DashboardView", () => {
     vi.clearAllMocks();
     window.localStorage.clear();
     vi.mocked(getProviderDashboardObjects).mockResolvedValue([]);
+    vi.mocked(moveProviderListingToPosition).mockResolvedValue(undefined);
     vi.mocked(rejectProviderApplication).mockResolvedValue();
     vi.mocked(getCurrentUser).mockResolvedValue({
       id: "provider-1",
@@ -181,7 +240,7 @@ describe("DashboardView", () => {
     render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
-    expect(screen.getByText(/1 aktive Bewerbungen/)).not.toBeNull();
+    expect(screen.getByText(/1 aktive Bewerbung/)).not.toBeNull();
   });
 
   it("changes the selected object from the object selector", async () => {
@@ -192,7 +251,7 @@ describe("DashboardView", () => {
 
     await screen.findByText("Saavedra");
     const secondObjectButton = screen.getAllByRole("button", {
-      name: /Zweite Wohnung/i,
+      name: /Zweite Wohnung, Entwurf, .*auswählen/,
     })[0];
     if (!secondObjectButton) throw new Error("Second object button not found");
     await user.click(secondObjectButton);
@@ -253,6 +312,67 @@ describe("DashboardView", () => {
     ).toBeNull();
   });
 
+  it("follows display order when search hides the stored listing", async () => {
+    const user = userEvent.setup();
+    const base = objects[0];
+    if (!base) throw new Error("Missing dashboard fixture");
+    const listed: readonly DashboardObject[] = [
+      {
+        ...base,
+        id: "nord",
+        title: "Nord",
+        fullTitle: "Nord",
+        address: "Nord",
+        district: "Nord",
+        displayOrder: 2,
+      },
+      {
+        ...base,
+        id: "ost",
+        title: "Ost",
+        fullTitle: "Ost",
+        address: "Ost",
+        district: "Ost",
+        displayOrder: 1,
+      },
+      {
+        ...base,
+        id: "sued",
+        title: "Sued",
+        fullTitle: "Sued",
+        address: "Sued",
+        district: "Sued",
+        displayOrder: 3,
+      },
+    ];
+    window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, "sued");
+
+    render(<DashboardView objects={listed} />);
+
+    await screen.findByText("Saavedra");
+    await user.type(
+      screen.getByRole("searchbox", { name: "Objekte durchsuchen" }),
+      "o",
+    );
+
+    expect(
+      screen.getAllByRole("button", { name: /Ost, Aktiv/ })[0],
+    ).toHaveProperty("ariaPressed", "true");
+    expect(
+      screen
+        .getAllByRole("button", { name: /Nord, Aktiv/ })
+        .every((button) => button.getAttribute("aria-pressed") === "false"),
+    ).toBe(true);
+    expect(screen.queryByText("Sued")).toBeNull();
+    expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBe(
+      "sued",
+    );
+    expect(useSelectedListingApplications).toHaveBeenLastCalledWith(
+      "ost",
+      "published",
+    );
+  });
+
   it("keeps the dashboard layout when there is no backend data", async () => {
     render(<DashboardView />);
 
@@ -296,7 +416,7 @@ describe("DashboardView", () => {
 
     expect(await screen.findByRole("alert")).not.toBeNull();
     expect(
-      screen.getByText("Ihre Objekte konnten nicht geladen werden"),
+      screen.getByText("Deine Objekte konnten nicht geladen werden"),
     ).not.toBeNull();
   });
 
@@ -321,7 +441,9 @@ describe("DashboardView", () => {
     render(<DashboardView objects={objects} />);
 
     await screen.findByText("Saavedra");
-    expect(screen.getByRole("link", { name: "Meine Objekte" })).not.toBeNull();
+    expect(
+      screen.getAllByRole("link", { name: "Alle Objekte" }).length,
+    ).toBeGreaterThan(0);
     expect(
       screen.getByRole("link", { name: "Neues Mietobjekt" }),
     ).not.toBeNull();
@@ -382,7 +504,7 @@ describe("DashboardView", () => {
 
     await screen.findByText("Saavedra");
     const secondObjectButton = screen.getAllByRole("button", {
-      name: /Zweite Wohnung/i,
+      name: /Zweite Wohnung, Entwurf, .*auswählen/,
     })[0];
     if (!secondObjectButton) throw new Error("Second object button not found");
     await user.click(secondObjectButton);
@@ -392,5 +514,108 @@ describe("DashboardView", () => {
       "draft",
     );
     expect(screen.queryByText("Kürzlich ausgeschieden")).toBeNull();
+  });
+
+  it("reconciles listing order from the refetch after the position update succeeds", async () => {
+    const user = userEvent.setup();
+    const [alpha, beta, gamma] = reorderFixtures();
+    const patch = deferred<void>();
+    const refetch = deferred<readonly DashboardObject[]>();
+    vi.mocked(moveProviderListingToPosition).mockReturnValue(patch.promise);
+    vi.mocked(getProviderDashboardObjects).mockReturnValue(refetch.promise);
+
+    render(<DashboardView objects={[alpha, beta, gamma]} />);
+    await screen.findByText("Saavedra");
+    await user.click(
+      screen.getByRole("button", { name: "Position von Alpha ändern" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Auf Position 3 verschieben",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
+      expect(listingCellOrder()).toEqual(["beta", "gamma", "alpha"]);
+    });
+    expect(getProviderDashboardObjects).not.toHaveBeenCalled();
+
+    patch.resolve(undefined);
+
+    await waitFor(() => {
+      expect(getProviderDashboardObjects).toHaveBeenCalledTimes(1);
+    });
+    expect(listingCellOrder()).toEqual(["beta", "gamma", "alpha"]);
+
+    refetch.resolve([
+      { ...gamma, displayOrder: 1 },
+      { ...beta, displayOrder: 2 },
+      { ...alpha, displayOrder: 3 },
+    ]);
+
+    await waitFor(() => {
+      expect(listingCellOrder()).toEqual(["gamma", "beta", "alpha"]);
+    });
+  });
+
+  it("reverts the listing order when the position update fails", async () => {
+    const user = userEvent.setup();
+    vi.mocked(moveProviderListingToPosition).mockRejectedValue(
+      new Error("save failed"),
+    );
+
+    render(<DashboardView objects={reorderFixtures()} />);
+    await screen.findByText("Saavedra");
+    await user.click(
+      screen.getByRole("button", { name: "Position von Alpha ändern" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Auf Position 3 verschieben",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert").textContent).toContain(
+        "konnte nicht gespeichert werden",
+      );
+    });
+    expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
+    expect(getProviderDashboardObjects).not.toHaveBeenCalled();
+    expect(listingCellOrder()).toEqual(["alpha", "beta", "gamma"]);
+  });
+
+  it("keeps the saved order and reports a refresh error when the refetch fails", async () => {
+    const user = userEvent.setup();
+    const calls: string[] = [];
+    vi.mocked(moveProviderListingToPosition).mockImplementation(async () => {
+      calls.push("patch");
+    });
+    vi.mocked(getProviderDashboardObjects).mockImplementation(async () => {
+      calls.push("get");
+      throw new Error("refresh failed");
+    });
+
+    render(<DashboardView objects={reorderFixtures()} />);
+    await screen.findByText("Saavedra");
+    await user.click(
+      screen.getByRole("button", { name: "Position von Alpha ändern" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Auf Position 3 verschieben",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert").textContent).toContain(
+        "Die Reihenfolge wurde gespeichert",
+      );
+    });
+    expect(calls).toEqual(["patch", "get"]);
+    expect(moveProviderListingToPosition).toHaveBeenCalledTimes(1);
+    expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
+    expect(listingCellOrder()).toEqual(["beta", "gamma", "alpha"]);
   });
 });

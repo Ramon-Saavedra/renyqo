@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
@@ -14,8 +15,10 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { Button } from "@/components/ui/button/Button";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
+import { moveProviderListingToPosition } from "@/features/provider/listings-overview/api/provider-listings";
 import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { useExitedApplications } from "../hooks/useExitedApplications";
+import { toListingApplicantPreview } from "../hooks/useListingApplicantNames";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
 import {
   TabRefreshProvider,
@@ -93,12 +96,33 @@ function DashboardViewContent({
   const [loadedObjects, setLoadedObjects] = useState<
     readonly DashboardObject[]
   >([]);
+  const [refreshedObjects, setRefreshedObjects] = useState<
+    readonly DashboardObject[] | null
+  >(null);
   const [isLoading, setIsLoading] = useState(shouldLoadObjects);
   const [loadError, setLoadError] = useState(false);
-  const objects = initialObjects ?? loadedObjects;
+  const objects = refreshedObjects ?? initialObjects ?? loadedObjects;
   const [search, setSearch] = useState("");
   const selectedId = useStoredSelectedObjectId();
   const accent = useAccent();
+
+  const handleReorder = useCallback(
+    async (listingId: string, position: number) => {
+      await moveProviderListingToPosition(listingId, position);
+      try {
+        const nextObjects = await getProviderDashboardObjects();
+        if (initialObjects === undefined) {
+          setLoadedObjects(nextObjects);
+        } else {
+          setRefreshedObjects(nextObjects);
+        }
+      } catch {
+        return "refresh-failed" as const;
+      }
+      return undefined;
+    },
+    [initialObjects],
+  );
 
   useEffect(() => {
     if (!shouldLoadObjects) return;
@@ -128,22 +152,41 @@ function DashboardViewContent({
     };
   }, [refreshRevision, shouldLoadObjects]);
 
+  const orderedObjects = useMemo(
+    () =>
+      [...objects].sort(
+        (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0),
+      ),
+    [objects],
+  );
   const matrixObjects = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    if (!needle) return objects;
-    return objects.filter(
-      (o) =>
-        o.title.toLowerCase().includes(needle) ||
-        o.fullTitle.toLowerCase().includes(needle) ||
-        o.address.toLowerCase().includes(needle) ||
-        o.district.toLowerCase().includes(needle),
+    if (!needle) return orderedObjects;
+    return orderedObjects.filter(
+      (object) =>
+        object.title.toLowerCase().includes(needle) ||
+        object.fullTitle.toLowerCase().includes(needle) ||
+        object.address.toLowerCase().includes(needle) ||
+        object.district.toLowerCase().includes(needle),
     );
-  }, [objects, search]);
+  }, [orderedObjects, search]);
 
   const selected = useMemo(
-    () => objects.find((o) => o.id === selectedId) ?? objects[0] ?? null,
-    [objects, selectedId],
+    () =>
+      orderedObjects.find((object) => object.id === selectedId) ??
+      orderedObjects[0] ??
+      null,
+    [orderedObjects, selectedId],
   );
+  const hasSearch = search.trim().length > 0;
+  const shownSelected = useMemo(() => {
+    if (!selected) return null;
+    if (!hasSearch) return selected;
+    if (matrixObjects.some((object) => object.id === selected.id)) {
+      return selected;
+    }
+    return matrixObjects[0] ?? null;
+  }, [hasSearch, matrixObjects, selected]);
 
   const {
     candidates: selectedCandidates,
@@ -151,8 +194,8 @@ function DashboardViewContent({
     isLoading: isApplicationsLoading,
     hasError: hasApplicationsError,
   } = useSelectedListingApplications(
-    selected?.id ?? null,
-    selected?.status ?? null,
+    shownSelected?.id ?? null,
+    shownSelected?.status ?? null,
   );
 
   const {
@@ -162,7 +205,30 @@ function DashboardViewContent({
     restorationState,
     restoreCandidate,
     resetRestoration,
-  } = useExitedApplications(selected?.id ?? null, selected?.status ?? null);
+  } = useExitedApplications(
+    shownSelected?.id ?? null,
+    shownSelected?.status ?? null,
+  );
+  const preloadedApplicants = useMemo(() => {
+    if (!shownSelected || shownSelected.status === "draft") return null;
+    if (hasApplicationsError) return null;
+    if (isApplicationsLoading) {
+      return {
+        listingId: shownSelected.id,
+        status: "loading" as const,
+      };
+    }
+    return {
+      listingId: shownSelected.id,
+      status: "ready" as const,
+      previews: selectedCandidates.map(toListingApplicantPreview),
+    };
+  }, [
+    hasApplicationsError,
+    isApplicationsLoading,
+    selectedCandidates,
+    shownSelected,
+  ]);
 
   const publishedCount = objects.filter((o) => o.status === "published").length;
   const draftCount = objects.filter((o) => o.status === "draft").length;
@@ -285,8 +351,11 @@ function DashboardViewContent({
           <div className="mt-4">
             <ListingMatrix
               objects={matrixObjects}
-              selectedId={selected?.id ?? null}
+              orderObjects={objects}
+              selectedId={shownSelected?.id ?? null}
               onSelect={setStoredSelectedObjectId}
+              onReorder={handleReorder}
+              preloadedApplicants={preloadedApplicants}
             />
             {matrixObjects.length === 0 ? (
               <p
@@ -298,19 +367,21 @@ function DashboardViewContent({
             ) : null}
           </div>
 
-          {selected ? <SelectedObjectCard object={selected} /> : null}
+          {shownSelected ? <SelectedObjectCard object={shownSelected} /> : null}
 
-          <CandidatesSection
-            object={selected}
-            candidates={selectedCandidates}
-            waitingCountState={waitingCountState}
-            isLoading={isApplicationsLoading}
-            hasError={hasApplicationsError}
-          />
+          {shownSelected ? (
+            <CandidatesSection
+              object={shownSelected}
+              candidates={selectedCandidates}
+              waitingCountState={waitingCountState}
+              isLoading={isApplicationsLoading}
+              hasError={hasApplicationsError}
+            />
+          ) : null}
 
-          {selected && selected.status !== "draft" ? (
+          {shownSelected && shownSelected.status !== "draft" ? (
             <RecentExitsRail
-              key={selected.id}
+              key={shownSelected.id}
               exits={recentExits}
               isLoading={isExitedApplicationsLoading}
               hasError={hasExitedApplicationsError}
