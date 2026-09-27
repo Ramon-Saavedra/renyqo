@@ -19,15 +19,38 @@ function TopbarSkeleton() {
 
 function MatrixSkeleton() {
   return (
-    <div className="scrollbar-slim flex flex-nowrap items-start gap-x-3 overflow-x-scroll px-1 pt-2 pb-1">
+    <div className="scrollbar-slim flex flex-nowrap items-start gap-x-3 overflow-x-auto px-1 pt-2 pb-1">
       {Array.from({ length: 10 }).map((_, index) => (
         <div
           key={`matrix-cell-${index}`}
-          className="flex w-22 shrink-0 flex-col gap-1.5 @min-[640px]:w-24"
+          className="w-28 shrink-0 rounded-md border border-border px-2 py-1"
         >
+          <div className="mb-1 flex h-6 w-full items-center justify-between">
+            <RenyqoSkeleton className="h-6 w-6 rounded-sm" />
+            <RenyqoSkeleton className="h-6 w-6 rounded-sm" />
+            <RenyqoSkeleton className="h-6 w-6 rounded-sm" />
+          </div>
           <RenyqoSkeleton height={64} className="w-full rounded-md" />
-          <RenyqoSkeleton variant="text" height={11} width="80%" />
-          <RenyqoSkeleton variant="text" height={9} width="45%" />
+          <RenyqoSkeleton
+            variant="text"
+            height={11}
+            width="80%"
+            className="mt-1.5"
+          />
+          <RenyqoSkeleton
+            variant="text"
+            height={9}
+            width="45%"
+            className="mt-0.5"
+          />
+          <div className="mt-1 flex h-4 items-center justify-between gap-0.5">
+            {Array.from({ length: 5 }).map((_, slotIndex) => (
+              <RenyqoSkeleton
+                key={`matrix-slot-${index}-${slotIndex}`}
+                className="h-4 w-4"
+              />
+            ))}
+          </div>
         </div>
       ))}
     </div>

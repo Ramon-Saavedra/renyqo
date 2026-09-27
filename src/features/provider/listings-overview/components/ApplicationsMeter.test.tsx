@@ -11,4 +11,12 @@ describe("ApplicationsMeter", () => {
       screen.getByRole("img", { name: "2 von 5 aktiven Bewerbungen" }),
     ).toBeInstanceOf(HTMLElement);
   });
+
+  it("caps the spoken count at five visible applications", () => {
+    render(<ApplicationsMeter active={7} />);
+
+    expect(
+      screen.getByRole("img", { name: "5 von 5 aktiven Bewerbungen" }),
+    ).toBeInstanceOf(HTMLElement);
+  });
 });

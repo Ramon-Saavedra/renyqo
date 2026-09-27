@@ -104,10 +104,12 @@ export function CandidateLane({
                 <span className="mt-3 block truncate text-body font-medium text-foreground">
                   {candidate.name}
                 </span>
-                <span className="mt-1 flex items-center justify-between gap-2 text-caption text-foreground-tertiary">
-                  <span className="truncate">{candidate.household}</span>
+                <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-foreground-tertiary">
+                  <span className="whitespace-nowrap">
+                    {candidate.household}
+                  </span>
                   {candidate.activeAtLabel ? (
-                    <span className="flex shrink-0 items-center gap-1 text-success">
+                    <span className="flex items-center gap-1 whitespace-nowrap text-success">
                       <AppIcon
                         icon={ArrowRight}
                         size={11}

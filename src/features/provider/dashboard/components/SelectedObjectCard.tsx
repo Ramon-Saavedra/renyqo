@@ -42,10 +42,11 @@ const STATUS_TEXT_CLASS: Record<DashboardObject["status"], string> = {
 };
 
 const ACTION_CLASS =
-  "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-action font-medium";
+  "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-action font-medium max-sm:w-11 max-sm:justify-center max-sm:px-0";
 const PRIMARY_ACTION_CLASS = `${ACTION_CLASS} bg-primary text-primary-foreground hover:bg-primary-hover`;
 const SECONDARY_ACTION_CLASS = `${ACTION_CLASS} bg-transparent text-foreground-secondary hover:bg-background-muted hover:text-foreground`;
 const DISABLED_SECONDARY_ACTION_CLASS = `${ACTION_CLASS} border border-border text-foreground-tertiary cursor-not-allowed`;
+const ACTION_LABEL_CLASS = "max-sm:sr-only";
 
 function resolveAttentionText(object: DashboardObject): string | null {
   if (!object.needsAttention || !object.attentionReason) return null;
@@ -125,12 +126,12 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
                 width={80}
                 height={80}
                 quality={90}
-                className="hidden h-20 w-20 shrink-0 rounded-md border border-border object-cover sm:block"
+                className="h-20 w-20 shrink-0 rounded-md border border-border object-cover"
               />
             ) : (
               <div
                 aria-hidden="true"
-                className="hidden h-20 w-20 shrink-0 items-center justify-center rounded-md bg-background-muted text-foreground-tertiary sm:flex"
+                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md bg-background-muted text-foreground-tertiary"
               >
                 <AppIcon icon={Home} size={26} strokeWidth={1.4} decorative />
               </div>
@@ -162,19 +163,26 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
-          <Link href={listingsHref} className={SECONDARY_ACTION_CLASS}>
+          <Link
+            href={listingsHref}
+            aria-label={copy.preview}
+            title={copy.preview}
+            className={SECONDARY_ACTION_CLASS}
+          >
             <ActionIcon icon={Eye} />
-            {copy.preview}
+            <span className={ACTION_LABEL_CLASS}>{copy.preview}</span>
           </Link>
           {isArchived ? (
             <button
               type="button"
               disabled
               aria-disabled="true"
+              aria-label={copy.share}
+              title={copy.share}
               className={DISABLED_SECONDARY_ACTION_CLASS}
             >
               <ActionIcon icon={Share2} />
-              {copy.share}
+              <span className={ACTION_LABEL_CLASS}>{copy.share}</span>
             </button>
           ) : (
             <PopoverPanel
@@ -185,10 +193,11 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
                 <button
                   {...triggerProps}
                   ref={triggerRef}
+                  title={copy.share}
                   className={SECONDARY_ACTION_CLASS}
                 >
                   <ActionIcon icon={Share2} />
-                  {copy.share}
+                  <span className={ACTION_LABEL_CLASS}>{copy.share}</span>
                 </button>
               )}
             >
@@ -201,10 +210,12 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
           )}
           <Link
             href={`/provider/listings/${object.id}`}
+            aria-label={copy.edit}
+            title={copy.edit}
             className={PRIMARY_ACTION_CLASS}
           >
             <ActionIcon icon={Pencil} />
-            {copy.edit}
+            <span className={ACTION_LABEL_CLASS}>{copy.edit}</span>
           </Link>
         </div>
       </div>

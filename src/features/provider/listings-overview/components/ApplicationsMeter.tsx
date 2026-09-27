@@ -12,6 +12,7 @@ const ICON_ACTIVE = "text-success-vivid";
 const ICON_INACTIVE = "text-foreground-tertiary";
 
 export function ApplicationsMeter({ active }: ApplicationsMeterProps) {
+  const visibleActive = Math.min(active, MAX_ACTIVE_APPLICATIONS);
   const label = listingsCopy.row.applicationsAria(active);
   return (
     <span
@@ -27,7 +28,7 @@ export function ApplicationsMeter({ active }: ApplicationsMeterProps) {
           size={13}
           strokeWidth={1.5}
           decorative
-          className={cn(i < active ? ICON_ACTIVE : ICON_INACTIVE)}
+          className={cn(i < visibleActive ? ICON_ACTIVE : ICON_INACTIVE)}
         />
       ))}
     </span>
