@@ -135,8 +135,9 @@ describe("useListingApplicantNames", () => {
   });
 
   it("discards an in-flight preview after an authoritative refresh", async () => {
-    let resolveFirst: (value: readonly ProviderActiveApplication[]) => void = () =>
-      undefined;
+    let resolveFirst: (
+      value: readonly ProviderActiveApplication[],
+    ) => void = () => undefined;
     vi.mocked(getProviderActiveApplications).mockImplementationOnce(
       () =>
         new Promise((resolve) => {
