@@ -61,6 +61,7 @@ describe("useSelectedListingApplications", () => {
       candidates: [],
       waitingCountState: { status: "idle" },
       isLoading: false,
+      isRefreshing: false,
       hasError: false,
     });
     expect(getProviderActiveApplications).not.toHaveBeenCalled();
@@ -195,6 +196,7 @@ describe("useSelectedListingApplications", () => {
       candidates: [],
       waitingCountState: { status: "idle" },
       isLoading: false,
+      isRefreshing: false,
       hasError: false,
     });
 
@@ -383,6 +385,7 @@ describe("useSelectedListingApplications", () => {
       candidates: [],
       waitingCountState: { status: "idle" },
       isLoading: false,
+      isRefreshing: false,
       hasError: false,
     });
     expect(getProviderActiveApplications).not.toHaveBeenCalled();

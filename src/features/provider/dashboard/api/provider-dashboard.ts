@@ -34,6 +34,9 @@ function formatDateTime(value: string | null): string | null {
 function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
   return {
     id: listing.id,
+    ...(listing.displayOrder === undefined
+      ? {}
+      : { displayOrder: listing.displayOrder }),
     title: listing.title,
     fullTitle: listing.title,
     objectType: listing.objectType ?? null,

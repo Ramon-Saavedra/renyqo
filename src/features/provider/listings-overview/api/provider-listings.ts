@@ -1,4 +1,4 @@
-import { apiGet, apiPatchVoid } from "@/lib/api/client";
+import { apiGet, apiPatch, apiPatchVoid } from "@/lib/api/client";
 import { normalizeObjectType } from "@/lib/api/listings";
 import {
   isRecord,
@@ -15,6 +15,7 @@ import type {
   ListingStatus,
 } from "../types";
 import { parseActiveApplicationsCount } from "./parse-active-applications-count";
+import { parseDisplayOrder } from "./parse-display-order";
 
 const FALLBACK_DATE = "1970-01-01T00:00:00.000Z";
 
@@ -74,9 +75,11 @@ function mapProviderListing(value: unknown): ListingOverviewItem | null {
   const activeApplicationsCount = parseActiveApplicationsCount(
     value.activeApplicationsCount,
   );
+  const displayOrder = parseDisplayOrder(value.displayOrder);
 
   return {
     id,
+    displayOrder,
     title: readString(value, ["title"]) ?? "Unbenanntes Objekt",
     objectType: normalizeObjectType(readString(value, ["objectType", "type"])),
     displayAddress: buildDisplayAddress(value),
@@ -120,6 +123,16 @@ export async function getProviderListings(): Promise<
 
 export async function publishProviderListing(id: string): Promise<void> {
   await apiPatchVoid(`/api/v1/provider/listings/${id}/publish`);
+}
+
+export async function moveProviderListingToPosition(
+  id: string,
+  position: number,
+): Promise<void> {
+  await apiPatch<unknown>(
+    `/api/v1/provider/listings/${encodeURIComponent(id)}/position`,
+    { position },
+  );
 }
 
 export async function moveProviderListingToDraft(id: string): Promise<void> {

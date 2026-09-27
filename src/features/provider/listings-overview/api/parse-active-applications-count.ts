@@ -1,5 +1,3 @@
-import { MAX_ACTIVE_APPLICATIONS } from "../types";
-
 export class InvalidActiveApplicationsCountError extends Error {
   constructor(message: string) {
     super(message);
@@ -26,9 +24,9 @@ export function parseActiveApplicationsCount(value: unknown): number {
     );
   }
 
-  if (value < 0 || value > MAX_ACTIVE_APPLICATIONS) {
+  if (value < 0) {
     throw new InvalidActiveApplicationsCountError(
-      `activeApplicationsCount must be between 0 and ${MAX_ACTIVE_APPLICATIONS}`,
+      "activeApplicationsCount must be non-negative",
     );
   }
 

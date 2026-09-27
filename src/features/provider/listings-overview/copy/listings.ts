@@ -93,10 +93,14 @@ export const listingsCopy = {
     livingArea: "Fläche",
     rooms: "Zimmer",
     applications: "Bewerbungen",
-    applicationsAria: (active: number) =>
-      `${active} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen`,
-    applicationsLabel: (active: number) =>
-      `${active} / ${MAX_ACTIVE_APPLICATIONS} aktiv`,
+    applicationsAria: (active: number) => {
+      const shown = Math.min(active, MAX_ACTIVE_APPLICATIONS);
+      return `${shown} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen`;
+    },
+    applicationsLabel: (active: number) => {
+      const shown = Math.min(active, MAX_ACTIVE_APPLICATIONS);
+      return `${shown} / ${MAX_ACTIVE_APPLICATIONS} aktiv`;
+    },
     activity: "Letzte Aktivität",
     editLabel: "Bearbeiten",
     moreLabel: "Aktionen",

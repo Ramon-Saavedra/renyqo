@@ -207,6 +207,49 @@ describe("useListingData", () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it("marks a silent refresh until the current response arrives", async () => {
+    let resolveRefresh:
+      | ((value: { data: SampleData; hasError: boolean }) => void)
+      | undefined;
+    const refreshRequest = new Promise<{
+      data: SampleData;
+      hasError: boolean;
+    }>((resolve) => {
+      resolveRefresh = resolve;
+    });
+    const load = vi
+      .fn()
+      .mockResolvedValueOnce({ data: { items: ["a"] }, hasError: false })
+      .mockImplementationOnce(() => refreshRequest);
+
+    const { result } = renderHook(
+      () =>
+        useListingData("listing-1", "published", idleData, loadingData, load),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual({ items: ["a"] });
+    });
+    expect(result.current.isRefreshing).toBe(false);
+
+    fireFocus();
+
+    await waitFor(() => {
+      expect(result.current.isRefreshing).toBe(true);
+    });
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.data).toEqual({ items: ["a"] });
+
+    resolveRefresh?.({ data: { items: ["b"] }, hasError: false });
+
+    await waitFor(() => {
+      expect(result.current.isRefreshing).toBe(false);
+    });
+    expect(result.current.data).toEqual({ items: ["b"] });
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it("ignores stale responses after the listing changes", async () => {
     let resolveFirst:
       | ((value: { data: SampleData; hasError: boolean }) => void)

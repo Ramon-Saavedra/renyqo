@@ -39,13 +39,17 @@ export const OBJECT_STATUS_SHORT_LABEL: Record<DashboardObjectStatus, string> =
     archived: "Archiv",
   };
 
+export function formatActiveApplicationsCount(count: number): string {
+  return `${count} aktive ${count === 1 ? "Bewerbung" : "Bewerbungen"}`;
+}
+
 export const dashboardCopy = {
   loading: "Dashboard wird vorbereitet …",
   error:
     "Dashboard konnte nicht geladen werden. Bitte versuche es gleich erneut.",
   fullError: {
     eyebrow: "Verbindungsfehler",
-    title: "Ihre Objekte konnten nicht geladen werden",
+    title: "Deine Objekte konnten nicht geladen werden",
     body: "Es gehen keine Daten verloren. Bitte versuche es erneut.",
     retry: "Erneut versuchen",
   },
@@ -60,7 +64,7 @@ export const dashboardCopy = {
     searchPlaceholder: "Objekt suchen…",
     searchAria: "Objekte durchsuchen",
     searchClear: "Suche leeren",
-    objects: "Meine Objekte",
+    objects: "Alle Objekte",
     objectsHref: "/provider/listings",
     newListing: "Neues Mietobjekt",
     newListingHref: "/provider/listings/new",
@@ -87,21 +91,26 @@ export const dashboardCopy = {
       drafts: number,
       activeApplications: number,
     ) =>
-      `${total} Objekte · ${published} veröffentlicht · ${drafts} Entwürfe · ${activeApplications} aktive Bewerbungen`,
+      `${total} Objekte · ${published} veröffentlicht · ${drafts} Entwürfe · ${formatActiveApplicationsCount(activeApplications)}`,
     allObjects: "Alle Objekte",
-    noMatch: (query: string) => `Kein Objekt gefunden für „${query}".`,
+    noMatch: (query: string) => `Kein Objekt gefunden für „${query}“.`,
+    dragHandleTitle: "Reihenfolge ändern",
+    positionHandleTitle: "Position ändern",
+    previewHandleTitle: "Vorschau",
     previewAction: (short: string) => `Vorschau zu ${short}`,
     selectAction: "Auswählen",
-    openListing: "Objekt öffnen",
+    openListing: "Bearbeiten",
     cellAria: (
       short: string,
       status: string,
       active: number,
       selected: boolean,
-    ) =>
-      selected
-        ? `${short}, ${status}, ${active} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen, aktuell ausgewählt`
-        : `${short}, ${status}, ${active} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen — als aktuelles Objekt auswählen`,
+    ) => {
+      const shown = Math.min(active, MAX_ACTIVE_APPLICATIONS);
+      return selected
+        ? `${short}, ${status}, ${shown} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen, aktuell ausgewählt`
+        : `${short}, ${status}, ${shown} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen — als aktuelles Objekt auswählen`;
+    },
   },
   attention: {
     openQuestions: (count: number) =>
@@ -115,7 +124,7 @@ export const dashboardCopy = {
     emptyTitle: "Noch keine Mietobjekte",
     emptyAddress: "Lege ein Mietobjekt an, um Details zu sehen.",
     edit: "Bearbeiten",
-    preview: "Vorschau",
+    preview: "Zur Übersicht",
     share: "Teilen",
     publishedCaption: "Veröffentlicht am",
     updatedCaption: "Zuletzt bearbeitet am",
@@ -182,6 +191,8 @@ export const dashboardCopy = {
       provider_discarded: "Abgelehnt",
       system_removed: "Systemseitig entfernt",
     },
+    activeSince: "Aktiv seit",
+    exitedOn: "Ausgeschieden",
     viewLabel: "Profil ansehen",
     viewAction: (name: string) => `Profil ansehen — ${name}`,
     restoreLabel: "Wiederherstellen",

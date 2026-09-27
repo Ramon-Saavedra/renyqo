@@ -52,7 +52,7 @@ describe("SelectedObjectCard", () => {
     expect(screen.getByText("60 m²")).not.toBeNull();
     expect(screen.getByText("900 €")).not.toBeNull();
     const editLink = screen.getByRole("link", { name: /Bearbeiten/i });
-    const previewLink = screen.getByRole("link", { name: /Vorschau/i });
+    const previewLink = screen.getByRole("link", { name: /Zur Übersicht/i });
     expect(editLink.getAttribute("href")).toBe("/provider/listings/object-1");
     expect(editLink.className).toContain("bg-primary");
     expect(editLink.className).toContain("hover:bg-primary-hover");

@@ -173,7 +173,7 @@ export function RecentExitsRail({
                       </span>
                     </span>
                     {exit.activeAtLabel ? (
-                      <span className="flex items-center gap-1.5 pl-px font-mono text-meta text-success">
+                      <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 pl-px font-mono text-meta text-success">
                         <AppIcon
                           icon={ArrowRight}
                           size={12}
@@ -181,10 +181,13 @@ export function RecentExitsRail({
                           decorative
                           className="shrink-0"
                         />
-                        {exit.activeAtLabel}
+                        <span>{copy.activeSince}</span>
+                        <span className="text-success">
+                          {exit.activeAtLabel}
+                        </span>
                       </span>
                     ) : null}
-                    <span className="flex items-center gap-1.5 pl-px font-mono text-meta text-danger">
+                    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 pl-px font-mono text-meta text-danger">
                       <AppIcon
                         icon={ArrowLeft}
                         size={12}
@@ -192,7 +195,10 @@ export function RecentExitsRail({
                         decorative
                         className="shrink-0"
                       />
-                      {exit.exitedAtDateLabel}
+                      <span>{copy.exitedOn}</span>
+                      <span className="text-danger">
+                        {exit.exitedAtDateLabel}
+                      </span>
                     </span>
                   </span>
                 ))}

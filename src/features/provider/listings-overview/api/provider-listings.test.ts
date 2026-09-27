@@ -1,21 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { apiGet, apiPatchVoid } from "@/lib/api/client";
+import { apiGet, apiPatch, apiPatchVoid } from "@/lib/api/client";
 import { InvalidActiveApplicationsCountError } from "./parse-active-applications-count";
+import { InvalidDisplayOrderError } from "./parse-display-order";
 import {
   archiveProviderListing,
   getProviderListings,
+  moveProviderListingToPosition,
   moveProviderListingToDraft,
   publishProviderListing,
 } from "./provider-listings";
 
 vi.mock("@/lib/api/client", () => ({
   apiGet: vi.fn(),
+  apiPatch: vi.fn(),
   apiPatchVoid: vi.fn(),
 }));
 
 const baseListing = {
   id: "listing-1",
+  displayOrder: 1,
   title: "Wohnung in Berlin",
   objectType: "HOUSE",
   photos: ["https://example.com/cover.jpg"],
@@ -55,6 +59,7 @@ describe("getProviderListings", () => {
     await expect(getProviderListings()).resolves.toEqual([
       {
         id: "listing-1",
+        displayOrder: 1,
         title: "Wohnung in Berlin",
         objectType: "HOUSE",
         displayAddress: "Musterstraße 1 · Berlin · 10115",
@@ -129,14 +134,12 @@ describe("getProviderListings", () => {
     );
   });
 
-  it("rejects activeApplicationsCount above 5", async () => {
+  it("accepts activeApplicationsCount above the visual capacity", async () => {
     vi.mocked(apiGet).mockResolvedValue([
       { ...baseListing, activeApplicationsCount: 6 },
     ]);
 
-    await expect(getProviderListings()).rejects.toBeInstanceOf(
-      InvalidActiveApplicationsCountError,
-    );
+    await expect(getProviderListings()).resolves.toHaveLength(1);
   });
 
   it("does not infer ACTIVE from applicationsTotal aliases", async () => {
@@ -161,6 +164,7 @@ describe("getProviderListings", () => {
         { title: "Missing id", activeApplicationsCount: 1 },
         {
           id: "listing-2",
+          displayOrder: 2,
           displayAddress: "Direkte Adresse",
           status: "draft",
           activeApplicationsCount: 0,
@@ -171,6 +175,7 @@ describe("getProviderListings", () => {
     await expect(getProviderListings()).resolves.toEqual([
       {
         id: "listing-2",
+        displayOrder: 2,
         title: "Unbenanntes Objekt",
         objectType: null,
         displayAddress: "Direkte Adresse",
@@ -200,6 +205,28 @@ describe("getProviderListings", () => {
 
     expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/publish",
+    );
+  });
+
+  it("rejects a missing displayOrder", async () => {
+    const listingWithoutOrder = Object.fromEntries(
+      Object.entries(baseListing).filter(([key]) => key !== "displayOrder"),
+    );
+    vi.mocked(apiGet).mockResolvedValue([listingWithoutOrder]);
+
+    await expect(getProviderListings()).rejects.toBeInstanceOf(
+      InvalidDisplayOrderError,
+    );
+  });
+
+  it("moves a provider listing to a position", async () => {
+    vi.mocked(apiPatch).mockResolvedValue({});
+
+    await moveProviderListingToPosition("listing-1", 3);
+
+    expect(apiPatch).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1/position",
+      { position: 3 },
     );
   });
 

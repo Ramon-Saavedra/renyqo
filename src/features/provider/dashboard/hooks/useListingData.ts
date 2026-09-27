@@ -14,6 +14,7 @@ interface ListingDataState<T> {
 interface ListingDataResult<T> {
   readonly data: T;
   readonly isLoading: boolean;
+  readonly isRefreshing: boolean;
   readonly hasError: boolean;
   readonly updateData: (update: (current: T) => T) => void;
 }
@@ -40,6 +41,9 @@ export function useListingData<T>(
   const requestIdsRef = useRef(new Map<string, number>());
   const [prevActiveListingId, setPrevActiveListingId] =
     useState(activeListingId);
+  const [seenRefreshRevision, setSeenRefreshRevision] =
+    useState(refreshRevision);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [state, setState] = useState<ListingDataState<T>>({
     listingId: null,
     data: idleData,
@@ -94,6 +98,7 @@ export function useListingData<T>(
         )
           return;
         loadedListingIdRef.current = currentListingId;
+        setIsRefreshing(false);
         setState((current) => {
           if (current.listingId !== currentListingId) return current;
           if (isRefresh && result.hasError) {
@@ -113,6 +118,7 @@ export function useListingData<T>(
         )
           return;
         loadedListingIdRef.current = currentListingId;
+        setIsRefreshing(false);
         setState((current) => {
           if (current.listingId !== currentListingId) return current;
           if (isRefresh) {
@@ -135,12 +141,32 @@ export function useListingData<T>(
     };
   }, [activeListingId, refreshRevision, load, idleData]);
 
-  if (activeListingId !== prevActiveListingId) {
-    setPrevActiveListingId(activeListingId);
+  if (
+    refreshRevision !== seenRefreshRevision ||
+    activeListingId !== prevActiveListingId
+  ) {
+    const listingChanged = activeListingId !== prevActiveListingId;
+    if (refreshRevision !== seenRefreshRevision) {
+      setSeenRefreshRevision(refreshRevision);
+    }
+    if (listingChanged) setPrevActiveListingId(activeListingId);
+    const sameLoadedListing =
+      !listingChanged &&
+      refreshRevision !== seenRefreshRevision &&
+      activeListingId !== null &&
+      state.listingId === activeListingId &&
+      !state.isLoading;
+    setIsRefreshing(sameLoadedListing);
   }
 
   if (!activeListingId) {
-    return { data: idleData, isLoading: false, hasError: false, updateData };
+    return {
+      data: idleData,
+      isLoading: false,
+      isRefreshing: false,
+      hasError: false,
+      updateData,
+    };
   }
 
   const resumedFromInactive =
@@ -151,12 +177,19 @@ export function useListingData<T>(
     resumedFromInactive ||
     state.isLoading
   ) {
-    return { data: loadingData, isLoading: true, hasError: false, updateData };
+    return {
+      data: loadingData,
+      isLoading: true,
+      isRefreshing: false,
+      hasError: false,
+      updateData,
+    };
   }
 
   return {
     data: state.data,
     isLoading: false,
+    isRefreshing,
     hasError: state.hasError,
     updateData,
   };
