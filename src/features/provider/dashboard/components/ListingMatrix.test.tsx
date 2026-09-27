@@ -454,4 +454,48 @@ describe("ListingMatrix", () => {
 
     expect(getProviderActiveApplications).not.toHaveBeenCalled();
   });
+
+  it("keeps keyboard focus while a position save is pending and restores it afterwards", async () => {
+    let release: (() => void) | undefined;
+    const onReorder = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+    );
+    render(
+      <ListingMatrix
+        objects={[
+          buildOrderedObject("A", 1),
+          buildOrderedObject("B", 2),
+          buildOrderedObject("C", 3),
+        ]}
+        selectedId="A"
+        onSelect={vi.fn()}
+        onReorder={onReorder}
+      />,
+    );
+
+    const trigger = screen.getByRole("button", {
+      name: "Position von A ändern",
+    });
+    fireEvent.click(trigger);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Auf Position 3 verschieben" }),
+    );
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        screen.getByRole("button", { name: "Vorschau zu A" }),
+      );
+    });
+    expect((trigger as HTMLButtonElement).disabled).toBe(true);
+
+    release?.();
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(trigger);
+    });
+    expect((trigger as HTMLButtonElement).disabled).toBe(false);
+  });
 });

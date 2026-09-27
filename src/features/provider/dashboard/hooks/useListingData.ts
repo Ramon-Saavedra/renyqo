@@ -154,8 +154,8 @@ export function useListingData<T>(
       !listingChanged &&
       refreshRevision !== seenRefreshRevision &&
       activeListingId !== null &&
-      loadedListingIdRef.current === activeListingId &&
-      stateListingIdRef.current === activeListingId;
+      state.listingId === activeListingId &&
+      !state.isLoading;
     setIsRefreshing(sameLoadedListing);
   }
 

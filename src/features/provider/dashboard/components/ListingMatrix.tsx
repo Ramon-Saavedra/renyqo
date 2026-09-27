@@ -66,7 +66,7 @@ const DIMMED_STATUS: readonly DashboardObjectStatus[] = ["draft", "archived"];
 const GRID_CLASS =
   "scrollbar-slim flex flex-nowrap items-start gap-x-3 gap-y-4 overflow-x-auto px-1 pt-2 pb-1";
 
-const CELL_WIDTH_CLASS = "w-28 shrink-0";
+const CELL_WIDTH_CLASS = "w-36 shrink-0";
 
 function moveIdToPosition(
   ids: readonly string[],
@@ -77,6 +77,18 @@ function moveIdToPosition(
   const index = Math.min(Math.max(position, 1), next.length + 1) - 1;
   next.splice(index, 0, listingId);
   return next;
+}
+
+function focusEnabledListingControl(trigger: HTMLElement) {
+  const cell = trigger.closest("[data-listing-cell]");
+  if (!(cell instanceof HTMLElement)) return;
+  const preview = Array.from(
+    cell.querySelectorAll<HTMLButtonElement>("button"),
+  ).find(
+    (button) =>
+      button !== trigger && button.getAttribute("aria-haspopup") === "dialog",
+  );
+  preview?.focus();
 }
 
 const PREVIEW_CLOSE_BUTTON_CLASS =
@@ -247,6 +259,7 @@ export function ListingMatrix({
   const lastDragOverIdRef = useRef<string | null>(null);
   const suppressClickAfterDragRef = useRef(false);
   const reorderInFlightRef = useRef(false);
+  const positionFocusRestoreRef = useRef<HTMLElement | null>(null);
   const committedOrderIdsRef = useRef<readonly string[] | null>(null);
   const dragOrderSnapshotRef = useRef<{
     readonly signature: string;
@@ -296,10 +309,24 @@ export function ListingMatrix({
   const closePositionDialog = useCallback(
     (restoreFocus = true) => {
       setPositionObjectId(null);
-      if (restoreFocus) positionTrigger?.focus();
+      if (!restoreFocus || !positionTrigger) return;
+      if (reorderInFlightRef.current) {
+        positionFocusRestoreRef.current = positionTrigger;
+        focusEnabledListingControl(positionTrigger);
+        return;
+      }
+      positionTrigger.focus();
     },
     [positionTrigger],
   );
+
+  useEffect(() => {
+    if (reorderPendingId !== null) return;
+    const target = positionFocusRestoreRef.current;
+    if (!target) return;
+    positionFocusRestoreRef.current = null;
+    if (target.isConnected && !target.hasAttribute("disabled")) target.focus();
+  }, [reorderPendingId]);
 
   const togglePositionDialog = useCallback(
     (id: string, trigger: HTMLElement) => {
@@ -602,9 +629,47 @@ export function ListingMatrix({
                 onDragOver={(event) => handleDragOver(event, object.id)}
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
-                className={`group relative rounded-md border px-2 py-1 ${CELL_WIDTH_CLASS} ${selected ? "border-primary" : "border-border"} ${draggedId === object.id ? "opacity-40" : ""}`}
+                className={`group relative flex items-start gap-1 rounded-md border px-2 py-1 ${CELL_WIDTH_CLASS} ${selected ? "border-transparent shadow-card" : "border-border"} ${draggedId === object.id ? "opacity-40" : ""}`}
               >
-                <div className="mb-1 flex h-6 w-full items-center justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1">
+                    <ListingThumb
+                      object={object}
+                      selected={selected}
+                      label={selectLabel}
+                      onSelect={() => handleSelect(object.id)}
+                    />
+                  </div>
+                  <div>
+                    <span
+                      className={`mt-1.5 block truncate text-caption font-medium ${selected ? "text-foreground" : "text-foreground-secondary"}`}
+                    >
+                      {object.title}
+                    </span>
+                    <span className="mt-0.5 flex items-center gap-1">
+                      <span
+                        aria-hidden="true"
+                        className={`h-1.25 w-1.25 shrink-0 rounded-full ${STATUS_DOT_CLASS[object.status]}`}
+                      />
+                      <span className="truncate font-mono text-meta text-foreground-tertiary">
+                        {status}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="mt-1">
+                    <ListingApplicantSlots
+                      listingId={object.id}
+                      activeApplicationsCount={object.activeApplicationsCount}
+                      applicantsState={getApplicantNamesState(object.id)}
+                      onInteraction={
+                        object.status === "draft"
+                          ? () => undefined
+                          : ensureLoaded
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-col items-center gap-1">
                   <button
                     type="button"
                     draggable
@@ -672,40 +737,6 @@ export function ListingMatrix({
                       decorative
                     />
                   </Button>
-                </div>
-                <div className="mb-1">
-                  <ListingThumb
-                    object={object}
-                    selected={selected}
-                    label={selectLabel}
-                    onSelect={() => handleSelect(object.id)}
-                  />
-                </div>
-                <div>
-                  <span
-                    className={`mt-1.5 block truncate text-caption font-medium ${selected ? "text-foreground" : "text-foreground-secondary"}`}
-                  >
-                    {object.title}
-                  </span>
-                  <span className="mt-0.5 flex items-center gap-1">
-                    <span
-                      aria-hidden="true"
-                      className={`h-1.25 w-1.25 shrink-0 rounded-full ${STATUS_DOT_CLASS[object.status]}`}
-                    />
-                    <span className="truncate font-mono text-meta text-foreground-tertiary">
-                      {status}
-                    </span>
-                  </span>
-                </div>
-                <div className="mt-1">
-                  <ListingApplicantSlots
-                    listingId={object.id}
-                    activeApplicationsCount={object.activeApplicationsCount}
-                    applicantsState={getApplicantNamesState(object.id)}
-                    onInteraction={
-                      object.status === "draft" ? () => undefined : ensureLoaded
-                    }
-                  />
                 </div>
               </div>
             );
