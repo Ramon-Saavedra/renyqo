@@ -353,6 +353,52 @@ describe("ListingMatrix", () => {
     expect(order(container)).toEqual(["A", "B", "C"]);
   });
 
+  it("keeps the last saved order when a later position save fails", async () => {
+    const onReorder = vi
+      .fn()
+      .mockResolvedValueOnce("refresh-failed")
+      .mockRejectedValueOnce(new Error("save failed"));
+    const { container } = render(
+      <ListingMatrix
+        objects={[
+          buildOrderedObject("A", 1),
+          buildOrderedObject("B", 2),
+          buildOrderedObject("C", 3),
+        ]}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onReorder={onReorder}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Position von A ändern" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Auf Position 3 verschieben" }),
+    );
+
+    await waitFor(() => {
+      expect(order(container)).toEqual(["B", "C", "A"]);
+    });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Position von B ändern" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Auf Position 3 verschieben" }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert").textContent).toContain(
+        "konnte nicht gespeichert werden",
+      );
+    });
+    expect(onReorder).toHaveBeenNthCalledWith(1, "A", 3);
+    expect(onReorder).toHaveBeenNthCalledWith(2, "B", 3);
+    expect(order(container)).toEqual(["B", "C", "A"]);
+  });
+
   it("restores the saved order when a drag ends without a drop", () => {
     const onReorder = vi.fn().mockResolvedValue(undefined);
     const { container } = render(

@@ -459,11 +459,13 @@ export function ListingMatrix({
           `Objekt wurde auf Position ${position} verschoben.`,
         );
       } catch {
-        committedOrderIdsRef.current = null;
         setReorderError(
           "Die Objekt-Reihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
         );
-        setLocalOrder(null);
+        setLocalOrder({
+          signature: serverOrderSignature,
+          ids: [...baselineIds],
+        });
       } finally {
         reorderInFlightRef.current = false;
         setReorderPendingId(null);
