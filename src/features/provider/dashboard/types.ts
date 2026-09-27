@@ -8,6 +8,7 @@ export type DashboardObjectStatus = ListingStatus;
 
 export interface DashboardObject {
   readonly id: string;
+  readonly displayOrder?: number;
   readonly title: string;
   readonly fullTitle: string;
   readonly objectType: ObjectTypeBackend | null;

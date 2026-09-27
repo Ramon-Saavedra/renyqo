@@ -6,7 +6,7 @@ import {
 } from "./parse-active-applications-count";
 
 describe("parseActiveApplicationsCount", () => {
-  it.each([0, 1, 5] as const)("accepts valid count %i", (value) => {
+  it.each([0, 1, 5, 25] as const)("accepts valid count %i", (value) => {
     expect(parseActiveApplicationsCount(value)).toBe(value);
   });
 
@@ -40,9 +40,7 @@ describe("parseActiveApplicationsCount", () => {
     );
   });
 
-  it("rejects values above 5", () => {
-    expect(() => parseActiveApplicationsCount(6)).toThrow(
-      InvalidActiveApplicationsCountError,
-    );
+  it("accepts values above the visual capacity", () => {
+    expect(parseActiveApplicationsCount(6)).toBe(6);
   });
 });

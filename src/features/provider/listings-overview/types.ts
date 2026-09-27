@@ -19,6 +19,7 @@ export const MAX_ACTIVE_APPLICATIONS = 5;
 
 export interface ListingOverviewItem {
   readonly id: string;
+  readonly displayOrder?: number;
   readonly title: string;
   readonly objectType: ObjectTypeBackend | null;
   readonly displayAddress: string;
