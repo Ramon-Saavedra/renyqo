@@ -120,9 +120,10 @@ describe("useListingApplicantNames", () => {
     });
 
     result.current.invalidateLoaded();
-    expect(result.current.getState("listing-1").previews[0]?.name).toBe(
-      "Anna Lehmann",
-    );
+    expect(result.current.getState("listing-1")).toEqual({
+      status: "idle",
+      previews: [],
+    });
 
     result.current.ensureLoaded("listing-1");
 

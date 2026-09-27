@@ -618,4 +618,53 @@ describe("DashboardView", () => {
     expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
     expect(listingCellOrder()).toEqual(["beta", "gamma", "alpha"]);
   });
+
+  it("keeps the saved listing order when an older dashboard refresh resolves later", async () => {
+    const user = userEvent.setup();
+    const [alpha, beta] = reorderFixtures();
+    const staleRefresh = deferred<readonly DashboardObject[]>();
+    const savedRefresh = deferred<readonly DashboardObject[]>();
+    let request = 0;
+    vi.mocked(getProviderDashboardObjects).mockImplementation(() => {
+      request += 1;
+      if (request === 1) return Promise.resolve([alpha, beta]);
+      if (request === 2) return staleRefresh.promise;
+      return savedRefresh.promise;
+    });
+
+    render(<DashboardView />);
+    await screen.findByRole("button", { name: "Position von Alpha ändern" });
+
+    window.dispatchEvent(new Event("focus"));
+    await waitFor(() => {
+      expect(getProviderDashboardObjects).toHaveBeenCalledTimes(2);
+    });
+
+    await user.click(
+      screen.getByRole("button", { name: "Position von Alpha ändern" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Auf Position 2 verschieben",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 2);
+      expect(getProviderDashboardObjects).toHaveBeenCalledTimes(3);
+    });
+
+    savedRefresh.resolve([
+      { ...beta, displayOrder: 1 },
+      { ...alpha, displayOrder: 2 },
+    ]);
+    await waitFor(() => {
+      expect(listingCellOrder()).toEqual(["beta", "alpha"]);
+    });
+
+    staleRefresh.resolve([alpha, beta]);
+    await waitFor(() => {
+      expect(listingCellOrder()).toEqual(["beta", "alpha"]);
+    });
+  });
 });

@@ -93,6 +93,7 @@ function DashboardViewContent({
   const shouldLoadObjects = initialObjects === undefined;
   const refreshRevision = useTabRefreshRevision();
   const hasLoadedObjectsRef = useRef(false);
+  const objectsRequestGenerationRef = useRef(0);
   const [loadedObjects, setLoadedObjects] = useState<
     readonly DashboardObject[]
   >([]);
@@ -106,51 +107,69 @@ function DashboardViewContent({
   const selectedId = useStoredSelectedObjectId();
   const accent = useAccent();
 
+  const beginObjectsRequest = useCallback(() => {
+    objectsRequestGenerationRef.current += 1;
+    return objectsRequestGenerationRef.current;
+  }, []);
+
   const handleReorder = useCallback(
     async (listingId: string, position: number) => {
       await moveProviderListingToPosition(listingId, position);
+      const generation = beginObjectsRequest();
       try {
         const nextObjects = await getProviderDashboardObjects();
+        if (generation !== objectsRequestGenerationRef.current) {
+          return undefined;
+        }
         if (initialObjects === undefined) {
+          hasLoadedObjectsRef.current = true;
           setLoadedObjects(nextObjects);
+          setLoadError(false);
+          setIsLoading(false);
         } else {
           setRefreshedObjects(nextObjects);
         }
       } catch {
+        if (generation !== objectsRequestGenerationRef.current) {
+          return undefined;
+        }
         return "refresh-failed" as const;
       }
       return undefined;
     },
-    [initialObjects],
+    [beginObjectsRequest, initialObjects],
   );
 
   useEffect(() => {
     if (!shouldLoadObjects) return;
 
     let active = true;
+    const generation = beginObjectsRequest();
     const isRefresh = hasLoadedObjectsRef.current;
+    const isCurrent = () =>
+      active && generation === objectsRequestGenerationRef.current;
 
     getProviderDashboardObjects()
       .then((nextObjects) => {
-        if (!active) return;
+        if (!isCurrent()) return;
         hasLoadedObjectsRef.current = true;
         setLoadedObjects(nextObjects);
         setLoadError(false);
       })
       .catch(() => {
-        if (!active) return;
+        if (!isCurrent()) return;
         if (!isRefresh) setLoadedObjects([]);
         setLoadError(true);
       })
       .finally(() => {
-        if (!active) return;
+        if (!isCurrent()) return;
         setIsLoading(false);
       });
 
     return () => {
       active = false;
     };
-  }, [refreshRevision, shouldLoadObjects]);
+  }, [beginObjectsRequest, refreshRevision, shouldLoadObjects]);
 
   const orderedObjects = useMemo(
     () =>

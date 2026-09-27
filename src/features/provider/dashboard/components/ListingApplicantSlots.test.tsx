@@ -41,8 +41,8 @@ function renderSharedPreviews() {
   );
   return {
     onInteraction,
-    firstSlot: screen.getByRole("img", { name: "Anna Lehmann" }),
-    secondSlot: screen.getByRole("img", { name: "Ben Meier" }),
+    firstSlot: screen.getByRole("button", { name: "Anna Lehmann" }),
+    secondSlot: screen.getByRole("button", { name: "Ben Meier" }),
   };
 }
 
@@ -60,9 +60,9 @@ describe("ListingApplicantSlots", () => {
       </div>,
     );
 
-    expect(screen.getAllByRole("img")).toHaveLength(5);
+    expect(screen.getAllByRole("button")).toHaveLength(5);
     expect(screen.getByLabelText("5 aktive Bewerbungen")).not.toBeNull();
-    const firstSlot = screen.getByRole("img", { name: "Anna Lehmann" });
+    const firstSlot = screen.getByRole("button", { name: "Anna Lehmann" });
     expect(firstSlot.className).toContain("h-4");
     expect(firstSlot.className).toContain("w-4");
     fireEvent.focus(firstSlot);
@@ -143,19 +143,24 @@ describe("ListingApplicantSlots", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
-  it("does not keep a compact preview open after a click", async () => {
+  it("opens the compact preview on tap and replaces it when another slot is tapped", async () => {
     const user = userEvent.setup();
-    const { firstSlot } = renderSharedPreviews();
+    const { firstSlot, secondSlot } = renderSharedPreviews();
 
     await user.click(firstSlot);
 
-    expect(document.activeElement).not.toBe(firstSlot);
-    expect(await screen.findByRole("tooltip")).not.toBeNull();
+    expect((await screen.findByRole("tooltip")).textContent).toContain(
+      "Anna Lehmann",
+    );
+    expect(screen.getAllByRole("tooltip")).toHaveLength(1);
 
-    fireEvent.pointerLeave(firstSlot, { pointerType: "mouse" });
+    await user.click(secondSlot);
 
     await waitFor(() => {
-      expect(screen.queryByRole("tooltip")).toBeNull();
+      const tooltip = screen.getByRole("tooltip");
+      expect(tooltip.textContent).toContain("Ben Meier");
+      expect(tooltip.textContent).not.toContain("Anna Lehmann");
     });
+    expect(screen.getAllByRole("tooltip")).toHaveLength(1);
   });
 });

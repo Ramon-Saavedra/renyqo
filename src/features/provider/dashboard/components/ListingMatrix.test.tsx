@@ -448,7 +448,9 @@ describe("ListingMatrix", () => {
       />,
     );
 
-    fireEvent.focus(screen.getByRole("img", { name: "Bewerbername anzeigen" }));
+    fireEvent.focus(
+      screen.getByRole("button", { name: "Bewerbername anzeigen" }),
+    );
 
     expect(getProviderActiveApplications).not.toHaveBeenCalled();
   });

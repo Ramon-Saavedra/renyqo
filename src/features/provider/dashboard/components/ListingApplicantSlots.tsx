@@ -185,7 +185,7 @@ function ApplicantSlot({
   const tooltipId = useId();
   const slotKey = `${listingId}:${slotIndex}`;
   const previewContext = useContext(ApplicantPreviewContext);
-  const triggerRef = useRef<HTMLSpanElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [localOpen, setLocalOpen] = useState(false);
@@ -334,29 +334,26 @@ function ApplicantSlot({
 
   return (
     <>
-      <span
+      <button
         ref={triggerRef}
-        role="img"
+        type="button"
         aria-label={label}
-        tabIndex={0}
         aria-describedby={isOpen && position ? tooltipId : undefined}
-        onPointerEnter={(event: ReactPointerEvent<HTMLSpanElement>) => {
+        onPointerEnter={(event: ReactPointerEvent<HTMLButtonElement>) => {
           if (!isHoverPointer(event.pointerType)) return;
           show();
         }}
-        onPointerLeave={(event: ReactPointerEvent<HTMLSpanElement>) => {
+        onPointerLeave={(event: ReactPointerEvent<HTMLButtonElement>) => {
           if (!isHoverPointer(event.pointerType)) return;
           scheduleClose();
         }}
-        onPointerDown={(event: ReactPointerEvent<HTMLSpanElement>) => {
-          event.preventDefault();
-        }}
+        onClick={show}
         onFocus={show}
         onBlur={hide}
         onKeyDown={(event) => {
           if (event.key === "Escape") hide();
         }}
-        className="relative flex h-4 w-4 shrink-0 cursor-default items-center justify-center text-foreground focus-visible:outline-none focus-visible:shadow-focus"
+        className="relative flex h-4 w-4 shrink-0 cursor-default items-center justify-center border-0 bg-transparent p-0 text-foreground focus-visible:outline-none focus-visible:shadow-focus"
       >
         <span aria-hidden="true" className="absolute -inset-1" />
         <AppIcon
@@ -366,7 +363,7 @@ function ApplicantSlot({
           decorative
           className={ACTIVE_ICON_CLASS}
         />
-      </span>
+      </button>
       {card}
     </>
   );

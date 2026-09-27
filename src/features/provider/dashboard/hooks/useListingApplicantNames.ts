@@ -77,7 +77,6 @@ export function useListingApplicantNames() {
   const pendingRef = useRef(new Map<string, Promise<void>>());
   const generationRef = useRef(new Map<string, number>());
   const externalHoldRef = useRef(new Set<string>());
-  const staleRef = useRef(new Set<string>());
   const [, setRevision] = useState(0);
 
   const updateState = useCallback(
@@ -91,7 +90,6 @@ export function useListingApplicantNames() {
   const adoptLoaded = useCallback(
     (listingId: string, previews: readonly ListingApplicantPreview[]) => {
       externalHoldRef.current.delete(listingId);
-      staleRef.current.delete(listingId);
       const current = statesRef.current.get(listingId);
       if (
         current?.status === "loaded" &&
@@ -113,23 +111,19 @@ export function useListingApplicantNames() {
   const ensureLoaded = useCallback(
     (listingId: string) => {
       const current = statesRef.current.get(listingId) ?? IDLE_STATE;
-      const stale = staleRef.current.has(listingId);
       if (
-        (current.status === "loaded" && !stale) ||
+        current.status === "loaded" ||
         pendingRef.current.has(listingId) ||
         externalHoldRef.current.has(listingId)
       ) {
         return;
       }
 
-      staleRef.current.delete(listingId);
       const generation = generationRef.current.get(listingId) ?? 0;
-      if (current.status !== "loaded") {
-        updateState(listingId, {
-          status: "loading",
-          previews: current.previews,
-        });
-      }
+      updateState(listingId, {
+        status: "loading",
+        previews: [],
+      });
       const request = getProviderActiveApplications(listingId)
         .then((applications) => {
           if ((generationRef.current.get(listingId) ?? 0) !== generation) {
@@ -180,12 +174,8 @@ export function useListingApplicantNames() {
         (generationRef.current.get(listingId) ?? 0) + 1,
       );
       pendingRef.current.delete(listingId);
-      changed = true;
-      if (state.status === "loaded") {
-        staleRef.current.add(listingId);
-        continue;
-      }
       statesRef.current.set(listingId, IDLE_STATE);
+      changed = true;
     }
     if (changed) setRevision((revision) => revision + 1);
   }, []);
