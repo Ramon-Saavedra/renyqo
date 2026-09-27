@@ -173,6 +173,7 @@ function mockApplicationsState(
     candidates: [],
     waitingCountState: { status: "idle" },
     isLoading: false,
+    isRefreshing: false,
     hasError: false,
     ...overrides,
   });

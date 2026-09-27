@@ -211,6 +211,7 @@ function DashboardViewContent({
     candidates: selectedCandidates,
     waitingCountState,
     isLoading: isApplicationsLoading,
+    isRefreshing: isApplicationsRefreshing,
     hasError: hasApplicationsError,
   } = useSelectedListingApplications(
     shownSelected?.id ?? null,
@@ -231,7 +232,7 @@ function DashboardViewContent({
   const preloadedApplicants = useMemo(() => {
     if (!shownSelected || shownSelected.status === "draft") return null;
     if (hasApplicationsError) return null;
-    if (isApplicationsLoading) {
+    if (isApplicationsLoading || isApplicationsRefreshing) {
       return {
         listingId: shownSelected.id,
         status: "loading" as const,
@@ -245,6 +246,7 @@ function DashboardViewContent({
   }, [
     hasApplicationsError,
     isApplicationsLoading,
+    isApplicationsRefreshing,
     selectedCandidates,
     shownSelected,
   ]);

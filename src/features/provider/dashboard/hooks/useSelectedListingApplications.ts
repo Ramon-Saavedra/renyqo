@@ -17,6 +17,7 @@ interface SelectedListingApplicationsResult {
   readonly candidates: readonly Candidate[];
   readonly waitingCountState: WaitingCountState;
   readonly isLoading: boolean;
+  readonly isRefreshing: boolean;
   readonly hasError: boolean;
 }
 
@@ -76,6 +77,7 @@ export function useSelectedListingApplications(
     candidates: candidatesResult.data,
     waitingCountState: waitingResult.data,
     isLoading: candidatesResult.isLoading || waitingResult.isLoading,
+    isRefreshing: candidatesResult.isRefreshing,
     hasError: candidatesResult.hasError,
   };
 }
