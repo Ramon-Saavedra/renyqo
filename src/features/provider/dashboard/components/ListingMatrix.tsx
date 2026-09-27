@@ -20,6 +20,7 @@ import {
   formatEUR,
 } from "@/features/provider/listings-overview/utils/format";
 import { dashboardCopy, OBJECT_STATUS_SHORT_LABEL } from "../copy/dashboard";
+import { useTabRefreshRevision } from "../hooks/TabRefreshProvider";
 import { useListingApplicantNames } from "../hooks/useListingApplicantNames";
 import type { ListingApplicantPreview } from "../hooks/useListingApplicantNames";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
@@ -247,6 +248,12 @@ export function ListingMatrix({
   const suppressClickAfterDragRef = useRef(false);
   const reorderInFlightRef = useRef(false);
   const committedOrderIdsRef = useRef<readonly string[] | null>(null);
+  const dragOrderSnapshotRef = useRef<{
+    readonly signature: string;
+    readonly ids: readonly string[];
+  } | null>(null);
+  const dragPersistStartedRef = useRef(false);
+  const refreshRevision = useTabRefreshRevision();
   const openObject = objects.find((object) => object.id === openId) ?? null;
   const popoverRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
@@ -267,9 +274,14 @@ export function ListingMatrix({
     adoptLoaded,
     holdListing,
     releaseListing,
+    invalidateLoaded,
     getState: getApplicantNamesState,
   } = useListingApplicantNames();
   const authorityObjects = orderObjects ?? objects;
+
+  useEffect(() => {
+    invalidateLoaded();
+  }, [invalidateLoaded, refreshRevision]);
 
   useEffect(() => {
     if (!preloadedApplicants) return undefined;
@@ -392,41 +404,45 @@ export function ListingMatrix({
   const positionObject =
     orderedObjects.find((object) => object.id === positionObjectId) ?? null;
 
-  async function persistReorder(listingId: string, position: number) {
-    if (reorderInFlightRef.current) return;
+  function persistReorder(listingId: string, position: number): boolean {
+    if (reorderInFlightRef.current) return false;
     const listing = authorityObjects.find((object) => object.id === listingId);
     const baselineIds = committedOrderIdsRef.current ?? serverOrderIds;
     const currentPosition = baselineIds.indexOf(listingId) + 1;
-    if (!listing || currentPosition <= 0 || currentPosition === position)
-      return;
+    if (!listing || currentPosition <= 0 || currentPosition === position) {
+      return false;
+    }
 
     const nextIds = moveIdToPosition(baselineIds, listingId, position);
     reorderInFlightRef.current = true;
     setReorderError(null);
     setReorderPendingId(listingId);
     setLocalOrder({ signature: serverOrderSignature, ids: nextIds });
-    try {
-      const outcome = await onReorder(listingId, position);
-      if (outcome === "refresh-failed") {
-        committedOrderIdsRef.current = nextIds;
-        setReorderError(
-          "Die Reihenfolge wurde gespeichert, aber die Übersicht konnte nicht aktualisiert werden. Bitte versuche es gleich erneut.",
+    void (async () => {
+      try {
+        const outcome = await onReorder(listingId, position);
+        if (outcome === "refresh-failed") {
+          committedOrderIdsRef.current = nextIds;
+          setReorderError(
+            "Die Reihenfolge wurde gespeichert, aber die Übersicht konnte nicht aktualisiert werden. Bitte versuche es gleich erneut.",
+          );
+          return;
+        }
+        setReorderAnnouncement(
+          `Objekt wurde auf Position ${position} verschoben.`,
         );
-        return;
+      } catch {
+        committedOrderIdsRef.current = null;
+        setReorderError(
+          "Die Objekt-Reihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
+        );
+        setLocalOrder(null);
+      } finally {
+        reorderInFlightRef.current = false;
+        setReorderPendingId(null);
       }
-      setReorderAnnouncement(
-        `Objekt wurde auf Position ${position} verschoben.`,
-      );
-    } catch {
-      committedOrderIdsRef.current = null;
-      setReorderError(
-        "Die Objekt-Reihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
-      );
-      setLocalOrder(null);
-    } finally {
-      reorderInFlightRef.current = false;
-      setReorderPendingId(null);
-    }
+    })();
+    return true;
   }
 
   function handleDragStart(event: DragEvent<HTMLElement>, id: string) {
@@ -434,6 +450,11 @@ export function ListingMatrix({
       event.preventDefault();
       return;
     }
+    dragPersistStartedRef.current = false;
+    dragOrderSnapshotRef.current =
+      localOrder?.signature === serverOrderSignature
+        ? { signature: localOrder.signature, ids: [...localOrder.ids] }
+        : null;
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", id);
     lastDragOverIdRef.current = null;
@@ -478,6 +499,9 @@ export function ListingMatrix({
     window.setTimeout(() => {
       suppressClickAfterDragRef.current = false;
     }, 0);
+    if (!dragPersistStartedRef.current) {
+      setLocalOrder(dragOrderSnapshotRef.current);
+    }
   }
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
@@ -486,8 +510,10 @@ export function ListingMatrix({
     const listingId = draggedId;
     const position =
       orderedObjects.findIndex((object) => object.id === listingId) + 1;
+    if (position > 0 && persistReorder(listingId, position)) {
+      dragPersistStartedRef.current = true;
+    }
     handleDragEnd();
-    if (position > 0) void persistReorder(listingId, position);
   }
 
   function handleSelect(id: string) {

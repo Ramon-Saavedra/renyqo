@@ -77,6 +77,7 @@ export function useListingApplicantNames() {
   const pendingRef = useRef(new Map<string, Promise<void>>());
   const generationRef = useRef(new Map<string, number>());
   const externalHoldRef = useRef(new Set<string>());
+  const staleRef = useRef(new Set<string>());
   const [, setRevision] = useState(0);
 
   const updateState = useCallback(
@@ -90,6 +91,7 @@ export function useListingApplicantNames() {
   const adoptLoaded = useCallback(
     (listingId: string, previews: readonly ListingApplicantPreview[]) => {
       externalHoldRef.current.delete(listingId);
+      staleRef.current.delete(listingId);
       const current = statesRef.current.get(listingId);
       if (
         current?.status === "loaded" &&
@@ -111,19 +113,23 @@ export function useListingApplicantNames() {
   const ensureLoaded = useCallback(
     (listingId: string) => {
       const current = statesRef.current.get(listingId) ?? IDLE_STATE;
+      const stale = staleRef.current.has(listingId);
       if (
-        current.status === "loaded" ||
+        (current.status === "loaded" && !stale) ||
         pendingRef.current.has(listingId) ||
         externalHoldRef.current.has(listingId)
       ) {
         return;
       }
 
+      staleRef.current.delete(listingId);
       const generation = generationRef.current.get(listingId) ?? 0;
-      updateState(listingId, {
-        status: "loading",
-        previews: current.previews,
-      });
+      if (current.status !== "loaded") {
+        updateState(listingId, {
+          status: "loading",
+          previews: current.previews,
+        });
+      }
       const request = getProviderActiveApplications(listingId)
         .then((applications) => {
           if ((generationRef.current.get(listingId) ?? 0) !== generation) {
@@ -165,11 +171,37 @@ export function useListingApplicantNames() {
     externalHoldRef.current.delete(listingId);
   }, []);
 
+  const invalidateLoaded = useCallback(() => {
+    let changed = false;
+    for (const [listingId, state] of statesRef.current) {
+      if (state.status !== "loaded" && state.status !== "loading") continue;
+      generationRef.current.set(
+        listingId,
+        (generationRef.current.get(listingId) ?? 0) + 1,
+      );
+      pendingRef.current.delete(listingId);
+      changed = true;
+      if (state.status === "loaded") {
+        staleRef.current.add(listingId);
+        continue;
+      }
+      statesRef.current.set(listingId, IDLE_STATE);
+    }
+    if (changed) setRevision((revision) => revision + 1);
+  }, []);
+
   const getState = useCallback(
     (listingId: string): ListingApplicantNamesState =>
       statesRef.current.get(listingId) ?? IDLE_STATE,
     [],
   );
 
-  return { ensureLoaded, adoptLoaded, holdListing, releaseListing, getState };
+  return {
+    ensureLoaded,
+    adoptLoaded,
+    holdListing,
+    releaseListing,
+    invalidateLoaded,
+    getState,
+  };
 }

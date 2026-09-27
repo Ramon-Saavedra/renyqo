@@ -353,6 +353,27 @@ describe("ListingMatrix", () => {
     expect(order(container)).toEqual(["A", "B", "C"]);
   });
 
+  it("restores the saved order when a drag ends without a drop", () => {
+    const onReorder = vi.fn().mockResolvedValue(undefined);
+    const { container } = render(
+      <ListingMatrix
+        objects={[
+          buildOrderedObject("A", 1),
+          buildOrderedObject("B", 2),
+          buildOrderedObject("C", 3),
+        ]}
+        selectedId={null}
+        onSelect={vi.fn()}
+        onReorder={onReorder}
+      />,
+    );
+
+    drag(container, "A", "C", { drop: false });
+
+    expect(order(container)).toEqual(["A", "B", "C"]);
+    expect(onReorder).not.toHaveBeenCalled();
+  });
+
   it("does not select a listing from the drag handle", () => {
     const onSelect = vi.fn();
     const { container } = render(
