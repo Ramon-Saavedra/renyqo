@@ -32,6 +32,7 @@ import { HeaderNavLinks } from "./HeaderNavLinks";
 import { ObjektdatenSection } from "./ObjektdatenSection";
 import { PreviewCard } from "./PreviewCard";
 import { type ListingSaveStatus, TopbarActions } from "./TopbarActions";
+import "../style.css";
 
 function arePhotosEqual(
   left: ReadonlyArray<ListingPhoto>,

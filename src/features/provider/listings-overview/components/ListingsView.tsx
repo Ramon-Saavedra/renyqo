@@ -33,6 +33,7 @@ import { ListingsTopbarActions } from "./ListingsTopbarActions";
 import { NewListingAction } from "./ListingsHero";
 import { ListSummary } from "./ListSummary";
 import { StatusFilter } from "./StatusFilter";
+import "../style.css";
 
 interface ListingsViewProps {
   initialListings?: readonly ListingOverviewItem[];

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils/cn";
 import "./RenyqoSkeleton.css";
+import "./shared-animations.css";
 
 export type RenyqoSkeletonVariant = "box" | "circle" | "pill" | "text";
 

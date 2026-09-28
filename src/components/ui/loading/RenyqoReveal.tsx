@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils/cn";
+import "./shared-animations.css";
 
 export interface RenyqoRevealProps {
   /** While true, the skeleton veil is shown instead of the real content. */

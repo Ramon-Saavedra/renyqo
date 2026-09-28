@@ -1,0 +1,32 @@
+.watermark {
+  position: fixed;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  font-family: var(--typeface-display);
+  font-size: var(--text-caption);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--primary);
+  opacity: var(--watermark-opacity-peak);
+  pointer-events: none;
+  user-select: none;
+  animation: watermark-breathe var(--watermark-cycle-duration)
+    cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes watermark-breathe {
+  0%,
+  100% {
+    opacity: var(--watermark-opacity-peak);
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .watermark {
+    animation: none;
+  }
+}

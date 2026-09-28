@@ -5,7 +5,9 @@ import {
 } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
+import "@/components/ui/loading/LoadingButton.css";
 import "@/components/ui/loading/RenyqoLoadingDots.css";
+import "@/components/ui/loading/shared-animations.css";
 
 interface DetailActionButtonProps {
   icon: LucideIcon;
