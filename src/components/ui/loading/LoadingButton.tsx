@@ -3,7 +3,9 @@ import { Check } from "lucide-react";
 import { buttonClass, type ButtonVariant } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
+import "./LoadingButton.css";
 import "./RenyqoLoadingDots.css";
+import "./shared-animations.css";
 
 interface LoadingButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,

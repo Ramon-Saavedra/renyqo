@@ -1,4 +1,5 @@
 import { siteConfig } from "@/config/site";
+import "./Watermark.css";
 
 export function Watermark() {
   return (
