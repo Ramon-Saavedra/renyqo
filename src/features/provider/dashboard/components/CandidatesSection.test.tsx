@@ -9,6 +9,7 @@ import {
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getConversationHistory } from "../applicant-workflow/api/conversation";
+import type * as conversationApi from "../applicant-workflow/api/conversation";
 import { getApplicantWorkspace } from "../applicant-workflow/api/workspace";
 import type * as workspaceApi from "../applicant-workflow/api/workspace";
 import { createApplicantWorkspace } from "../applicant-workflow/testing/workspace-fixture";
@@ -32,11 +33,27 @@ vi.mock("../applicant-workflow/api/workspace", async (importOriginal) => {
   };
 });
 
-vi.mock("../applicant-workflow/api/conversation", () => ({
-  getConversationHistory: vi.fn().mockResolvedValue([]),
-  sendConversationMessage: vi.fn(),
-  markConversationRead: vi.fn(),
-}));
+vi.mock("../applicant-workflow/api/conversation", async (importOriginal) => {
+  const actual = await importOriginal<typeof conversationApi>();
+  return {
+    ...actual,
+    getConversationHistory: vi.fn().mockResolvedValue({
+      applicationId: "application-1",
+      conversationId: null,
+      openedAt: null,
+      isOpen: false,
+      canCurrentUserSend: false,
+      expectedResponder: null,
+      unreadCount: 0,
+      lastMessage: null,
+      messages: [],
+      hasMore: false,
+      nextAfterSequence: null,
+    }),
+    sendConversationMessage: vi.fn(),
+    markConversationRead: vi.fn(),
+  };
+});
 
 const publishedObject: DashboardObject = {
   id: "object-1",

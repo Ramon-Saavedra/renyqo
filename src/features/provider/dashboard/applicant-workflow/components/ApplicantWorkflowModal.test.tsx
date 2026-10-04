@@ -1254,7 +1254,7 @@ describe("activity list collapse", () => {
     expect(
       await within(activity).findByText("Du · Nachricht gesendet"),
     ).not.toBeNull();
-    expect(getActivityPage.mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(vi.mocked(getActivityPage).mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 });
 
