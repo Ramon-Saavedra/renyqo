@@ -1,0 +1,5 @@
+@container (min-width: 680px) {
+  .applicant-workflow-columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
+}
