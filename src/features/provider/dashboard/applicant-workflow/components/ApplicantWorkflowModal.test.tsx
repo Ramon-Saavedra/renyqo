@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   fireEvent,
   render,
@@ -30,6 +31,7 @@ import type { WorkflowListingContext } from "../workflow-model";
 import { useWorkflowSession, WorkflowSession } from "../workflow-session";
 import { ActivitySection } from "./ActivitySection";
 import { ApplicantWorkflowModal } from "./ApplicantWorkflowModal";
+import { MessagesSection } from "./MessagesSection";
 
 vi.mock("../api/workspace", async (importOriginal) => {
   const actual = await importOriginal<typeof workspaceApi>();
@@ -563,6 +565,49 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     await waitFor(() => {
       expect(markConversationRead).toHaveBeenCalledWith("application-1", 2);
     });
+  });
+
+  it("keeps loaded messages visible when marking them read fails", async () => {
+    mockViewport(false);
+    const message = {
+      id: "message-1",
+      sequence: 1,
+      senderType: "APPLICANT" as const,
+      body: "Erste Nachricht",
+      createdAt: "2026-10-04T11:00:00.000Z",
+      readAt: null,
+    };
+    vi.mocked(getApplicantWorkspace).mockResolvedValue(
+      createApplicantWorkspace(),
+    );
+    vi.mocked(getConversationHistory).mockResolvedValue({
+      applicationId: "application-1",
+      conversationId: "conversation-1",
+      openedAt: "2026-10-04T11:00:00.000Z",
+      isOpen: true,
+      canCurrentUserSend: true,
+      expectedResponder: "PROVIDER",
+      unreadCount: 1,
+      lastMessage: message,
+      messages: [message],
+      hasMore: false,
+      nextAfterSequence: null,
+    });
+    vi.mocked(markConversationRead).mockRejectedValue(new Error("failed"));
+    render(
+      <ApplicantWorkflowModal
+        applicationId="application-1"
+        listing={listing}
+        onClose={vi.fn()}
+        onReject={vi.fn()}
+      />,
+    );
+    expect(await screen.findByText("Erste Nachricht")).not.toBeNull();
+    expect(
+      await screen.findByText(
+        "Der Lesestatus konnte nicht aktualisiert werden. Die Nachrichten bleiben sichtbar.",
+      ),
+    ).not.toBeNull();
   });
 
   it("asks for confirmation once before selecting the tenant", async () => {
@@ -1254,13 +1299,58 @@ describe("activity list collapse", () => {
     expect(
       await within(activity).findByText("Du · Nachricht gesendet"),
     ).not.toBeNull();
-    expect(vi.mocked(getActivityPage).mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(vi.mocked(getActivityPage).mock.calls.length).toBeGreaterThanOrEqual(
+      2,
+    );
+  });
+
+  it("reloads messages when the workspace asOf changes", async () => {
+    const workspace = createApplicantWorkspace();
+    vi.mocked(getConversationHistory).mockClear();
+    vi.mocked(getConversationHistory).mockResolvedValue({
+      applicationId: "application-1",
+      conversationId: null,
+      openedAt: null,
+      isOpen: false,
+      canCurrentUserSend: false,
+      expectedResponder: null,
+      unreadCount: 0,
+      lastMessage: null,
+      messages: [],
+      hasMore: false,
+      nextAfterSequence: null,
+    });
+    const { rerender } = render(<MessageHarness workspace={workspace} />);
+    await waitFor(() => {
+      expect(getConversationHistory).toHaveBeenCalledTimes(1);
+    });
+    rerender(
+      <MessageHarness
+        workspace={{ ...workspace, asOf: "2026-10-04T12:30:00.000Z" }}
+      />,
+    );
+    await waitFor(() => {
+      expect(getConversationHistory).toHaveBeenCalledTimes(2);
+    });
   });
 });
 
 function ActivityFromSession() {
   const session = useWorkflowSession();
   return <ActivitySection model={session.model} />;
+}
+
+function MessagesFromSession() {
+  const session = useWorkflowSession();
+  return <MessagesSection model={session.model} />;
+}
+
+function MessagesBootstrap() {
+  const session = useWorkflowSession();
+  useEffect(() => {
+    session.ensureMessages();
+  }, [session]);
+  return <MessagesFromSession />;
 }
 
 function ActivityHarness({
@@ -1275,6 +1365,22 @@ function ActivityHarness({
       reloadWorkspace={() => undefined}
     >
       <ActivityFromSession />
+    </WorkflowSession>
+  );
+}
+
+function MessageHarness({
+  workspace,
+}: {
+  readonly workspace: ApplicantWorkspace;
+}) {
+  return (
+    <WorkflowSession
+      workspace={workspace}
+      listing={listing}
+      reloadWorkspace={() => undefined}
+    >
+      <MessagesBootstrap />
     </WorkflowSession>
   );
 }

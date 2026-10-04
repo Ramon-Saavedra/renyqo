@@ -154,6 +154,7 @@ export function WorkflowSession({
     number
   > | null>(null);
   const messagesRequest = useRef(0);
+  const previousAsOf = useRef(workspace.asOf);
   const actionLock = useRef(false);
   const proposalAttempt = useRef<IdempotentAttempt | null>(null);
   const rescheduleAttempt = useRef<IdempotentAttempt | null>(null);
@@ -161,6 +162,8 @@ export function WorkflowSession({
 
   if (workspace.asOf !== trackedAsOf) {
     setTrackedAsOf(workspace.asOf);
+    setMessages([]);
+    setMessagesStatus("idle");
     setActivityItems([]);
     setActivityCursor(null);
     if (activityExpanded) {
@@ -170,6 +173,12 @@ export function WorkflowSession({
       setActivityStatus("idle");
     }
   }
+
+  useEffect(() => {
+    if (previousAsOf.current === workspace.asOf) return;
+    previousAsOf.current = workspace.asOf;
+    messagesRequest.current += 1;
+  }, [workspace.asOf]);
 
   useEffect(() => {
     let cancelled = false;
@@ -232,6 +241,8 @@ export function WorkflowSession({
           } catch {
             if (messagesRequest.current !== request) return;
             setMessagesStatus("ready");
+            setActionArea("messages");
+            setActionError(applicantWorkflowCopy.messages.readError);
             return;
           }
         }

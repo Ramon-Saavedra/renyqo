@@ -39,6 +39,8 @@ export const applicantWorkflowCopy = {
       "Die Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
     loading: "Nachrichten werden geladen",
     loadError: "Nachrichten konnten nicht geladen werden.",
+    readError:
+      "Der Lesestatus konnte nicht aktualisiert werden. Die Nachrichten bleiben sichtbar.",
     empty: "Noch keine Nachrichten.",
     readOnly: "Nur lesen",
     waitingForYou: "Wartet auf deine Antwort.",
