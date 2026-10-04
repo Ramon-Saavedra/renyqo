@@ -33,6 +33,10 @@ export const STATUS_META: Record<ListingStatus, StatusMeta> = {
     label: "Archiviert",
     pillClass: "bg-background-muted text-foreground-tertiary",
   },
+  rented: {
+    label: "Vermietet",
+    pillClass: "bg-background-muted text-foreground-secondary",
+  },
 };
 
 export const STATUS_FILTERS: readonly StatusFilterEntry[] = [

@@ -29,6 +29,7 @@ export const OBJECT_STATUS_LABEL: Record<DashboardObjectStatus, string> = {
   draft: STATUS_META.draft.label,
   paused: STATUS_META.paused.label,
   archived: STATUS_META.archived.label,
+  rented: STATUS_META.rented.label,
 };
 
 export const OBJECT_STATUS_SHORT_LABEL: Record<DashboardObjectStatus, string> =
@@ -37,6 +38,7 @@ export const OBJECT_STATUS_SHORT_LABEL: Record<DashboardObjectStatus, string> =
     draft: "Entwurf",
     paused: "Pausiert",
     archived: "Archiv",
+    rented: "Vermietet",
   };
 
 export function formatActiveApplicationsCount(count: number): string {

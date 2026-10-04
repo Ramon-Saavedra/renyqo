@@ -94,6 +94,21 @@ describe("SelectedObjectCard", () => {
     );
   });
 
+  it("does not offer a public share action for a rented listing", () => {
+    render(
+      <SelectedObjectCard
+        object={{
+          ...publishedObject,
+          status: "rented",
+        }}
+      />,
+    );
+
+    const share = screen.getByRole("button", { name: "Teilen" });
+    expect(share.hasAttribute("disabled")).toBe(true);
+    expect(screen.queryByRole("link", { name: "WhatsApp" })).toBeNull();
+  });
+
   it("renders draft status and an empty availability label", () => {
     render(
       <SelectedObjectCard
