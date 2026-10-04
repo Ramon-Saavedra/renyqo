@@ -49,7 +49,9 @@ export type DocumentRequestInput =
 
 export function documentRequestPayload(
   inputs: readonly DocumentRequestInput[],
-): { requests: readonly { type: DocumentRequestType; customLabel?: string }[] } {
+): {
+  requests: readonly { type: DocumentRequestType; customLabel?: string }[];
+} {
   return {
     requests: inputs.map((input) => {
       if (input.type !== "OTHER") return { type: input.type };
@@ -123,15 +125,20 @@ export async function openDocumentContent(
   applicationId: string,
   documentId: string,
 ): Promise<void> {
-  const blob = await apiGetBlob(
-    `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/content`,
-  );
-  const url = URL.createObjectURL(blob);
-  const tab = window.open(url, "_blank");
+  const tab = window.open("about:blank", "_blank");
   if (!tab) {
-    URL.revokeObjectURL(url);
     throw new Error("Document content could not be opened");
   }
-  tab.opener = null;
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  try {
+    const blob = await apiGetBlob(
+      `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/content`,
+    );
+    const url = URL.createObjectURL(blob);
+    tab.location.replace(url);
+    tab.opener = null;
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (error) {
+    tab.close();
+    throw error;
+  }
 }

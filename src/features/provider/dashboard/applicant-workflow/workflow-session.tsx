@@ -13,6 +13,7 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { getActivityPage, type ActivityPageItem } from "./api/activity";
 import {
+  collectConversationMessages,
   getConversationHistory,
   markConversationRead,
   sendConversationMessage,
@@ -38,6 +39,11 @@ import {
 import { WorkspaceContractError } from "./api/workspace";
 import type { ApplicantWorkspace } from "./api/workspace";
 import { applicantWorkflowCopy } from "./copy";
+import {
+  samePayloadAttempt,
+  viewingAttemptSignature,
+  type IdempotentAttempt,
+} from "./idempotent-attempt";
 import {
   buildApplicantWorkflowModel,
   type ApplicantWorkflowModel,
@@ -79,6 +85,8 @@ interface WorkflowSessionValue {
   readonly completeCurrentViewing: () => Promise<ActionResult>;
   readonly markCurrentNoShow: () => Promise<ActionResult>;
   readonly showMoreActivity: () => Promise<void>;
+  readonly expandActivity: () => void;
+  readonly collapseActivity: () => void;
   readonly confirmSelectTenant: () => Promise<"done" | "busy" | "failed">;
 }
 
@@ -138,14 +146,30 @@ export function WorkflowSession({
   >([]);
   const [activityCursor, setActivityCursor] = useState<string | null>(null);
   const [activityStatus, setActivityStatus] = useState<LoadStatus>("idle");
+  const [trackedAsOf, setTrackedAsOf] = useState(workspace.asOf);
+  const [activityGeneration, setActivityGeneration] = useState(0);
+  const [activityExpanded, setActivityExpanded] = useState(false);
   const [documentRounds, setDocumentRounds] = useState<ReadonlyMap<
     string,
     number
   > | null>(null);
   const messagesRequest = useRef(0);
   const actionLock = useRef(false);
-  const proposalKey = useRef<string | null>(null);
-  const rescheduleKey = useRef<string | null>(null);
+  const proposalAttempt = useRef<IdempotentAttempt | null>(null);
+  const rescheduleAttempt = useRef<IdempotentAttempt | null>(null);
+  const activityRequest = useRef(0);
+
+  if (workspace.asOf !== trackedAsOf) {
+    setTrackedAsOf(workspace.asOf);
+    setActivityItems([]);
+    setActivityCursor(null);
+    if (activityExpanded) {
+      setActivityStatus("loading");
+      setActivityGeneration((current) => current + 1);
+    } else {
+      setActivityStatus("idle");
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -164,25 +188,49 @@ export function WorkflowSession({
     };
   }, [workspace.application.id, workspace.asOf]);
 
+  useEffect(() => {
+    if (activityGeneration === 0) return;
+    const request = activityRequest.current + 1;
+    activityRequest.current = request;
+    const applicationId = model.applicationId;
+    void getActivityPage(applicationId, null)
+      .then((page) => {
+        if (activityRequest.current !== request) return;
+        setActivityItems(page.items);
+        setActivityCursor(page.pagination.nextCursor);
+        setActivityStatus("ready");
+      })
+      .catch(() => {
+        if (activityRequest.current !== request) return;
+        setActivityStatus("error");
+      });
+  }, [activityGeneration, model.applicationId]);
+
   const ensureMessages = useCallback(() => {
     if (messagesStatus !== "idle") return;
     const request = messagesRequest.current + 1;
     messagesRequest.current = request;
     setMessagesStatus("loading");
     setActionError(null);
-    void getConversationHistory(model.applicationId)
+    void collectConversationMessages((afterSequence) =>
+      getConversationHistory(model.applicationId, afterSequence),
+    )
       .then(async (loaded) => {
         if (messagesRequest.current !== request) return;
-        setMessages(loaded.messages);
-        const incoming = loaded.messages.filter(
-          (message) => message.senderType === "APPLICANT" && message.readAt === null,
-        );
-        const through = incoming.at(-1)?.sequence;
+        setMessages(loaded);
+        const through = loaded
+          .filter(
+            (message) =>
+              message.senderType === "APPLICANT" && message.readAt === null,
+          )
+          .at(-1)?.sequence;
         if (through !== undefined) {
           try {
             await markConversationRead(model.applicationId, through);
+            if (messagesRequest.current !== request) return;
             reloadWorkspace();
           } catch {
+            if (messagesRequest.current !== request) return;
             setMessagesStatus("ready");
             return;
           }
@@ -252,9 +300,7 @@ export function WorkflowSession({
   );
 
   const requestDocuments = useCallback(
-    async (
-      inputs: readonly DocumentRequestInput[],
-    ): Promise<ActionResult> => {
+    async (inputs: readonly DocumentRequestInput[]): Promise<ActionResult> => {
       if (inputs.length === 0) return "busy";
       return runAction(
         "documents",
@@ -284,10 +330,8 @@ export function WorkflowSession({
       sendMessage,
       requestDocuments,
       openDocument: (documentId) =>
-        runAction(
-          "documents",
-          applicantWorkflowCopy.documents.openError,
-          () => openDocumentContent(model.applicationId, documentId),
+        runAction("documents", applicantWorkflowCopy.documents.openError, () =>
+          openDocumentContent(model.applicationId, documentId),
         ),
       review: (documentId) =>
         runAction(
@@ -321,23 +365,30 @@ export function WorkflowSession({
         }
       },
       propose: async (date, time) => {
-        if (!proposalKey.current) proposalKey.current = crypto.randomUUID();
-        const key = proposalKey.current;
+        const attempt = samePayloadAttempt(
+          proposalAttempt.current,
+          viewingAttemptSignature(null, date, time),
+          () => crypto.randomUUID(),
+        );
+        proposalAttempt.current = attempt;
         const result = await runAction(
           "viewing",
           applicantWorkflowCopy.viewing.proposeError,
-          () => proposeViewing(model.applicationId, { date, time }, key),
+          () =>
+            proposeViewing(model.applicationId, { date, time }, attempt.key),
         );
-        if (result === "done") proposalKey.current = null;
+        if (result === "done") proposalAttempt.current = null;
         return result;
       },
       reschedule: async (date, time) => {
         const viewingId = model.viewing?.viewingId;
         if (!viewingId) return "busy";
-        if (!rescheduleKey.current) {
-          rescheduleKey.current = crypto.randomUUID();
-        }
-        const key = rescheduleKey.current;
+        const attempt = samePayloadAttempt(
+          rescheduleAttempt.current,
+          viewingAttemptSignature(viewingId, date, time),
+          () => crypto.randomUUID(),
+        );
+        rescheduleAttempt.current = attempt;
         const result = await runAction(
           "viewing",
           applicantWorkflowCopy.viewing.rescheduleError,
@@ -346,10 +397,10 @@ export function WorkflowSession({
               model.applicationId,
               viewingId,
               { date, time },
-              key,
+              attempt.key,
             ),
         );
-        if (result === "done") rescheduleKey.current = null;
+        if (result === "done") rescheduleAttempt.current = null;
         return result;
       },
       cancelCurrentViewing: () => {
@@ -381,13 +432,15 @@ export function WorkflowSession({
       },
       showMoreActivity: async () => {
         if (activityStatus === "loading") return;
+        setActivityExpanded(true);
+        const request = activityRequest.current + 1;
+        activityRequest.current = request;
+        const cursor = activityItems.length === 0 ? null : activityCursor;
         setActivityStatus("loading");
         setActionError(null);
         try {
-          const page = await getActivityPage(
-            model.applicationId,
-            activityItems.length === 0 ? null : activityCursor,
-          );
+          const page = await getActivityPage(model.applicationId, cursor);
+          if (activityRequest.current !== request) return;
           setActivityItems((current) => {
             const seen = new Set(current.map((item) => item.id));
             return [
@@ -398,8 +451,15 @@ export function WorkflowSession({
           setActivityCursor(page.pagination.nextCursor);
           setActivityStatus("ready");
         } catch {
+          if (activityRequest.current !== request) return;
           setActivityStatus("error");
         }
+      },
+      expandActivity: () => {
+        setActivityExpanded(true);
+      },
+      collapseActivity: () => {
+        setActivityExpanded(false);
       },
       confirmSelectTenant: async () => {
         if (!model.canSelectForRental || actionLock.current) return "busy";

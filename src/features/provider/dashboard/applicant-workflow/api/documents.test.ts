@@ -1,13 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as ApiClient from "@/lib/api/client";
-import { apiPatchVoid } from "@/lib/api/client";
-import { cancelDocumentRequest, documentRequestPayload } from "./documents";
+import { apiGetBlob, apiPatchVoid } from "@/lib/api/client";
+import {
+  cancelDocumentRequest,
+  documentRequestPayload,
+  openDocumentContent,
+} from "./documents";
 
 vi.mock("@/lib/api/client", async (importOriginal) => {
   const actual = await importOriginal<typeof ApiClient>();
   return {
     ...actual,
     apiPatchVoid: vi.fn(),
+    apiGetBlob: vi.fn(),
   };
 });
 
@@ -53,5 +58,64 @@ describe("cancelDocumentRequest", () => {
     );
     const [path] = vi.mocked(apiPatchVoid).mock.calls[0] ?? [];
     expect(String(path)).not.toContain("/applicant/");
+  });
+});
+
+describe("openDocumentContent", () => {
+  const open = vi.fn();
+
+  beforeEach(() => {
+    vi.mocked(apiGetBlob).mockReset();
+    open.mockReset();
+    vi.stubGlobal("open", open);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("opens the tab before the download finishes", async () => {
+    const tab = {
+      opener: window,
+      close: vi.fn(),
+      location: { replace: vi.fn() },
+    };
+    open.mockReturnValue(tab);
+    let resolveBlob: ((blob: Blob) => void) | undefined;
+    vi.mocked(apiGetBlob).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveBlob = resolve;
+        }),
+    );
+
+    const pending = openDocumentContent("application-1", "document-1");
+
+    expect(open).toHaveBeenCalledWith("about:blank", "_blank");
+    expect(apiGetBlob).toHaveBeenCalledWith(
+      "/api/v1/provider/applications/application-1/documents/document-1/content",
+    );
+    expect(tab.location.replace).not.toHaveBeenCalled();
+    resolveBlob?.(new Blob(["file"]));
+    await pending;
+    expect(tab.location.replace).toHaveBeenCalledTimes(1);
+    expect(tab.opener).toBeNull();
+    expect(tab.close).not.toHaveBeenCalled();
+  });
+
+  it("closes the tab when the download fails", async () => {
+    const tab = {
+      opener: window,
+      close: vi.fn(),
+      location: { replace: vi.fn() },
+    };
+    open.mockReturnValue(tab);
+    vi.mocked(apiGetBlob).mockRejectedValue(new Error("failed"));
+
+    await expect(
+      openDocumentContent("application-1", "document-1"),
+    ).rejects.toThrow("failed");
+    expect(tab.close).toHaveBeenCalledTimes(1);
+    expect(tab.location.replace).not.toHaveBeenCalled();
   });
 });

@@ -178,48 +178,50 @@ function DocumentRows({
               ((document.canDownload && document.documentId) ||
                 (document.canReview && document.documentId) ||
                 document.canRequestReplacement) ? (
-            <span className="mt-0.5 flex flex-wrap gap-2">
-              {session && document.canDownload && document.documentId ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={session.acting}
-                  onClick={() => {
-                    const documentId = document.documentId;
-                    if (documentId) void session.openDocument(documentId);
-                  }}
-                >
-                  {copy.open}
-                </Button>
+                <span className="mt-0.5 flex flex-wrap gap-2">
+                  {session && document.canDownload && document.documentId ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={session.acting}
+                      onClick={() => {
+                        const documentId = document.documentId;
+                        if (documentId) void session.openDocument(documentId);
+                      }}
+                    >
+                      {copy.open}
+                    </Button>
+                  ) : null}
+                  {session && document.canReview && document.documentId ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={session.acting}
+                      onClick={() => {
+                        const documentId = document.documentId;
+                        if (documentId) void session.review(documentId);
+                      }}
+                    >
+                      {copy.review}
+                    </Button>
+                  ) : null}
+                  {session && document.canRequestReplacement ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={session.acting}
+                      onClick={() =>
+                        void session.replaceRequest(document.requestId)
+                      }
+                    >
+                      {copy.replace}
+                    </Button>
+                  ) : null}
+                </span>
               ) : null}
-              {session && document.canReview && document.documentId ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={session.acting}
-                  onClick={() => {
-                    const documentId = document.documentId;
-                    if (documentId) void session.review(documentId);
-                  }}
-                >
-                  {copy.review}
-                </Button>
-              ) : null}
-              {session && document.canRequestReplacement ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={session.acting}
-                  onClick={() => void session.replaceRequest(document.requestId)}
-                >
-                  {copy.replace}
-                </Button>
-              ) : null}
-              </span>
-            ) : null}
             </span>
             {session && document.canCancel ? (
               <CancelRequestButton
@@ -271,11 +273,7 @@ function DocumentRows({
   );
 }
 
-function RequestControl({
-  model,
-}: {
-  readonly model: ApplicantWorkflowModel;
-}) {
+function RequestControl({ model }: { readonly model: ApplicantWorkflowModel }) {
   const session = useOptionalWorkflowSession();
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
@@ -289,7 +287,8 @@ function RequestControl({
     .map((document) => document.type)
     .join("\n");
   const offeredTypes = availableDocumentTypes(model.documents);
-  const [trackedUnavailable, setTrackedUnavailable] = useState(unavailableTypes);
+  const [trackedUnavailable, setTrackedUnavailable] =
+    useState(unavailableTypes);
   if (unavailableTypes !== trackedUnavailable) {
     setTrackedUnavailable(unavailableTypes);
     const blocked = new Set(unavailableTypes.split("\n").filter(Boolean));
@@ -397,7 +396,9 @@ function RequestControl({
           ) : null}
           {labelIssue ? (
             <p role="alert" className="text-caption text-foreground-secondary">
-              {labelIssue === "duplicate" ? copy.otherDuplicate : copy.otherInvalid}
+              {labelIssue === "duplicate"
+                ? copy.otherDuplicate
+                : copy.otherInvalid}
             </p>
           ) : null}
           <Button
@@ -416,11 +417,7 @@ function RequestControl({
   );
 }
 
-function DocumentsBody({
-  model,
-}: {
-  readonly model: ApplicantWorkflowModel;
-}) {
+function DocumentsBody({ model }: { readonly model: ApplicantWorkflowModel }) {
   const session = useOptionalWorkflowSession();
   const sectionRef = useRef<HTMLDivElement>(null);
   return (

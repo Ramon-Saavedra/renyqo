@@ -46,6 +46,41 @@ function parseHistory(value: unknown): ConversationHistory {
   return parsed.data;
 }
 
+export function nextConversationSequence(
+  afterSequence: number,
+  hasMore: boolean,
+  nextAfterSequence: number | null,
+): number | null {
+  if (!hasMore) return null;
+  if (nextAfterSequence === null || nextAfterSequence <= afterSequence) {
+    throw new WorkspaceContractError();
+  }
+  return nextAfterSequence;
+}
+
+export async function collectConversationMessages(
+  loadPage: (afterSequence: number) => Promise<ConversationHistory>,
+): Promise<ConversationMessage[]> {
+  const loaded: ConversationMessage[] = [];
+  const seen = new Set<string>();
+  let afterSequence = 0;
+  for (;;) {
+    const page = await loadPage(afterSequence);
+    for (const message of page.messages) {
+      if (seen.has(message.id)) continue;
+      seen.add(message.id);
+      loaded.push(message);
+    }
+    const next = nextConversationSequence(
+      afterSequence,
+      page.hasMore,
+      page.nextAfterSequence,
+    );
+    if (next === null) return loaded;
+    afterSequence = next;
+  }
+}
+
 export async function getConversationHistory(
   applicationId: string,
   afterSequence = 0,
@@ -60,7 +95,8 @@ export async function getConversationHistory(
     options,
   );
   const history = parseHistory(response);
-  if (history.applicationId !== applicationId) throw new WorkspaceContractError();
+  if (history.applicationId !== applicationId)
+    throw new WorkspaceContractError();
   return history;
 }
 

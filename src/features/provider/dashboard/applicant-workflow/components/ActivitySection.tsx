@@ -10,11 +10,7 @@ import { ToneDot } from "./StatusTag";
 
 const copy = applicantWorkflowCopy.activity;
 
-function ActivityList({
-  model,
-}: {
-  readonly model: ApplicantWorkflowModel;
-}) {
+function ActivityList({ model }: { readonly model: ApplicantWorkflowModel }) {
   const session = useOptionalWorkflowSession();
   const activityItems = session?.activityItems ?? [];
   const activityCursor = session?.activityCursor ?? null;
@@ -87,7 +83,9 @@ function ActivityList({
             disabled={activityStatus === "loading" || !session}
             onClick={() => {
               setCollapsed(false);
-              if (session && !noMorePages) void session.showMoreActivity();
+              if (!session) return;
+              if (noMorePages) session.expandActivity();
+              else void session.showMoreActivity();
             }}
           >
             {loaded ? copy.showMore : copy.showAll}
@@ -98,7 +96,10 @@ function ActivityList({
               variant="outline"
               size="sm"
               className="self-start"
-              onClick={() => setCollapsed(true)}
+              onClick={() => {
+                setCollapsed(true);
+                session?.collapseActivity();
+              }}
             >
               {copy.showLess}
             </Button>
@@ -110,7 +111,10 @@ function ActivityList({
           variant="outline"
           size="sm"
           className="mt-2 self-start"
-          onClick={() => setCollapsed(true)}
+          onClick={() => {
+            setCollapsed(true);
+            session?.collapseActivity();
+          }}
         >
           {copy.showLess}
         </Button>

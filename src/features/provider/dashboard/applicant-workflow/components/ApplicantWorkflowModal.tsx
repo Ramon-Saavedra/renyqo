@@ -162,13 +162,24 @@ function WorkflowStatus({
           type="button"
           onClick={onClose}
           aria-label={applicantWorkflowCopy.close}
-          className={buttonClassWithSize("ghost", compact ? "icon-md" : "icon-sm")}
+          className={buttonClassWithSize(
+            "ghost",
+            compact ? "icon-md" : "icon-sm",
+          )}
         >
-          <AppIcon icon={X} size={compact ? 20 : 16} strokeWidth={2} decorative />
+          <AppIcon
+            icon={X}
+            size={compact ? 20 : 16}
+            strokeWidth={2}
+            decorative
+          />
         </button>
       </div>
       <div className="flex flex-1 flex-col gap-4 px-5 py-5">
-        <h2 id={titleId} className="font-display text-lead font-semibold text-foreground">
+        <h2
+          id={titleId}
+          className="font-display text-lead font-semibold text-foreground"
+        >
           {message}
         </h2>
         {showSkeleton ? (

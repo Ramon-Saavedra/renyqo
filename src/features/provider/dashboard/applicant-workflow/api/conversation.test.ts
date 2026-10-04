@@ -2,10 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type * as ApiClient from "@/lib/api/client";
 import { apiGet, apiPatch, apiPost } from "@/lib/api/client";
 import {
+  collectConversationMessages,
   getConversationHistory,
   markConversationRead,
+  nextConversationSequence,
   sendConversationMessage,
 } from "./conversation";
+import { WorkspaceContractError } from "./workspace";
 
 vi.mock("@/lib/api/client", async (importOriginal) => {
   const actual = await importOriginal<typeof ApiClient>();
@@ -77,11 +80,41 @@ describe("conversation contract", () => {
     );
   });
 
+  it("follows nextAfterSequence until the history is complete", async () => {
+    const second = { ...message, id: "message-2", sequence: 2, body: "Danke" };
+    const loadPage = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ...history([message]),
+        hasMore: true,
+        nextAfterSequence: 1,
+      })
+      .mockResolvedValueOnce(history([second]));
+
+    const messages = await collectConversationMessages(loadPage);
+
+    expect(messages.map((entry) => entry.id)).toEqual([
+      "message-1",
+      "message-2",
+    ]);
+    expect(loadPage).toHaveBeenNthCalledWith(1, 0);
+    expect(loadPage).toHaveBeenNthCalledWith(2, 1);
+  });
+
+  it("rejects a history page that does not advance", () => {
+    expect(() => nextConversationSequence(4, true, 4)).toThrow(
+      WorkspaceContractError,
+    );
+    expect(nextConversationSequence(4, false, null)).toBeNull();
+  });
+
   it("parses the send response and the mark-read count", async () => {
     vi.mocked(apiPost).mockResolvedValue(message);
     vi.mocked(apiPatch).mockResolvedValue({ markedCount: 1 });
 
-    await expect(sendConversationMessage("application-1", "Hallo")).resolves.toMatchObject({
+    await expect(
+      sendConversationMessage("application-1", "Hallo"),
+    ).resolves.toMatchObject({
       id: "message-1",
     });
     await expect(markConversationRead("application-1", 1)).resolves.toBe(1);

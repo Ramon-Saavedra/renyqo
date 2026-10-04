@@ -17,7 +17,9 @@ function MessageList() {
   if (!session || session.messagesStatus === "idle") return null;
   const { messages, messagesStatus, actionError, model } = session;
   if (messagesStatus === "loading") {
-    return <p className="text-caption text-foreground-secondary">{copy.loading}</p>;
+    return (
+      <p className="text-caption text-foreground-secondary">{copy.loading}</p>
+    );
   }
   if (messagesStatus === "error") {
     return (
@@ -27,7 +29,9 @@ function MessageList() {
     );
   }
   if (messages.length === 0) {
-    return <p className="text-caption text-foreground-secondary">{copy.empty}</p>;
+    return (
+      <p className="text-caption text-foreground-secondary">{copy.empty}</p>
+    );
   }
   return (
     <ul className="flex flex-col gap-3">
@@ -112,7 +116,9 @@ export function MessageComposer({
       <div
         title={blockedReason ?? undefined}
         className={
-          blockedReason ? "flex cursor-not-allowed flex-col gap-2" : "flex flex-col gap-2"
+          blockedReason
+            ? "flex cursor-not-allowed flex-col gap-2"
+            : "flex flex-col gap-2"
         }
       >
         <Textarea
@@ -120,7 +126,9 @@ export function MessageComposer({
           rows={3}
           value={body}
           disabled={disabled}
-          aria-describedby={blockedReason ? "workflow-message-reason" : undefined}
+          aria-describedby={
+            blockedReason ? "workflow-message-reason" : undefined
+          }
           onChange={(event) => setBody(event.target.value)}
           placeholder={
             model.conversationReadOnly
@@ -137,7 +145,9 @@ export function MessageComposer({
           type="submit"
           variant="primary"
           size="md"
-          className={blockedReason ? "pointer-events-none self-end" : "self-end"}
+          className={
+            blockedReason ? "pointer-events-none self-end" : "self-end"
+          }
           disabled={disabled || body.trim().length === 0}
         >
           <AppIcon icon={SendHorizontal} size={18} strokeWidth={2} decorative />
@@ -145,7 +155,10 @@ export function MessageComposer({
         </Button>
       </div>
       {blockedReason ? (
-        <p id="workflow-message-reason" className="text-caption text-foreground-secondary">
+        <p
+          id="workflow-message-reason"
+          className="text-caption text-foreground-secondary"
+        >
           {blockedReason}
         </p>
       ) : turn ? (
@@ -162,11 +175,7 @@ export function MessageComposer({
   );
 }
 
-function ReadOnlyNotice({
-  model,
-}: {
-  readonly model: ApplicantWorkflowModel;
-}) {
+function ReadOnlyNotice({ model }: { readonly model: ApplicantWorkflowModel }) {
   if (!model.conversationReadOnly) return null;
   return (
     <div className="flex items-start gap-3.5">

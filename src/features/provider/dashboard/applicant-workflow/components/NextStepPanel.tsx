@@ -4,7 +4,10 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import { applicantWorkflowCopy } from "../copy";
 import { WORKFLOW_SECTION_ORDER } from "../section-summary";
-import type { ApplicantWorkflowModel, WorkflowNextStep } from "../workflow-model";
+import type {
+  ApplicantWorkflowModel,
+  WorkflowNextStep,
+} from "../workflow-model";
 import { ToneDot } from "./StatusTag";
 
 const copy = applicantWorkflowCopy.nextStep;

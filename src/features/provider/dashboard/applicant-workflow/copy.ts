@@ -18,7 +18,8 @@ export const applicantWorkflowCopy = {
     clearTitle: "Aktuell ist nichts von dir zu tun.",
     pendingEyebrow: "Offene Aktion",
     pendingFallbackTitle: "Aktion erforderlich",
-    pendingText: "Die nächste Aktion kommt aus dem aktuellen Stand der Bewerbung.",
+    pendingText:
+      "Die nächste Aktion kommt aus dem aktuellen Stand der Bewerbung.",
   },
   summary: {
     messages: { label: "Nachrichten" },
@@ -127,7 +128,8 @@ export const applicantWorkflowCopy = {
     showAll: "Alle anzeigen",
     showMore: "Weitere anzeigen",
     showLess: "Weniger anzeigen",
-    loadError: "Der Verlauf konnte nicht geladen werden. Bitte versuche es erneut.",
+    loadError:
+      "Der Verlauf konnte nicht geladen werden. Bitte versuche es erneut.",
     emptyHint: (name: string) =>
       `Weitere Informationen zum Verlauf der Bewerbung von ${name} sind hier noch nicht verfügbar.`,
   },
@@ -138,8 +140,7 @@ export const applicantWorkflowCopy = {
     selectUnavailable: "Die Auswahl als Mieter ist derzeit nicht möglich.",
     rejectUnavailable: "Ablehnen ist derzeit nicht möglich.",
     selectTitle: "Als Mieter auswählen?",
-    selectText:
-      "Diese Bewerbung wird angenommen. Das Objekt wird vermietet.",
+    selectText: "Diese Bewerbung wird angenommen. Das Objekt wird vermietet.",
     selectConfirm: "Auswählen",
     selectPending: "Wird ausgewählt…",
     selectCancel: "Abbrechen",

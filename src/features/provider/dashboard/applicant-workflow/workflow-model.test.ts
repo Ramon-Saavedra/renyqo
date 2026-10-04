@@ -146,10 +146,7 @@ describe("buildApplicantWorkflowModel", () => {
       },
     };
 
-    function modelFor(
-      status: string | null,
-      canPropose: boolean,
-    ) {
+    function modelFor(status: string | null, canPropose: boolean) {
       return buildApplicantWorkflowModel(
         {
           ...base,

@@ -46,10 +46,7 @@ function eventLabel(
     item.type === "DOCUMENT_UPLOADED" ||
     item.type === "DOCUMENT_REVIEWED"
   ) {
-    const name = documentTypeLabel(
-      item.payload?.documentType ?? "",
-      null,
-    );
+    const name = documentTypeLabel(item.payload?.documentType ?? "", null);
     if (item.type === "DOCUMENT_REQUESTED") {
       return documentRound !== undefined && documentRound > 1
         ? `${name} erneut angefordert`

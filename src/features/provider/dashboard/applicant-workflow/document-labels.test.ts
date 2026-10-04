@@ -1,13 +1,10 @@
 import { describe, expect, it } from "vitest";
-import {
-  availableDocumentTypes,
-  isActiveCustomLabel,
-} from "./document-labels";
+import { availableDocumentTypes, isActiveCustomLabel } from "./document-labels";
 
-const current = (
-  type: string,
-  customLabel: string | null = null,
-) => ({ type, customLabel });
+const current = (type: string, customLabel: string | null = null) => ({
+  type,
+  customLabel,
+});
 
 describe("available document request types", () => {
   it("excludes an active predefined type and keeps the others", () => {
@@ -37,17 +34,17 @@ describe("available document request types", () => {
 
   it("offers a predefined type again when it is no longer current", () => {
     expect(availableDocumentTypes([])).toContain("SCHUFA");
-    expect(
-      availableDocumentTypes([current("INCOME_PROOF")]),
-    ).toContain("SCHUFA");
+    expect(availableDocumentTypes([current("INCOME_PROOF")])).toContain(
+      "SCHUFA",
+    );
   });
 
   it("keeps Sonstiges available when another custom label is already requested", () => {
     const requests = [current("OTHER", "Arbeitsvertrag")];
     expect(availableDocumentTypes(requests)).toContain("OTHER");
     expect(isActiveCustomLabel(requests, "  ARBEITSVERTRAG ")).toBe(true);
-    expect(isActiveCustomLabel(requests, "Mietschuldenfreiheitsbescheinigung")).toBe(
-      false,
-    );
+    expect(
+      isActiveCustomLabel(requests, "Mietschuldenfreiheitsbescheinigung"),
+    ).toBe(false);
   });
 });

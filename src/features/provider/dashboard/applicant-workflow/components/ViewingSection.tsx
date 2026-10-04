@@ -12,16 +12,13 @@ const copy = applicantWorkflowCopy.viewing;
 const SCHEDULE_INPUT_CLASS =
   "h-8.5 min-w-0 rounded-md border border-border-strong bg-input px-2.5 text-caption text-foreground outline-none scheme-light hover:border-foreground-tertiary focus:border-primary focus:shadow-focus dark:scheme-dark";
 
-function ViewingDetails({
-  model,
-}: {
-  readonly model: ApplicantWorkflowModel;
-}) {
+function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
   const session = useOptionalWorkflowSession();
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const viewing = model.viewing;
-  const canSchedule = model.canProposeViewing || viewing?.canReschedule === true;
+  const canSchedule =
+    model.canProposeViewing || viewing?.canReschedule === true;
   const acting = session?.acting ?? false;
   const scheduleReady = date.length > 0 && time.length > 0;
 
@@ -30,7 +27,10 @@ function ViewingDetails({
       {viewing ? (
         <p className="text-caption text-foreground">
           {viewing.statusLabel}
-          <span className="text-foreground-secondary"> · {viewing.whenLabel}</span>
+          <span className="text-foreground-secondary">
+            {" "}
+            · {viewing.whenLabel}
+          </span>
         </p>
       ) : (
         <p className="text-caption text-foreground-secondary">{copy.empty}</p>
@@ -151,9 +151,7 @@ export function ViewingSection({
     <WorkflowSection
       icon={CalendarDays}
       title={copy.title}
-      aside={
-        <StatusTag tone="neutral" label={model.summaries.viewing.value} />
-      }
+      aside={<StatusTag tone="neutral" label={model.summaries.viewing.value} />}
     >
       <div className="px-3.5 py-3">
         <ViewingDetails model={model} />
