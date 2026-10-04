@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
 import { Users, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar/Avatar";
 import { Button } from "@/components/ui/button/Button";
@@ -14,13 +15,6 @@ interface ApplicantPreviewModalProps {
   readonly onClose: () => void;
 }
 
-const FOCUSABLE_SELECTOR =
-  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-function getFocusableElements(dialog: HTMLElement): HTMLElement[] {
-  return Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-}
-
 export function ApplicantPreviewModal({
   applicant,
   onClose,
@@ -29,88 +23,9 @@ export function ApplicantPreviewModal({
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const wasOpenRef = useRef(false);
   const copy = dashboardCopy.preview;
 
-  useEffect(() => {
-    if (!open) return undefined;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (open) {
-      if (!wasOpenRef.current) {
-        const activeElement = document.activeElement;
-        restoreFocusRef.current =
-          activeElement instanceof HTMLElement ? activeElement : null;
-        wasOpenRef.current = true;
-      }
-      const dialog = dialogRef.current;
-      const firstFocusable = dialog
-        ? getFocusableElements(dialog)[0]
-        : undefined;
-      (firstFocusable ?? dialog)?.focus();
-      return;
-    }
-
-    if (!wasOpenRef.current) return;
-    const elementToRestore = restoreFocusRef.current;
-    restoreFocusRef.current = null;
-    wasOpenRef.current = false;
-    if (elementToRestore?.isConnected) elementToRestore.focus();
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (event.key !== "Tab") return;
-
-      const dialog = dialogRef.current;
-      if (!dialog) return;
-      const focusable = getFocusableElements(dialog);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        dialog.focus();
-        return;
-      }
-
-      const first = focusable[0]!;
-      const last = focusable[focusable.length - 1]!;
-      const activeElement = document.activeElement;
-
-      if (event.shiftKey) {
-        if (
-          activeElement === first ||
-          activeElement === dialog ||
-          !dialog.contains(activeElement)
-        ) {
-          event.preventDefault();
-          last.focus();
-        }
-      } else if (
-        activeElement === last ||
-        activeElement === dialog ||
-        !dialog.contains(activeElement)
-      ) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, open]);
+  useDialogFocus({ open, dialogRef, onClose, lockScroll: true });
 
   if (applicant === null || typeof document === "undefined") return null;
 
