@@ -82,7 +82,6 @@ jobs:
           node-version: "20"
       - run: npm audit --package-lock-only --omit=dev --audit-level=high
 
-
   audit-deps-dev:
     name: audit-deps-dev
     runs-on: ubuntu-latest

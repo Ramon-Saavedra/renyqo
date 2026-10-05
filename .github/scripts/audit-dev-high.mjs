@@ -1,8 +1,6 @@
 import { execSync } from "node:child_process";
 
-const KNOWN_UNPATCHED_DEV_TOOLCHAIN_GHSAS = new Set([
-  "GHSA-vfj7-8cjw-p6xm",
-]);
+const KNOWN_UNPATCHED_DEV_TOOLCHAIN_GHSAS = new Set(["GHSA-vfj7-8cjw-p6xm"]);
 
 function ghsaFromAdvisoryUrl(url) {
   const segment = url.split("/").at(-1);
@@ -12,7 +10,10 @@ function ghsaFromAdvisoryUrl(url) {
 function collectHighCriticalGhsas(audit) {
   const found = new Set();
   for (const vulnerability of Object.values(audit.vulnerabilities ?? {})) {
-    if (vulnerability.severity !== "high" && vulnerability.severity !== "critical") {
+    if (
+      vulnerability.severity !== "high" &&
+      vulnerability.severity !== "critical"
+    ) {
       continue;
     }
     for (const via of vulnerability.via ?? []) {
