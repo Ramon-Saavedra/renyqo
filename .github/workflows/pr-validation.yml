@@ -70,7 +70,6 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-  # Production deps: high/critical vulnerabilities block merges.
   audit-deps-prod:
     name: audit-deps-prod
     runs-on: ubuntu-latest

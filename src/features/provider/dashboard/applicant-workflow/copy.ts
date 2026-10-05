@@ -70,7 +70,7 @@ export const applicantWorkflowCopy = {
     ],
     request: "Unterlagen anfordern",
     empty: "Keine Unterlagen angefordert.",
-    open: "Öffnen",
+    open: "Herunterladen",
     review: "Als geprüft markieren",
     replace: "Ersatz anfordern",
     cancel: "Anfrage entfernen",
@@ -94,7 +94,7 @@ export const applicantWorkflowCopy = {
     replaceError:
       "Der Ersatz konnte nicht angefordert werden. Bitte versuche es erneut.",
     openError:
-      "Die Unterlage konnte nicht geöffnet werden. Bitte versuche es erneut.",
+      "Die Unterlage konnte nicht heruntergeladen werden. Bitte versuche es erneut.",
   },
   viewing: {
     title: "Besichtigung",

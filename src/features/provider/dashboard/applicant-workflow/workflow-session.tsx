@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -174,10 +175,11 @@ export function WorkflowSession({
     }
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (previousAsOf.current === workspace.asOf) return;
     previousAsOf.current = workspace.asOf;
     messagesRequest.current += 1;
+    activityRequest.current += 1;
   }, [workspace.asOf]);
 
   useEffect(() => {

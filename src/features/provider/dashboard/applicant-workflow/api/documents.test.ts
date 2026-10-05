@@ -63,59 +63,92 @@ describe("cancelDocumentRequest", () => {
 
 describe("openDocumentContent", () => {
   const open = vi.fn();
+  const createObjectURL = vi.fn<(blob: Blob) => string>();
+  const revokeObjectURL = vi.fn<(url: string) => void>();
 
   beforeEach(() => {
     vi.mocked(apiGetBlob).mockReset();
     open.mockReset();
     vi.stubGlobal("open", open);
+    createObjectURL.mockReset().mockReturnValue("blob:download");
+    revokeObjectURL.mockReset();
+    vi.stubGlobal(
+      "URL",
+      Object.assign(class extends URL {}, {
+        createObjectURL,
+        revokeObjectURL,
+      }),
+    );
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
-  it("opens the tab before the download finishes", async () => {
-    const tab = {
-      opener: window,
-      close: vi.fn(),
-      location: { replace: vi.fn() },
-    };
-    open.mockReturnValue(tab);
-    let resolveBlob: ((blob: Blob) => void) | undefined;
-    vi.mocked(apiGetBlob).mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveBlob = resolve;
+  it.each(["text/html", "image/svg+xml", "application/pdf"])(
+    "downloads %s content without navigating or opening a tab",
+    async (mimeType) => {
+      let download:
+        | { href: string; filename: string; target: string; connected: boolean }
+        | undefined;
+      vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+        function (this: HTMLAnchorElement) {
+          download = {
+            href: this.href,
+            filename: this.download,
+            target: this.target,
+            connected: this.isConnected,
+          };
+        },
+      );
+      let resolveBlob: ((blob: Blob) => void) | undefined;
+      vi.mocked(apiGetBlob).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            resolveBlob = resolve;
+          }),
+      );
+
+      const pending = openDocumentContent("application-1", "document-1");
+
+      expect(open).not.toHaveBeenCalled();
+      expect(apiGetBlob).toHaveBeenCalledWith(
+        "/api/v1/provider/applications/application-1/documents/document-1/content",
+      );
+      expect(download).toBeUndefined();
+      resolveBlob?.(
+        new Blob(["<script>document.title = 'untrusted'</script>"], {
+          type: mimeType,
         }),
-    );
+      );
+      await pending;
+      expect(open).not.toHaveBeenCalled();
+      expect(download).toEqual({
+        href: "blob:download",
+        filename: "Unterlage",
+        target: "",
+        connected: true,
+      });
+      const [downloadBlob] = createObjectURL.mock.calls[0] ?? [];
+      expect(downloadBlob).toBeInstanceOf(Blob);
+      expect(downloadBlob?.type).toBe("application/octet-stream");
+      expect(document.querySelector('a[download="Unterlage"]')).toBeNull();
+      expect(revokeObjectURL).not.toHaveBeenCalled();
+      await vi.runAllTimersAsync();
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:download");
+    },
+  );
 
-    const pending = openDocumentContent("application-1", "document-1");
-
-    expect(open).toHaveBeenCalledWith("about:blank", "_blank");
-    expect(apiGetBlob).toHaveBeenCalledWith(
-      "/api/v1/provider/applications/application-1/documents/document-1/content",
-    );
-    expect(tab.location.replace).not.toHaveBeenCalled();
-    resolveBlob?.(new Blob(["file"]));
-    await pending;
-    expect(tab.location.replace).toHaveBeenCalledTimes(1);
-    expect(tab.opener).toBeNull();
-    expect(tab.close).not.toHaveBeenCalled();
-  });
-
-  it("closes the tab when the download fails", async () => {
-    const tab = {
-      opener: window,
-      close: vi.fn(),
-      location: { replace: vi.fn() },
-    };
-    open.mockReturnValue(tab);
+  it("propagates download failures without opening a tab or creating a URL", async () => {
     vi.mocked(apiGetBlob).mockRejectedValue(new Error("failed"));
 
     await expect(
       openDocumentContent("application-1", "document-1"),
     ).rejects.toThrow("failed");
-    expect(tab.close).toHaveBeenCalledTimes(1);
-    expect(tab.location.replace).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    expect(createObjectURL).not.toHaveBeenCalled();
   });
 });

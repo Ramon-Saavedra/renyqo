@@ -125,20 +125,20 @@ export async function openDocumentContent(
   applicationId: string,
   documentId: string,
 ): Promise<void> {
-  const tab = window.open("about:blank", "_blank");
-  if (!tab) {
-    throw new Error("Document content could not be opened");
-  }
+  const blob = await apiGetBlob(
+    `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/content`,
+  );
+  const url = URL.createObjectURL(
+    new Blob([blob], { type: "application/octet-stream" }),
+  );
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "Unterlage";
   try {
-    const blob = await apiGetBlob(
-      `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/content`,
-    );
-    const url = URL.createObjectURL(blob);
-    tab.location.replace(url);
-    tab.opener = null;
+    document.body.append(link);
+    link.click();
+  } finally {
+    link.remove();
     window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  } catch (error) {
-    tab.close();
-    throw error;
   }
 }
