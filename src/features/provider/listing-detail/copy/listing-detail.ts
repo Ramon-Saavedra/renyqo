@@ -21,6 +21,8 @@ const VISIBILITY_NOTE: Record<Exclude<ListingStatus, "published">, string> = {
     "Dieses Objekt ist pausiert. Bewerbende sehen es aktuell nicht in der Suche.",
   draft: "Als Entwurf ist dieses Objekt für niemanden außer dir sichtbar.",
   archived: "Archivierte Objekte sind für Bewerbende nicht sichtbar.",
+  rented:
+    "Dieses Objekt ist vermietet. Bewerbende sehen es nicht mehr in der Suche.",
 };
 
 export function getVisibilityNote(
@@ -48,9 +50,15 @@ export const listingDetailCopy = {
     drafting: "Wird gespeichert …",
     archive: "Archivieren",
     archiving: "Wird archiviert …",
+    pause: "Pausieren",
+    pausing: "Wird pausiert …",
+    resume: "Fortsetzen",
+    resuming: "Wird fortgesetzt …",
     publishShort: "Online",
     draftShort: "Entwurf",
     archiveShort: "Archiv",
+    pauseShort: "Pause",
+    resumeShort: "Weiter",
   },
   gallery: {
     counter: (current: number, total: number) => `${current} / ${total}`,

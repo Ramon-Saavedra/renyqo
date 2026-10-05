@@ -15,7 +15,9 @@ import {
   archiveProviderListing,
   getProviderListing,
   moveProviderListingToDraft,
+  pauseProviderListing,
   publishProviderListing,
+  resumeProviderListing,
 } from "../api/provider-listing-detail";
 import { listingDetailCopy } from "../copy/listing-detail";
 import { listingEditCopy } from "../edit/copy";
@@ -52,12 +54,16 @@ const ACTION_HANDLERS: Record<DetailAction, (id: string) => Promise<void>> = {
   publish: publishProviderListing,
   draft: moveProviderListingToDraft,
   archive: archiveProviderListing,
+  pause: pauseProviderListing,
+  resume: resumeProviderListing,
 };
 
 const NEXT_STATUS: Record<DetailAction, ListingDetail["status"]> = {
   publish: "published",
   draft: "draft",
   archive: "archived",
+  pause: "paused",
+  resume: "published",
 };
 
 export function ListingDetailView({ listingId }: ListingDetailViewProps) {

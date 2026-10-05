@@ -15,7 +15,9 @@ vi.mock("../api/provider-listing-detail", () => ({
   archiveProviderListing: vi.fn(),
   getProviderListing: vi.fn(),
   moveProviderListingToDraft: vi.fn(),
+  pauseProviderListing: vi.fn(),
   publishProviderListing: vi.fn(),
+  resumeProviderListing: vi.fn(),
 }));
 
 vi.mock("@/lib/api/listings", async (importOriginal) => {

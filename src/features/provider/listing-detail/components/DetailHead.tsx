@@ -1,4 +1,4 @@
-import { Archive, FileText, Globe, MapPin } from "lucide-react";
+import { Archive, FileText, Globe, MapPin, Pause, Play } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { DateTimeBadge } from "@/components/ui/date-time-badge/DateTimeBadge";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -27,36 +27,58 @@ export interface ActionConfig {
   readonly icon: LucideIcon;
 }
 
+const PUBLISH_ACTION: ActionConfig = {
+  action: "publish",
+  label: actions.publish,
+  shortLabel: actions.publishShort,
+  loadingLabel: actions.publishing,
+  icon: Globe,
+};
+
+const DRAFT_ACTION: ActionConfig = {
+  action: "draft",
+  label: actions.draft,
+  shortLabel: actions.draftShort,
+  loadingLabel: actions.drafting,
+  icon: FileText,
+};
+
+const ARCHIVE_ACTION: ActionConfig = {
+  action: "archive",
+  label: actions.archive,
+  shortLabel: actions.archiveShort,
+  loadingLabel: actions.archiving,
+  icon: Archive,
+};
+
+const PAUSE_ACTION: ActionConfig = {
+  action: "pause",
+  label: actions.pause,
+  shortLabel: actions.pauseShort,
+  loadingLabel: actions.pausing,
+  icon: Pause,
+};
+
+const RESUME_ACTION: ActionConfig = {
+  action: "resume",
+  label: actions.resume,
+  shortLabel: actions.resumeShort,
+  loadingLabel: actions.resuming,
+  icon: Play,
+};
+
 export function buildActions(listing: ListingDetail): ActionConfig[] {
-  const list: ActionConfig[] = [];
-  if (listing.status !== "published") {
-    list.push({
-      action: "publish",
-      label: actions.publish,
-      shortLabel: actions.publishShort,
-      loadingLabel: actions.publishing,
-      icon: Globe,
-    });
+  switch (listing.status) {
+    case "draft":
+      return [PUBLISH_ACTION, ARCHIVE_ACTION];
+    case "published":
+      return [PAUSE_ACTION, DRAFT_ACTION, ARCHIVE_ACTION];
+    case "paused":
+      return [RESUME_ACTION, DRAFT_ACTION, ARCHIVE_ACTION];
+    case "archived":
+    case "rented":
+      return [];
   }
-  if (listing.status !== "draft") {
-    list.push({
-      action: "draft",
-      label: actions.draft,
-      shortLabel: actions.draftShort,
-      loadingLabel: actions.drafting,
-      icon: FileText,
-    });
-  }
-  if (listing.status !== "archived") {
-    list.push({
-      action: "archive",
-      label: actions.archive,
-      shortLabel: actions.archiveShort,
-      loadingLabel: actions.archiving,
-      icon: Archive,
-    });
-  }
-  return list;
 }
 
 export function DetailHead({ listing }: DetailHeadProps) {

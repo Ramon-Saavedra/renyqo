@@ -5,6 +5,7 @@ export const LISTING_STATUS = [
   "draft",
   "paused",
   "archived",
+  "rented",
 ] as const;
 
 export type ListingStatus = (typeof LISTING_STATUS)[number];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type RefObject } from "react";
+import { useId, useRef, type RefObject } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Info, X } from "lucide-react";
 import {
@@ -9,12 +9,14 @@ import {
   type ButtonVariant,
 } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { useDialogFocus } from "@/hooks/useDialogFocus";
 
 interface ConfirmationModalProps {
   readonly open: boolean;
   readonly title: string;
   readonly text: string;
   readonly primaryLabel: string;
+  readonly primaryAriaLabel?: string | undefined;
   readonly primaryPendingLabel?: string | undefined;
   readonly primaryPending?: boolean;
   readonly primaryDisabled?: boolean;
@@ -48,18 +50,12 @@ const ERROR_CLASS =
 const ACTIONS_CLASS = "grid gap-2";
 const ACTION_BUTTON_CLASS =
   "min-h-11 w-full justify-center text-center leading-tight";
-const FOCUSABLE_SELECTOR =
-  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-function getFocusableElements(dialog: HTMLElement): HTMLElement[] {
-  return Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-}
-
 export function ConfirmationModal({
   open,
   title,
   text,
   primaryLabel,
+  primaryAriaLabel,
   primaryPendingLabel,
   primaryPending = false,
   primaryDisabled = false,
@@ -82,87 +78,15 @@ export function ConfirmationModal({
   const textId = useId();
   const errorId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const wasOpenRef = useRef(false);
   const actionPending = primaryPending || tertiaryPending;
 
-  useEffect(() => {
-    if (open) {
-      if (!wasOpenRef.current) {
-        const activeElement = document.activeElement;
-        restoreFocusRef.current =
-          activeElement instanceof HTMLElement ? activeElement : null;
-        wasOpenRef.current = true;
-      }
-
-      const dialog = dialogRef.current;
-      const firstFocusable = dialog
-        ? getFocusableElements(dialog)[0]
-        : undefined;
-      (firstFocusable ?? dialog)?.focus();
-      return;
-    }
-
-    if (!wasOpenRef.current) return;
-
-    const elementToRestore = restoreFocusRef.current;
-    restoreFocusRef.current = null;
-    wasOpenRef.current = false;
-    if (elementToRestore?.isConnected) {
-      elementToRestore.focus();
-      return;
-    }
-    const fallback = focusFallbackRef?.current;
-    if (fallback?.isConnected) fallback.focus();
-  }, [open, focusFallbackRef]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (!actionPending) onClose();
-        return;
-      }
-
-      if (event.key !== "Tab") return;
-
-      const dialog = dialogRef.current;
-      if (!dialog) return;
-
-      const focusable = getFocusableElements(dialog);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        dialog.focus();
-        return;
-      }
-
-      const first = focusable[0]!;
-      const last = focusable[focusable.length - 1]!;
-      const activeElement = document.activeElement;
-
-      if (event.shiftKey) {
-        if (
-          activeElement === first ||
-          activeElement === dialog ||
-          !dialog.contains(activeElement)
-        ) {
-          event.preventDefault();
-          last.focus();
-        }
-      } else if (
-        activeElement === last ||
-        activeElement === dialog ||
-        !dialog.contains(activeElement)
-      ) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [actionPending, onClose, open]);
+  useDialogFocus({
+    open,
+    dialogRef,
+    onClose,
+    canClose: !actionPending,
+    fallbackRef: focusFallbackRef,
+  });
 
   if (!open) return null;
 
@@ -206,6 +130,7 @@ export function ConfirmationModal({
           <button
             type="button"
             className={buttonClass(primaryVariant, ACTION_BUTTON_CLASS)}
+            aria-label={primaryAriaLabel}
             onClick={onPrimary}
             disabled={actionPending || primaryDisabled}
           >

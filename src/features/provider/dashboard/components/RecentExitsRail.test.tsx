@@ -131,7 +131,7 @@ describe("RecentExitsRail", () => {
     expect(onRestore).toHaveBeenCalledWith("app-1");
   });
 
-  it("opens an applicant preview", async () => {
+  it("contains preview focus and restores its trigger on Escape", async () => {
     const user = userEvent.setup();
     render(
       <RecentExitsRail
@@ -140,9 +140,18 @@ describe("RecentExitsRail", () => {
         hasError={false}
       />,
     );
-    await user.click(
-      screen.getByRole("button", { name: "Profil ansehen — Familie Weber" }),
-    );
-    expect(screen.getByRole("dialog")).not.toBeNull();
+    const trigger = screen.getByRole("button", {
+      name: "Profil ansehen — Familie Weber",
+    });
+    await user.click(trigger);
+    const close = screen.getByRole("button", { name: "Schließen" });
+    expect(document.activeElement).toBe(close);
+    await user.tab();
+    expect(document.activeElement).toBe(close);
+    await user.tab({ shift: true });
+    expect(document.activeElement).toBe(close);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.activeElement).toBe(trigger);
   });
 });

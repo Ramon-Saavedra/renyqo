@@ -259,6 +259,24 @@ export async function apiPatch<T>(
   );
 }
 
+export async function apiPatchJsonVoid(
+  path: string,
+  body: unknown,
+  options?: ApiRequestOptions,
+): Promise<void> {
+  return apiRequest(
+    path,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    },
+    options,
+    async () => undefined,
+  );
+}
+
 export async function apiPatchVoid(
   path: string,
   options?: ApiRequestOptions,
@@ -295,6 +313,21 @@ export async function apiDeleteVoid(
     { method: "DELETE", credentials: "include" },
     options,
     async () => undefined,
+  );
+}
+
+export async function apiGetBlob(
+  path: string,
+  options?: ApiRequestOptions,
+): Promise<Blob> {
+  return apiRequest(
+    path,
+    {
+      method: "GET",
+      credentials: "include",
+    },
+    options,
+    (response) => response.blob(),
   );
 }
 

@@ -59,9 +59,14 @@ const STATUS_DOT_CLASS: Record<DashboardObjectStatus, string> = {
   draft: "bg-foreground-tertiary",
   paused: "bg-warning",
   archived: "bg-border-strong",
+  rented: "bg-foreground-tertiary",
 };
 
-const DIMMED_STATUS: readonly DashboardObjectStatus[] = ["draft", "archived"];
+const DIMMED_STATUS: readonly DashboardObjectStatus[] = [
+  "draft",
+  "archived",
+  "rented",
+];
 
 const GRID_CLASS =
   "scrollbar-slim flex flex-nowrap items-start gap-x-3 gap-y-4 overflow-x-auto px-1 pt-2 pb-1";

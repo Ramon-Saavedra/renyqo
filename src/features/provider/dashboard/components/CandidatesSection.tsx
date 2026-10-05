@@ -10,8 +10,7 @@ import { useCandidateRejection } from "../hooks/useCandidateRejection";
 import { useRequestTabRefresh } from "../hooks/TabRefreshProvider";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import type { Candidate, DashboardObject, WaitingCountState } from "../types";
-import { mapApplicantToPreview } from "../utils/applicant-format";
-import { ApplicantPreviewModal } from "./ApplicantPreviewModal";
+import { ApplicantWorkflowModal } from "../applicant-workflow/components/ApplicantWorkflowModal";
 import { CandidateLane } from "./CandidateLane";
 
 interface CandidatesSectionProps {
@@ -68,7 +67,7 @@ function CandidatesSectionContent({
   const [candidateToReject, setCandidateToReject] = useState<Candidate | null>(
     null,
   );
-  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(
+  const [workflowCandidate, setWorkflowCandidate] = useState<Candidate | null>(
     null,
   );
   const [rejectedApplications, setRejectedApplications] =
@@ -99,6 +98,11 @@ function CandidatesSectionContent({
     if (isRejecting) return;
     reset();
     setCandidateToReject(null);
+  }
+
+  function rejectFromWorkflow(candidate: Candidate) {
+    setWorkflowCandidate(null);
+    openRejectConfirmation(candidate);
   }
 
   async function confirmRejection() {
@@ -194,7 +198,7 @@ function CandidatesSectionContent({
               }
               announceWaitingStatus={waitingCountState.status !== "error"}
               capacity={MAX_ACTIVE_APPLICATIONS}
-              onOpenPreview={setPreviewCandidate}
+              onOpenPreview={setWorkflowCandidate}
               onRejectCandidate={openRejectConfirmation}
               rejectingApplicationId={
                 state.status === "submitting" ? state.applicationId : null
@@ -220,12 +224,26 @@ function CandidatesSectionContent({
         icon={UserRoundX}
         focusFallbackRef={candidateLaneRef}
       />
-      <ApplicantPreviewModal
-        applicant={
-          previewCandidate ? mapApplicantToPreview(previewCandidate) : null
-        }
-        onClose={() => setPreviewCandidate(null)}
-      />
+      {workflowCandidate && object ? (
+        <ApplicantWorkflowModal
+          applicationId={workflowCandidate.id}
+          listing={{
+            id: object.id,
+            title: object.title,
+            city: object.district,
+            coldRent: object.coldRent,
+            status: object.status,
+            rooms: object.rooms,
+            livingArea: object.livingArea,
+          }}
+          onClose={() => setWorkflowCandidate(null)}
+          onReject={() => rejectFromWorkflow(workflowCandidate)}
+          onSelected={() => {
+            setWorkflowCandidate(null);
+            requestRefresh();
+          }}
+        />
+      ) : null}
     </>
   );
 }

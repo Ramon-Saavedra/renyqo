@@ -25,6 +25,7 @@ function normalizeStatus(value: string | null): ListingStatus {
   if (normalized === "draft") return "draft";
   if (normalized === "paused") return "paused";
   if (normalized === "archived") return "archived";
+  if (normalized === "rented") return "rented";
   return "draft";
 }
 
@@ -141,4 +142,16 @@ export async function moveProviderListingToDraft(id: string): Promise<void> {
 
 export async function archiveProviderListing(id: string): Promise<void> {
   await apiPatchVoid(`/api/v1/provider/listings/${id}/archive`);
+}
+
+export async function pauseProviderListing(id: string): Promise<void> {
+  await apiPatchVoid(
+    `/api/v1/provider/listings/${encodeURIComponent(id)}/pause`,
+  );
+}
+
+export async function resumeProviderListing(id: string): Promise<void> {
+  await apiPatchVoid(
+    `/api/v1/provider/listings/${encodeURIComponent(id)}/resume`,
+  );
 }

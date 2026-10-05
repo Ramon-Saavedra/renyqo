@@ -11,6 +11,8 @@ export {
   publishProviderListing,
   moveProviderListingToDraft,
   archiveProviderListing,
+  pauseProviderListing,
+  resumeProviderListing,
 } from "../../listings-overview/api/provider-listings";
 
 type ApiRecord = Record<string, unknown>;
@@ -58,6 +60,8 @@ function normalizeStatus(value: string | null): ListingStatus {
       return "paused";
     case "archived":
       return "archived";
+    case "rented":
+      return "rented";
     default:
       return "draft";
   }

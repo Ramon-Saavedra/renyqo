@@ -32,6 +32,7 @@ const STATUS_DOT_CLASS: Record<DashboardObject["status"], string> = {
   draft: "bg-foreground-tertiary",
   paused: "bg-warning",
   archived: "bg-border-strong",
+  rented: "bg-foreground-tertiary",
 };
 
 const STATUS_TEXT_CLASS: Record<DashboardObject["status"], string> = {
@@ -39,6 +40,7 @@ const STATUS_TEXT_CLASS: Record<DashboardObject["status"], string> = {
   draft: "text-foreground-tertiary",
   paused: "text-warning",
   archived: "text-foreground-tertiary",
+  rented: "text-foreground-secondary",
 };
 
 const ACTION_CLASS =
@@ -66,7 +68,8 @@ function ActionIcon({ icon: Icon }: { icon: LucideIcon }) {
 export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   const { object: copy } = dashboardCopy;
   const isDraft = object.status === "draft";
-  const isArchived = object.status === "archived";
+  const shareClosed =
+    object.status === "archived" || object.status === "rented";
   const shareUrl = `${siteConfig.url}/objekt/${object.id}`;
   const listingsHref = `/provider/listings?selected=${encodeURIComponent(
     object.id,
@@ -172,7 +175,7 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
             <ActionIcon icon={Eye} />
             <span className={ACTION_LABEL_CLASS}>{copy.preview}</span>
           </Link>
-          {isArchived ? (
+          {shareClosed ? (
             <button
               type="button"
               disabled

@@ -46,4 +46,4 @@ export interface ListingDetail {
   readonly publishedAt: string | null;
 }
 
-export type DetailAction = "publish" | "draft" | "archive";
+export type DetailAction = "publish" | "draft" | "archive" | "pause" | "resume";
