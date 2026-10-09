@@ -234,7 +234,9 @@ describe("ApplicationWorkspace documents", () => {
     expect(
       within(region).getByRole("button", { name: "SCHUFA-Auskunft hochladen" }),
     ).toHaveProperty("disabled", false);
-    const nextStep = screen.getByRole("region", { name: "Dein nächster Schritt" });
+    const nextStep = screen.getByRole("region", {
+      name: "Dein nächster Schritt",
+    });
     expect(
       within(nextStep).getByRole("button", { name: "Datei hochladen" }),
     ).toHaveProperty("disabled", true);
@@ -499,44 +501,70 @@ describe("document timeline recovery", () => {
       });
       getWorkspace
         .mockResolvedValueOnce(workspaceWith([current]))
-        .mockResolvedValueOnce(workspaceWith([{ ...current, documentId: "B" }]));
-      const datesA = new Map([["request-1", {
-        requestedAt: "2026-09-29T08:13:00.000Z",
-        uploadedAt: "2026-09-30T08:13:00.000Z",
-        reviewedAt: null,
-      }]]);
-      const datesB = new Map([["request-1", {
-        requestedAt: "2026-09-29T08:13:00.000Z",
-        uploadedAt: "2026-10-02T08:13:00.000Z",
-        reviewedAt: null,
-      }]]);
+        .mockResolvedValueOnce(
+          workspaceWith([{ ...current, documentId: "B" }]),
+        );
+      const datesA = new Map([
+        [
+          "request-1",
+          {
+            requestedAt: "2026-09-29T08:13:00.000Z",
+            uploadedAt: "2026-09-30T08:13:00.000Z",
+            reviewedAt: null,
+          },
+        ],
+      ]);
+      const datesB = new Map([
+        [
+          "request-1",
+          {
+            requestedAt: "2026-09-29T08:13:00.000Z",
+            uploadedAt: "2026-10-02T08:13:00.000Z",
+            reviewedAt: null,
+          },
+        ],
+      ]);
       let resolveLoad: (value: typeof datesB) => void = () => undefined;
       let rejectLoad: (error: Error) => void = () => undefined;
       vi.mocked(getDocumentRequestTimelines)
         .mockResolvedValueOnce(datesA)
-        .mockReturnValueOnce(new Promise((resolve, reject) => {
-          resolveLoad = resolve;
-          rejectLoad = reject;
-        }));
+        .mockReturnValueOnce(
+          new Promise((resolve, reject) => {
+            resolveLoad = resolve;
+            rejectLoad = reject;
+          }),
+        );
       render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
       const region = await documentsRegion();
       await within(region).findByText("Hochgeladen am 30.09.2026");
       act(() => window.dispatchEvent(new Event("focus")));
-      await waitFor(() => expect(getDocumentRequestTimelines).toHaveBeenCalledTimes(2));
-      expect(within(region).queryByText("Hochgeladen am 30.09.2026")).toBeNull();
+      await waitFor(() =>
+        expect(getDocumentRequestTimelines).toHaveBeenCalledTimes(2),
+      );
+      expect(
+        within(region).queryByText("Hochgeladen am 30.09.2026"),
+      ).toBeNull();
       expect(within(region).getByText("Hochgeladen")).toBeTruthy();
       await act(async () => {
         if (outcome === "success") resolveLoad(datesB);
         else rejectLoad(new ApiError(503, "internal"));
       });
       if (outcome === "failure") {
-        await within(region).findByText("Die Zeitangaben konnten nicht geladen werden.");
-        expect(within(region).queryByText("Hochgeladen am 30.09.2026")).toBeNull();
+        await within(region).findByText(
+          "Die Zeitangaben konnten nicht geladen werden.",
+        );
+        expect(
+          within(region).queryByText("Hochgeladen am 30.09.2026"),
+        ).toBeNull();
         vi.mocked(getDocumentRequestTimelines).mockResolvedValueOnce(datesB);
-        await user.click(within(region).getByRole("button", { name: "Erneut versuchen" }));
+        await user.click(
+          within(region).getByRole("button", { name: "Erneut versuchen" }),
+        );
       }
       await within(region).findByText("Hochgeladen am 02.10.2026");
-      expect(within(region).queryByText("Hochgeladen am 30.09.2026")).toBeNull();
+      expect(
+        within(region).queryByText("Hochgeladen am 30.09.2026"),
+      ).toBeNull();
       expect(getWorkspace).toHaveBeenCalledTimes(2);
     },
   );
@@ -553,41 +581,78 @@ describe("document timeline recovery", () => {
       getWorkspace
         .mockResolvedValueOnce(workspaceWith([current]))
         .mockResolvedValueOnce(workspaceWith([current], asOf));
-      const dates = new Map([["request-1", {
-        requestedAt: "2026-09-29T08:13:00.000Z",
-        uploadedAt: "2026-09-30T08:13:00.000Z",
-        reviewedAt: null,
-      }]]);
+      const dates = new Map([
+        [
+          "request-1",
+          {
+            requestedAt: "2026-09-29T08:13:00.000Z",
+            uploadedAt: "2026-09-30T08:13:00.000Z",
+            reviewedAt: null,
+          },
+        ],
+      ]);
       vi.mocked(getDocumentRequestTimelines).mockResolvedValue(dates);
       render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
       const region = await documentsRegion();
       await within(region).findByText("Hochgeladen am 30.09.2026");
       act(() => window.dispatchEvent(new Event("focus")));
-      await waitFor(() => expect(getDocumentRequestTimelines).toHaveBeenCalledTimes(2));
+      await waitFor(() =>
+        expect(getDocumentRequestTimelines).toHaveBeenCalledTimes(2),
+      );
       await within(region).findByText("Hochgeladen am 30.09.2026");
-      expect(within(region).queryByText("Die Zeitangaben konnten nicht geladen werden.")).toBeNull();
+      expect(
+        within(region).queryByText(
+          "Die Zeitangaben konnten nicht geladen werden.",
+        ),
+      ).toBeNull();
     },
   );
 
   it("retries missing current document metadata with the same workspace snapshot", async () => {
     const user = userEvent.setup();
-    const current = request({ requestId: "request-1", documentId: "A", status: "RECEIVED", canUpload: false });
+    const current = request({
+      requestId: "request-1",
+      documentId: "A",
+      status: "RECEIVED",
+      canUpload: false,
+    });
     getWorkspace.mockResolvedValue(workspaceWith([current]));
     vi.mocked(getDocumentRequestTimelines)
       .mockRejectedValueOnce(new ApplicantApplicationContractError())
-      .mockResolvedValueOnce(new Map([["request-1", {
-        requestedAt: "2026-09-29T08:13:00.000Z",
-        uploadedAt: "2026-09-30T08:13:00.000Z",
-        reviewedAt: null,
-      }]]));
+      .mockResolvedValueOnce(
+        new Map([
+          [
+            "request-1",
+            {
+              requestedAt: "2026-09-29T08:13:00.000Z",
+              uploadedAt: "2026-09-30T08:13:00.000Z",
+              reviewedAt: null,
+            },
+          ],
+        ]),
+      );
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
     const region = await documentsRegion();
-    await within(region).findByText("Die Zeitangaben konnten nicht geladen werden.");
-    await user.click(within(region).getByRole("button", { name: "Erneut versuchen" }));
-    await waitFor(() => expect(within(region).queryByText("Die Zeitangaben konnten nicht geladen werden.")).toBeNull());
+    await within(region).findByText(
+      "Die Zeitangaben konnten nicht geladen werden.",
+    );
+    await user.click(
+      within(region).getByRole("button", { name: "Erneut versuchen" }),
+    );
+    await waitFor(() =>
+      expect(
+        within(region).queryByText(
+          "Die Zeitangaben konnten nicht geladen werden.",
+        ),
+      ).toBeNull(),
+    );
     expect(getWorkspace).toHaveBeenCalledOnce();
     expect(getDocumentRequestTimelines).toHaveBeenCalledTimes(2);
-    expect(getDocumentRequestTimelines).toHaveBeenLastCalledWith(APPLICATION_ID, [current], expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(getDocumentRequestTimelines).toHaveBeenLastCalledWith(
+      APPLICATION_ID,
+      [current],
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
   });
 
   it("shows a controlled error and retries only the auxiliary load", async () => {

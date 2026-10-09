@@ -61,7 +61,9 @@ function Harness({
 
 function select(requestId: string) {
   fireEvent.click(screen.getByRole("button", { name: requestId }));
-  fireEvent.change(screen.getByLabelText("file"), { target: { files: [file] } });
+  fireEvent.change(screen.getByLabelText("file"), {
+    target: { files: [file] },
+  });
 }
 
 beforeEach(() => {
@@ -144,7 +146,9 @@ describe("document synchronization", () => {
     rerender(<Harness accepted={3} />);
     expect(screen.getByText("one available")).toBeTruthy();
     select("one");
-    await waitFor(() => expect(uploadRequestedDocument).toHaveBeenCalledTimes(3));
+    await waitFor(() =>
+      expect(uploadRequestedDocument).toHaveBeenCalledTimes(3),
+    );
   });
 
   it.each([409, 500])(

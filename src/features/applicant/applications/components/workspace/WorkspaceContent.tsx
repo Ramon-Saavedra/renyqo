@@ -69,11 +69,7 @@ export function WorkspaceContent({
     onSent: refresh,
   });
   const requests = workspace.documentsSummary.currentRequests;
-  const timelines = useDocumentTimelines(
-    applicationId,
-    snapshotKey,
-    requests,
-  );
+  const timelines = useDocumentTimelines(applicationId, snapshotKey, requests);
   const transfers = useDocumentTransfers(
     applicationId,
     refresh,

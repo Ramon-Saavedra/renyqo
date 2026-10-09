@@ -472,8 +472,9 @@ describe("conversation revalidation", () => {
           "2026-10-04T09:25:00.000Z",
         ),
       );
-    let finishRefresh: (value: ReturnType<typeof loadedConversation>) => void =
-      () => undefined;
+    let finishRefresh: (
+      value: ReturnType<typeof loadedConversation>,
+    ) => void = () => undefined;
     loadConversation
       .mockResolvedValueOnce(loadedConversation([PROVIDER_MESSAGE]))
       .mockReturnValueOnce(

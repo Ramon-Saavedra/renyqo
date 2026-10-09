@@ -17,7 +17,11 @@ export function useDocumentTimelines(
   const documentSnapshot = requests
     .map(({ requestId, documentId }) => JSON.stringify([requestId, documentId]))
     .sort();
-  const loadKey = JSON.stringify([applicationId, snapshotKey, documentSnapshot]);
+  const loadKey = JSON.stringify([
+    applicationId,
+    snapshotKey,
+    documentSnapshot,
+  ]);
   const load = useCallback(
     (options: ApiRequestOptions) =>
       getDocumentRequestTimelines(applicationId, requests, options),

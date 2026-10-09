@@ -62,31 +62,54 @@ describe("document timeline identity", () => {
     canUpload: false,
   });
   const file = (id: string, requestId: string, createdAt = requestedAt) => ({
-    id, requestId, createdAt,
+    id,
+    requestId,
+    createdAt,
     state: "AVAILABLE",
     availableAt: createdAt,
     reviewedAt: id === "A" ? reviewedAt : null,
   });
   const history = (id: string, documents: ReturnType<typeof file>[]) => ({
-    id, applicationId: APPLICATION_ID, type: "INCOME_PROOF",
-    requestedAt, supersededAt: null, documents,
+    id,
+    applicationId: APPLICATION_ID,
+    type: "INCOME_PROOF",
+    requestedAt,
+    supersededAt: null,
+    documents,
   });
 
   it.each([requestedAt, "2026-10-01T08:13:00.000Z"])(
     "resolves snapshot A before trailing B with timestamp %s",
     async (timestamp) => {
       vi.mocked(apiGet).mockResolvedValue([
-        history("request-1", [file("A", "request-1"), file("B", "request-1", timestamp)]),
+        history("request-1", [
+          file("A", "request-1"),
+          file("B", "request-1", timestamp),
+        ]),
       ]);
-      const result = await getDocumentRequestTimelines(APPLICATION_ID, [snapshot("request-1", "A")]);
-      expect(result.get("request-1")).toEqual({ requestedAt, uploadedAt: requestedAt, reviewedAt });
+      const result = await getDocumentRequestTimelines(APPLICATION_ID, [
+        snapshot("request-1", "A"),
+      ]);
+      expect(result.get("request-1")).toEqual({
+        requestedAt,
+        uploadedAt: requestedAt,
+        reviewedAt,
+      });
     },
   );
 
   it("does not infer a document when the snapshot ID is null", async () => {
-    vi.mocked(apiGet).mockResolvedValue([history("request-1", [file("A", "request-1")])]);
-    const result = await getDocumentRequestTimelines(APPLICATION_ID, [snapshot("request-1", null)]);
-    expect(result.get("request-1")).toEqual({ requestedAt, uploadedAt: null, reviewedAt: null });
+    vi.mocked(apiGet).mockResolvedValue([
+      history("request-1", [file("A", "request-1")]),
+    ]);
+    const result = await getDocumentRequestTimelines(APPLICATION_ID, [
+      snapshot("request-1", null),
+    ]);
+    expect(result.get("request-1")).toEqual({
+      requestedAt,
+      uploadedAt: null,
+      reviewedAt: null,
+    });
   });
 
   it("rejects a missing current ID and succeeds when a retry contains it", async () => {
@@ -94,8 +117,14 @@ describe("document timeline identity", () => {
       .mockResolvedValueOnce([history("request-1", [file("B", "request-1")])])
       .mockResolvedValueOnce([history("request-1", [file("A", "request-1")])]);
     const requests = [snapshot("request-1", "A")];
-    await expect(getDocumentRequestTimelines(APPLICATION_ID, requests)).rejects.toBeInstanceOf(ApplicantApplicationContractError);
-    expect((await getDocumentRequestTimelines(APPLICATION_ID, requests)).get("request-1")?.reviewedAt).toBe(reviewedAt);
+    await expect(
+      getDocumentRequestTimelines(APPLICATION_ID, requests),
+    ).rejects.toBeInstanceOf(ApplicantApplicationContractError);
+    expect(
+      (await getDocumentRequestTimelines(APPLICATION_ID, requests)).get(
+        "request-1",
+      )?.reviewedAt,
+    ).toBe(reviewedAt);
   });
 
   it("keeps replacement dates within their own request history", async () => {
@@ -104,10 +133,20 @@ describe("document timeline identity", () => {
       history("old", [file("A", "old")]),
       history("replacement", [file("B", "replacement", replacementDate)]),
     ]);
-    const result = await getDocumentRequestTimelines(APPLICATION_ID, [snapshot("replacement", "B")]);
+    const result = await getDocumentRequestTimelines(APPLICATION_ID, [
+      snapshot("replacement", "B"),
+    ]);
     expect(result.size).toBe(1);
-    expect(result.get("replacement")).toEqual({ requestedAt, uploadedAt: replacementDate, reviewedAt: null });
-    await expect(getDocumentRequestTimelines(APPLICATION_ID, [snapshot("replacement", "A")])).rejects.toBeInstanceOf(ApplicantApplicationContractError);
+    expect(result.get("replacement")).toEqual({
+      requestedAt,
+      uploadedAt: replacementDate,
+      reviewedAt: null,
+    });
+    await expect(
+      getDocumentRequestTimelines(APPLICATION_ID, [
+        snapshot("replacement", "A"),
+      ]),
+    ).rejects.toBeInstanceOf(ApplicantApplicationContractError);
   });
 });
 
