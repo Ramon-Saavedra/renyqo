@@ -331,6 +331,26 @@ export async function apiGetBlob(
   );
 }
 
+export interface BlobResponse {
+  readonly blob: Blob;
+  readonly contentDisposition: string | null;
+}
+
+export async function apiGetBlobResponse(
+  path: string,
+  options?: ApiRequestOptions,
+): Promise<BlobResponse> {
+  return apiRequest(
+    path,
+    { method: "GET", credentials: "include" },
+    options,
+    async (response) => ({
+      blob: await response.blob(),
+      contentDisposition: response.headers.get("Content-Disposition"),
+    }),
+  );
+}
+
 export async function apiGet<T>(
   path: string,
   options?: ApiRequestOptions,
