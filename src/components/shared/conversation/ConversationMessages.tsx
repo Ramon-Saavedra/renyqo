@@ -67,8 +67,7 @@ export function ConversationMessages({
           Math.ceil(log.scrollTop) >= log.scrollHeight - log.clientHeight;
       }}
       className={cn(
-        "flex min-w-0 flex-col gap-3.5 px-card-x py-parent-y",
-        styles.messages,
+        "flex min-w-0 flex-col gap-3.5 bg-conversation-surface px-card-x py-parent-y",
         scrollMode === "contained" &&
           "scrollbar-slim min-h-0 flex-1 overflow-y-auto overscroll-contain focus-visible:outline-none focus-visible:shadow-focus",
       )}

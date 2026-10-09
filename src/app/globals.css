@@ -13,6 +13,7 @@ html {
   --color-background: var(--background);
   --color-background-subtle: var(--background-subtle);
   --color-background-muted: var(--background-muted);
+  --color-conversation-surface: var(--conversation-surface);
   --color-media-placeholder: var(--media-placeholder);
   --color-input: var(--input);
 
@@ -141,6 +142,11 @@ html {
   --background-muted: #faf5e7;
   --media-placeholder: #f4f0e3;
   --input: #fffdf7;
+  --conversation-surface: color-mix(
+    in srgb,
+    var(--background-muted) 85%,
+    var(--input)
+  );
 
   --foreground: #0e0e0e;
   --foreground-secondary: #555452;
@@ -198,6 +204,11 @@ html {
   --background-subtle: #17171a;
   --media-placeholder: #1f2024;
   --input: #3a3b44;
+  --conversation-surface: color-mix(
+    in srgb,
+    var(--background-muted) 75%,
+    var(--input)
+  );
 
   --foreground: #f5f4f1;
   --foreground-secondary: #a8a6a2;

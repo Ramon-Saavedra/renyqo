@@ -2,23 +2,6 @@
   background-color: var(--background-muted);
 }
 
-.messages {
-  --conversation-message-surface: color-mix(
-    in srgb,
-    var(--background-muted) 85%,
-    var(--input)
-  );
-  background-color: var(--conversation-message-surface);
-}
-
-:global(.dark) .messages {
-  --conversation-message-surface: color-mix(
-    in srgb,
-    var(--background-muted) 75%,
-    var(--input)
-  );
-}
-
 .received {
   border-color: var(--border);
   background-color: var(--background);
