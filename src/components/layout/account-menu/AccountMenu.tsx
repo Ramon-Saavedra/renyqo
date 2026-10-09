@@ -13,6 +13,7 @@ import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 import ThemeToggle from "@/components/ui/theme-toggle/ThemeToggle";
 import { invalidateApplicantProfile } from "@/features/applicant/profile/hooks/useApplicantProfileStatus";
+import { ApplicationsMenuLink } from "@/features/applicant/navigation/components/ApplicationsMenuLink";
 import { SavedListingsMenuLink } from "@/features/applicant/navigation/components/SavedListingsMenuLink";
 import { ProfileMenuLink } from "@/features/applicant/profile/components/ProfileMenuLink";
 import { clearListingsSearchSession } from "@/features/applicant/listings/utils/listings-search-params";
@@ -158,6 +159,7 @@ export function AccountMenu({
       </div>
 
       {isApplicant && <ProfileMenuLink />}
+      {isApplicant && <ApplicationsMenuLink />}
       {isApplicant && <SavedListingsMenuLink />}
 
       {logoutError ? (
