@@ -205,6 +205,7 @@ export function WorkspaceContent({
           listingTitle={listingTitle}
           status={status}
           onWithdrawn={refresh}
+          acceptedGeneration={acceptedGeneration}
         />
       ) : null}
     </div>

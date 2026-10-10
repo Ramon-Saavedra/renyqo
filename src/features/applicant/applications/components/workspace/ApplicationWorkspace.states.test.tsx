@@ -1,6 +1,7 @@
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/lib/api/client";
 import { withdrawListingApplication } from "@/features/applicant/listings/api/listing-withdrawal";
 import { loadCompleteConversation } from "../../api/conversation";
 import type * as conversationApi from "../../api/conversation";
@@ -311,6 +312,80 @@ describe("ApplicationWorkspace states", () => {
 });
 
 describe("ApplicationWorkspace withdrawal", () => {
+  it.each(["failed", "cancelled", "discarded"] as const)(
+    "keeps withdrawal blocked after a %s refresh until a later snapshot is accepted",
+    async (outcome) => {
+      const user = userEvent.setup();
+      let resolveRefresh: (workspace: ApplicantWorkspace) => void = () =>
+        undefined;
+      let rejectRefresh: (error: Error) => void = () => undefined;
+      getWorkspace
+        .mockResolvedValueOnce(createWorkspace())
+        .mockReturnValueOnce(
+          new Promise((resolve, reject) => {
+            resolveRefresh = resolve;
+            rejectRefresh = reject;
+          }),
+        )
+        .mockResolvedValueOnce(createWorkspace());
+      vi.mocked(withdrawListingApplication).mockResolvedValue({
+        id: APPLICATION_ID,
+        listingId: "listing-1",
+        status: "WITHDRAWN",
+        rejectedAt: null,
+        publicReason: null,
+        createdAt: AS_OF,
+        updatedAt: AS_OF,
+      });
+      render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
+      const trigger = await screen.findByRole("button", {
+        name: "Bewerbung zurückziehen",
+      });
+      await user.click(trigger);
+      await user.click(
+        within(screen.getByRole("dialog")).getByRole("button", {
+          name: "Bewerbung zurückziehen",
+        }),
+      );
+      await waitFor(() => expect(getWorkspace).toHaveBeenCalledTimes(2));
+      expect(trigger.hasAttribute("disabled")).toBe(true);
+      await user.click(trigger);
+      expect(screen.queryByRole("dialog")).toBeNull();
+      await act(async () => {
+        if (outcome === "discarded")
+          resolveRefresh(createWorkspace({}, "2020-01-01T00:00:00.000Z"));
+        else
+          rejectRefresh(
+            outcome === "cancelled"
+              ? new ApiError(0, "cancelled", "cancelled")
+              : new Error("refresh failed"),
+          );
+      });
+      expect(trigger.hasAttribute("disabled")).toBe(true);
+      expect(withdrawListingApplication).toHaveBeenCalledOnce();
+      if (outcome === "cancelled") {
+        act(() => window.dispatchEvent(new Event("focus")));
+      } else {
+        await user.click(
+          screen.getByRole("button", { name: "Erneut versuchen" }),
+        );
+      }
+      await waitFor(() => expect(trigger.hasAttribute("disabled")).toBe(false));
+      await user.click(trigger);
+      await user.click(
+        within(screen.getByRole("dialog")).getByText("Abbrechen"),
+      );
+      await user.click(trigger);
+      await user.click(
+        within(screen.getByRole("dialog")).getByRole("button", {
+          name: "Bewerbung zurückziehen",
+        }),
+      );
+      await waitFor(() =>
+        expect(withdrawListingApplication).toHaveBeenCalledTimes(2),
+      );
+    },
+  );
   it("confirms, withdraws and refreshes the workspace", async () => {
     const user = userEvent.setup();
     getWorkspace.mockResolvedValueOnce(createWorkspace()).mockResolvedValueOnce(
@@ -378,6 +453,21 @@ describe("ApplicationWorkspace withdrawal", () => {
       ),
     ).toBeTruthy();
     expect(screen.queryByText("internal stack trace")).toBeNull();
+    vi.mocked(withdrawListingApplication).mockResolvedValue({
+      id: APPLICATION_ID,
+      listingId: "listing-1",
+      status: "WITHDRAWN",
+      rejectedAt: null,
+      publicReason: null,
+      createdAt: AS_OF,
+      updatedAt: AS_OF,
+    });
+    await user.click(
+      within(dialog).getByRole("button", { name: "Bewerbung zurückziehen" }),
+    );
+    await waitFor(() =>
+      expect(withdrawListingApplication).toHaveBeenCalledTimes(2),
+    );
   });
 });
 

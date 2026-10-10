@@ -13,7 +13,8 @@ interface WithdrawSectionProps {
   readonly applicationId: string;
   readonly listingTitle: string;
   readonly status: ApplicationStatus;
-  readonly onWithdrawn: () => void;
+  readonly onWithdrawn: () => number;
+  readonly acceptedGeneration: number;
   readonly className?: string | undefined;
 }
 
@@ -22,13 +23,20 @@ export function WithdrawSection({
   listingTitle,
   status,
   onWithdrawn,
+  acceptedGeneration,
   className,
 }: WithdrawSectionProps) {
   const headingId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
+  const [requiredGeneration, setRequiredGeneration] = useState<number | null>(
+    null,
+  );
+  const requiredGenerationRef = useRef<number | null>(null);
   const { state, withdraw, reset } = useListingWithdrawal(applicationId);
   const pending = state.status === "submitting";
+  const synchronizing =
+    requiredGeneration !== null && acceptedGeneration < requiredGeneration;
 
   const close = () => {
     if (pending) return;
@@ -52,7 +60,17 @@ export function WithdrawSection({
           type="button"
           className={buttonClass("danger")}
           aria-haspopup="dialog"
-          onClick={() => setOpen(true)}
+          disabled={pending || synchronizing}
+          onClick={() => {
+            if (
+              pending ||
+              (requiredGenerationRef.current !== null &&
+                acceptedGeneration < requiredGenerationRef.current)
+            )
+              return;
+            reset();
+            setOpen(true);
+          }}
         >
           <AppIcon icon={Undo2} size={15} decorative />
           {copy.action}
@@ -66,6 +84,7 @@ export function WithdrawSection({
         primaryLabel={copy.confirm}
         primaryPendingLabel={copy.pending}
         primaryPending={pending}
+        primaryDisabled={synchronizing}
         primaryVariant="danger"
         secondaryLabel={copy.cancel}
         closeLabel={copy.cancel}
@@ -74,10 +93,17 @@ export function WithdrawSection({
         onClose={close}
         onSecondary={close}
         onPrimary={() => {
+          if (
+            requiredGenerationRef.current !== null &&
+            acceptedGeneration < requiredGenerationRef.current
+          )
+            return;
           void withdraw().then((done) => {
             if (!done) return;
             setOpen(false);
-            onWithdrawn();
+            const generation = onWithdrawn();
+            requiredGenerationRef.current = generation;
+            setRequiredGeneration(generation);
           });
         }}
       />
