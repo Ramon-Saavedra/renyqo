@@ -86,6 +86,7 @@ export function WorkspaceContent({
     applicationId,
     refresh,
     acceptedGeneration,
+    workspace.viewingSummary,
   );
   const history = useActivityHistory(applicationId, snapshotKey);
 

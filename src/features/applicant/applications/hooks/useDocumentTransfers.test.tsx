@@ -125,7 +125,7 @@ describe("document synchronization", () => {
     },
   );
 
-  it("blocks only the uploaded request and its selector until the required refresh is accepted", async () => {
+  it("blocks only the uploaded request and its selector until its baseline advances", async () => {
     const { rerender } = render(<Harness accepted={1} />);
     select("one");
     await screen.findByText("one blocked");
@@ -144,12 +144,75 @@ describe("document synchronization", () => {
     select("one");
     expect(uploadRequestedDocument).toHaveBeenCalledTimes(2);
     rerender(<Harness accepted={3} />);
+    expect(screen.getByText("one blocked")).toBeTruthy();
+    select("one");
+    expect(uploadRequestedDocument).toHaveBeenCalledTimes(2);
+    rerender(
+      <Harness
+        accepted={3}
+        requests={REQUESTS.map((request) =>
+          request.requestId === "one"
+            ? { ...request, documentId: "new" }
+            : request,
+        )}
+      />,
+    );
     expect(screen.getByText("one available")).toBeTruthy();
     select("one");
     await waitFor(() =>
       expect(uploadRequestedDocument).toHaveBeenCalledTimes(3),
     );
   });
+
+  it.each([
+    "initial",
+    "replacement",
+    "another-tab",
+    "denied",
+    "removed",
+  ] as const)(
+    "releases a successful upload only after authoritative advancement (%s)",
+    async (scenario) => {
+      const baseline = REQUESTS.map((request) =>
+        request.requestId === "one"
+          ? { ...request, documentId: scenario === "initial" ? null : "A" }
+          : request,
+      );
+      const { rerender } = render(<Harness accepted={1} requests={baseline} />);
+      select("one");
+      await screen.findByText("one blocked");
+      rerender(<Harness accepted={3} requests={baseline} />);
+      expect(screen.getByText("one blocked")).toBeTruthy();
+      const advanced = baseline.flatMap((request) =>
+        request.requestId !== "one"
+          ? [request]
+          : scenario === "removed"
+            ? []
+            : [
+                {
+                  ...request,
+                  documentId:
+                    scenario === "denied"
+                      ? request.documentId
+                      : scenario === "another-tab"
+                        ? "C"
+                        : "B",
+                  canUpload: scenario !== "denied",
+                },
+              ],
+      );
+      rerender(<Harness accepted={2} requests={advanced} />);
+      expect(screen.getByText("one blocked")).toBeTruthy();
+      rerender(<Harness accepted={3} requests={advanced} />);
+      expect(screen.getByText("one available")).toBeTruthy();
+      select("one");
+      await waitFor(() =>
+        expect(uploadRequestedDocument).toHaveBeenCalledTimes(
+          scenario === "denied" || scenario === "removed" ? 1 : 2,
+        ),
+      );
+    },
+  );
 
   it.each([409, 500])(
     "keeps conflicts blocked and normal failures retryable (%s)",

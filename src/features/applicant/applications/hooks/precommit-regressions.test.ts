@@ -2,7 +2,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { getApplicantWorkspace } from "../api/workspace";
-import { createWorkspace } from "../testing/fixtures";
+import { createWorkspace, viewingSnapshot } from "../testing/fixtures";
+import type { ViewingSummary } from "../api/shared-schemas";
 import { useApplicantWorkspace } from "./useApplicantWorkspace";
 import { useAuxiliaryLoad } from "./useAuxiliaryLoad";
 import {
@@ -22,6 +23,16 @@ vi.mock("../api/viewings", () => ({
 }));
 
 beforeEach(() => vi.resetAllMocks());
+
+function viewingSummary(): ViewingSummary {
+  return createWorkspace({
+    viewingSummary: {
+      current: viewingSnapshot({ viewingId: "one" }),
+      latest: viewingSnapshot({ viewingId: "two" }),
+      latestCompleted: viewingSnapshot({ viewingId: "viewing-test" }),
+    },
+  }).viewingSummary;
+}
 
 describe("auxiliary data", () => {
   it("distinguishes loading, error, successful absence and retry", async () => {
@@ -103,7 +114,12 @@ describe("viewing conflicts", () => {
       const refresh = vi.fn(() => 3);
       const { result, rerender } = renderHook(
         ({ accepted }) =>
-          useViewingActions("application-test", refresh, accepted),
+          useViewingActions(
+            "application-test",
+            refresh,
+            accepted,
+            viewingSummary(),
+          ),
         { initialProps: { accepted: 1 } },
       );
       await act(async () => {
@@ -120,8 +136,80 @@ describe("viewing conflicts", () => {
 });
 
 describe("viewing synchronization", () => {
+  it.each(["STILL_INTERESTED", "NOT_INTERESTED", "removed"] as const)(
+    "releases interest synchronization on authoritative interest advancement (%s)",
+    async (interest) => {
+      vi.mocked(submitViewingInterest).mockResolvedValue(undefined);
+      const baseline = viewingSummary();
+      baseline.current = null;
+      baseline.latestCompleted = viewingSnapshot({
+        viewingId: "one",
+        status: "COMPLETED",
+      });
+      const { result, rerender } = renderHook(
+        ({ accepted, summary }) =>
+          useViewingActions("application-test", () => 3, accepted, summary),
+        { initialProps: { accepted: 1, summary: baseline } },
+      );
+      await act(async () => {
+        expect(
+          await result.current.submitInterest("one", "STILL_INTERESTED"),
+        ).toBe(true);
+      });
+      rerender({ accepted: 3, summary: baseline });
+      expect(result.current.isBlocked("one")).toBe(true);
+      const advanced = {
+        ...baseline,
+        latestCompleted:
+          interest === "removed"
+            ? null
+            : viewingSnapshot({
+                viewingId: "one",
+                status: "COMPLETED",
+                postViewingInterest: {
+                  interest,
+                  respondedAt: "2026-10-04T09:20:00.000Z",
+                },
+              }),
+      };
+      rerender({ accepted: 3, summary: advanced });
+      expect(result.current.isBlocked("one")).toBe(false);
+    },
+  );
+  it.each([
+    "ACCEPTED",
+    "COMPLETED",
+    "CANCELLED",
+    "SUPERSEDED",
+    "removed",
+  ] as const)(
+    "releases accepted viewing synchronization on authoritative progression (%s)",
+    async (status) => {
+      vi.mocked(acceptViewing).mockResolvedValue(undefined);
+      const refresh = vi.fn(() => 3);
+      const { result, rerender } = renderHook(
+        ({ accepted, summary }) =>
+          useViewingActions("application-test", refresh, accepted, summary),
+        { initialProps: { accepted: 1, summary: viewingSummary() } },
+      );
+      await act(async () => {
+        expect(await result.current.accept("one")).toBe(true);
+      });
+      rerender({ accepted: 3, summary: viewingSummary() });
+      expect(result.current.isBlocked("one")).toBe(true);
+      const summary = viewingSummary();
+      summary.current =
+        status === "removed"
+          ? null
+          : viewingSnapshot({ viewingId: "one", status });
+      rerender({ accepted: 2, summary });
+      expect(result.current.isBlocked("one")).toBe(true);
+      rerender({ accepted: 3, summary });
+      expect(result.current.isBlocked("one")).toBe(false);
+    },
+  );
   it.each(["accept", "decline", "request", "interest"] as const)(
-    "blocks repeated and contradictory actions after %s until its refresh is accepted",
+    "blocks repeated and contradictory actions after %s until its baseline changes",
     async (kind) => {
       vi.mocked(acceptViewing).mockResolvedValue(undefined);
       vi.mocked(declineViewing).mockResolvedValue(undefined);
@@ -129,9 +217,9 @@ describe("viewing synchronization", () => {
       vi.mocked(submitViewingInterest).mockResolvedValue(undefined);
       const refresh = vi.fn(() => 3);
       const { result, rerender } = renderHook(
-        ({ accepted }) =>
-          useViewingActions("application-test", refresh, accepted),
-        { initialProps: { accepted: 1 } },
+        ({ accepted, summary }) =>
+          useViewingActions("application-test", refresh, accepted, summary),
+        { initialProps: { accepted: 1, summary: viewingSummary() } },
       );
       await act(async () => {
         const actions = result.current;
@@ -158,9 +246,25 @@ describe("viewing synchronization", () => {
       await act(async () => {
         expect(await result.current.accept("two")).toBe(true);
       });
-      rerender({ accepted: 2 });
+      rerender({ accepted: 2, summary: viewingSummary() });
       expect(result.current.isBlocked("one")).toBe(true);
-      rerender({ accepted: 3 });
+      rerender({ accepted: 3, summary: viewingSummary() });
+      expect(result.current.isBlocked("one")).toBe(true);
+      const summary = viewingSummary();
+      summary.current = viewingSnapshot({
+        viewingId: "one",
+        status:
+          kind === "decline"
+            ? "DECLINED"
+            : kind === "request"
+              ? "CHANGE_REQUESTED"
+              : "COMPLETED",
+        postViewingInterest: {
+          interest: "NOT_INTERESTED",
+          respondedAt: "2026-10-04T09:20:00.000Z",
+        },
+      });
+      rerender({ accepted: 3, summary });
       expect(result.current.isBlocked("one")).toBe(false);
       await act(async () => {
         expect(await result.current.accept("one")).toBe(true);
@@ -174,7 +278,7 @@ describe("viewing synchronization", () => {
       .mockResolvedValueOnce(undefined);
     const refresh = vi.fn(() => 3);
     const { result } = renderHook(() =>
-      useViewingActions("application-test", refresh, 1),
+      useViewingActions("application-test", refresh, 1, viewingSummary()),
     );
     await act(async () => {
       expect(await result.current.accept("one")).toBe(false);
@@ -188,7 +292,7 @@ describe("viewing synchronization", () => {
   });
 
   it("keeps locks through obsolete, discarded and failed refreshes and releases on a valid retry", async () => {
-    const workspace = createWorkspace();
+    const workspace = createWorkspace({ viewingSummary: viewingSummary() });
     let finishOlder: (value: typeof workspace) => void = () => undefined;
     let finishStale: (value: typeof workspace) => void = () => undefined;
     vi.mocked(getApplicantWorkspace)
@@ -204,7 +308,7 @@ describe("viewing synchronization", () => {
         }),
       )
       .mockRejectedValueOnce(new ApiError(503, "internal"))
-      .mockResolvedValueOnce(workspace);
+      .mockResolvedValueOnce(createWorkspace());
     vi.mocked(acceptViewing).mockResolvedValue(undefined);
     const { result } = renderHook(() => {
       const workspaceController = useApplicantWorkspace(
@@ -218,6 +322,9 @@ describe("viewing synchronization", () => {
         workspace.application.id,
         workspaceController.refresh,
         accepted,
+        workspaceController.state.status === "ready"
+          ? workspaceController.state.workspace.viewingSummary
+          : workspace.viewingSummary,
       );
       return { workspaceController, actions };
     });
@@ -260,7 +367,7 @@ describe("viewing synchronization", () => {
       expect(result.current.actions.isBlocked("one")).toBe(false),
     );
     expect(result.current.workspaceController.state).toMatchObject({
-      workspace,
+      workspace: createWorkspace(),
       refreshFailed: false,
     });
   });

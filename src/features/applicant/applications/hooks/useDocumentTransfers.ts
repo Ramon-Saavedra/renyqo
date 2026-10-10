@@ -53,6 +53,29 @@ function uploadFailure(error: unknown): UploadFailure {
   return "failed";
 }
 
+type UploadBlock =
+  | { readonly kind: "conflict"; readonly generation: number }
+  | {
+      readonly kind: "success";
+      readonly generation: number;
+      readonly documentId: string | null;
+    };
+
+function uploadIsBlocked(
+  block: UploadBlock | undefined,
+  acceptedGeneration: number,
+  request: WorkspaceDocumentRequest | undefined,
+): boolean {
+  if (!block) return false;
+  if (acceptedGeneration < block.generation) return true;
+  return (
+    block.kind === "success" &&
+    request !== undefined &&
+    request.canUpload &&
+    request.documentId === block.documentId
+  );
+}
+
 export function useDocumentTransfers(
   applicationId: string,
   onChanged: () => number,
@@ -63,9 +86,9 @@ export function useDocumentTransfers(
   const targetRef = useRef<string | null>(null);
   const busyRef = useRef(false);
   const downloadBusyRef = useRef(false);
-  const blockedRef = useRef<ReadonlyMap<string, number>>(new Map());
+  const blockedRef = useRef<ReadonlyMap<string, UploadBlock>>(new Map());
   const [blockedRequests, setBlockedRequests] = useState<
-    ReadonlyMap<string, number>
+    ReadonlyMap<string, UploadBlock>
   >(new Map());
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadFailureState, setUploadFailure] =
@@ -82,17 +105,29 @@ export function useDocumentTransfers(
 
   const isUploadBlocked = useCallback(
     (requestId: string) => {
-      const required = blockedRequests.get(requestId);
-      return required !== undefined && acceptedGeneration < required;
+      return uploadIsBlocked(
+        blockedRequests.get(requestId),
+        acceptedGeneration,
+        requests.find((request) => request.requestId === requestId),
+      );
     },
-    [acceptedGeneration, blockedRequests],
+    [acceptedGeneration, blockedRequests, requests],
   );
 
   const synchronize = useCallback(
-    (requestId: string) => {
+    (requestId: string, baseline: WorkspaceDocumentRequest | null) => {
       const required = onChanged();
       const next = new Map(blockedRef.current);
-      next.set(requestId, required);
+      next.set(
+        requestId,
+        baseline === null
+          ? { kind: "conflict", generation: required }
+          : {
+              kind: "success",
+              generation: required,
+              documentId: baseline.documentId,
+            },
+      );
       blockedRef.current = next;
       setBlockedRequests(next);
     },
@@ -109,22 +144,30 @@ export function useDocumentTransfers(
       if (
         busyRef.current ||
         !canUpload(requestId) ||
-        (required !== undefined && acceptedGeneration < required)
+        uploadIsBlocked(
+          required,
+          acceptedGeneration,
+          requests.find((request) => request.requestId === requestId),
+        )
       )
         return;
       targetRef.current = requestId;
       inputRef.current?.click();
     },
-    [acceptedGeneration, canUpload],
+    [acceptedGeneration, canUpload, requests],
   );
 
   const upload = useCallback(
     async (requestId: string, file: File) => {
       const required = blockedRef.current.get(requestId);
+      const baseline = requests.find(
+        (request) => request.requestId === requestId,
+      );
       if (
         busyRef.current ||
         !canUpload(requestId) ||
-        (required !== undefined && acceptedGeneration < required)
+        !baseline ||
+        uploadIsBlocked(required, acceptedGeneration, baseline)
       )
         return;
       const invalid = validateDocumentFile(file);
@@ -137,17 +180,17 @@ export function useDocumentTransfers(
       setUploadFailure(null);
       try {
         await uploadRequestedDocument(applicationId, requestId, file);
-        synchronize(requestId);
+        synchronize(requestId, baseline);
       } catch (error) {
         const reason = uploadFailure(error);
         setUploadFailure({ requestId, reason });
-        if (reason === "conflict") synchronize(requestId);
+        if (reason === "conflict") synchronize(requestId, null);
       } finally {
         busyRef.current = false;
         setUploadingId(null);
       }
     },
-    [applicationId, acceptedGeneration, canUpload, synchronize],
+    [applicationId, acceptedGeneration, canUpload, synchronize, requests],
   );
 
   const onFileSelected = useCallback(

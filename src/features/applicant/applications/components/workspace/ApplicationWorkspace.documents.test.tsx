@@ -186,7 +186,7 @@ describe("ApplicationWorkspace documents", () => {
     },
   );
 
-  it("locks only the uploaded request in the row and next step through failed refresh and retry", async () => {
+  it("locks only the uploaded request through failed refresh and an identical accepted retry", async () => {
     const user = userEvent.setup();
     const workspace = workspaceWith([
       request({ requestId: "request-1" }),
@@ -263,7 +263,7 @@ describe("ApplicationWorkspace documents", () => {
         within(region).getByRole("button", {
           name: "Einkommensnachweis hochladen",
         }),
-      ).toHaveProperty("disabled", false),
+      ).toHaveProperty("disabled", true),
     );
     expect(uploadRequestedDocument).toHaveBeenCalledTimes(1);
     expect(workspace.documentsSummary.currentRequests[0]?.canUpload).toBe(true);

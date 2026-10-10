@@ -144,7 +144,7 @@ beforeEach(() => {
 });
 
 describe("ApplicationWorkspace viewing", () => {
-  it("keeps successful viewing controls blocked after a failed refresh until retry is accepted", async () => {
+  it("keeps successful viewing controls blocked after a failed refresh and an identical accepted retry", async () => {
     const user = userEvent.setup();
     const workspace = proposedWorkspace();
     let finishRetry: (value: ApplicantWorkspace) => void = () => undefined;
@@ -185,7 +185,7 @@ describe("ApplicationWorkspace viewing", () => {
     await waitFor(() =>
       expect(
         within(region).getByRole("button", { name: "Termin annehmen" }),
-      ).toHaveProperty("disabled", false),
+      ).toHaveProperty("disabled", true),
     );
     expect(workspace.viewingSummary.current?.capabilities.canAccept).toBe(true);
   });
