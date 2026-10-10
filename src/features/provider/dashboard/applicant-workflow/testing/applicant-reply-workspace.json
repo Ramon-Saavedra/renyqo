@@ -1,0 +1,201 @@
+{
+  "asOf": "2026-10-05T09:00:00.000Z",
+  "application": {
+    "id": "application-reply",
+    "status": "ACTIVE",
+    "submittedAt": "2026-08-31T14:00:00.000Z",
+    "activeAt": "2026-09-27T12:00:00.000Z",
+    "rejectedAt": null,
+    "withdrawnAt": null,
+    "publicReason": null
+  },
+  "attention": {
+    "pendingActionCount": 1,
+    "actionableUnreadMessageCount": 1,
+    "hasPendingAction": true,
+    "applicationId": "application-reply",
+    "pendingActions": [
+      {
+        "type": "RESPOND_TO_MESSAGE",
+        "source": "CONVERSATION"
+      }
+    ],
+    "historicalUnreadMessageCount": 1,
+    "conversation": {
+      "isOpen": true,
+      "isReadOnly": false,
+      "expectedResponder": "PROVIDER"
+    },
+    "asOf": "2026-10-05T09:00:00.000Z"
+  },
+  "conversationSummary": {
+    "isOpen": true,
+    "isReadOnly": false,
+    "expectedResponder": "PROVIDER",
+    "canCurrentUserSend": true
+  },
+  "documentsSummary": {
+    "canRequestDocuments": true,
+    "counts": {
+      "requestedCount": 3,
+      "uploadRequiredCount": 0,
+      "reviewRequiredCount": 0,
+      "processingCount": 0,
+      "reviewedCount": 0
+    },
+    "currentRequests": [
+      {
+        "requestId": "request-1",
+        "type": "INCOME_PROOF",
+        "customLabel": null,
+        "status": "UPLOAD_REQUIRED",
+        "documentId": null,
+        "canDownload": false,
+        "canUpload": false,
+        "canReview": false,
+        "canCancel": true,
+        "canRequestReplacement": false
+      },
+      {
+        "requestId": "request-2",
+        "type": "SCHUFA",
+        "customLabel": null,
+        "status": "UPLOAD_REQUIRED",
+        "documentId": null,
+        "canDownload": false,
+        "canUpload": false,
+        "canReview": false,
+        "canCancel": true,
+        "canRequestReplacement": false
+      },
+      {
+        "requestId": "request-3",
+        "type": "IDENTITY_DOCUMENT",
+        "customLabel": null,
+        "status": "UPLOAD_REQUIRED",
+        "documentId": null,
+        "canDownload": false,
+        "canUpload": false,
+        "canReview": false,
+        "canCancel": true,
+        "canRequestReplacement": false
+      }
+    ]
+  },
+  "viewingSummary": {
+    "current": {
+      "viewingId": "viewing-2",
+      "status": "PROPOSED",
+      "startsAt": "2026-10-22T19:45:00.000Z",
+      "endsAt": "2026-10-22T20:15:00.000Z",
+      "timeZone": "Europe/Berlin",
+      "effectiveOutcome": null,
+      "postViewingInterest": null,
+      "nextAction": "APPLICANT_RESPOND_TO_VIEWING",
+      "capabilities": {
+        "canAccept": false,
+        "canDecline": false,
+        "canRequestAnotherTime": false,
+        "canReschedule": true,
+        "canCancel": true,
+        "canMarkCompleted": false,
+        "canMarkNoShow": false,
+        "canCorrectOutcome": false,
+        "canSubmitInterest": false
+      }
+    },
+    "latest": {
+      "viewingId": "viewing-2",
+      "status": "PROPOSED",
+      "startsAt": "2026-10-22T19:45:00.000Z",
+      "endsAt": "2026-10-22T20:15:00.000Z",
+      "timeZone": "Europe/Berlin",
+      "effectiveOutcome": null,
+      "postViewingInterest": null,
+      "nextAction": "APPLICANT_RESPOND_TO_VIEWING",
+      "capabilities": {
+        "canAccept": false,
+        "canDecline": false,
+        "canRequestAnotherTime": false,
+        "canReschedule": true,
+        "canCancel": true,
+        "canMarkCompleted": false,
+        "canMarkNoShow": false,
+        "canCorrectOutcome": false,
+        "canSubmitInterest": false
+      }
+    },
+    "latestCompleted": null,
+    "pendingInterest": null,
+    "changeRequested": null,
+    "canPropose": false,
+    "nextAction": "APPLICANT_RESPOND_TO_VIEWING"
+  },
+  "activityPreview": {
+    "items": [
+      {
+        "id": "activity-5",
+        "type": "MESSAGE_SENT",
+        "actorType": "APPLICANT",
+        "occurredAt": "2026-10-05T09:00:00.000Z",
+        "payload": null
+      },
+      {
+        "id": "activity-4",
+        "type": "VIEWING_PROPOSED",
+        "actorType": "PROVIDER",
+        "occurredAt": "2026-10-04T14:40:47.000Z",
+        "payload": {
+          "viewingId": "viewing-2",
+          "startsAt": "2026-10-22T19:45:00.000Z",
+          "endsAt": "2026-10-22T20:15:00.000Z",
+          "viewingRound": 2
+        }
+      },
+      {
+        "id": "activity-3",
+        "type": "VIEWING_CANCELLED",
+        "actorType": "PROVIDER",
+        "occurredAt": "2026-10-04T14:40:43.000Z",
+        "payload": {
+          "viewingId": "viewing-1",
+          "viewingRound": 1
+        }
+      },
+      {
+        "id": "activity-2",
+        "type": "VIEWING_PROPOSED",
+        "actorType": "PROVIDER",
+        "occurredAt": "2026-10-04T12:19:59.000Z",
+        "payload": {
+          "viewingId": "viewing-1",
+          "startsAt": "2026-10-28T16:22:00.000Z",
+          "endsAt": "2026-10-28T16:52:00.000Z",
+          "viewingRound": 1
+        }
+      },
+      {
+        "id": "activity-1",
+        "type": "DOCUMENT_REQUESTED",
+        "actorType": "PROVIDER",
+        "occurredAt": "2026-10-04T12:17:53.000Z",
+        "payload": {
+          "requestId": "request-2",
+          "documentType": "SCHUFA"
+        }
+      }
+    ],
+    "hasMore": true
+  },
+  "capabilities": {
+    "canWithdraw": false,
+    "canReject": true,
+    "canRestore": false,
+    "canSelectForRental": true
+  },
+  "applicant": {
+    "name": "Test Applicant",
+    "peopleCount": 1,
+    "introduction": null
+  }
+}

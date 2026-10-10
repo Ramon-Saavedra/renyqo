@@ -110,7 +110,7 @@ export interface ApplicantWorkflowModel {
   readonly viewing: WorkflowViewingCard | null;
 }
 
-const PENDING_LABEL: Record<ProviderPendingAction, string> = {
+const PENDING_LABEL: Record<ProviderPendingAction["type"], string> = {
   RESPOND_TO_MESSAGE: "Nachricht beantworten",
   REVIEW_DOCUMENT: "Unterlage prüfen",
   RESPOND_TO_VIEWING_CHANGE_REQUEST: "Terminänderung beantworten",
@@ -269,7 +269,7 @@ function nextStep(workspace: ApplicantWorkspace): WorkflowNextStep {
     };
   }
   const labels = workspace.attention.pendingActions.map(
-    (action) => PENDING_LABEL[action],
+    (action) => PENDING_LABEL[action.type],
   );
   return {
     kind: "pending",
@@ -372,7 +372,8 @@ export function buildApplicantWorkflowModel(
           statusLabel: viewingStatusLabel(currentViewing.status),
           whenLabel: formatWhen(currentViewing.startsAt, currentViewing.endsAt),
           interestLabel: currentViewing.postViewingInterest
-            ? (INTEREST_LABEL[currentViewing.postViewingInterest] ?? null)
+            ? (INTEREST_LABEL[currentViewing.postViewingInterest.interest] ??
+              null)
             : null,
           canReschedule: currentViewing.capabilities.canReschedule,
           canCancel: currentViewing.capabilities.canCancel,
