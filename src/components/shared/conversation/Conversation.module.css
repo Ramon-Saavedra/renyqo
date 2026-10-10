@@ -1,0 +1,35 @@
+.surface {
+  background-color: var(--background-muted);
+}
+
+.received {
+  border-color: var(--border);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.sent {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.metadata {
+  color: var(--foreground-tertiary);
+}
+
+.notice {
+  background-color: var(--background-subtle);
+}
+
+.header {
+  background-color: var(--background-subtle);
+  color: var(--foreground);
+}
+
+.composerInput {
+  min-height: calc(var(--spacing) * 11);
+  max-height: calc(var(--spacing) * 40);
+  padding: var(--spacing-card-y) var(--spacing-card-x);
+  resize: none;
+  overflow-y: auto;
+}
