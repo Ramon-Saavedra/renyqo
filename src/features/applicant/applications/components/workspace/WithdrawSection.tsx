@@ -13,8 +13,7 @@ interface WithdrawSectionProps {
   readonly applicationId: string;
   readonly listingTitle: string;
   readonly status: ApplicationStatus;
-  readonly onWithdrawn: () => number;
-  readonly acceptedGeneration: number;
+  readonly onWithdrawn: () => void;
   readonly className?: string | undefined;
 }
 
@@ -23,25 +22,19 @@ export function WithdrawSection({
   listingTitle,
   status,
   onWithdrawn,
-  acceptedGeneration,
   className,
 }: WithdrawSectionProps) {
   const headingId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
-  const [requiredGeneration, setRequiredGeneration] = useState<number | null>(
-    null,
-  );
-  const requiredGenerationRef = useRef<number | null>(null);
   const { state, withdraw, reset } = useListingWithdrawal(applicationId);
   const pending = state.status === "submitting";
-  const synchronizing =
-    requiredGeneration !== null && acceptedGeneration < requiredGeneration;
+  const succeeded = state.status === "success";
 
   const close = () => {
     if (pending) return;
     setOpen(false);
-    reset();
+    if (!succeeded) reset();
   };
 
   return (
@@ -60,14 +53,9 @@ export function WithdrawSection({
           type="button"
           className={buttonClass("danger")}
           aria-haspopup="dialog"
-          disabled={pending || synchronizing}
+          disabled={pending || succeeded}
           onClick={() => {
-            if (
-              pending ||
-              (requiredGenerationRef.current !== null &&
-                acceptedGeneration < requiredGenerationRef.current)
-            )
-              return;
+            if (pending || succeeded) return;
             reset();
             setOpen(true);
           }}
@@ -84,7 +72,7 @@ export function WithdrawSection({
         primaryLabel={copy.confirm}
         primaryPendingLabel={copy.pending}
         primaryPending={pending}
-        primaryDisabled={synchronizing}
+        primaryDisabled={succeeded}
         primaryVariant="danger"
         secondaryLabel={copy.cancel}
         closeLabel={copy.cancel}
@@ -93,17 +81,11 @@ export function WithdrawSection({
         onClose={close}
         onSecondary={close}
         onPrimary={() => {
-          if (
-            requiredGenerationRef.current !== null &&
-            acceptedGeneration < requiredGenerationRef.current
-          )
-            return;
+          if (pending || succeeded) return;
           void withdraw().then((done) => {
             if (!done) return;
             setOpen(false);
-            const generation = onWithdrawn();
-            requiredGenerationRef.current = generation;
-            setRequiredGeneration(generation);
+            onWithdrawn();
           });
         }}
       />

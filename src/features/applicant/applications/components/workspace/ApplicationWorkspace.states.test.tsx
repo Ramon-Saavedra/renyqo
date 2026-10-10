@@ -312,8 +312,8 @@ describe("ApplicationWorkspace states", () => {
 });
 
 describe("ApplicationWorkspace withdrawal", () => {
-  it.each(["failed", "cancelled", "discarded"] as const)(
-    "keeps withdrawal blocked after a %s refresh until a later snapshot is accepted",
+  it.each(["failed", "cancelled", "discarded", "accepted"] as const)(
+    "keeps successful withdrawal blocked after a %s refresh and a later accepted snapshot",
     async (outcome) => {
       const user = userEvent.setup();
       let resolveRefresh: (workspace: ApplicantWorkspace) => void = () =>
@@ -352,7 +352,8 @@ describe("ApplicationWorkspace withdrawal", () => {
       await user.click(trigger);
       expect(screen.queryByRole("dialog")).toBeNull();
       await act(async () => {
-        if (outcome === "discarded")
+        if (outcome === "accepted") resolveRefresh(createWorkspace());
+        else if (outcome === "discarded")
           resolveRefresh(createWorkspace({}, "2020-01-01T00:00:00.000Z"));
         else
           rejectRefresh(
@@ -363,27 +364,19 @@ describe("ApplicationWorkspace withdrawal", () => {
       });
       expect(trigger.hasAttribute("disabled")).toBe(true);
       expect(withdrawListingApplication).toHaveBeenCalledOnce();
-      if (outcome === "cancelled") {
+      if (outcome === "cancelled" || outcome === "accepted") {
         act(() => window.dispatchEvent(new Event("focus")));
       } else {
         await user.click(
           screen.getByRole("button", { name: "Erneut versuchen" }),
         );
       }
-      await waitFor(() => expect(trigger.hasAttribute("disabled")).toBe(false));
+      await waitFor(() => expect(getWorkspace).toHaveBeenCalledTimes(3));
+      expect(trigger.hasAttribute("disabled")).toBe(true);
       await user.click(trigger);
-      await user.click(
-        within(screen.getByRole("dialog")).getByText("Abbrechen"),
-      );
-      await user.click(trigger);
-      await user.click(
-        within(screen.getByRole("dialog")).getByRole("button", {
-          name: "Bewerbung zurückziehen",
-        }),
-      );
-      await waitFor(() =>
-        expect(withdrawListingApplication).toHaveBeenCalledTimes(2),
-      );
+      await user.keyboard("{Escape}");
+      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(withdrawListingApplication).toHaveBeenCalledOnce();
     },
   );
   it("confirms, withdraws and refreshes the workspace", async () => {
@@ -429,6 +422,9 @@ describe("ApplicationWorkspace withdrawal", () => {
       await screen.findByRole("heading", { name: "Bewerbung zurückgezogen" }),
     ).toBeTruthy();
     expect(screen.queryByRole("dialog")).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Bewerbung zurückziehen" }),
+    ).toBeNull();
     expect(getWorkspace).toHaveBeenCalledTimes(2);
   });
 
