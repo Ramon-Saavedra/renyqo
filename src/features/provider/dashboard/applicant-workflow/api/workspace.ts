@@ -1,13 +1,29 @@
 import { z } from "zod";
 import { ApiError, apiGet, type ApiRequestOptions } from "@/lib/api/client";
 
-const PROVIDER_PENDING_ACTIONS = [
-  "RESPOND_TO_MESSAGE",
-  "REVIEW_DOCUMENT",
-  "RESPOND_TO_VIEWING_CHANGE_REQUEST",
-  "CLOSE_UNANSWERED_VIEWING",
-  "RECORD_VIEWING_OUTCOME",
-] as const;
+const providerPendingActionSchema = z.discriminatedUnion("source", [
+  z.object({
+    type: z.literal("RESPOND_TO_MESSAGE"),
+    source: z.literal("CONVERSATION"),
+  }),
+  z.object({
+    type: z.literal("REVIEW_DOCUMENT"),
+    source: z.literal("DOCUMENT"),
+    target: z.object({
+      requestId: z.string().min(1),
+      documentId: z.string().min(1),
+    }),
+  }),
+  z.object({
+    type: z.enum([
+      "RESPOND_TO_VIEWING_CHANGE_REQUEST",
+      "CLOSE_UNANSWERED_VIEWING",
+      "RECORD_VIEWING_OUTCOME",
+    ]),
+    source: z.literal("VIEWING"),
+    target: z.object({ viewingId: z.string().min(1) }),
+  }),
+]);
 
 const DOCUMENT_REQUEST_STATUSES = [
   "UPLOAD_REQUIRED",
@@ -67,7 +83,12 @@ const viewingSchema = z.object({
   endsAt: dateTimeSchema,
   timeZone: z.string().min(1),
   effectiveOutcome: z.string().nullable(),
-  postViewingInterest: z.string().nullable(),
+  postViewingInterest: z
+    .object({
+      interest: z.enum(["STILL_INTERESTED", "NOT_INTERESTED"]),
+      respondedAt: dateTimeSchema,
+    })
+    .nullable(),
   nextAction: z.string().nullable(),
   capabilities: viewingCapabilitiesSchema,
 });
@@ -134,7 +155,7 @@ export const applicantWorkspaceSchema = z.object({
   }),
   asOf: dateTimeSchema,
   attention: z.object({
-    pendingActions: z.array(z.enum(PROVIDER_PENDING_ACTIONS)),
+    pendingActions: z.array(providerPendingActionSchema),
     pendingActionCount: z.number().int().nonnegative(),
     hasPendingAction: z.boolean(),
     actionableUnreadMessageCount: z.number().int().nonnegative(),
@@ -174,7 +195,7 @@ export type ApplicantWorkspace = z.infer<typeof applicantWorkspaceSchema>;
 export type WorkspaceDocumentRequest = z.infer<typeof documentRequestSchema>;
 export type WorkspaceViewing = z.infer<typeof viewingSchema>;
 export type WorkspaceActivityItem = z.infer<typeof activityItemSchema>;
-export type ProviderPendingAction = (typeof PROVIDER_PENDING_ACTIONS)[number];
+export type ProviderPendingAction = z.infer<typeof providerPendingActionSchema>;
 
 export class WorkspaceContractError extends Error {
   constructor() {

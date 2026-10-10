@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseApplicantWorkspace } from "./workspace";
+import applicantReplyWorkspace from "../testing/applicant-reply-workspace.json";
 
 const AT = "2026-08-31T14:01:36.290Z";
 
@@ -74,6 +75,149 @@ function emptyWorkspace(applicationId: string) {
 }
 
 describe("parseApplicantWorkspace", () => {
+  it("accepts the real workspace structure after an applicant reply", () => {
+    const workspace = parseApplicantWorkspace(
+      applicantReplyWorkspace,
+      applicantReplyWorkspace.application.id,
+    );
+
+    expect(workspace.attention.pendingActions).toEqual([
+      { type: "RESPOND_TO_MESSAGE", source: "CONVERSATION" },
+    ]);
+    expect(workspace.conversationSummary).toEqual({
+      isOpen: true,
+      isReadOnly: false,
+      expectedResponder: "PROVIDER",
+      canCurrentUserSend: true,
+    });
+    expect(workspace.documentsSummary.currentRequests).toHaveLength(3);
+    expect(workspace.viewingSummary.current?.postViewingInterest).toBeNull();
+    expect(workspace.activityPreview.items).toHaveLength(5);
+  });
+
+  it("preserves document and viewing action targets", () => {
+    const pendingActions = [
+      {
+        type: "REVIEW_DOCUMENT",
+        source: "DOCUMENT",
+        target: { requestId: "request-1", documentId: "document-1" },
+      },
+      ...[
+        "RESPOND_TO_VIEWING_CHANGE_REQUEST",
+        "CLOSE_UNANSWERED_VIEWING",
+        "RECORD_VIEWING_OUTCOME",
+      ].map((type) => ({
+        type,
+        source: "VIEWING",
+        target: { viewingId: "viewing-1" },
+      })),
+    ];
+    const workspace = parseApplicantWorkspace(
+      {
+        ...applicantReplyWorkspace,
+        attention: { ...applicantReplyWorkspace.attention, pendingActions },
+      },
+      applicantReplyWorkspace.application.id,
+    );
+
+    expect(workspace.attention.pendingActions).toEqual(pendingActions);
+  });
+
+  it.each([
+    ["RESPOND_TO_MESSAGE"],
+    [{ type: "RESPOND_TO_MESSAGE", source: "DOCUMENT" }],
+    [
+      {
+        type: "REVIEW_DOCUMENT",
+        source: "DOCUMENT",
+        target: { requestId: "r" },
+      },
+    ],
+    [
+      {
+        type: "RECORD_VIEWING_OUTCOME",
+        source: "VIEWING",
+        target: { viewingId: "" },
+      },
+    ],
+    [{ type: "UNKNOWN", source: "CONVERSATION" }],
+  ])("rejects malformed pending action %j", (action) => {
+    expect(() =>
+      parseApplicantWorkspace(
+        {
+          ...applicantReplyWorkspace,
+          attention: {
+            ...applicantReplyWorkspace.attention,
+            pendingActions: [action],
+          },
+        },
+        applicantReplyWorkspace.application.id,
+      ),
+    ).toThrow("Invalid applicant workspace response");
+  });
+
+  it.each(["STILL_INTERESTED", "NOT_INTERESTED"])(
+    "preserves structured post-viewing interest %s in every summary slot",
+    (interest) => {
+      const postViewingInterest = { interest, respondedAt: AT };
+      const viewing = {
+        ...applicantReplyWorkspace.viewingSummary.current,
+        status: "COMPLETED",
+        effectiveOutcome: "COMPLETED",
+        postViewingInterest,
+      };
+      const workspace = parseApplicantWorkspace(
+        {
+          ...applicantReplyWorkspace,
+          viewingSummary: {
+            ...applicantReplyWorkspace.viewingSummary,
+            current: viewing,
+            latest: viewing,
+            latestCompleted: viewing,
+            pendingInterest: viewing,
+            changeRequested: viewing,
+          },
+        },
+        applicantReplyWorkspace.application.id,
+      );
+
+      for (const key of [
+        "current",
+        "latest",
+        "latestCompleted",
+        "pendingInterest",
+        "changeRequested",
+      ] as const) {
+        expect(workspace.viewingSummary[key]?.postViewingInterest).toEqual(
+          postViewingInterest,
+        );
+      }
+    },
+  );
+
+  it.each([
+    "STILL_INTERESTED",
+    { interest: "UNKNOWN", respondedAt: AT },
+    { interest: "STILL_INTERESTED" },
+    { interest: "STILL_INTERESTED", respondedAt: "invalid" },
+  ])("rejects malformed post-viewing interest %j", (postViewingInterest) => {
+    expect(() =>
+      parseApplicantWorkspace(
+        {
+          ...applicantReplyWorkspace,
+          viewingSummary: {
+            ...applicantReplyWorkspace.viewingSummary,
+            current: {
+              ...applicantReplyWorkspace.viewingSummary.current,
+              postViewingInterest,
+            },
+          },
+        },
+        applicantReplyWorkspace.application.id,
+      ),
+    ).toThrow("Invalid applicant workspace response");
+  });
+
   it("accepts a closed workspace with empty documents, viewings, and activity", () => {
     const workspace = parseApplicantWorkspace(
       emptyWorkspace("application-1"),

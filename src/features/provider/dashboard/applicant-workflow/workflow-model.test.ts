@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { ListingStatus } from "@/features/provider/listings-overview/types";
 import { createApplicantWorkspace } from "./testing/workspace-fixture";
+import applicantReplyWorkspace from "./testing/applicant-reply-workspace.json";
+import { parseApplicantWorkspace } from "./api/workspace";
 import {
   buildApplicantWorkflowModel,
   type WorkflowListingContext,
@@ -17,6 +19,93 @@ const listing: WorkflowListingContext = {
 };
 
 describe("buildApplicantWorkflowModel", () => {
+  it("renders the reply action from the real parsed workspace structure", () => {
+    const workspace = parseApplicantWorkspace(
+      applicantReplyWorkspace,
+      applicantReplyWorkspace.application.id,
+    );
+    const model = buildApplicantWorkflowModel(workspace, listing);
+
+    expect(model.nextStep).toMatchObject({
+      kind: "pending",
+      title: "Nachricht beantworten",
+    });
+    expect(model.canSend).toBe(true);
+    expect(model.expectedResponder).toBe("PROVIDER");
+    expect(model.summaries.messages.value).toBe("1 ungelesen");
+    expect(model.documents).toHaveLength(3);
+    expect(model.viewing?.viewingId).toBe("viewing-2");
+    expect(model.activity).toHaveLength(5);
+  });
+
+  it("reads document and viewing action labels from action.type", () => {
+    const workspace = parseApplicantWorkspace(
+      {
+        ...applicantReplyWorkspace,
+        attention: {
+          ...applicantReplyWorkspace.attention,
+          pendingActions: [
+            {
+              type: "REVIEW_DOCUMENT",
+              source: "DOCUMENT",
+              target: { requestId: "request-1", documentId: "document-1" },
+            },
+            {
+              type: "RESPOND_TO_VIEWING_CHANGE_REQUEST",
+              source: "VIEWING",
+              target: { viewingId: "viewing-2" },
+            },
+            {
+              type: "CLOSE_UNANSWERED_VIEWING",
+              source: "VIEWING",
+              target: { viewingId: "viewing-2" },
+            },
+            {
+              type: "RECORD_VIEWING_OUTCOME",
+              source: "VIEWING",
+              target: { viewingId: "viewing-2" },
+            },
+          ],
+        },
+      },
+      applicantReplyWorkspace.application.id,
+    );
+
+    expect(
+      buildApplicantWorkflowModel(workspace, listing).nextStep,
+    ).toMatchObject({
+      kind: "pending",
+      title: "Unterlage prüfen",
+      text: "Terminänderung beantworten · Offenen Termin schließen · Besichtigungsergebnis festhalten",
+    });
+  });
+
+  it.each([
+    ["STILL_INTERESTED", "Weiterhin interessiert"],
+    ["NOT_INTERESTED", "Nicht mehr interessiert"],
+  ])("maps structured interest %s to its existing label", (interest, label) => {
+    const workspace = parseApplicantWorkspace(
+      {
+        ...applicantReplyWorkspace,
+        viewingSummary: {
+          ...applicantReplyWorkspace.viewingSummary,
+          current: {
+            ...applicantReplyWorkspace.viewingSummary.current,
+            postViewingInterest: {
+              interest,
+              respondedAt: applicantReplyWorkspace.asOf,
+            },
+          },
+        },
+      },
+      applicantReplyWorkspace.application.id,
+    );
+
+    expect(
+      buildApplicantWorkflowModel(workspace, listing).viewing?.interestLabel,
+    ).toBe(label);
+  });
+
   it("maps the workspace applicant and the parent listing context", () => {
     const model = buildApplicantWorkflowModel(
       createApplicantWorkspace(),
