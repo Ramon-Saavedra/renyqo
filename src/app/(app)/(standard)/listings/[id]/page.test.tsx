@@ -1,6 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import { ApiError } from "@/lib/api/client";
+import { getPublicListingDetail } from "@/features/applicant/listings/api/public-listings";
+import { invalidateListingApplicationData } from "@/features/applicant/listings/utils/listing-data-invalidation";
+import type * as detailHook from "@/features/applicant/listings/hooks/usePublicListingDetail";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getApplicantApplications } from "@/features/applicant/listings/api/applicant-applications";
 import { getListingEligibility } from "@/features/applicant/listings/api/listing-eligibility";
 import { reportListing } from "@/features/applicant/listings/api/listing-report";
 import type * as listingReportApi from "@/features/applicant/listings/api/listing-report";
@@ -18,6 +22,10 @@ import ListingDetailPage from "./page";
 
 vi.mock("@/features/applicant/listings/hooks/usePublicListingDetail", () => ({
   usePublicListingDetail: vi.fn(),
+}));
+
+vi.mock("@/features/applicant/listings/api/public-listings", () => ({
+  getPublicListingDetail: vi.fn(),
 }));
 
 vi.mock("@/components/layout/app-topbar/AppTopbar", () => ({
@@ -44,10 +52,6 @@ vi.mock("@/features/applicant/listings/api/listing-eligibility", () => ({
   getListingEligibility: vi.fn(),
 }));
 
-vi.mock("@/features/applicant/listings/api/applicant-applications", () => ({
-  getApplicantApplications: vi.fn(),
-}));
-
 vi.mock("@/features/applicant/listings/api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
@@ -67,7 +71,6 @@ vi.mock(
 const mockUseDetail = vi.mocked(usePublicListingDetail);
 const currentUser = vi.mocked(useCurrentUser);
 const eligibility = vi.mocked(getListingEligibility);
-const applications = vi.mocked(getApplicantApplications);
 
 const applicantUser: SafeUser = {
   id: "applicant-1",
@@ -91,6 +94,7 @@ function mockListing(
     coldRent: 620,
     additionalCosts: 80,
     matchesProfile: "match",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -142,7 +146,6 @@ describe("ListingDetailPage", () => {
       warnings: [],
       evaluatedAt: "2026-08-23T10:00:00.000Z",
     });
-    applications.mockResolvedValue([]);
   });
 
   it("renders the loading state", () => {
@@ -151,6 +154,25 @@ describe("ListingDetailPage", () => {
     expect(screen.getByLabelText("Objekt wird geladen")).toBeInstanceOf(
       HTMLElement,
     );
+  });
+
+  it("keeps the loaded detail visible when the revalidation GET fails", async () => {
+    const actual = await vi.importActual<typeof detailHook>(
+      "@/features/applicant/listings/hooks/usePublicListingDetail",
+    );
+    mockUseDetail.mockImplementation(actual.usePublicListingDetail);
+    vi.mocked(getPublicListingDetail)
+      .mockResolvedValueOnce(mockListing())
+      .mockRejectedValueOnce(new ApiError(500, "refresh failed"));
+    render(<ListingDetailPage />);
+    await screen.findByText("Zimmer in Berlin");
+    await act(async () => invalidateListingApplicationData());
+    expect(getPublicListingDetail).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("Zimmer in Berlin")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByRole("button", { name: "Bewerben" })).toBeInstanceOf(
+      HTMLButtonElement,
+    );
+    expect(screen.queryByText("Objekt konnte nicht geladen werden")).toBeNull();
   });
 
   it("renders title, public location, price and facts when loaded", () => {
@@ -257,7 +279,6 @@ describe("ListingDetailPage", () => {
     ).toBeNull();
     await waitFor(() => {
       expect(eligibility).toHaveBeenCalled();
-      expect(applications).toHaveBeenCalled();
     });
   });
 
@@ -319,7 +340,6 @@ describe("ListingDetailPage", () => {
 
     await waitFor(() => {
       expect(eligibility).not.toHaveBeenCalled();
-      expect(applications).not.toHaveBeenCalled();
     });
     expect(saveListing).not.toHaveBeenCalled();
     expect(unsaveListing).not.toHaveBeenCalled();
@@ -370,7 +390,6 @@ describe("ListingDetailPage", () => {
     expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
     await waitFor(() => {
       expect(eligibility).not.toHaveBeenCalled();
-      expect(applications).not.toHaveBeenCalled();
     });
   });
 

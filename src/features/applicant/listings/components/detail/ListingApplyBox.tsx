@@ -1,198 +1,119 @@
 "use client";
-
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, buttonClass } from "@/components/ui/button/Button";
+import type { ApplicationAdmission } from "../../api/application-admission";
 import { listingDetailCopy } from "../../copy/listing-detail";
-import { listingsCopy } from "../../copy/listings";
-import type {
-  EligibilityReason,
-  EligibilityWarning,
-} from "../../api/listing-eligibility";
+import {
+  applicationAdmissionCopy,
+  applicationBlockCopy,
+} from "../../copy/application-admission";
+import { REASON_COPY, WARNING_COPY } from "../../copy/listing-eligibility";
 import { useListingApplication } from "../../hooks/useListingApplication";
 import { useListingEligibility } from "../../hooks/useListingEligibility";
 import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
-import { useApplicantListingApplication } from "../../hooks/useApplicantListingApplication";
-import type {
-  ListingApplicationPublicReason,
-  ListingApplicationStatus,
-  ProfileMatchResult,
-} from "../../types";
+import type { ProfileMatchResult } from "../../types";
 import { LISTING_REGISTER_PATH } from "../../utils/listing-auth-paths";
-import { isNotSelectedRejection } from "../../utils/listing-card-badge";
+import { resolveListingApplicationUi } from "../../utils/listing-card-badge";
+import { invalidateListingApplicationData } from "../../utils/listing-data-invalidation";
 import { MatchBadge, type MatchBadgeTone } from "../MatchBadge";
-
 interface ListingApplyBoxProps {
   listingId: string;
   session: ListingViewerSessionStatus;
   matchesProfile: ProfileMatchResult;
-  applicationStatus: ListingApplicationStatus | null;
-  publicReason: ListingApplicationPublicReason | null;
+  admission: ApplicationAdmission;
 }
-
 const BOX_CLASS =
   "flex w-fit flex-col gap-2.5 rounded-md border border-border p-4 max-sm:w-full";
-
-const ACTION_ROW_CLASS = "flex items-center gap-3";
-
-const NOT_SELECTED_CLASS = "flex w-fit max-w-full flex-col gap-1";
-
-const NOT_SELECTED_LEAD_CLASS =
-  "text-meta tracking-normal text-exit-provider-discarded-muted-fg";
-
-const { apply, match, notSelected } = listingDetailCopy;
-
-function matchTone(value: ProfileMatchResult): MatchBadgeTone {
-  if (value === "match") return "match";
-  if (value === "no-match") return "no-match";
-  return "incomplete";
-}
-
-function matchLabel(value: ProfileMatchResult): string {
-  if (value === "match") return match.matches;
-  if (value === "no-match") return match.doesNotMatch;
-  if (value === "incomplete") return match.incomplete;
-  return match.unknown;
-}
-
-const WARNING_COPY: Record<EligibilityWarning, string> = {
-  pets_by_arrangement: "Haustiere sind nach Absprache möglich.",
-  smoking_by_arrangement: "Rauchen ist nach Absprache möglich.",
-};
-
-const REASON_COPY: Record<EligibilityReason, string> = {
-  household_income_not_available: "Angaben zum Haushaltseinkommen fehlen.",
-  household_income_below_requirement:
-    "Das Haushaltseinkommen erfüllt die Mindestanforderung nicht.",
-  schufa_required_but_not_available: "Eine SCHUFA-Auskunft ist erforderlich.",
-  income_proof_required_but_not_available:
-    "Ein Einkommensnachweis ist erforderlich.",
-  household_size_not_available: "Angaben zur Haushaltsgröße fehlen.",
-  household_size_exceeds_requirement:
-    "Die Haushaltsgröße passt nicht zu diesem Objekt.",
-  pets_not_allowed: "Haustiere sind für dieses Objekt nicht erlaubt.",
-  smoking_not_allowed: "Rauchen ist für dieses Objekt nicht erlaubt.",
-};
-
-function ListingAnonymousApplyCta() {
-  return (
-    <div className={BOX_CLASS}>
-      <p className="text-caption text-foreground-secondary">
-        {apply.anonymousLead}
-      </p>
-      <Link href={LISTING_REGISTER_PATH} className={buttonClass("primary")}>
-        {apply.start}
-      </Link>
-    </div>
-  );
-}
-
 export function ListingApplyBox({
   listingId,
   session,
   matchesProfile,
-  applicationStatus,
-  publicReason,
+  admission,
 }: ListingApplyBoxProps) {
-  const applicant = session === "applicant";
-  const { eligibility, status } = useListingEligibility(listingId, applicant);
-  const { state, submit, reset } = useListingApplication(listingId);
-  const {
-    application: existingApplication,
-    status: existingApplicationStatus,
-    refresh,
-  } = useApplicantListingApplication(listingId, applicant);
-  const application =
-    state.status === "success" ? state.application : existingApplication;
-  const currentApplication =
-    application?.listingId === listingId ? application : null;
-  const hasExistingApplication =
-    existingApplicationStatus === "loaded" && currentApplication !== null;
-  const activeApplication =
-    currentApplication?.status === "ACTIVE" ||
-    currentApplication?.status === "WAITING";
-  const withdrawnApplication = currentApplication?.status === "WITHDRAWN";
-  const terminalApplication =
-    currentApplication?.status === "REJECTED" ||
-    currentApplication?.status === "ACCEPTED";
-  const applicationId = activeApplication ? currentApplication.id : null;
-  const {
-    state: withdrawalState,
-    withdraw,
-    reset: resetWithdrawal,
-  } = useListingWithdrawal(applicationId);
-  const [showApplySuccess, setShowApplySuccess] = useState(false);
-  const [showWithdrawalSuccess, setShowWithdrawalSuccess] = useState(false);
-  const currentEligibility =
-    state.status === "eligibility-rejected" ? state.eligibility : eligibility;
-  const canApply = status === "loaded" && eligibility?.canApply === true;
-  const submitting = state.status === "submitting";
-  const eligibilityRejected = state.status === "eligibility-rejected";
-
-  const showApplyConfirmation = () => {
-    resetWithdrawal();
-    setShowApplySuccess(true);
-    setTimeout(() => setShowApplySuccess(false), 4000);
-  };
-
-  const showWithdrawalConfirmation = () => {
-    setShowWithdrawalSuccess(true);
-    setTimeout(() => setShowWithdrawalSuccess(false), 4000);
-  };
-
+  const { eligibility, status } = useListingEligibility(
+    listingId,
+    session === "applicant",
+  );
+  const { state, submit, reset, reconcile } = useListingApplication(listingId);
+  const ui = resolveListingApplicationUi({ admission, matchesProfile });
+  const { state: withdrawalState, withdraw } = useListingWithdrawal(
+    ui.action === "withdraw" ? admission.currentApplicationId : null,
+  );
+  useEffect(() => reconcile(admission), [admission, reconcile]);
+  const [confirmation, setConfirmation] = useState<string | null>(null);
+  useEffect(() => {
+    if (confirmation === null) return;
+    const timeout = setTimeout(() => setConfirmation(null), 4000);
+    return () => clearTimeout(timeout);
+  }, [confirmation]);
   const handleApply = async () => {
+    if (!admission.canSubmitApplication) return;
     const result = await submit();
-    if (result === "duplicate") {
-      await refresh();
-      return;
-    }
-    if (result === "success") showApplyConfirmation();
+    if (result)
+      setConfirmation(
+        result.status === "ACTIVE"
+          ? applicationAdmissionCopy.sent
+          : applicationAdmissionCopy.waiting,
+      );
   };
-
   const handleWithdraw = async () => {
     if (await withdraw()) {
       reset();
-      await refresh();
-      showWithdrawalConfirmation();
+      invalidateListingApplicationData();
+      setConfirmation(applicationAdmissionCopy.withdrawn);
     }
   };
-
-  if (session === "loading" || session === "error") {
+  if (session === "loading" || session === "error")
     return <div className={BOX_CLASS} aria-busy="true" />;
-  }
-
-  if (session === "anonymous") {
-    return <ListingAnonymousApplyCta />;
-  }
-
-  if (session === "other") {
-    return null;
-  }
-
-  if (isNotSelectedRejection(applicationStatus, publicReason)) {
+  if (session === "other") return null;
+  if (session === "anonymous")
     return (
-      <div className={NOT_SELECTED_CLASS}>
-        <MatchBadge tone="not-selected">
-          {listingsCopy.card.badgeNotSelected}
-        </MatchBadge>
-        <p className={NOT_SELECTED_LEAD_CLASS}>{notSelected.lead}</p>
+      <div className={BOX_CLASS}>
+        <p className="text-caption text-foreground-secondary">
+          {listingDetailCopy.apply.anonymousLead}
+        </p>
+        <Link href={LISTING_REGISTER_PATH} className={buttonClass("primary")}>
+          {listingDetailCopy.apply.start}
+        </Link>
       </div>
     );
-  }
-
+  const tone: MatchBadgeTone =
+    ui.badge === "applied" || ui.badge === "none"
+      ? "new"
+      : ui.badge === "match" ||
+          ui.badge === "no-match" ||
+          ui.badge === "incomplete"
+        ? ui.badge
+        : "not-selected";
+  const label =
+    ui.badge === "applied"
+      ? applicationAdmissionCopy.applied
+      : ui.badge === "not-selected"
+        ? applicationAdmissionCopy.notSelected
+        : ui.badge === "accepted"
+          ? applicationAdmissionCopy.accepted
+          : ui.badge === "rented"
+            ? applicationAdmissionCopy.rented
+            : ui.badge === "unavailable"
+              ? applicationAdmissionCopy.unavailable
+              : ui.badge === "match"
+                ? listingDetailCopy.match.matches
+                : ui.badge === "no-match"
+                  ? listingDetailCopy.match.doesNotMatch
+                  : ui.badge === "incomplete"
+                    ? listingDetailCopy.match.incomplete
+                    : listingDetailCopy.match.unknown;
+  const currentEligibility =
+    state.status === "eligibility-rejected" ? state.eligibility : eligibility;
   return (
     <div className={BOX_CLASS}>
-      <div className={ACTION_ROW_CLASS}>
-        <MatchBadge
-          tone={matchTone(matchesProfile)}
-          size="md"
-          className="min-w-0"
-        >
-          <span className="truncate">{matchLabel(matchesProfile)}</span>
+      <div className="flex flex-wrap items-center gap-3">
+        <MatchBadge tone={tone} size="md">
+          {label}
         </MatchBadge>
-
-        {activeApplication ? (
+        {ui.action === "withdraw" ? (
           <Button
             variant="outline"
             disabled={
@@ -202,62 +123,44 @@ export function ListingApplyBox({
             onClick={() => void handleWithdraw()}
           >
             {withdrawalState.status === "submitting"
-              ? "Bewerbung wird zurückgezogen …"
-              : "Bewerbung zurückziehen"}
+              ? applicationAdmissionCopy.withdrawing
+              : applicationAdmissionCopy.withdraw}
           </Button>
-        ) : !hasExistingApplication || withdrawnApplication ? (
+        ) : (
           <Button
             variant="primary"
             disabled={
-              existingApplicationStatus !== "loaded" ||
-              !canApply ||
-              submitting ||
-              eligibilityRejected
+              ui.action !== "submit" ||
+              state.status === "submitting" ||
+              state.status === "success" ||
+              state.status === "eligibility-rejected"
             }
             onClick={() => void handleApply()}
           >
-            {submitting ? "Bewerbung wird gesendet …" : apply.label}
+            {state.status === "submitting"
+              ? applicationAdmissionCopy.sending
+              : applicationAdmissionCopy.apply}
           </Button>
-        ) : terminalApplication ? (
-          <Button variant="primary" disabled>
-            {apply.label}
-          </Button>
-        ) : null}
+        )}
       </div>
-
-      {status === "loading" && (
-        <p className="text-caption text-foreground-tertiary">
-          Voraussetzungen werden geprüft …
+      {ui.blockReason && ui.blockReason !== "CURRENT_APPLICATION_EXISTS" && (
+        <p className="text-caption text-foreground-secondary">
+          {applicationBlockCopy[ui.blockReason]}
         </p>
       )}
       {status === "error" && (
         <p role="alert" className="text-caption text-danger">
-          Die Voraussetzungen konnten nicht geprüft werden.
+          {applicationAdmissionCopy.eligibilityFailed}
         </p>
-      )}
-      {existingApplicationStatus === "error" && (
-        <div className="text-caption text-danger" role="alert">
-          <p>Deine Bewerbung konnte nicht geladen werden.</p>
-          <button
-            type="button"
-            className="mt-1 text-primary hover:text-primary-hover focus-visible:outline-none focus-visible:shadow-focus"
-            onClick={() => void refresh()}
-          >
-            Erneut versuchen
-          </button>
-        </div>
       )}
       {currentEligibility &&
         !currentEligibility.canApply &&
         currentEligibility.reasons.length > 0 && (
-          <div className="text-caption text-foreground-secondary">
-            <p>Eine Bewerbung ist aktuell nicht möglich:</p>
-            <ul className="mt-1 list-disc pl-4">
-              {currentEligibility.reasons.map((reason) => (
-                <li key={reason}>{REASON_COPY[reason]}</li>
-              ))}
-            </ul>
-          </div>
+          <ul className="list-disc pl-4 text-caption text-foreground-secondary">
+            {currentEligibility.reasons.map((reason) => (
+              <li key={reason}>{REASON_COPY[reason]}</li>
+            ))}
+          </ul>
         )}
       {currentEligibility?.canApply &&
         currentEligibility.warnings.length > 0 && (
@@ -267,39 +170,19 @@ export function ListingApplyBox({
             ))}
           </ul>
         )}
-      {state.status === "success" && showApplySuccess && (
+      {confirmation && (
         <p role="status" className="text-caption text-success">
-          {state.application.status === "ACTIVE"
-            ? "Bewerbung erfolgreich gesendet."
-            : "Deine Bewerbung wurde gesendet und steht aktuell auf der Warteliste."}
+          {confirmation}
         </p>
       )}
-      {existingApplicationStatus === "loaded" &&
-        currentApplication &&
-        (withdrawnApplication || terminalApplication) &&
-        withdrawalState.status !== "success" && (
-          <p role="status" className="text-caption text-foreground-secondary">
-            {currentApplication.status === "WITHDRAWN" &&
-              "Diese Bewerbung wurde zurückgezogen."}
-            {currentApplication.status === "REJECTED" &&
-              "Diese Bewerbung ist nicht mehr aktiv."}
-            {currentApplication.status === "ACCEPTED" &&
-              "Der Anbieter hat deine Bewerbung angenommen."}
-          </p>
-        )}
       {state.status === "error" && (
         <p role="alert" className="text-caption text-danger">
           {state.message}
         </p>
       )}
-      {withdrawalState.status === "success" && showWithdrawalSuccess && (
-        <p role="status" className="text-caption text-success">
-          Deine Bewerbung wurde zurückgezogen.
-        </p>
-      )}
       {withdrawalState.status === "error" && (
         <p role="alert" className="text-caption text-danger">
-          Die Bewerbung konnte nicht zurückgezogen werden.
+          {applicationAdmissionCopy.withdrawalFailed}
         </p>
       )}
     </div>

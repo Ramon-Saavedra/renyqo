@@ -1,9 +1,11 @@
-import { renderHook, waitFor } from "@testing-library/react";
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
 import { getPublicListingDetail } from "../api/public-listings";
 import type { PublicListingDetail } from "../types";
 import { usePublicListingDetail } from "./usePublicListingDetail";
+import { invalidateListingApplicationData } from "../utils/listing-data-invalidation";
 
 vi.mock("../api/public-listings", () => ({
   getPublicListingDetail: vi.fn(),
@@ -20,6 +22,7 @@ function mockListing(): PublicListingDetail {
     coldRent: 900,
     additionalCosts: 100,
     matchesProfile: "unknown",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -47,6 +50,47 @@ function mockListing(): PublicListingDetail {
 describe("usePublicListingDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it.each([
+    new ApiError(0, "network failure"),
+    new ApiError(500, "server failure"),
+    new Error("Invalid detail contract"),
+  ])("preserves loaded detail when revalidation fails", async (error) => {
+    const listing = mockListing();
+    vi.mocked(getPublicListingDetail)
+      .mockResolvedValueOnce(listing)
+      .mockRejectedValueOnce(error)
+      .mockResolvedValueOnce({ ...listing, title: "Updated Listing" });
+    const { result } = renderHook(() => usePublicListingDetail("d1"));
+    await waitFor(() => expect(result.current.status).toBe("loaded"));
+    act(() => invalidateListingApplicationData());
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(getPublicListingDetail).toHaveBeenCalledTimes(2);
+    expect(result.current.status).toBe("loaded");
+    expect(result.current.listing).toBe(listing);
+    act(() => invalidateListingApplicationData());
+    await waitFor(() =>
+      expect(result.current.listing?.title).toBe("Updated Listing"),
+    );
+    expect(result.current.status).toBe("loaded");
+    expect(result.current.error).toBeNull();
+  });
+
+  it("uses a full error when loading a different listing fails", async () => {
+    vi.mocked(getPublicListingDetail)
+      .mockResolvedValueOnce(mockListing())
+      .mockRejectedValueOnce(new ApiError(500, "server failure"));
+    const { result, rerender } = renderHook(
+      ({ id }) => usePublicListingDetail(id),
+      {
+        initialProps: { id: "d1" },
+      },
+    );
+    await waitFor(() => expect(result.current.status).toBe("loaded"));
+    rerender({ id: "d2" });
+    await waitFor(() => expect(result.current.status).toBe("error"));
+    expect(result.current.listing).toBeNull();
   });
 
   it("transitions from loading to loaded", async () => {
@@ -133,7 +177,10 @@ describe("usePublicListingDetail", () => {
   });
 
   it("re-fetches when the id changes", async () => {
-    vi.mocked(getPublicListingDetail).mockResolvedValue(mockListing());
+    vi.mocked(getPublicListingDetail).mockResolvedValue({
+      ...mockListing(),
+      id: "first",
+    });
 
     const { result, rerender } = renderHook(
       ({ id }: { id: string }) => usePublicListingDetail(id),
@@ -151,6 +198,8 @@ describe("usePublicListingDetail", () => {
     });
 
     rerender({ id: "second" });
+    expect(result.current.status).toBe("loading");
+    expect(result.current.listing).toBeNull();
 
     await waitFor(() => {
       expect(result.current.listing?.id).toBe("second");

@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { PublicListingDetail } from "../../types";
@@ -16,6 +17,7 @@ function mockListing(
     coldRent: 800,
     additionalCosts: 100,
     matchesProfile: "match",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,

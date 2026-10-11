@@ -1,5 +1,7 @@
 "use client";
 
+import { subscribeListingApplicationData } from "../../listings/utils/listing-data-invalidation";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ApplicantApplicationContractError,
@@ -39,6 +41,13 @@ export function useApplicantWorkspace(applicationId: string): {
   const [state, setState] = useState<WorkspaceState>({ status: "loading" });
   const [trackedId, setTrackedId] = useState(applicationId);
   const [requestKey, setRequestKey] = useState(0);
+  useEffect(
+    () =>
+      subscribeListingApplicationData(() =>
+        setRequestKey((value) => value + 1),
+      ),
+    [],
+  );
   const generationRef = useRef(0);
   const inFlightRef = useRef(true);
 

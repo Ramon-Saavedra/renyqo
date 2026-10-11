@@ -1,5 +1,7 @@
 "use client";
 
+import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
+
 import { useEffect, useState } from "react";
 import {
   getListingEligibility,
@@ -9,6 +11,12 @@ import {
 export type ListingEligibilityStatus = "idle" | "loading" | "loaded" | "error";
 
 export function useListingEligibility(id: string, enabled = true) {
+  const [reloadKey, setReloadKey] = useState(0);
+  useEffect(
+    () =>
+      subscribeListingApplicationData(() => setReloadKey((value) => value + 1)),
+    [],
+  );
   const [eligibility, setEligibility] = useState<ListingEligibility | null>(
     null,
   );
@@ -41,7 +49,7 @@ export function useListingEligibility(id: string, enabled = true) {
       active = false;
       controller.abort();
     };
-  }, [id, enabled]);
+  }, [id, enabled, reloadKey]);
 
   if (!enabled) {
     return { eligibility: null, status: "idle" as const };

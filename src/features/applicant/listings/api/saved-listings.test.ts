@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiGet } from "@/lib/api/client";
@@ -29,6 +30,7 @@ function savedItem(overrides: Record<string, unknown> = {}) {
     petsPolicy: null,
     coverImage: null,
     profileMatch: "UNKNOWN",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
