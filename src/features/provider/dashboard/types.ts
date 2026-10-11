@@ -63,6 +63,7 @@ export interface ExitedApplicant {
   readonly household: string;
   readonly introduction: string | null;
   readonly visualState: ExitedApplicantVisualState;
+  readonly canRestore: boolean;
   readonly activeAtLabel: string | null;
   readonly exitedAtDateLabel: string;
 }

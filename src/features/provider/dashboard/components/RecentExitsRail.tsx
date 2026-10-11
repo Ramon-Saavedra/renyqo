@@ -58,37 +58,60 @@ export function RecentExitsRail({
   onResetRestoration,
 }: RecentExitsRailProps) {
   const copy = dashboardCopy.recentExits;
-  const [exitToRestore, setExitToRestore] = useState<ExitedApplicant | null>(
-    null,
-  );
+  const [restoreApplicationId, setRestoreApplicationId] = useState<
+    string | null
+  >(null);
   const [previewExit, setPreviewExit] = useState<ExitedApplicant | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const panelRef = useRef<HTMLElement>(null);
 
   const isRestoring = restorationState.status === "submitting";
+  const pendingRestoreCanRestore =
+    restoreApplicationId === null
+      ? null
+      : (exits.find((exit) => exit.id === restoreApplicationId)?.canRestore ??
+        null);
+  const [trackedPendingRestoreCanRestore, setTrackedPendingRestoreCanRestore] =
+    useState(pendingRestoreCanRestore);
+
+  if (pendingRestoreCanRestore !== trackedPendingRestoreCanRestore) {
+    setTrackedPendingRestoreCanRestore(pendingRestoreCanRestore);
+    if (restoreApplicationId !== null && pendingRestoreCanRestore !== true) {
+      setRestoreApplicationId(null);
+    }
+  }
+
+  const restorableExit =
+    restoreApplicationId === null
+      ? null
+      : (exits.find(
+          (exit) => exit.id === restoreApplicationId && exit.canRestore,
+        ) ?? null);
+  const isRestoreDialogOpen = restorableExit !== null;
   const isEmpty = !isLoading && !hasError && exits.length === 0;
 
   if (isEmpty) return null;
 
   function openRestoreConfirmation(exit: ExitedApplicant) {
+    if (!exit.canRestore) return;
     onResetRestoration();
     setSuccessMessage(null);
-    setExitToRestore(exit);
+    setRestoreApplicationId(exit.id);
   }
 
   function closeRestoreConfirmation() {
     if (isRestoring) return;
     onResetRestoration();
-    setExitToRestore(null);
+    setRestoreApplicationId(null);
   }
 
   async function confirmRestoration() {
-    if (!exitToRestore) return;
+    if (!restorableExit) return;
 
-    const restored = await onRestore(exitToRestore.id);
+    const restored = await onRestore(restorableExit.id);
     if (!restored) return;
 
-    setExitToRestore(null);
+    setRestoreApplicationId(null);
     setSuccessMessage(copy.restoreSuccess);
   }
 
@@ -151,7 +174,7 @@ export function RecentExitsRail({
                             decorative
                           />
                         </Button>
-                        {exit.visualState === "provider_discarded" ? (
+                        {exit.canRestore ? (
                           <Button
                             type="button"
                             variant="ghost"
@@ -206,9 +229,9 @@ export function RecentExitsRail({
         ) : null}
       </section>
       <ConfirmationModal
-        open={exitToRestore !== null}
+        open={isRestoreDialogOpen}
         title={copy.restoreTitle}
-        text={copy.restoreText(exitToRestore?.applicantName ?? "")}
+        text={copy.restoreText(restorableExit?.applicantName ?? "")}
         primaryLabel={copy.restoreConfirm}
         primaryPendingLabel={copy.restorePending}
         primaryPending={isRestoring}

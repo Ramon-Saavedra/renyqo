@@ -460,6 +460,7 @@ describe("DashboardView", () => {
         household: "2 Personen",
         introduction: null,
         visualState: "withdrawn",
+        canRestore: false,
         activeAtLabel: "01.08.2026",
         exitedAtDateLabel: "30.08.2026",
       },

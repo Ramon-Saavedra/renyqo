@@ -34,6 +34,7 @@ export function mapExitedApplicationToExit(
       application.status,
       application.publicReason,
     ),
+    canRestore: application.canRestore,
     activeAtLabel: formatActiveAtLabel(application.activeAt),
     exitedAtDateLabel: DASHBOARD_DATE_FORMATTER.format(
       new Date(application.exitedAt),

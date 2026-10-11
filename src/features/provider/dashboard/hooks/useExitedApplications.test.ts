@@ -27,6 +27,7 @@ const withdrawn = {
   applicantName: "Familie Weber",
   status: "WITHDRAWN" as const,
   publicReason: null,
+  canRestore: false,
   peopleCount: 2,
   introduction: null,
   activeAt: "2026-08-01T10:00:00.000Z",
@@ -101,6 +102,7 @@ describe("useExitedApplications", () => {
     expect(result.current.exits).toHaveLength(1);
     expect(result.current.exits[0]?.applicantName).toBe("Familie Weber");
     expect(result.current.exits[0]?.visualState).toBe("withdrawn");
+    expect(result.current.exits[0]?.canRestore).toBe(false);
     expect(result.current.hasError).toBe(false);
   });
 
@@ -214,6 +216,34 @@ describe("useExitedApplications", () => {
       expect(result.current.exits[0]?.id).toBe("exit-2");
     });
     expect(result.current.isLoading).toBe(false);
+  });
+
+  it("replaces the visible exits when a refresh projection no longer includes them", async () => {
+    vi.mocked(getProviderExitedApplications).mockResolvedValue({
+      items: [withdrawn],
+      totalCount: 1,
+    });
+
+    const { result } = renderHook(
+      () => useExitedApplications("listing-1", "published"),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.exits).toHaveLength(1);
+    });
+
+    vi.mocked(getProviderExitedApplications).mockResolvedValue({
+      items: [],
+      totalCount: 0,
+    });
+
+    fireFocus();
+
+    await waitFor(() => {
+      expect(result.current.exits).toEqual([]);
+    });
+    expect(result.current.hasError).toBe(false);
   });
 
   it("refetches exits when the document becomes visible", async () => {
@@ -387,6 +417,60 @@ describe("useExitedApplications", () => {
     });
 
     expect(result.current.exits).toEqual([]);
+  });
+
+  it("shows a restored exit again when the post-restore refresh still includes it", async () => {
+    let resolveStaleRefresh:
+      | ((value: ProviderExitedApplicationsResponse) => void)
+      | undefined;
+    const staleRefresh = new Promise<ProviderExitedApplicationsResponse>(
+      (resolve) => {
+        resolveStaleRefresh = resolve;
+      },
+    );
+    const staleSnapshot = {
+      items: [
+        withdrawn,
+        {
+          ...withdrawn,
+          id: "exit-2",
+          canRestore: true,
+          exitedAt: "2026-08-29T14:23:00.000Z",
+        },
+      ],
+      totalCount: 2,
+    };
+    vi.mocked(getProviderExitedApplications)
+      .mockResolvedValueOnce(staleSnapshot)
+      .mockReturnValueOnce(staleRefresh);
+
+    const { result } = renderHook(
+      () => useExitedApplications("listing-1", "published"),
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(result.current.exits).toHaveLength(2);
+    });
+
+    await act(async () => {
+      expect(await result.current.restoreCandidate("exit-1")).toBe(true);
+    });
+
+    expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
+
+    await act(async () => {
+      resolveStaleRefresh?.(staleSnapshot);
+      await staleRefresh;
+    });
+
+    await waitFor(() => {
+      expect(result.current.exits.map((exit) => exit.id)).toEqual([
+        "exit-1",
+        "exit-2",
+      ]);
+    });
+    expect(result.current.hasError).toBe(false);
   });
 
   it("shows a loading state when returning to a published listing from draft", async () => {

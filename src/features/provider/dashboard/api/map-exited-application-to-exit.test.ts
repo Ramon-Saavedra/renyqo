@@ -11,6 +11,7 @@ const withdrawn: ProviderExitedApplication = {
   applicantName: "Familie Weber",
   status: "WITHDRAWN",
   publicReason: null,
+  canRestore: false,
   peopleCount: 2,
   introduction: null,
   activeAt: "2026-08-01T10:00:00.000Z",
@@ -23,6 +24,7 @@ const discarded: ProviderExitedApplication = {
   applicantName: "Jonas Brandt",
   status: "REJECTED",
   publicReason: "NOT_SELECTED",
+  canRestore: false,
   peopleCount: 1,
   introduction: null,
   activeAt: "2026-08-02T10:00:00.000Z",
@@ -35,6 +37,7 @@ const noLongerEligible: ProviderExitedApplication = {
   applicantName: "Marlene Kaufmann",
   status: "REJECTED",
   publicReason: "PROFILE_NO_LONGER_ELIGIBLE",
+  canRestore: false,
   peopleCount: null,
   introduction: null,
   activeAt: "2026-08-03T10:00:00.000Z",
@@ -47,6 +50,7 @@ const listingRented: ProviderExitedApplication = {
   applicantName: "Tobias Hein",
   status: "REJECTED",
   publicReason: "LISTING_RENTED",
+  canRestore: false,
   peopleCount: 3,
   introduction: null,
   activeAt: "2026-08-04T10:00:00.000Z",
@@ -59,6 +63,7 @@ const rejectedWithoutReason: ProviderExitedApplication = {
   applicantName: "Petra Lindt",
   status: "REJECTED",
   publicReason: null,
+  canRestore: false,
   peopleCount: 2,
   introduction: null,
   activeAt: "2026-08-05T10:00:00.000Z",
@@ -76,6 +81,17 @@ describe("mapExitedApplicationToExit", () => {
     expect(mapExitedApplicationToExit(discarded).visualState).toBe(
       "provider_discarded",
     );
+  });
+
+  it("copies canRestore without deriving it from the exit reason", () => {
+    expect(mapExitedApplicationToExit(withdrawn).canRestore).toBe(false);
+    expect(mapExitedApplicationToExit(discarded).canRestore).toBe(false);
+    expect(
+      mapExitedApplicationToExit({ ...discarded, canRestore: true }).canRestore,
+    ).toBe(true);
+    expect(
+      mapExitedApplicationToExit({ ...withdrawn, canRestore: true }).canRestore,
+    ).toBe(true);
   });
 
   it("maps PROFILE_NO_LONGER_ELIGIBLE to system_removed", () => {

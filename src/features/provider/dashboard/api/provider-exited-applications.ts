@@ -16,6 +16,7 @@ const providerExitedApplicationSchema = z.object({
   introduction: z.string().max(APPLICANT_INTRODUCTION_MAX_LENGTH).nullable(),
   status: providerExitedApplicationStatusSchema,
   publicReason: providerExitedApplicationPublicReasonSchema,
+  canRestore: z.boolean(),
   activeAt: z.string().datetime(),
   exitedAt: z.string().datetime(),
 });
