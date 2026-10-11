@@ -1,5 +1,5 @@
-import { cleanup, render } from "@testing-library/react";
-import { hydrateRoot } from "react-dom/client";
+import { act, cleanup, render, screen } from "@testing-library/react";
+import { hydrateRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SafeUser } from "@/lib/api/auth";
@@ -28,37 +28,50 @@ const applicant: SafeUser = {
 };
 
 describe("ListingsTopbarActions hydration", () => {
-  afterEach(() => {
+  let hydrationRoot: Root | null = null;
+  let hydrationContainer: HTMLDivElement | null = null;
+
+  afterEach(async () => {
+    if (hydrationRoot !== null) {
+      await act(async () => {
+        hydrationRoot!.unmount();
+      });
+      hydrationRoot = null;
+    }
+    hydrationContainer?.remove();
+    hydrationContainer = null;
     cleanup();
     invalidateCurrentUser();
   });
 
-  it("hydrates the loading shell when the client session cache already has a user", () => {
+  it("hydrates the loading shell when the client session cache already has a user", async () => {
     setCurrentUser(applicant);
     const html = renderToString(<ListingsTopbarActions />);
     expect(html).toContain("sk-pill");
 
     const container = document.createElement("div");
+    document.body.appendChild(container);
     container.innerHTML = html;
+    hydrationContainer = container;
 
     const recoverableErrors: unknown[] = [];
-    hydrateRoot(container, <ListingsTopbarActions />, {
-      onRecoverableError: (error) => {
-        recoverableErrors.push(error);
-      },
+    await act(async () => {
+      hydrationRoot = hydrateRoot(container, <ListingsTopbarActions />, {
+        onRecoverableError: (error) => {
+          recoverableErrors.push(error);
+        },
+      });
     });
 
     expect(recoverableErrors).toHaveLength(0);
-    expect(container.querySelector(".sk-pill")).not.toBeNull();
+    expect(
+      hydrationContainer.querySelector('[data-testid="account-menu"]'),
+    ).not.toBeNull();
   });
 
   it("shows the account menu only after hydration resolves the session", async () => {
     setCurrentUser(applicant);
     render(<ListingsTopbarActions />);
-    expect(
-      (await import("@testing-library/react")).screen.getByTestId(
-        "account-menu",
-      ),
-    ).not.toBeNull();
+    expect(screen.getByTestId("account-menu")).not.toBeNull();
   });
 });
