@@ -151,7 +151,7 @@ export function RecentExitsRail({
                             decorative
                           />
                         </Button>
-                        {exit.visualState === "provider_discarded" ? (
+                        {exit.canRestore ? (
                           <Button
                             type="button"
                             variant="ghost"

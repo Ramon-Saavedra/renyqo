@@ -33,6 +33,7 @@ function buildExit(overrides: Partial<ExitedApplicant> = {}): ExitedApplicant {
     household: "2 Personen",
     introduction: null,
     visualState: "withdrawn",
+    canRestore: false,
     activeAtLabel: "01.08.2026",
     exitedAtDateLabel: "30.08.2026",
     ...overrides,
@@ -88,6 +89,9 @@ describe("RecentExitsRail", () => {
     );
     expect(screen.getByText("Abgelehnt")).not.toBeNull();
     expect(screen.getByText("Systemseitig entfernt")).not.toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Wiederherstellen — Jonas Brandt" }),
+    ).toBeNull();
   });
 
   it("shows loading placeholders instead of exit cards", () => {
@@ -106,7 +110,37 @@ describe("RecentExitsRail", () => {
     ).not.toBeNull();
   });
 
-  it("restores a provider-discarded application after confirmation", async () => {
+  it("does not offer restore when a withdrawn exit has canRestore false", () => {
+    render(
+      <RecentExitsRail
+        exits={[buildExit()]}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", {
+        name: "Wiederherstellen — Familie Weber",
+      }),
+    ).toBeNull();
+  });
+
+  it("follows canRestore even when the visual state is withdrawn", () => {
+    render(
+      <RecentExitsRail
+        exits={[buildExit({ canRestore: true })]}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Wiederherstellen — Familie Weber",
+      }),
+    ).not.toBeNull();
+  });
+
+  it("restores an exit only when canRestore is true", async () => {
     const user = userEvent.setup();
     render(
       <RecentExitsRail
@@ -115,6 +149,7 @@ describe("RecentExitsRail", () => {
             id: "app-1",
             applicantName: "Jonas Brandt",
             visualState: "provider_discarded",
+            canRestore: true,
           }),
         ]}
         isLoading={false}

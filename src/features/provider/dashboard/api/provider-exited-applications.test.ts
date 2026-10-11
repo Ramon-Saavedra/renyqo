@@ -18,6 +18,7 @@ const withdrawnApplication = {
   introduction: null,
   status: "WITHDRAWN" as const,
   publicReason: null,
+  canRestore: false,
   activeAt: "2026-08-01T10:00:00.000Z",
   exitedAt: "2026-08-30T14:23:00.000Z",
 };
@@ -30,6 +31,7 @@ const discardedApplication = {
   introduction: null,
   status: "REJECTED" as const,
   publicReason: "NOT_SELECTED" as const,
+  canRestore: true,
   activeAt: "2026-08-02T10:00:00.000Z",
   exitedAt: "2026-08-30T11:05:00.000Z",
 };
@@ -224,6 +226,61 @@ describe("getProviderExitedApplications", () => {
       getProviderExitedApplications("listing-1"),
     ).rejects.toBeInstanceOf(ProviderExitedApplicationsContractError);
   });
+
+  it("accepts canRestore independently of the public reason", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        { ...discardedApplication, canRestore: false },
+        { ...withdrawnApplication, id: "exit-3", canRestore: false },
+      ],
+      totalCount: 2,
+    });
+
+    await expect(getProviderExitedApplications("listing-1")).resolves.toEqual({
+      items: [
+        { ...discardedApplication, canRestore: false },
+        { ...withdrawnApplication, id: "exit-3", canRestore: false },
+      ],
+      totalCount: 2,
+    });
+  });
+
+  it("rejects an item without canRestore", async () => {
+    vi.mocked(apiGet).mockResolvedValue({
+      items: [
+        {
+          id: discardedApplication.id,
+          listingId: discardedApplication.listingId,
+          applicantName: discardedApplication.applicantName,
+          peopleCount: discardedApplication.peopleCount,
+          introduction: discardedApplication.introduction,
+          status: discardedApplication.status,
+          publicReason: discardedApplication.publicReason,
+          activeAt: discardedApplication.activeAt,
+          exitedAt: discardedApplication.exitedAt,
+        },
+      ],
+      totalCount: 1,
+    });
+
+    await expect(
+      getProviderExitedApplications("listing-1"),
+    ).rejects.toBeInstanceOf(ProviderExitedApplicationsContractError);
+  });
+
+  it.each([null, "true", 1])(
+    "rejects a non-boolean canRestore value %s",
+    async (canRestore) => {
+      vi.mocked(apiGet).mockResolvedValue({
+        items: [{ ...discardedApplication, canRestore }],
+        totalCount: 1,
+      });
+
+      await expect(
+        getProviderExitedApplications("listing-1"),
+      ).rejects.toBeInstanceOf(ProviderExitedApplicationsContractError);
+    },
+  );
 
   it("rejects a non-ISO exitedAt value", async () => {
     vi.mocked(apiGet).mockResolvedValue({
