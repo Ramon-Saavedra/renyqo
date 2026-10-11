@@ -7,7 +7,7 @@ import { currentUserSessionCopy } from "@/components/auth/current-user-session-c
 import { Avatar } from "@/components/ui/avatar/Avatar";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
+import { SessionPendingTopbarActions } from "@/components/layout/app-topbar/SessionPendingTopbarActions";
 import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
@@ -85,6 +85,10 @@ export function AccountMenu({
     }
   }
 
+  if (loading) {
+    return <SessionPendingTopbarActions />;
+  }
+
   if (error) {
     return (
       <button
@@ -119,15 +123,11 @@ export function AccountMenu({
           ref={triggerRef}
           className={isFull ? TRIGGER_FULL_CLASS : TRIGGER_COMPACT_CLASS}
         >
-          {loading ? (
-            <RenyqoSkeleton variant="circle" width={32} height={32} />
-          ) : (
-            <Avatar
-              initials={initials}
-              label={name || userMenuCopy.fallbackLabel}
-              {...(avatarClass ? { className: avatarClass } : {})}
-            />
-          )}
+          <Avatar
+            initials={initials}
+            label={name || userMenuCopy.fallbackLabel}
+            {...(avatarClass ? { className: avatarClass } : {})}
+          />
           {isFull && name && (
             <span className={metaClass}>
               <span className={NAME_CLASS}>

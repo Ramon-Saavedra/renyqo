@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
+import { SessionPendingTopbarActions } from "@/components/layout/app-topbar/SessionPendingTopbarActions";
 import { buttonClass } from "@/components/ui/button/Button";
-import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
 import { getOnboardingState, resolveRedirectPath } from "@/lib/api/auth";
 import {
@@ -35,22 +35,11 @@ function ProviderRedirect() {
   return null;
 }
 
-const SKELETON_CLASS = "flex items-center gap-3.5";
-
-function SessionPendingActions() {
-  return (
-    <span className={SKELETON_CLASS}>
-      <RenyqoSkeleton variant="pill" width={96} height={32} />
-      <RenyqoSkeleton variant="circle" width={32} height={32} />
-    </span>
-  );
-}
-
 export function ListingsTopbarActions() {
   const { user, loading, error } = useCurrentUser();
 
   if (loading || error) {
-    return <SessionPendingActions />;
+    return <SessionPendingTopbarActions />;
   }
 
   if (isConfirmedAnonymousUser({ user, loading, error }) || !user) {
