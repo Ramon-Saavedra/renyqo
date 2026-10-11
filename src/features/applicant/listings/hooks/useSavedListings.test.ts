@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getSavedListings } from "../api/saved-listings";
@@ -19,6 +20,7 @@ function listing(id: string): PublicListing {
     coldRent: 0,
     serviceCharge: 0,
     matchesProfile: null,
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,

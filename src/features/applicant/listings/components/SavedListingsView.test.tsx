@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -52,6 +53,7 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     coldRent: 800,
     serviceCharge: 150,
     matchesProfile: null,
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,

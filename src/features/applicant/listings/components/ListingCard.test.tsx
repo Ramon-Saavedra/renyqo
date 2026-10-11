@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -23,6 +24,7 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     coldRent: 1200,
     serviceCharge: 200,
     matchesProfile: null,
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -231,6 +233,12 @@ describe("ListingCard", () => {
     render(
       <ListingCard
         listing={buildListing({
+          admission: createAdmission({
+            currentApplicationId: "a",
+            currentApplicationStatus: "ACTIVE",
+            canSubmitApplication: false,
+            submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+          }),
           applicationStatus: "ACTIVE",
           matchesProfile: true,
         })}
@@ -264,6 +272,12 @@ describe("ListingCard", () => {
     render(
       <ListingCard
         listing={buildListing({
+          admission: createAdmission({
+            currentApplicationId: "a",
+            currentApplicationStatus: "WAITING",
+            canSubmitApplication: false,
+            submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+          }),
           applicationStatus: "WAITING",
           matchesProfile: false,
         })}
@@ -293,6 +307,12 @@ describe("ListingCard", () => {
     render(
       <ListingCard
         listing={buildListing({
+          admission: createAdmission({
+            currentApplicationId: "a",
+            currentApplicationStatus: "ACTIVE",
+            canSubmitApplication: false,
+            submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+          }),
           applicationStatus: "ACTIVE",
           matchesProfile: true,
         })}
@@ -305,11 +325,16 @@ describe("ListingCard", () => {
     expect(screen.queryByText("Passt")).toBeNull();
   });
 
-  it("shows Nicht ausgewählt over Passt for REJECTED and NOT_SELECTED", () => {
+  it("shows not-selected without exposing the internal reapplication date", () => {
     render(
       <ListingCard
         listing={buildListing({
           applicationStatus: "REJECTED",
+          admission: createAdmission({
+            canSubmitApplication: false,
+            submissionBlockReason: "APPLICATION_REAPPLICATION_COOLDOWN",
+            reapplyAvailableAt: "2026-11-01T00:00:00Z",
+          }),
           publicReason: "NOT_SELECTED",
           matchesProfile: true,
         })}
@@ -321,13 +346,19 @@ describe("ListingCard", () => {
     expect(screen.getByText("Nicht ausgewählt")).toBeInstanceOf(HTMLElement);
     expect(screen.queryByText("Passt")).toBeNull();
     expect(screen.queryByText("Bereits beworben")).toBeNull();
+    expect(screen.queryByText(/Erneut bewerben ab/)).toBeNull();
+    expect(screen.queryByText(/2026/)).toBeNull();
   });
 
-  it("keeps Bereits beworben for REJECTED reasons without dedicated copy", () => {
+  it("shows rented instead of applied for rental rejection", () => {
     render(
       <ListingCard
         listing={buildListing({
           applicationStatus: "REJECTED",
+          admission: createAdmission({
+            canSubmitApplication: false,
+            submissionBlockReason: "LISTING_RENTED",
+          }),
           publicReason: "LISTING_RENTED",
           matchesProfile: true,
         })}
@@ -336,7 +367,7 @@ describe("ListingCard", () => {
         showMatch
       />,
     );
-    expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("Objekt vermietet")).toBeInstanceOf(HTMLElement);
     expect(screen.queryByText("Passt")).toBeNull();
     expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
   });

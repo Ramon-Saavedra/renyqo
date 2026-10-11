@@ -1,418 +1,261 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { createAdmission } from "../../testing/admission";
+
+import type { ApplicationAdmission } from "../../api/application-admission";
+
+import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
+
+import type { ProfileMatchResult } from "../../types";
+
+import { subscribeListingApplicationData } from "../../utils/listing-data-invalidation";
+
 import { ListingApplyBox } from "./ListingApplyBox";
 
+const submit = vi.fn();
+
+const withdraw = vi.fn();
+
 const eligibility = vi.fn();
-const application = vi.fn();
-const existing = vi.fn();
-const withdrawal = vi.fn();
 
 vi.mock("../../hooks/useListingEligibility", () => ({
-  useListingEligibility: (...args: unknown[]) => eligibility(...args),
-}));
-vi.mock("../../hooks/useListingApplication", () => ({
-  useListingApplication: () => application(),
-}));
-vi.mock("../../hooks/useApplicantListingApplication", () => ({
-  useApplicantListingApplication: (...args: unknown[]) => existing(...args),
-}));
-vi.mock("../../hooks/useListingWithdrawal", () => ({
-  useListingWithdrawal: () => withdrawal(),
+  useListingEligibility: () => eligibility(),
 }));
 
-const baseEligibility = {
-  status: "loaded",
-  eligibility: {
-    canApply: true,
-    reasons: [],
-    warnings: [],
-    evaluatedAt: "2026-08-23T10:00:00.000Z",
-  },
-} as const;
-const idle = { state: { status: "idle" }, submit: vi.fn() } as const;
-const idleWithdraw = { state: { status: "idle" }, withdraw: vi.fn() } as const;
-const app = (
-  status: "ACTIVE" | "WAITING" | "WITHDRAWN" | "REJECTED" | "ACCEPTED",
-  id = "a",
-) => ({
-  id,
-  listingId: "l",
-  status,
-  rejectedAt: null,
-  publicReason: null,
-  createdAt: "2026-08-23T10:00:00.000Z",
-  updatedAt: "2026-08-23T10:00:00.000Z",
-  listing: { title: "x", city: "x", coldRent: 1, imageUrl: null },
-});
+vi.mock("../../hooks/useListingApplication", () => ({
+  useListingApplication: () => ({
+    state: { status: "idle" },
+    submit,
+    reset: vi.fn(),
+    reconcile: vi.fn(),
+  }),
+}));
+
+vi.mock("../../hooks/useListingWithdrawal", () => ({
+  useListingWithdrawal: () => ({ state: { status: "idle" }, withdraw }),
+}));
 
 function setup(
-  existingApplication: ReturnType<typeof app> | null = null,
-  canApply = true,
-  listingState: {
-    applicationStatus?: "REJECTED" | "ACTIVE" | "WAITING" | "ACCEPTED" | null;
-    publicReason?:
-      | "NOT_SELECTED"
-      | "PROFILE_NO_LONGER_ELIGIBLE"
-      | "LISTING_RENTED"
-      | null;
-  } = {},
+  admission: ApplicationAdmission = createAdmission(),
+  matchesProfile: ProfileMatchResult = "match",
+  session: ListingViewerSessionStatus = "applicant",
 ) {
-  eligibility.mockReturnValue({
-    ...baseEligibility,
-    eligibility: { ...baseEligibility.eligibility, canApply },
-  });
-  application.mockReturnValue(idle);
-  existing.mockReturnValue({
-    application: existingApplication,
-    status: "loaded",
-    refresh: vi.fn(),
-  });
-  withdrawal.mockReturnValue(idleWithdraw);
-  render(
+  return render(
     <ListingApplyBox
-      listingId="l"
-      session="applicant"
-      matchesProfile="unknown"
-      applicationStatus={listingState.applicationStatus ?? null}
-      publicReason={listingState.publicReason ?? null}
+      listingId="listing"
+      session={session}
+      matchesProfile={matchesProfile}
+      admission={admission}
     />,
   );
 }
 
-describe("ListingApplyBox", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+beforeEach(() => {
+  vi.clearAllMocks();
+
+  eligibility.mockReturnValue({
+    status: "loaded",
+    eligibility: { canApply: true, reasons: [], warnings: [] },
   });
+});
 
-  it("shows register and login instead of eligibility for anonymous users", () => {
-    eligibility.mockReturnValue(baseEligibility);
-    application.mockReturnValue(idle);
-    existing.mockReturnValue({
-      application: null,
-      status: "idle",
-      refresh: vi.fn(),
+describe("ListingApplyBox admission", () => {
+  it("follows refreshed admission after rejection, restoration, withdrawal and renewed rejection", () => {
+    const rejected = createAdmission({
+      hasApplicationHistory: true,
+      canSubmitApplication: false,
+      submissionBlockReason: "APPLICATION_REAPPLICATION_COOLDOWN",
+      reapplyAvailableAt: "2026-11-01T00:00:00Z",
     });
-    withdrawal.mockReturnValue(idleWithdraw);
-    render(
-      <ListingApplyBox
-        listingId="l"
-        session="anonymous"
-        matchesProfile="unknown"
-        applicationStatus={null}
-        publicReason={null}
-      />,
+    const view = setup(rejected);
+    const update = (
+      admission: ApplicationAdmission,
+      matchesProfile: ProfileMatchResult = "match",
+    ) =>
+      view.rerender(
+        <ListingApplyBox
+          listingId="listing"
+          session="applicant"
+          matchesProfile={matchesProfile}
+          admission={admission}
+        />,
+      );
+    expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    update(
+      createAdmission({
+        hasApplicationHistory: true,
+        currentApplicationId: "restored",
+        currentApplicationStatus: "ACTIVE",
+        canSubmitApplication: false,
+        submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+      }),
     );
-
+    expect(screen.getByText("Bereits beworben")).toBeTruthy();
+    update(createAdmission({ hasApplicationHistory: true }));
     expect(
-      screen.getByText("Du möchtest dich auf dieses Mietobjekt bewerben?"),
-    ).toBeInstanceOf(HTMLElement);
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(false);
+    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
+    update(
+      createAdmission({
+        hasApplicationHistory: true,
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
+      }),
+      "no-match",
+    );
+    expect(screen.getByText("Passt nicht zu deinem Profil")).toBeTruthy();
+    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
+    update(createAdmission({ hasApplicationHistory: true }));
     expect(
-      screen
-        .getByRole("link", { name: "Bewerbung starten" })
-        .getAttribute("href"),
-    ).toBe("/register/account-type");
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(false);
+    update(rejected);
+    expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    update(createAdmission({ hasApplicationHistory: true }));
     expect(
-      screen.getByRole("link", { name: "Bewerbung starten" }).className,
-    ).toContain("bg-primary");
-    expect(screen.queryByRole("link", { name: "Anmelden" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Registrieren" })).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: "Jetzt registrieren" }),
-    ).toBeNull();
-    expect(screen.queryByText(/Schon registriert/)).toBeNull();
-    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    expect(screen.queryByText("Eignung unbekannt")).toBeNull();
-    expect(
-      screen.queryByText("Die Voraussetzungen konnten nicht geprüft werden."),
-    ).toBeNull();
-    expect(
-      screen.queryByText("Deine Bewerbung konnte nicht geladen werden."),
-    ).toBeNull();
-    expect(eligibility).toHaveBeenCalledWith("l", false);
-    expect(existing).toHaveBeenCalledWith("l", false);
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(false);
+    expect(screen.queryByText(/2026|gesperrt|Erneut bewerben ab/)).toBeNull();
   });
-
-  it("does not show the anonymous apply CTA for an authenticated applicant", () => {
-    setup();
-
-    expect(screen.getByRole("button", { name: "Bewerben" })).toBeInstanceOf(
-      HTMLButtonElement,
-    );
-    expect(
-      screen.queryByRole("link", { name: "Bewerbung starten" }),
-    ).toBeNull();
-    expect(
-      screen.queryByText("Du möchtest dich auf dieses Mietobjekt bewerben?"),
-    ).toBeNull();
-  });
-
-  it("hides match badges for anonymous users even when matchesProfile is match", () => {
-    eligibility.mockReturnValue(baseEligibility);
-    application.mockReturnValue(idle);
-    existing.mockReturnValue({
-      application: null,
-      status: "idle",
-      refresh: vi.fn(),
-    });
-    withdrawal.mockReturnValue(idleWithdraw);
-    render(
-      <ListingApplyBox
-        listingId="l"
-        session="anonymous"
-        matchesProfile="match"
-        applicationStatus={null}
-        publicReason={null}
-      />,
-    );
-
-    expect(
-      screen.getByRole("link", { name: "Bewerbung starten" }),
-    ).toBeInstanceOf(HTMLElement);
-    expect(screen.queryByText("Passt zu deinem Profil")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    expect(eligibility).toHaveBeenCalledWith("l", false);
-    expect(existing).toHaveBeenCalledWith("l", false);
-  });
-
-  it("keeps the apply box busy while the session is loading", () => {
-    eligibility.mockReturnValue({
-      status: "idle",
-      eligibility: null,
-    });
-    application.mockReturnValue(idle);
-    existing.mockReturnValue({
-      application: null,
-      status: "idle",
-      refresh: vi.fn(),
-    });
-    withdrawal.mockReturnValue(idleWithdraw);
-    const { container } = render(
-      <ListingApplyBox
-        listingId="l"
-        session="loading"
-        matchesProfile="unknown"
-        applicationStatus={null}
-        publicReason={null}
-      />,
-    );
-
-    expect(container.querySelector("[aria-busy='true']")).toBeInstanceOf(
-      HTMLElement,
-    );
-    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: "Bewerbung starten" }),
-    ).toBeNull();
-    expect(eligibility).toHaveBeenCalledWith("l", false);
-    expect(existing).toHaveBeenCalledWith("l", false);
-  });
-
-  it("keeps the apply box busy and hides anonymous CTAs when the session is in error", () => {
-    eligibility.mockReturnValue({
-      status: "idle",
-      eligibility: null,
-    });
-    application.mockReturnValue(idle);
-    existing.mockReturnValue({
-      application: null,
-      status: "idle",
-      refresh: vi.fn(),
-    });
-    withdrawal.mockReturnValue(idleWithdraw);
-    const { container } = render(
-      <ListingApplyBox
-        listingId="l"
-        session="error"
-        matchesProfile="unknown"
-        applicationStatus={null}
-        publicReason={null}
-      />,
-    );
-
-    expect(container.querySelector("[aria-busy='true']")).toBeInstanceOf(
-      HTMLElement,
-    );
-    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: "Bewerbung starten" }),
-    ).toBeNull();
-    expect(eligibility).toHaveBeenCalledWith("l", false);
-    expect(existing).toHaveBeenCalledWith("l", false);
-  });
-
-  it("hides applicant apply actions for a non-applicant session", () => {
-    eligibility.mockReturnValue(baseEligibility);
-    application.mockReturnValue(idle);
-    existing.mockReturnValue({
-      application: null,
-      status: "idle",
-      refresh: vi.fn(),
-    });
-    withdrawal.mockReturnValue(idleWithdraw);
-    render(
-      <ListingApplyBox
-        listingId="l"
-        session="other"
-        matchesProfile="match"
-        applicationStatus={null}
-        publicReason={null}
-      />,
-    );
-
-    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    expect(
-      screen.queryByRole("link", { name: "Bewerbung starten" }),
-    ).toBeNull();
-    expect(screen.queryByText("Passt zu deinem Profil")).toBeNull();
-  });
-
   it.each(["ACTIVE", "WAITING"] as const)(
-    "shows withdrawal for existing %s",
+    "shows %s as current with withdrawal",
     (status) => {
-      setup(app(status));
+      setup(
+        createAdmission({
+          currentApplicationId: "a",
+          currentApplicationStatus: status,
+          canSubmitApplication: false,
+          submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+        }),
+      );
+
+      expect(screen.getByText("Bereits beworben")).toBeTruthy();
+
       expect(
         screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
-      ).toBeInstanceOf(HTMLButtonElement);
+      ).toBeTruthy();
     },
   );
 
-  it("allows applying again after WITHDRAWN when eligibility allows it", () => {
-    setup(app("WITHDRAWN"), true);
+  it("permits fresh submission with historical attempts and backend permission", () => {
+    setup(createAdmission({ hasApplicationHistory: true }));
+
     expect(
-      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
-        .disabled,
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(false);
+
+    expect(screen.queryByText("Bereits beworben")).toBeNull();
   });
 
-  it("blocks withdrawn applications when current eligibility blocks", () => {
-    setup(app("WITHDRAWN"), false);
-    expect(
-      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
-  });
-
-  it.each(["REJECTED", "ACCEPTED"] as const)(
-    "blocks %s without withdrawal",
-    (status) => {
-      setup(app(status));
-      expect(
-        screen.queryByRole("button", { name: "Bewerbung zurückziehen" }),
-      ).toBeNull();
-      expect(
-        (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
-          .disabled,
-      ).toBe(true);
-    },
-  );
-
-  it("does not block warnings when eligibility allows applying", () => {
+  it("uses admission permission independently of eligibility canApply", () => {
     eligibility.mockReturnValue({
       status: "loaded",
-      eligibility: {
-        ...baseEligibility.eligibility,
-        warnings: ["smoking_by_arrangement"],
-      },
+      eligibility: { canApply: false, reasons: [], warnings: [] },
     });
-    application.mockReturnValue(idle);
-    existing.mockReturnValue({
-      application: null,
-      status: "loaded",
-      refresh: vi.fn(),
-    });
-    withdrawal.mockReturnValue(idleWithdraw);
-    render(
-      <ListingApplyBox
-        listingId="l"
-        session="applicant"
-        matchesProfile="unknown"
-        applicationStatus={null}
-        publicReason={null}
-      />,
-    );
+
+    setup();
+
     expect(
-      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
-        .disabled,
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(false);
   });
 
-  it("submits once on repeated clicks", () => {
-    const submit = vi.fn().mockResolvedValue(undefined);
-    eligibility.mockReturnValue(baseEligibility);
-    application.mockReturnValue({ state: { status: "idle" }, submit });
-    existing.mockReturnValue({
-      application: null,
-      status: "loaded",
-      refresh: vi.fn(),
-    });
-    withdrawal.mockReturnValue(idleWithdraw);
-    render(
-      <ListingApplyBox
-        listingId="l"
-        session="applicant"
-        matchesProfile="unknown"
-        applicationStatus={null}
-        publicReason={null}
-      />,
+  it("shows current non-match after PROFILE_NO_LONGER_ELIGIBLE", () => {
+    setup(
+      createAdmission({
+        hasApplicationHistory: true,
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
+      }),
+      "no-match",
     );
-    const button = screen.getByRole("button", { name: "Bewerben" });
-    fireEvent.click(button);
-    expect(submit).toHaveBeenCalledTimes(1);
-  });
 
-  it("shows the not-selected listing state instead of Bewerben", () => {
-    setup(app("REJECTED"), true, {
-      applicationStatus: "REJECTED",
-      publicReason: "NOT_SELECTED",
-    });
-
-    expect(screen.getByText("Nicht ausgewählt")).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.getByText("Eine erneute Bewerbung ist nicht möglich."),
-    ).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.queryByText("Du wurdest für dieses Mietobjekt nicht ausgewählt."),
-    ).toBeNull();
-    expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    expect(
-      screen.queryByText("Diese Bewerbung ist nicht mehr aktiv."),
-    ).toBeNull();
-  });
-
-  it("keeps the generic rejected apply state for LISTING_RENTED", () => {
-    setup(app("REJECTED"), true, {
-      applicationStatus: "REJECTED",
-      publicReason: "LISTING_RENTED",
-    });
+    expect(screen.getByText("Passt nicht zu deinem Profil")).toBeTruthy();
 
     expect(
-      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
-        .disabled,
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(true);
-    expect(
-      screen.getByText("Diese Bewerbung ist nicht mehr aktiv."),
-    ).toBeInstanceOf(HTMLElement);
-    expect(
-      screen.queryByText("Eine erneute Bewerbung ist nicht möglich."),
-    ).toBeNull();
   });
 
-  it("keeps the generic rejected apply state for PROFILE_NO_LONGER_ELIGIBLE", () => {
-    setup(app("REJECTED"), true, {
-      applicationStatus: "REJECTED",
-      publicReason: "PROFILE_NO_LONGER_ELIGIBLE",
-    });
+  it("shows polite not-selected copy while hiding the internal cooldown date", () => {
+    setup(
+      createAdmission({
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICATION_REAPPLICATION_COOLDOWN",
+        reapplyAvailableAt: "2000-01-01T00:00:00Z",
+      }),
+    );
+
+    expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    expect(screen.getByText(/leider nicht ausgew/)).toBeTruthy();
+    expect(
+      screen.queryByText(/Erneut bewerben ab|2000|Wartezeit|gesperrt/),
+    ).toBeNull();
 
     expect(
-      (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
-        .disabled,
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(true);
+
+    expect(screen.queryByText("Bereits beworben")).toBeNull();
+  });
+
+  it.each([
+    "APPLICATION_ACCEPTED",
+    "LISTING_RENTED",
+    "APPLICATION_HISTORY_REQUIRES_REVIEW",
+    "LISTING_NOT_ACCEPTING_APPLICATIONS",
+  ] as const)("preserves %s blocking", (reason) => {
+    setup(
+      createAdmission({
+        canSubmitApplication: false,
+        submissionBlockReason: reason,
+      }),
+    );
+
     expect(
-      screen.getByText("Diese Bewerbung ist nicht mehr aktiv."),
-    ).toBeInstanceOf(HTMLElement);
-    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
-    expect(
-      screen.queryByText("Eine erneute Bewerbung ist nicht möglich."),
-    ).toBeNull();
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
+  it.each(["loading", "error", "other"] as const)(
+    "has no applicant action for %s session",
+    (session) => {
+      setup(createAdmission(), "match", session);
+
+      expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
+    },
+  );
+
+  it("guides anonymous users to registration", () => {
+    setup(createAdmission(), "match", "anonymous");
+
+    expect(screen.getByRole("link").getAttribute("href")).toContain("register");
+  });
+
+  it("invalidates listing data after withdrawal", async () => {
+    const listener = vi.fn();
+
+    const unsubscribe = subscribeListingApplicationData(listener);
+
+    withdraw.mockResolvedValue(true);
+
+    setup(
+      createAdmission({
+        currentApplicationId: "a",
+        currentApplicationStatus: "ACTIVE",
+        canSubmitApplication: false,
+      }),
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
+    );
+
+    await waitFor(() => expect(listener).toHaveBeenCalledOnce());
+
+    unsubscribe();
   });
 });

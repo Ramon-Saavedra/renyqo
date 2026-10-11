@@ -1,76 +1,83 @@
 import { describe, expect, it } from "vitest";
-import { resolveListingCardBadge } from "./listing-card-badge";
+import { createAdmission } from "../testing/admission";
+import { resolveListingApplicationUi } from "./listing-card-badge";
 
-describe("resolveListingCardBadge", () => {
-  it("returns not-selected for REJECTED and NOT_SELECTED before match", () => {
-    expect(
-      resolveListingCardBadge({
-        applicationStatus: "REJECTED",
-        publicReason: "NOT_SELECTED",
-        matchesProfile: true,
-        showMatch: true,
-      }),
-    ).toBe("not-selected");
-  });
-
-  it.each(["ACTIVE", "WAITING", "ACCEPTED"] as const)(
-    "returns applied for %s",
-    (applicationStatus) => {
+describe("resolveListingApplicationUi", () => {
+  it.each(["ACTIVE", "WAITING"] as const)(
+    "uses current %s even after restoration with history",
+    (status) => {
       expect(
-        resolveListingCardBadge({
-          applicationStatus,
-          publicReason: null,
-          matchesProfile: true,
-          showMatch: true,
+        resolveListingApplicationUi({
+          admission: createAdmission({
+            hasApplicationHistory: true,
+            currentApplicationId: "restored",
+            currentApplicationStatus: status,
+            canSubmitApplication: false,
+            submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+          }),
+          matchesProfile: "no-match",
         }),
-      ).toBe("applied");
+      ).toMatchObject({ badge: "applied", action: "withdraw" });
     },
   );
-
-  it.each(["PROFILE_NO_LONGER_ELIGIBLE", "LISTING_RENTED"] as const)(
-    "returns applied for REJECTED and %s instead of match",
-    (publicReason) => {
-      expect(
-        resolveListingCardBadge({
-          applicationStatus: "REJECTED",
-          publicReason,
-          matchesProfile: true,
-          showMatch: true,
+  it("history alone never means currently applied", () => {
+    expect(
+      resolveListingApplicationUi({
+        admission: createAdmission({ hasApplicationHistory: true }),
+        matchesProfile: "match",
+      }),
+    ).toMatchObject({ badge: "match", action: "submit" });
+  });
+  it("reflects current incompatibility after profile rejection", () => {
+    expect(
+      resolveListingApplicationUi({
+        admission: createAdmission({
+          hasApplicationHistory: true,
+          canSubmitApplication: false,
+          submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
         }),
-      ).toBe("applied");
-    },
-  );
-
-  it("does not infer applied from a null application status", () => {
-    expect(
-      resolveListingCardBadge({
-        applicationStatus: null,
-        publicReason: null,
-        matchesProfile: true,
-        showMatch: true,
+        matchesProfile: "no-match",
       }),
-    ).toBe("match");
+    ).toMatchObject({ badge: "no-match", action: "none" });
   });
-
-  it("returns match and no-match only when there is no blocking application", () => {
+  it("allows recovered eligibility and withdrawn history when backend permits", () => {
     expect(
-      resolveListingCardBadge({
-        applicationStatus: null,
-        publicReason: null,
-        matchesProfile: false,
-        showMatch: true,
-      }),
-    ).toBe("no-match");
+      resolveListingApplicationUi({
+        admission: createAdmission({ hasApplicationHistory: true }),
+        matchesProfile: "match",
+      }).action,
+    ).toBe("submit");
   });
-
-  it("returns none when showMatch is false and status is null", () => {
+  it("does not expire a cooldown locally even with a past date", () => {
     expect(
-      resolveListingCardBadge({
-        applicationStatus: null,
-        publicReason: null,
-        matchesProfile: true,
-        showMatch: false,
+      resolveListingApplicationUi({
+        admission: createAdmission({
+          canSubmitApplication: false,
+          submissionBlockReason: "APPLICATION_REAPPLICATION_COOLDOWN",
+          reapplyAvailableAt: "2000-01-01T00:00:00Z",
+        }),
+        matchesProfile: "match",
       }),
-    ).toBe("none");
+    ).toMatchObject({
+      badge: "not-selected",
+      action: "none",
+      reapplyAvailableAt: "2000-01-01T00:00:00Z",
+    });
+  });
+  it.each([
+    ["APPLICATION_ACCEPTED", "accepted"],
+    ["LISTING_RENTED", "rented"],
+    ["APPLICATION_HISTORY_REQUIRES_REVIEW", "unavailable"],
+    ["LISTING_NOT_ACCEPTING_APPLICATIONS", "unavailable"],
+  ] as const)("preserves %s", (reason, badge) => {
+    expect(
+      resolveListingApplicationUi({
+        admission: createAdmission({
+          canSubmitApplication: false,
+          submissionBlockReason: reason,
+        }),
+        matchesProfile: "match",
+      }),
+    ).toMatchObject({ badge, action: "none" });
   });
 });

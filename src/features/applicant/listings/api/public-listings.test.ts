@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { apiGet } from "@/lib/api/client";
@@ -29,6 +30,7 @@ function listingSummary(overrides: Record<string, unknown> = {}) {
     petsPolicy: null,
     coverImage: null,
     profileMatch: "UNKNOWN",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -286,7 +288,14 @@ describe("getPublicListings", () => {
 
   it("rejects a listing summary missing applicationStatus", async () => {
     vi.mocked(apiGet).mockResolvedValue({
-      items: [{ id: "missing-status", hasApplied: false, publicReason: null }],
+      items: [
+        {
+          id: "missing-status",
+          admission: createAdmission(),
+          hasApplied: false,
+          publicReason: null,
+        },
+      ],
       nextCursor: null,
       total: 1,
     });
@@ -299,7 +308,12 @@ describe("getPublicListings", () => {
   it("rejects a listing summary missing publicReason", async () => {
     vi.mocked(apiGet).mockResolvedValue({
       items: [
-        { id: "missing-reason", hasApplied: false, applicationStatus: null },
+        {
+          id: "missing-reason",
+          admission: createAdmission(),
+          hasApplied: false,
+          applicationStatus: null,
+        },
       ],
       nextCursor: null,
       total: 1,
@@ -315,6 +329,7 @@ describe("getPublicListings", () => {
       items: [
         {
           id: "withdrawn",
+          admission: createAdmission(),
           hasApplied: false,
           applicationStatus: "WITHDRAWN",
           publicReason: null,
@@ -355,6 +370,7 @@ describe("getPublicListings", () => {
       items: [
         {
           id: "missing-saved",
+          admission: createAdmission(),
           hasApplied: false,
           applicationStatus: null,
           publicReason: null,
@@ -490,6 +506,7 @@ describe("getPublicListings", () => {
           rooms: 3,
           livingArea: "70",
           coldRent: { amount: 1200 },
+          admission: createAdmission(),
           hasApplied: false,
           applicationStatus: null,
           publicReason: null,
@@ -510,6 +527,7 @@ describe("getPublicListings", () => {
       items: [
         {
           id: "bad-saved",
+          admission: createAdmission(),
           hasApplied: false,
           applicationStatus: null,
           publicReason: null,
@@ -688,6 +706,7 @@ describe("getPublicListingDetail", () => {
       isNew: true,
       images: [],
       profileMatch: "MATCH",
+      admission: createAdmission(),
       hasApplied: false,
       applicationStatus: null,
       publicReason: null,

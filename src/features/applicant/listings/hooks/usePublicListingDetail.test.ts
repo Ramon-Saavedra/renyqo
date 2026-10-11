@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
@@ -20,6 +21,7 @@ function mockListing(): PublicListingDetail {
     coldRent: 900,
     additionalCosts: 100,
     matchesProfile: "unknown",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -133,7 +135,10 @@ describe("usePublicListingDetail", () => {
   });
 
   it("re-fetches when the id changes", async () => {
-    vi.mocked(getPublicListingDetail).mockResolvedValue(mockListing());
+    vi.mocked(getPublicListingDetail).mockResolvedValue({
+      ...mockListing(),
+      id: "first",
+    });
 
     const { result, rerender } = renderHook(
       ({ id }: { id: string }) => usePublicListingDetail(id),
@@ -151,6 +156,8 @@ describe("usePublicListingDetail", () => {
     });
 
     rerender({ id: "second" });
+    expect(result.current.status).toBe("loading");
+    expect(result.current.listing).toBeNull();
 
     await waitFor(() => {
       expect(result.current.listing?.id).toBe("second");

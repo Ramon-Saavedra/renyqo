@@ -1,6 +1,6 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getApplicantApplications } from "@/features/applicant/listings/api/applicant-applications";
 import { getListingEligibility } from "@/features/applicant/listings/api/listing-eligibility";
 import { reportListing } from "@/features/applicant/listings/api/listing-report";
 import type * as listingReportApi from "@/features/applicant/listings/api/listing-report";
@@ -44,10 +44,6 @@ vi.mock("@/features/applicant/listings/api/listing-eligibility", () => ({
   getListingEligibility: vi.fn(),
 }));
 
-vi.mock("@/features/applicant/listings/api/applicant-applications", () => ({
-  getApplicantApplications: vi.fn(),
-}));
-
 vi.mock("@/features/applicant/listings/api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
@@ -67,7 +63,6 @@ vi.mock(
 const mockUseDetail = vi.mocked(usePublicListingDetail);
 const currentUser = vi.mocked(useCurrentUser);
 const eligibility = vi.mocked(getListingEligibility);
-const applications = vi.mocked(getApplicantApplications);
 
 const applicantUser: SafeUser = {
   id: "applicant-1",
@@ -91,6 +86,7 @@ function mockListing(
     coldRent: 620,
     additionalCosts: 80,
     matchesProfile: "match",
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -142,7 +138,6 @@ describe("ListingDetailPage", () => {
       warnings: [],
       evaluatedAt: "2026-08-23T10:00:00.000Z",
     });
-    applications.mockResolvedValue([]);
   });
 
   it("renders the loading state", () => {
@@ -257,7 +252,6 @@ describe("ListingDetailPage", () => {
     ).toBeNull();
     await waitFor(() => {
       expect(eligibility).toHaveBeenCalled();
-      expect(applications).toHaveBeenCalled();
     });
   });
 
@@ -319,7 +313,6 @@ describe("ListingDetailPage", () => {
 
     await waitFor(() => {
       expect(eligibility).not.toHaveBeenCalled();
-      expect(applications).not.toHaveBeenCalled();
     });
     expect(saveListing).not.toHaveBeenCalled();
     expect(unsaveListing).not.toHaveBeenCalled();
@@ -370,7 +363,6 @@ describe("ListingDetailPage", () => {
     expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
     await waitFor(() => {
       expect(eligibility).not.toHaveBeenCalled();
-      expect(applications).not.toHaveBeenCalled();
     });
   });
 

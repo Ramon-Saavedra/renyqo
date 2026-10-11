@@ -160,6 +160,12 @@ npm run test           # one-shot
 npm run test:watch     # watch mode
 ```
 
+## Listing application admission
+
+Public listings, listing detail and saved listings share the backend `admission` contract. `currentApplicationId` and `currentApplicationStatus` identify the live attempt; `canSubmitApplication` controls fresh submissions. Historical `hasApplied`, `applicationStatus` and `publicReason` do not grant or deny submission.
+
+`submissionBlockReason` and `reapplyAvailableAt` describe current admission blocks. The frontend keeps the backend date internal and shows a polite not-selected message without a countdown or cooldown date. Provider restoration cancels that attempt's rejection cooldown in the backend; the frontend uses the refreshed admission without reconstructing event history. `/eligibility` remains a separate compatibility check. Applying or withdrawing invalidates mounted listing, saved-listing, eligibility and application reads; newly mounted views fetch fresh data. Application conflicts are mapped by backend error code, with controlled fallback copy for uncoded conflicts.
+
 ## Continuous integration
 
 Every pull request to `main` runs the [`PR Validation`](.github/workflows/pr-validation.yml) workflow, which gates the merge on:

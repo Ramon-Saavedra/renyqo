@@ -1,3 +1,4 @@
+import { createAdmission } from "@/features/applicant/listings/testing/admission";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -57,6 +58,7 @@ function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
     coldRent: 800,
     serviceCharge: 150,
     matchesProfile: null,
+    admission: createAdmission(),
     hasApplied: false,
     applicationStatus: null,
     publicReason: null,
@@ -327,7 +329,7 @@ describe("ApplicantListingsView", () => {
     expect(within(thirdCard).queryByText("Passt nicht")).toBeNull();
   });
 
-  it("shows applied badge from listing applicationStatus regardless of profile match", () => {
+  it("shows applied badge from current admission regardless of profile match", () => {
     mockUseProfileStatus.mockReturnValue("exists");
 
     mockUsePublicListings.mockReturnValue(
@@ -336,6 +338,12 @@ describe("ApplicantListingsView", () => {
         listings: [
           buildListing({
             id: "applied",
+            admission: createAdmission({
+              currentApplicationId: "a",
+              currentApplicationStatus: "ACTIVE",
+              canSubmitApplication: false,
+              submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+            }),
             applicationStatus: "ACTIVE",
             matchesProfile: true,
           }),
