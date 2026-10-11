@@ -166,6 +166,51 @@ describe("RecentExitsRail", () => {
     expect(onRestore).toHaveBeenCalledWith("app-1");
   });
 
+  it("closes the restore dialog when canRestore becomes false before confirmation", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <RecentExitsRail
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+            canRestore: true,
+          }),
+        ]}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Wiederherstellen — Jonas Brandt" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).not.toBeNull();
+
+    rerender(
+      <RecentExitsRail
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+            canRestore: false,
+          }),
+        ]}
+        isLoading={false}
+        hasError={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).toBeNull();
+    expect(onRestore).not.toHaveBeenCalled();
+    expect(onResetRestoration).toHaveBeenCalled();
+  });
+
   it("contains preview focus and restores its trigger on Escape", async () => {
     const user = userEvent.setup();
     render(
