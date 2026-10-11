@@ -31,5 +31,10 @@ export function useListingWithdrawal(applicationId: string | null) {
     return false;
   };
   const reset = useCallback(() => setState({ status: "idle" }), []);
+  const [trackedId, setTrackedId] = useState(applicationId);
+  if (trackedId !== applicationId) {
+    setTrackedId(applicationId);
+    setState({ status: "idle" });
+  }
   return { state, withdraw, reset } as const;
 }

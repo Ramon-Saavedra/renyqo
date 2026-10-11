@@ -1,5 +1,7 @@
 "use client";
 
+import { applicationAdmissionCopy } from "../copy/application-admission";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Home } from "lucide-react";
@@ -13,7 +15,7 @@ import {
   formatEUR,
   formatRooms,
 } from "../utils/format";
-import { resolveListingCardBadge } from "../utils/listing-card-badge";
+import { resolveListingApplicationUi } from "../utils/listing-card-badge";
 import { ListingCardSaveButton } from "./ListingCardSaveButton";
 import { MatchBadge } from "./MatchBadge";
 
@@ -67,7 +69,7 @@ const PRICE_LABEL_CLASS =
 const SERVICE_CHARGE_CLASS =
   "basis-full whitespace-nowrap font-mono text-meta tracking-normal text-foreground-tertiary tabular-nums";
 
-const BADGE_SLOT_CLASS = "flex h-5 items-center";
+const BADGE_SLOT_CLASS = "flex min-h-5 flex-wrap items-center gap-1";
 
 export function ListingCard({
   listing,
@@ -77,10 +79,14 @@ export function ListingCard({
   eager = false,
   onSavedChange,
 }: ListingCardProps) {
-  const badge = resolveListingCardBadge({
-    applicationStatus: listing.applicationStatus,
-    publicReason: listing.publicReason,
-    matchesProfile: listing.matchesProfile,
+  const ui = resolveListingApplicationUi({
+    admission: listing.admission,
+    matchesProfile:
+      listing.matchesProfile === true
+        ? "match"
+        : listing.matchesProfile === false
+          ? "no-match"
+          : "unknown",
     showMatch,
   });
 
@@ -121,21 +127,35 @@ export function ListingCard({
         </div>
 
         <div className={BADGE_SLOT_CLASS}>
-          {badge === "applied" && (
+          {ui.badge === "applied" && (
             <MatchBadge tone="new">{listingsCopy.card.badgeApplied}</MatchBadge>
           )}
 
-          {badge === "not-selected" && (
-            <MatchBadge tone="not-selected">
-              {listingsCopy.card.badgeNotSelected}
+          {["not-selected", "accepted", "rented", "unavailable"].includes(
+            ui.badge,
+          ) && (
+            <MatchBadge
+              tone="not-selected"
+              className="h-auto min-h-5 max-w-full whitespace-normal py-1"
+            >
+              {
+                applicationAdmissionCopy[
+                  ui.badge === "not-selected"
+                    ? "notSelected"
+                    : ui.badge === "accepted"
+                      ? "accepted"
+                      : ui.badge === "rented"
+                        ? "rented"
+                        : "unavailable"
+                ]
+              }
             </MatchBadge>
           )}
-
-          {badge === "match" && (
+          {ui.badge === "match" && (
             <MatchBadge tone="match">{listingsCopy.card.badgeMatch}</MatchBadge>
           )}
 
-          {badge === "no-match" && (
+          {ui.badge === "no-match" && (
             <MatchBadge tone="no-match">
               {listingsCopy.card.badgeNoMatch}
             </MatchBadge>

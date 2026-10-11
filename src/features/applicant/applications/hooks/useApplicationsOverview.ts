@@ -1,5 +1,7 @@
 "use client";
 
+import { subscribeListingApplicationData } from "../../listings/utils/listing-data-invalidation";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { appendUnique } from "../model/append-unique";
 import {
@@ -38,6 +40,11 @@ export function useApplicationsOverview(): {
 } {
   const [state, setState] = useState<OverviewState>({ status: "loading" });
   const [reloadKey, setReloadKey] = useState(0);
+  useEffect(
+    () =>
+      subscribeListingApplicationData(() => setReloadKey((value) => value + 1)),
+    [],
+  );
   const generationRef = useRef(0);
   const moreControllerRef = useRef<AbortController | null>(null);
 

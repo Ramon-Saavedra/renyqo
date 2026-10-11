@@ -1,5 +1,7 @@
 "use client";
 
+import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
+
 import { useEffect, useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import { getPublicListingDetail } from "../api/public-listings";
@@ -17,6 +19,12 @@ export interface UsePublicListingDetailResult {
 export function usePublicListingDetail(
   id: string,
 ): UsePublicListingDetailResult {
+  const [reloadKey, setReloadKey] = useState(0);
+  useEffect(
+    () =>
+      subscribeListingApplicationData(() => setReloadKey((value) => value + 1)),
+    [],
+  );
   const [listing, setListing] = useState<PublicListingDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<DetailStatus>("loading");
@@ -26,7 +34,7 @@ export function usePublicListingDetail(
     const controller = new AbortController();
 
     async function load() {
-      setStatus("loading");
+      setStatus((current) => (current === "loaded" ? current : "loading"));
       setError(null);
 
       try {
@@ -70,7 +78,11 @@ export function usePublicListingDetail(
       active = false;
       controller.abort();
     };
-  }, [id]);
+  }, [id, reloadKey]);
 
-  return { listing, error, status };
+  return {
+    listing: listing?.id === id ? listing : null,
+    error,
+    status: status === "loaded" && listing?.id !== id ? "loading" : status,
+  };
 }

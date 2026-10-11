@@ -1,5 +1,7 @@
 "use client";
 
+import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getPublicListings } from "../api/public-listings";
 import type {
@@ -84,6 +86,13 @@ export function usePublicListings(
     useState<ListingsFetchStatus>("loading-page");
   const [debouncedQuery, setDebouncedQuery] = useState(filters.query);
   const [retryCount, setRetryCount] = useState(0);
+  useEffect(
+    () =>
+      subscribeListingApplicationData(() =>
+        setRetryCount((value) => value + 1),
+      ),
+    [],
+  );
   const [queryTrail, setQueryTrail] = useState({
     previous: filters.query,
     current: filters.query,

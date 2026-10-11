@@ -84,8 +84,7 @@ export function ListingDetailHeader({
         listingId={listing.id}
         session={session}
         matchesProfile={listing.matchesProfile}
-        applicationStatus={listing.applicationStatus}
-        publicReason={listing.publicReason}
+        admission={listing.admission}
       />
     </div>
   );

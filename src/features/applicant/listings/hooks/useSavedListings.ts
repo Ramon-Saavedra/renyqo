@@ -1,5 +1,7 @@
 "use client";
 
+import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSavedListings } from "../api/saved-listings";
 import type { PublicListing } from "../types";
@@ -39,6 +41,13 @@ export function useSavedListings(): UseSavedListingsResult {
   const [fetchStatus, setFetchStatus] =
     useState<ListingsFetchStatus>("loading-page");
   const [retryCount, setRetryCount] = useState(0);
+  useEffect(
+    () =>
+      subscribeListingApplicationData(() =>
+        setRetryCount((value) => value + 1),
+      ),
+    [],
+  );
   const fetchGenerationRef = useRef(0);
   const paginationControllerRef = useRef<AbortController | null>(null);
   const listingsRef = useRef<readonly PublicListing[]>([]);
