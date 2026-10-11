@@ -2,7 +2,7 @@
 
 import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import { getPublicListingDetail } from "../api/public-listings";
 import { listingDetailCopy } from "../copy/listing-detail";
@@ -26,6 +26,7 @@ export function usePublicListingDetail(
     [],
   );
   const [listing, setListing] = useState<PublicListingDetail | null>(null);
+  const loadedListingId = useRef<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<DetailStatus>("loading");
 
@@ -45,10 +46,12 @@ export function usePublicListingDetail(
         if (!active) return;
 
         if (!result) {
+          loadedListingId.current = null;
           setStatus("not-found");
           return;
         }
 
+        loadedListingId.current = result.id;
         setListing(result);
         setStatus("loaded");
       } catch (err) {
@@ -59,6 +62,7 @@ export function usePublicListingDetail(
         }
 
         if (err instanceof ApiError && err.status === 404) {
+          loadedListingId.current = null;
           setStatus("not-found");
           return;
         }
@@ -68,7 +72,11 @@ export function usePublicListingDetail(
             ? listingDetailCopy.errorNetwork
             : listingDetailCopy.errorDefault,
         );
-        setStatus("error");
+        setStatus((current) =>
+          current === "loaded" && loadedListingId.current === id
+            ? "loaded"
+            : "error",
+        );
       }
     }
 
