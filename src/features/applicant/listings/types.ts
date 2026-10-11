@@ -1,3 +1,4 @@
+import type { ApplicationAdmission } from "./api/application-admission";
 import type {
   ListingImage,
   ObjectTypeBackend,
@@ -37,6 +38,7 @@ export interface PublicListing {
   readonly coldRent: number;
   readonly serviceCharge: number;
   readonly matchesProfile: boolean | null;
+  readonly admission: ApplicationAdmission;
   readonly hasApplied: boolean;
   readonly applicationStatus: ListingApplicationStatus | null;
   readonly publicReason: ListingApplicationPublicReason | null;
@@ -51,6 +53,7 @@ export interface PublicListingDetail {
   readonly title: string | null;
   readonly location: string | null;
   readonly matchesProfile: ProfileMatchResult;
+  readonly admission: ApplicationAdmission;
   readonly hasApplied: boolean;
   readonly applicationStatus: ListingApplicationStatus | null;
   readonly publicReason: ListingApplicationPublicReason | null;

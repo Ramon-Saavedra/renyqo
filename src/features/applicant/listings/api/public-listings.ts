@@ -1,3 +1,4 @@
+import { applicationAdmissionSchema } from "./application-admission";
 import { z } from "zod";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import {
@@ -99,6 +100,7 @@ const applicantListingSummarySchema = z.object({
     })
     .nullable(),
   profileMatch: z.enum(["MATCH", "NO_MATCH", "PROFILE_INCOMPLETE", "UNKNOWN"]),
+  admission: applicationAdmissionSchema,
   hasApplied: z.boolean(),
   applicationStatus: listingApplicationStatusSchema.nullable(),
   publicReason: listingApplicationPublicReasonSchema.nullable(),
@@ -131,6 +133,7 @@ export function mapPublicListing(value: unknown): PublicListing {
     coldRent: listing.coldRent ?? 0,
     serviceCharge: listing.additionalCosts ?? 0,
     matchesProfile: normalizeListingProfileMatch(listing.profileMatch),
+    admission: listing.admission,
     hasApplied: listing.hasApplied,
     applicationStatus: listing.applicationStatus,
     publicReason: listing.publicReason,
@@ -168,6 +171,7 @@ const applicantListingDetailSchema = z.object({
     }),
   ),
   profileMatch: z.enum(["MATCH", "NO_MATCH", "PROFILE_INCOMPLETE", "UNKNOWN"]),
+  admission: applicationAdmissionSchema,
   hasApplied: z.boolean(),
   applicationStatus: listingApplicationStatusSchema.nullable(),
   publicReason: listingApplicationPublicReasonSchema.nullable(),
@@ -207,6 +211,7 @@ function mapPublicListingDetail(
     title: value.title,
     location: buildDetailLocation(value),
     matchesProfile: normalizeDetailProfileMatch(value.profileMatch),
+    admission: value.admission,
     hasApplied: value.hasApplied,
     applicationStatus: value.applicationStatus,
     publicReason: value.publicReason,
