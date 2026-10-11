@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RecentExitsRail as RecentExitsRailView } from "./RecentExitsRail";
@@ -254,6 +254,76 @@ describe("RecentExitsRail", () => {
       screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
     ).toBeNull();
     expect(onRestore).not.toHaveBeenCalled();
+  });
+
+  it("does not reopen the restore dialog after invalidation during submit and failed restore", async () => {
+    const user = userEvent.setup();
+    let resolveRestore: ((value: boolean) => void) | undefined;
+    const restorePromise = new Promise<boolean>((resolve) => {
+      resolveRestore = resolve;
+    });
+    onRestore.mockReturnValue(restorePromise);
+
+    const restorableExit = buildExit({
+      id: "app-1",
+      applicantName: "Jonas Brandt",
+      visualState: "provider_discarded",
+      canRestore: true,
+    });
+    const railProps = {
+      isLoading: false,
+      hasError: false,
+      onRestore,
+      onResetRestoration,
+    };
+
+    const { rerender } = render(
+      <RecentExitsRailView
+        {...railProps}
+        exits={[restorableExit]}
+        restorationState={{ status: "idle" }}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Wiederherstellen — Jonas Brandt" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Wieder aufnehmen" }));
+
+    rerender(
+      <RecentExitsRailView
+        {...railProps}
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+            canRestore: false,
+          }),
+        ]}
+        restorationState={{ status: "submitting", applicationId: "app-1" }}
+      />,
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).toBeNull();
+
+    await act(async () => {
+      resolveRestore?.(false);
+      await restorePromise;
+    });
+
+    rerender(
+      <RecentExitsRailView
+        {...railProps}
+        exits={[restorableExit]}
+        restorationState={{ status: "error", applicationId: "app-1" }}
+      />,
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).toBeNull();
+    expect(onRestore).toHaveBeenCalledWith("app-1");
   });
 
   it("opens a new restore dialog after the prior selection was invalidated", async () => {

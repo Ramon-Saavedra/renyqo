@@ -76,11 +76,7 @@ export function RecentExitsRail({
 
   if (pendingRestoreCanRestore !== trackedPendingRestoreCanRestore) {
     setTrackedPendingRestoreCanRestore(pendingRestoreCanRestore);
-    if (
-      restoreApplicationId !== null &&
-      !isRestoring &&
-      pendingRestoreCanRestore !== true
-    ) {
+    if (restoreApplicationId !== null && pendingRestoreCanRestore !== true) {
       setRestoreApplicationId(null);
     }
   }
