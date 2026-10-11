@@ -210,6 +210,96 @@ describe("RecentExitsRail", () => {
     expect(onRestore).not.toHaveBeenCalled();
   });
 
+  it("does not reopen the restore dialog after canRestore flips back to true", async () => {
+    const user = userEvent.setup();
+    const restorableProps = {
+      exits: [
+        buildExit({
+          id: "app-1",
+          applicantName: "Jonas Brandt",
+          visualState: "provider_discarded",
+          canRestore: true,
+        }),
+      ],
+      isLoading: false,
+      hasError: false,
+    };
+    const { rerender } = render(<RecentExitsRail {...restorableProps} />);
+    await user.click(
+      screen.getByRole("button", { name: "Wiederherstellen — Jonas Brandt" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).not.toBeNull();
+
+    rerender(
+      <RecentExitsRail
+        {...restorableProps}
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+            canRestore: false,
+          }),
+        ]}
+      />,
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).toBeNull();
+
+    rerender(<RecentExitsRail {...restorableProps} />);
+    expect(
+      screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).toBeNull();
+    expect(onRestore).not.toHaveBeenCalled();
+  });
+
+  it("opens a new restore dialog after the prior selection was invalidated", async () => {
+    const user = userEvent.setup();
+    const restorableProps = {
+      exits: [
+        buildExit({
+          id: "app-1",
+          applicantName: "Jonas Brandt",
+          visualState: "provider_discarded",
+          canRestore: true,
+        }),
+      ],
+      isLoading: false,
+      hasError: false,
+    };
+    const { rerender } = render(<RecentExitsRail {...restorableProps} />);
+    await user.click(
+      screen.getByRole("button", { name: "Wiederherstellen — Jonas Brandt" }),
+    );
+    rerender(
+      <RecentExitsRail
+        {...restorableProps}
+        exits={[
+          buildExit({
+            id: "app-1",
+            applicantName: "Jonas Brandt",
+            visualState: "provider_discarded",
+            canRestore: false,
+          }),
+        ]}
+      />,
+    );
+    expect(
+      screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).toBeNull();
+
+    rerender(<RecentExitsRail {...restorableProps} />);
+    await user.click(
+      screen.getByRole("button", { name: "Wiederherstellen — Jonas Brandt" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
+    ).not.toBeNull();
+  });
+
   it("contains preview focus and restores its trigger on Escape", async () => {
     const user = userEvent.setup();
     render(

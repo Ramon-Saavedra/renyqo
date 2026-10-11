@@ -66,12 +66,32 @@ export function RecentExitsRail({
   const panelRef = useRef<HTMLElement>(null);
 
   const isRestoring = restorationState.status === "submitting";
+  const pendingRestoreCanRestore =
+    restoreApplicationId === null
+      ? null
+      : (exits.find((exit) => exit.id === restoreApplicationId)?.canRestore ??
+        null);
+  const [trackedPendingRestoreCanRestore, setTrackedPendingRestoreCanRestore] =
+    useState(pendingRestoreCanRestore);
+
+  if (pendingRestoreCanRestore !== trackedPendingRestoreCanRestore) {
+    setTrackedPendingRestoreCanRestore(pendingRestoreCanRestore);
+    if (
+      restoreApplicationId !== null &&
+      !isRestoring &&
+      pendingRestoreCanRestore !== true
+    ) {
+      setRestoreApplicationId(null);
+    }
+  }
+
   const restorableExit =
     restoreApplicationId === null
       ? null
       : (exits.find(
           (exit) => exit.id === restoreApplicationId && exit.canRestore,
         ) ?? null);
+  const isRestoreDialogOpen = restorableExit !== null;
   const isEmpty = !isLoading && !hasError && exits.length === 0;
 
   if (isEmpty) return null;
@@ -213,7 +233,7 @@ export function RecentExitsRail({
         ) : null}
       </section>
       <ConfirmationModal
-        open={restorableExit !== null}
+        open={isRestoreDialogOpen}
         title={copy.restoreTitle}
         text={copy.restoreText(restorableExit?.applicantName ?? "")}
         primaryLabel={copy.restoreConfirm}
