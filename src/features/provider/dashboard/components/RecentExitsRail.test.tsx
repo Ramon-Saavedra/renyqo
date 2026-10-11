@@ -208,7 +208,6 @@ describe("RecentExitsRail", () => {
       screen.queryByRole("dialog", { name: "Bewerber wieder aufnehmen?" }),
     ).toBeNull();
     expect(onRestore).not.toHaveBeenCalled();
-    expect(onResetRestoration).toHaveBeenCalled();
   });
 
   it("contains preview focus and restores its trigger on Escape", async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Eye, Redo2 } from "lucide-react";
 import { Button } from "@/components/ui/button/Button";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
@@ -73,19 +73,6 @@ export function RecentExitsRail({
           (exit) => exit.id === restoreApplicationId && exit.canRestore,
         ) ?? null);
   const isEmpty = !isLoading && !hasError && exits.length === 0;
-
-  useEffect(() => {
-    if (restoreApplicationId === null || isRestoring) return;
-    if (restorableExit !== null) return;
-    onResetRestoration();
-    setRestoreApplicationId(null);
-  }, [
-    exits,
-    isRestoring,
-    onResetRestoration,
-    restorableExit,
-    restoreApplicationId,
-  ]);
 
   if (isEmpty) return null;
 
