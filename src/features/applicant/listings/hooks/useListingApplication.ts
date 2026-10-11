@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/client";
 import {
   applyToListing,
@@ -75,7 +75,7 @@ export function useListingApplication(id: string) {
       ),
     [],
   );
-  useEffect(() => {
+  useLayoutEffect(() => {
     return () => {
       generation.current += 1;
       isSubmittingRef.current = false;
@@ -88,13 +88,13 @@ export function useListingApplication(id: string) {
     setState({ status: "submitting" });
     try {
       const application = await applyToListing(id);
-      invalidateListingApplicationData();
       if (requestGeneration !== generation.current) return;
+      invalidateListingApplicationData();
       setState({ status: "success", application });
       return application;
     } catch (error) {
-      invalidateListingApplicationData();
       if (requestGeneration !== generation.current) return;
+      invalidateListingApplicationData();
       if (error instanceof ListingEligibilityRejectedError)
         setState({
           status: "eligibility-rejected",

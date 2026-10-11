@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { withdrawListingApplication } from "../api/listing-withdrawal";
 
 export type ListingWithdrawalState =
@@ -14,20 +14,31 @@ export function useListingWithdrawal(applicationId: string | null) {
     status: "idle",
   });
   const isSubmittingRef = useRef(false);
+  const generation = useRef(0);
+  useLayoutEffect(() => {
+    return () => {
+      generation.current += 1;
+      isSubmittingRef.current = false;
+    };
+  }, [applicationId]);
   const withdraw = async (): Promise<boolean> => {
     if (!applicationId || isSubmittingRef.current || state.status === "success")
       return false;
+    const requestGeneration = generation.current;
     isSubmittingRef.current = true;
     setState({ status: "submitting" });
     try {
       await withdrawListingApplication(applicationId);
+      if (requestGeneration !== generation.current) return false;
       setState({ status: "success" });
-      isSubmittingRef.current = false;
       return true;
     } catch {
+      if (requestGeneration !== generation.current) return false;
       setState({ status: "error" });
+    } finally {
+      if (requestGeneration === generation.current)
+        isSubmittingRef.current = false;
     }
-    isSubmittingRef.current = false;
     return false;
   };
   const reset = useCallback(() => setState({ status: "idle" }), []);
