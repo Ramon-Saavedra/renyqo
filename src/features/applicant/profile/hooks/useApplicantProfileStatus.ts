@@ -34,6 +34,10 @@ function getProfileStatusSnapshot(): ApplicantProfileStatus {
   return profileStatusSnapshot;
 }
 
+function getServerProfileStatusSnapshot(): ApplicantProfileStatus {
+  return "loading";
+}
+
 function setProfileStatusSnapshot(status: ApplicantProfileStatus): void {
   profileStatusSnapshot = status;
   notifyProfileCacheChange();
@@ -59,7 +63,7 @@ export function useApplicantProfileStatus(): ApplicantProfileStatus {
   const profileStatus = useSyncExternalStore(
     subscribeToProfileCache,
     getProfileStatusSnapshot,
-    getProfileStatusSnapshot,
+    getServerProfileStatusSnapshot,
   );
 
   const isApplicant = isApplicantRole(user?.role);
