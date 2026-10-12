@@ -224,6 +224,6 @@ docker run -p 3000:3000 renyqo
 
 ## License
 
-Proprietary — all rights reserved.
+Copyright (c) 2026 Ramon Saavedra. All rights reserved.
 
-This repository does not include a `LICENSE` file. `package.json` marks the package as private, so it is not published to npm.
+This repository is publicly accessible for source-code review and portfolio purposes only. No permission is granted to copy, reuse, modify, redistribute, sublicense, or commercially use the source code.
