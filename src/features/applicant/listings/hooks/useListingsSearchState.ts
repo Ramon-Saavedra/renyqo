@@ -54,12 +54,19 @@ export function useListingsSearchState(): UseListingsSearchStateResult {
     if (!listingsSearchUrlHasAliasParam(incomingParams)) return;
 
     const incoming = serializeListingsSearchQuery(parsed.filters, parsed.sort);
+    if (
+      !pendingWriteRef.current &&
+      !matchesParsedSearchState(filters, sort, parsed)
+    ) {
+      setFilters(parsed.filters);
+      setSortState(parsed.sort);
+    }
     lastWrittenRef.current = incoming;
     persistListingsSearchQuery(incoming);
     pendingWriteRef.current = true;
     const href = incoming.length > 0 ? `${pathname}?${incoming}` : pathname;
     router.replace(href, { scroll: false });
-  }, [incomingQuery, parsed, pathname, router]);
+  }, [filters, incomingQuery, parsed, pathname, router, sort]);
 
   useEffect(() => {
     const incomingParams = new URLSearchParams(incomingQuery);

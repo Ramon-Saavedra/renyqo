@@ -154,6 +154,29 @@ describe("useListingsSearchState", () => {
     );
   });
 
+  it("applies q navigation immediately when replacing a canonical query URL", () => {
+    searchParams = new URLSearchParams("query=Alpha");
+    const { result, rerender } = renderHook(() => useListingsSearchState());
+
+    expect(result.current.filters.query).toBe("Alpha");
+    expect(replace).not.toHaveBeenCalled();
+
+    searchParams = new URLSearchParams("q=Beta");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Beta");
+    expect(replace).toHaveBeenCalledWith("/listings?query=Beta", {
+      scroll: false,
+    });
+
+    replace.mockClear();
+    searchParams = new URLSearchParams("query=Beta");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Beta");
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it("canonicalizes q and still restores filters from back/forward", () => {
     searchParams = new URLSearchParams("q=Freiburg");
     const { result, rerender } = renderHook(() => useListingsSearchState());
