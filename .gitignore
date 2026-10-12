@@ -41,3 +41,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local agent instructions
+/AGENTS.md
+/.opencode/
+/.automation/
+
+# unreferenced local screenshot
+/public/Screenshot\ 2026-04-24\ 225911.png
