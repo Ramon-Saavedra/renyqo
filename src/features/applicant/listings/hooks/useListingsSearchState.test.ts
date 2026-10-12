@@ -154,6 +154,35 @@ describe("useListingsSearchState", () => {
     );
   });
 
+  it("does not overwrite a newer local edit while alias canonicalization is pending", () => {
+    searchParams = new URLSearchParams("query=Alpha");
+    const { result, rerender } = renderHook(() => useListingsSearchState());
+
+    searchParams = new URLSearchParams("q=Beta");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Beta");
+    expect(replace).toHaveBeenCalledTimes(1);
+    expect(replace).toHaveBeenCalledWith("/listings?query=Beta", {
+      scroll: false,
+    });
+
+    act(() => {
+      result.current.updateFilters({ query: "Gamma" });
+    });
+
+    expect(result.current.filters.query).toBe("Gamma");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Gamma");
+    expect(
+      replace.mock.calls.filter((call) => call[0] === "/listings?query=Beta"),
+    ).toHaveLength(1);
+    expect(replace).toHaveBeenLastCalledWith("/listings?query=Gamma", {
+      scroll: false,
+    });
+  });
+
   it("applies q navigation immediately when replacing a canonical query URL", () => {
     searchParams = new URLSearchParams("query=Alpha");
     const { result, rerender } = renderHook(() => useListingsSearchState());

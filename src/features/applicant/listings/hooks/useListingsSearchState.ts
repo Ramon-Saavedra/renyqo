@@ -48,16 +48,22 @@ export function useListingsSearchState(): UseListingsSearchStateResult {
     serializeListingsSearchQuery(parsed.filters, parsed.sort),
   );
   const pendingWriteRef = useRef(false);
+  const lastProcessedAliasIncomingQueryRef = useRef<string | null>(null);
 
   useEffect(() => {
     const incomingParams = new URLSearchParams(incomingQuery);
-    if (!listingsSearchUrlHasAliasParam(incomingParams)) return;
+    if (!listingsSearchUrlHasAliasParam(incomingParams)) {
+      lastProcessedAliasIncomingQueryRef.current = null;
+      return;
+    }
+
+    if (lastProcessedAliasIncomingQueryRef.current === incomingQuery) {
+      return;
+    }
+    lastProcessedAliasIncomingQueryRef.current = incomingQuery;
 
     const incoming = serializeListingsSearchQuery(parsed.filters, parsed.sort);
-    if (
-      !pendingWriteRef.current &&
-      !matchesParsedSearchState(filters, sort, parsed)
-    ) {
+    if (!pendingWriteRef.current) {
       setFilters(parsed.filters);
       setSortState(parsed.sort);
     }
@@ -66,7 +72,7 @@ export function useListingsSearchState(): UseListingsSearchStateResult {
     pendingWriteRef.current = true;
     const href = incoming.length > 0 ? `${pathname}?${incoming}` : pathname;
     router.replace(href, { scroll: false });
-  }, [filters, incomingQuery, parsed, pathname, router, sort]);
+  }, [incomingQuery, parsed, pathname, router]);
 
   useEffect(() => {
     const incomingParams = new URLSearchParams(incomingQuery);
