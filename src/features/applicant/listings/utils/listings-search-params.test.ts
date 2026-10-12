@@ -153,6 +153,49 @@ describe("listings search params", () => {
     );
   });
 
+  it("reads the q alias when query is absent", () => {
+    expect(
+      parseListingsSearchParams(new URLSearchParams("q=Nordhorn")).filters
+        .query,
+    ).toBe("Nordhorn");
+  });
+
+  it("prefers query over q when both are present", () => {
+    expect(
+      parseListingsSearchParams(new URLSearchParams("query=Alpha&q=Beta"))
+        .filters.query,
+    ).toBe("Alpha");
+    expect(
+      parseListingsSearchParams(new URLSearchParams("query=&q=Beta")).filters
+        .query,
+    ).toBe("");
+  });
+
+  it("parses q together with other filters", () => {
+    expect(
+      parseListingsSearchParams(
+        new URLSearchParams("q=Nordhorn&maxRent=1300&onlyMatching=1"),
+      ),
+    ).toEqual({
+      filters: {
+        ...EMPTY_FILTERS,
+        query: "Nordhorn",
+        maxColdRent: 1300,
+        onlyMatching: true,
+      },
+      sort: "newest",
+    });
+  });
+
+  it("never serializes the q alias", () => {
+    expect(
+      serializeListingsSearchQuery(filters({ query: "Nordhorn" }), "newest"),
+    ).toBe("query=Nordhorn");
+    expect(
+      serializeListingsSearchQuery(filters({ query: "Nordhorn" }), "newest"),
+    ).not.toContain("q=");
+  });
+
   it("trims the search query when writing and reading the URL", () => {
     expect(
       serializeListingsSearchQuery(

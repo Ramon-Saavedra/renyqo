@@ -4,7 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { EMPTY_FILTERS } from "../types";
 import type { ListingFilters, SortKey } from "../types";
+import type { ListingsSearchState } from "../utils/listings-search-params";
 import {
+  listingsSearchUrlHasAliasParam,
   normalizeListingsSearchQuery,
   parseListingsSearchParams,
   persistListingsSearchQuery,
@@ -17,6 +19,18 @@ export interface UseListingsSearchStateResult {
   readonly updateFilters: (patch: Partial<ListingFilters>) => void;
   readonly resetFilters: () => void;
   readonly setSort: (sort: SortKey) => void;
+}
+
+function matchesParsedSearchState(
+  filters: ListingFilters,
+  sort: SortKey,
+  parsed: ListingsSearchState,
+): boolean {
+  return (
+    sort === parsed.sort &&
+    serializeListingsSearchQuery(filters, sort) ===
+      serializeListingsSearchQuery(parsed.filters, parsed.sort)
+  );
 }
 
 export function useListingsSearchState(): UseListingsSearchStateResult {
@@ -34,20 +48,53 @@ export function useListingsSearchState(): UseListingsSearchStateResult {
     serializeListingsSearchQuery(parsed.filters, parsed.sort),
   );
   const pendingWriteRef = useRef(false);
+  const lastProcessedAliasIncomingQueryRef = useRef<string | null>(null);
 
   useEffect(() => {
+    const incomingParams = new URLSearchParams(incomingQuery);
+    if (!listingsSearchUrlHasAliasParam(incomingParams)) {
+      lastProcessedAliasIncomingQueryRef.current = null;
+      return;
+    }
+
+    if (lastProcessedAliasIncomingQueryRef.current === incomingQuery) {
+      return;
+    }
+    lastProcessedAliasIncomingQueryRef.current = incomingQuery;
+
+    const incoming = serializeListingsSearchQuery(parsed.filters, parsed.sort);
+    if (!pendingWriteRef.current) {
+      setFilters(parsed.filters);
+      setSortState(parsed.sort);
+    }
+    lastWrittenRef.current = incoming;
+    persistListingsSearchQuery(incoming);
+    pendingWriteRef.current = true;
+    const href = incoming.length > 0 ? `${pathname}?${incoming}` : pathname;
+    router.replace(href, { scroll: false });
+  }, [incomingQuery, parsed, pathname, router]);
+
+  useEffect(() => {
+    const incomingParams = new URLSearchParams(incomingQuery);
+    if (listingsSearchUrlHasAliasParam(incomingParams)) return;
+
     const incoming = serializeListingsSearchQuery(parsed.filters, parsed.sort);
     if (incoming === lastWrittenRef.current) {
       pendingWriteRef.current = false;
       persistListingsSearchQuery(incoming);
+      if (matchesParsedSearchState(filters, sort, parsed)) {
+        return;
+      }
+    } else if (pendingWriteRef.current) {
       return;
+    } else {
+      lastWrittenRef.current = incoming;
+      persistListingsSearchQuery(incoming);
     }
-    if (pendingWriteRef.current) return;
-    lastWrittenRef.current = incoming;
-    persistListingsSearchQuery(incoming);
+
     setFilters(parsed.filters);
     setSortState(parsed.sort);
-  }, [parsed]);
+  }, [filters, incomingQuery, parsed, sort]);
 
   const write = useCallback(
     (nextFilters: ListingFilters, nextSort: SortKey) => {

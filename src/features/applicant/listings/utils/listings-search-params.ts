@@ -34,6 +34,25 @@ export interface ListingsSearchState {
 
 export interface SearchParamsReader {
   get(name: string): string | null;
+  has?(name: string): boolean;
+}
+
+function parseSearchQueryFromParams(searchParams: SearchParamsReader): string {
+  const queryValue = searchParams.get("query");
+  if (queryValue !== null) {
+    return normalizeListingsSearchQuery(queryValue);
+  }
+  const aliasValue = searchParams.get("q");
+  if (aliasValue !== null) {
+    return normalizeListingsSearchQuery(aliasValue);
+  }
+  return "";
+}
+
+export function listingsSearchUrlHasAliasParam(
+  searchParams: SearchParamsReader,
+): boolean {
+  return searchParams.has?.("q") ?? searchParams.get("q") !== null;
 }
 
 function parsePositiveInteger(value: string | null): number | null {
@@ -85,7 +104,7 @@ export function parseListingsSearchParams(
 ): ListingsSearchState {
   return {
     filters: {
-      query: normalizeListingsSearchQuery(searchParams.get("query") ?? ""),
+      query: parseSearchQueryFromParams(searchParams),
       maxColdRent: parsePositiveInteger(searchParams.get("maxRent")),
       minRooms: parseMinRooms(searchParams.get("minRooms")),
       minLivingArea: parsePositiveInteger(searchParams.get("minLivingArea")),

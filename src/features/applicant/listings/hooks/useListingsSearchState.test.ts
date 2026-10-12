@@ -20,6 +20,31 @@ describe("useListingsSearchState", () => {
     sessionStorage.clear();
   });
 
+  it("reads the q alias as the initial search query", () => {
+    searchParams = new URLSearchParams("q=Nordhorn");
+
+    const { result } = renderHook(() => useListingsSearchState());
+
+    expect(result.current.filters.query).toBe("Nordhorn");
+    expect(replace).toHaveBeenCalledWith("/listings?query=Nordhorn", {
+      scroll: false,
+    });
+    expect(sessionStorage.getItem(LISTINGS_SEARCH_SESSION_KEY)).toBe(
+      "query=Nordhorn",
+    );
+  });
+
+  it("prefers query over q in the initial filter state", () => {
+    searchParams = new URLSearchParams("query=Alpha&q=Beta");
+
+    const { result } = renderHook(() => useListingsSearchState());
+
+    expect(result.current.filters.query).toBe("Alpha");
+    expect(replace).toHaveBeenCalledWith("/listings?query=Alpha", {
+      scroll: false,
+    });
+  });
+
   it("reads the current search params as the initial filter state", () => {
     searchParams = new URLSearchParams(
       "query=Freiburg&onlyMatching=1&sort=price-desc",
@@ -127,6 +152,93 @@ describe("useListingsSearchState", () => {
     expect(sessionStorage.getItem(LISTINGS_SEARCH_SESSION_KEY)).toBe(
       "query=Berlin",
     );
+  });
+
+  it("does not overwrite a newer local edit while alias canonicalization is pending", () => {
+    searchParams = new URLSearchParams("query=Alpha");
+    const { result, rerender } = renderHook(() => useListingsSearchState());
+
+    searchParams = new URLSearchParams("q=Beta");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Beta");
+    expect(replace).toHaveBeenCalledTimes(1);
+    expect(replace).toHaveBeenCalledWith("/listings?query=Beta", {
+      scroll: false,
+    });
+
+    act(() => {
+      result.current.updateFilters({ query: "Gamma" });
+    });
+
+    expect(result.current.filters.query).toBe("Gamma");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Gamma");
+    expect(
+      replace.mock.calls.filter((call) => call[0] === "/listings?query=Beta"),
+    ).toHaveLength(1);
+    expect(replace).toHaveBeenLastCalledWith("/listings?query=Gamma", {
+      scroll: false,
+    });
+  });
+
+  it("applies q navigation immediately when replacing a canonical query URL", () => {
+    searchParams = new URLSearchParams("query=Alpha");
+    const { result, rerender } = renderHook(() => useListingsSearchState());
+
+    expect(result.current.filters.query).toBe("Alpha");
+    expect(replace).not.toHaveBeenCalled();
+
+    searchParams = new URLSearchParams("q=Beta");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Beta");
+    expect(replace).toHaveBeenCalledWith("/listings?query=Beta", {
+      scroll: false,
+    });
+
+    replace.mockClear();
+    searchParams = new URLSearchParams("query=Beta");
+    rerender();
+
+    expect(result.current.filters.query).toBe("Beta");
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("canonicalizes q and still restores filters from back/forward", () => {
+    searchParams = new URLSearchParams("q=Freiburg");
+    const { result, rerender } = renderHook(() => useListingsSearchState());
+
+    expect(result.current.filters.query).toBe("Freiburg");
+    expect(replace).toHaveBeenCalledWith("/listings?query=Freiburg", {
+      scroll: false,
+    });
+
+    searchParams = new URLSearchParams("query=Freiburg");
+    rerender();
+
+    searchParams = new URLSearchParams();
+    rerender();
+
+    expect(result.current.filters).toEqual(EMPTY_FILTERS);
+    expect(result.current.sort).toBe("newest");
+  });
+
+  it("clears the canonical search param when filters reset after a q alias URL", () => {
+    searchParams = new URLSearchParams("q=Freiburg");
+    const { result, rerender } = renderHook(() => useListingsSearchState());
+
+    searchParams = new URLSearchParams("query=Freiburg");
+    rerender();
+
+    act(() => {
+      result.current.resetFilters();
+    });
+
+    expect(replace).toHaveBeenLastCalledWith("/listings", { scroll: false });
+    expect(result.current.filters.query).toBe("");
+    expect(sessionStorage.getItem(LISTINGS_SEARCH_SESSION_KEY)).toBeNull();
   });
 
   it("restores filters from back/forward after a write has settled", () => {
