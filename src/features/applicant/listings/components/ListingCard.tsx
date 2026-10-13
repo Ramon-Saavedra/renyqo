@@ -1,7 +1,5 @@
 "use client";
 
-import { applicationAdmissionCopy } from "../copy/application-admission";
-
 import Image from "next/image";
 import Link from "next/link";
 import { Home } from "lucide-react";
@@ -17,6 +15,7 @@ import {
 } from "../utils/format";
 import { resolveListingApplicationUi } from "../utils/listing-card-badge";
 import { ListingCardSaveButton } from "./ListingCardSaveButton";
+import { ListingSignals } from "./ListingSignals";
 import { MatchBadge } from "./MatchBadge";
 
 interface ListingCardProps {
@@ -87,6 +86,7 @@ export function ListingCard({
         : listing.matchesProfile === false
           ? "no-match"
           : "unknown",
+    publicReason: listing.publicReason,
     showMatch,
   });
 
@@ -127,39 +127,7 @@ export function ListingCard({
         </div>
 
         <div className={BADGE_SLOT_CLASS}>
-          {ui.badge === "applied" && (
-            <MatchBadge tone="new">{listingsCopy.card.badgeApplied}</MatchBadge>
-          )}
-
-          {["not-selected", "accepted", "rented", "unavailable"].includes(
-            ui.badge,
-          ) && (
-            <MatchBadge
-              tone="not-selected"
-              className="h-auto min-h-5 max-w-full whitespace-normal py-1"
-            >
-              {
-                applicationAdmissionCopy[
-                  ui.badge === "not-selected"
-                    ? "notSelected"
-                    : ui.badge === "accepted"
-                      ? "accepted"
-                      : ui.badge === "rented"
-                        ? "rented"
-                        : "unavailable"
-                ]
-              }
-            </MatchBadge>
-          )}
-          {ui.badge === "match" && (
-            <MatchBadge tone="match">{listingsCopy.card.badgeMatch}</MatchBadge>
-          )}
-
-          {ui.badge === "no-match" && (
-            <MatchBadge tone="no-match">
-              {listingsCopy.card.badgeNoMatch}
-            </MatchBadge>
-          )}
+          <ListingSignals ui={ui} surface="card" />
         </div>
 
         <div className={BODY_CLASS}>

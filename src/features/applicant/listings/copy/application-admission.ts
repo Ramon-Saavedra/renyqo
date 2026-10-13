@@ -2,6 +2,9 @@ import type { ApplicationSubmissionBlockReason } from "../api/application-admiss
 
 export const applicationAdmissionCopy = {
   applied: "Bereits beworben",
+  endedProfile: "Bewerbung beendet",
+  endedProfileDetail:
+    "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
   apply: "Bewerben",
   withdraw: "Bewerbung zurückziehen",
   sending: "Bewerbung wird gesendet …",

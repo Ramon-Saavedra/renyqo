@@ -1,49 +1,66 @@
 import type { ApplicationAdmission } from "../api/application-admission";
-import type { ProfileMatchResult } from "../types";
+import type {
+  ListingApplicationPublicReason,
+  ProfileMatchResult,
+} from "../types";
 
-export type ListingCardBadgeKind =
+export type ListingProcessState =
   | "applied"
+  | "ended-profile"
   | "not-selected"
   | "accepted"
   | "rented"
   | "unavailable"
+  | "none";
+
+export type ListingCompatibilityState =
   | "match"
   | "no-match"
   | "incomplete"
-  | "none";
+  | "unknown"
+  | "hidden";
+
+export interface ListingApplicationUi {
+  readonly process: ListingProcessState;
+  readonly compatibility: ListingCompatibilityState;
+  readonly action: "submit" | "withdraw" | "none";
+  readonly blockReason: ApplicationAdmission["submissionBlockReason"];
+  readonly reapplyAvailableAt: string | null;
+}
 
 export function resolveListingApplicationUi(input: {
   readonly admission: ApplicationAdmission;
   readonly matchesProfile: ProfileMatchResult;
+  readonly publicReason?: ListingApplicationPublicReason | null;
   readonly showMatch?: boolean;
-}): {
-  readonly badge: ListingCardBadgeKind;
-  readonly action: "submit" | "withdraw" | "none";
-  readonly blockReason: ApplicationAdmission["submissionBlockReason"];
-  readonly reapplyAvailableAt: string | null;
-} {
-  const { admission, matchesProfile, showMatch = true } = input;
+}): ListingApplicationUi {
+  const {
+    admission,
+    matchesProfile,
+    publicReason = null,
+    showMatch = true,
+  } = input;
   const current =
     admission.currentApplicationStatus === "ACTIVE" ||
     admission.currentApplicationStatus === "WAITING";
   const reason = admission.submissionBlockReason;
-  let badge: ListingCardBadgeKind = "none";
-  if (current) badge = "applied";
+  let process: ListingProcessState = "none";
+  if (current) process = "applied";
   else if (reason === "APPLICATION_REAPPLICATION_COOLDOWN")
-    badge = "not-selected";
-  else if (reason === "APPLICATION_ACCEPTED") badge = "accepted";
-  else if (reason === "LISTING_RENTED") badge = "rented";
+    process = "not-selected";
+  else if (reason === "APPLICATION_ACCEPTED") process = "accepted";
+  else if (reason === "LISTING_RENTED") process = "rented";
   else if (
     reason !== null &&
     reason !== "APPLICANT_NOT_ELIGIBLE" &&
     reason !== "AUTHENTICATION_REQUIRED"
   )
-    badge = "unavailable";
-  else if (showMatch && matchesProfile === "match") badge = "match";
-  else if (showMatch && matchesProfile === "no-match") badge = "no-match";
-  else if (showMatch && matchesProfile === "incomplete") badge = "incomplete";
+    process = "unavailable";
+  else if (publicReason === "PROFILE_NO_LONGER_ELIGIBLE")
+    process = "ended-profile";
   return {
-    badge,
+    process,
+    compatibility: showMatch ? matchesProfile : "hidden",
     action:
       current && admission.currentApplicationId !== null
         ? "withdraw"

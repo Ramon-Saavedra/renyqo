@@ -2,6 +2,7 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { subscribeListingApplicationData } from "@/features/applicant/listings/utils/listing-data-invalidation";
 import { INITIAL_PROFILE } from "../utils/profile-validation";
 import { useApplicantProfile } from "./useApplicantProfile";
 
@@ -62,6 +63,18 @@ describe("useApplicantProfile save flow", () => {
     searchParams = new URLSearchParams();
     getApplicantProfile.mockResolvedValue(VALID_PROFILE);
     saveApplicantProfile.mockResolvedValue(undefined);
+  });
+
+  it("refreshes listing and application reads after a successful save", async () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribeListingApplicationData(listener);
+    const user = userEvent.setup();
+    const button = await renderHarness();
+
+    await user.click(button);
+
+    await waitFor(() => expect(listener).toHaveBeenCalledTimes(1));
+    unsubscribe();
   });
 
   it("redirects to the listings root when no returnTo is given", async () => {

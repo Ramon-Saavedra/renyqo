@@ -355,7 +355,7 @@ describe("ApplicantListingsView", () => {
     renderView();
 
     expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
-    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
   });
 
   it("does not show match badges when user has no profile", () => {
