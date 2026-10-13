@@ -14,15 +14,17 @@ import { useListingEligibility } from "../../hooks/useListingEligibility";
 import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
 import type { ProfileMatchResult } from "../../types";
+import type { ListingApplicationPublicReason } from "../../types";
 import { LISTING_REGISTER_PATH } from "../../utils/listing-auth-paths";
 import { resolveListingApplicationUi } from "../../utils/listing-card-badge";
 import { invalidateListingApplicationData } from "../../utils/listing-data-invalidation";
-import { MatchBadge, type MatchBadgeTone } from "../MatchBadge";
+import { ListingSignals } from "../ListingSignals";
 interface ListingApplyBoxProps {
   listingId: string;
   session: ListingViewerSessionStatus;
   matchesProfile: ProfileMatchResult;
   admission: ApplicationAdmission;
+  publicReason: ListingApplicationPublicReason | null;
 }
 const BOX_CLASS =
   "flex w-fit flex-col gap-2.5 rounded-md border border-border p-4 max-sm:w-full";
@@ -31,13 +33,18 @@ export function ListingApplyBox({
   session,
   matchesProfile,
   admission,
+  publicReason,
 }: ListingApplyBoxProps) {
   const { eligibility, status } = useListingEligibility(
     listingId,
     session === "applicant",
   );
   const { state, submit, reset, reconcile } = useListingApplication(listingId);
-  const ui = resolveListingApplicationUi({ admission, matchesProfile });
+  const ui = resolveListingApplicationUi({
+    admission,
+    matchesProfile,
+    publicReason,
+  });
   const { state: withdrawalState, withdraw } = useListingWithdrawal(
     ui.action === "withdraw" ? admission.currentApplicationId : null,
   );
@@ -79,40 +86,12 @@ export function ListingApplyBox({
         </Link>
       </div>
     );
-  const tone: MatchBadgeTone =
-    ui.badge === "applied" || ui.badge === "none"
-      ? "new"
-      : ui.badge === "match" ||
-          ui.badge === "no-match" ||
-          ui.badge === "incomplete"
-        ? ui.badge
-        : "not-selected";
-  const label =
-    ui.badge === "applied"
-      ? applicationAdmissionCopy.applied
-      : ui.badge === "not-selected"
-        ? applicationAdmissionCopy.notSelected
-        : ui.badge === "accepted"
-          ? applicationAdmissionCopy.accepted
-          : ui.badge === "rented"
-            ? applicationAdmissionCopy.rented
-            : ui.badge === "unavailable"
-              ? applicationAdmissionCopy.unavailable
-              : ui.badge === "match"
-                ? listingDetailCopy.match.matches
-                : ui.badge === "no-match"
-                  ? listingDetailCopy.match.doesNotMatch
-                  : ui.badge === "incomplete"
-                    ? listingDetailCopy.match.incomplete
-                    : listingDetailCopy.match.unknown;
   const currentEligibility =
     state.status === "eligibility-rejected" ? state.eligibility : eligibility;
   return (
     <div className={BOX_CLASS}>
       <div className="flex flex-wrap items-center gap-3">
-        <MatchBadge tone={tone} size="md">
-          {label}
-        </MatchBadge>
+        <ListingSignals ui={ui} surface="detail" />
         {ui.action === "withdraw" ? (
           <Button
             variant="outline"
@@ -143,11 +122,21 @@ export function ListingApplyBox({
           </Button>
         )}
       </div>
-      {ui.blockReason && ui.blockReason !== "CURRENT_APPLICATION_EXISTS" && (
+      {ui.process === "ended-profile" && ui.compatibility === "no-match" && (
         <p className="text-caption text-foreground-secondary">
-          {applicationBlockCopy[ui.blockReason]}
+          {applicationAdmissionCopy.endedProfileDetail}
         </p>
       )}
+      {ui.blockReason &&
+        ui.blockReason !== "CURRENT_APPLICATION_EXISTS" &&
+        !(
+          ui.process === "ended-profile" &&
+          ui.blockReason === "APPLICANT_NOT_ELIGIBLE"
+        ) && (
+          <p className="text-caption text-foreground-secondary">
+            {applicationBlockCopy[ui.blockReason]}
+          </p>
+        )}
       {status === "error" && (
         <p role="alert" className="text-caption text-danger">
           {applicationAdmissionCopy.eligibilityFailed}

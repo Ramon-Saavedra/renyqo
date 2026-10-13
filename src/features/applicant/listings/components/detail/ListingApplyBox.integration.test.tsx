@@ -25,6 +25,7 @@ function box(admission: ApplicationAdmission) {
       session="applicant"
       matchesProfile="match"
       admission={admission}
+      publicReason={null}
     />
   );
 }

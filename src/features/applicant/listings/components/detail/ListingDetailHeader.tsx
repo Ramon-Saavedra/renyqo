@@ -85,6 +85,7 @@ export function ListingDetailHeader({
         session={session}
         matchesProfile={listing.matchesProfile}
         admission={listing.admission}
+        publicReason={listing.publicReason}
       />
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { invalidateListingApplicationData } from "@/features/applicant/listings/utils/listing-data-invalidation";
 import { setFlash } from "@/lib/utils/flash";
 import { safeListingsReturnTo } from "@/lib/utils/safe-redirect";
 import { useCurrentUser } from "@/lib/api/use-current-user";
@@ -100,6 +101,7 @@ export function useApplicantProfile(): UseApplicantProfileResult {
       .then(() => {
         setSaveStatus("saved");
         setApplicantProfileCache(draft, user?.id);
+        invalidateListingApplicationData();
         setFlash(applicantProfileCopy.actions.savedFlash);
         router.replace(safeListingsReturnTo(searchParams.get("returnTo")));
       })

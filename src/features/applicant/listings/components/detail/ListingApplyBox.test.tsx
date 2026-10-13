@@ -8,7 +8,10 @@ import type { ApplicationAdmission } from "../../api/application-admission";
 
 import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 
-import type { ProfileMatchResult } from "../../types";
+import type {
+  ListingApplicationPublicReason,
+  ProfileMatchResult,
+} from "../../types";
 
 import { subscribeListingApplicationData } from "../../utils/listing-data-invalidation";
 
@@ -41,6 +44,7 @@ function setup(
   admission: ApplicationAdmission = createAdmission(),
   matchesProfile: ProfileMatchResult = "match",
   session: ListingViewerSessionStatus = "applicant",
+  publicReason: ListingApplicationPublicReason | null = null,
 ) {
   return render(
     <ListingApplyBox
@@ -48,6 +52,7 @@ function setup(
       session={session}
       matchesProfile={matchesProfile}
       admission={admission}
+      publicReason={publicReason}
     />,
   );
 }
@@ -80,6 +85,7 @@ describe("ListingApplyBox admission", () => {
           session="applicant"
           matchesProfile={matchesProfile}
           admission={admission}
+          publicReason={null}
         />,
       );
     expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
@@ -171,10 +177,86 @@ describe("ListingApplyBox admission", () => {
         submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
       }),
       "no-match",
+      "applicant",
+      "PROFILE_NO_LONGER_ELIGIBLE",
     );
 
-    expect(screen.getByText("Passt nicht zu deinem Profil")).toBeTruthy();
+    expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
+    expect(screen.getByText("Passt nicht")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText("Bereits beworben")).toBeNull();
 
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
+  it("keeps an active application beside a current mismatch and still offers withdrawal", () => {
+    setup(
+      createAdmission({
+        currentApplicationId: "a",
+        currentApplicationStatus: "ACTIVE",
+        canSubmitApplication: false,
+        submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+      }),
+      "no-match",
+    );
+
+    expect(screen.getByText("Bereits beworben")).toBeTruthy();
+    expect(screen.getByText("Passt nicht")).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
+    ).toBeTruthy();
+  });
+
+  it("allows a new application after the profile matches again", () => {
+    setup(
+      createAdmission({ hasApplicationHistory: true }),
+      "match",
+      "applicant",
+      "PROFILE_NO_LONGER_ELIGIBLE",
+    );
+
+    expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
+    expect(screen.getByText("Passt")).toBeTruthy();
+    expect(
+      screen.queryByText(
+        "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
+      ),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(false);
+  });
+
+  it("does not claim the profile still fails after it matches again", () => {
+    setup(
+      createAdmission({
+        hasApplicationHistory: true,
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
+      }),
+      "match",
+      "applicant",
+      "PROFILE_NO_LONGER_ELIGIBLE",
+    );
+
+    expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
+    expect(screen.getByText("Passt")).toBeTruthy();
+    expect(
+      screen.queryByText(
+        "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
+      ),
+    ).toBeNull();
+    expect(
+      screen.queryByText(
+        "Dein Profil erfüllt die Voraussetzungen derzeit nicht.",
+      ),
+    ).toBeNull();
     expect(
       screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(true);

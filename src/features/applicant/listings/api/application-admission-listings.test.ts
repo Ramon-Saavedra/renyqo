@@ -71,7 +71,11 @@ describe("list, detail and saved admission consistency", () => {
         admission: listing.admission,
         matchesProfile: "match",
       }),
-    ).toMatchObject({ badge: "match", action: "submit" });
+    ).toMatchObject({
+      process: "none",
+      compatibility: "match",
+      action: "submit",
+    });
     expect(apiGet).toHaveBeenCalledTimes(1);
     expect(apiGet).toHaveBeenCalledWith("/api/v1/listings", undefined);
   });
@@ -111,15 +115,13 @@ describe("list, detail and saved admission consistency", () => {
       expect(list.listings[0]?.admission).toEqual(admission);
       expect(detail?.admission).toEqual(admission);
       expect(saved.listings[0]?.admission).toEqual(admission);
-      const states = [
-        list.listings[0]?.admission,
-        detail?.admission,
-        saved.listings[0]?.admission,
-      ].map((value) => {
-        if (!value) throw new Error("Missing listing admission");
+      const sources = [list.listings[0], detail, saved.listings[0]] as const;
+      const states = sources.map((listing) => {
+        if (!listing) throw new Error("Missing listing admission");
         return resolveListingApplicationUi({
-          admission: value,
+          admission: listing.admission,
           matchesProfile: "match",
+          publicReason: listing.publicReason,
         });
       });
       expect(states[0]).toEqual(states[1]);
