@@ -128,7 +128,7 @@ export function ApplicantListingsView() {
               <div className={LOAD_MORE_WRAPPER_CLASS}>
                 <button
                   type="button"
-                  className={buttonClass("outline")}
+                  className={buttonClass("ghost")}
                   onClick={loadMore}
                 >
                   {listingsCopy.results.loadMore}

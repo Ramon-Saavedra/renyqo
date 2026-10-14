@@ -12,7 +12,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { buttonClass } from "@/components/ui/button/Button";
+import { buttonClass, buttonVariantClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { Segmented } from "@/components/ui/form/Segmented";
@@ -570,7 +570,7 @@ function VoicePane({ capture }: { capture: UseAiCaptureResult }) {
             type="button"
             disabled={!capture.voiceSupported}
             onClick={capture.startRecording}
-            className="inline-flex h-11 cursor-pointer items-center gap-2.5 rounded-full border border-border-strong bg-background-muted px-5 text-action font-medium text-foreground hover:border-primary hover:bg-primary-tint disabled:cursor-not-allowed disabled:opacity-50"
+            className={`inline-flex h-11 cursor-pointer items-center gap-2.5 rounded-full px-5 focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50 ${buttonVariantClass("outline")}`}
           >
             <span
               aria-hidden="true"

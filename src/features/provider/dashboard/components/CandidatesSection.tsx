@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { UserRoundX } from "lucide-react";
-import { Button } from "@/components/ui/button/Button";
+import { dashboardPrimaryClass } from "../dashboard-button";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { dashboardCopy } from "../copy/dashboard";
@@ -165,13 +165,13 @@ function CandidatesSectionContent({
             <p className="mb-3 text-body text-foreground-secondary">
               {copy.loadError}
             </p>
-            <Button
+            <button
               type="button"
-              variant="outline"
+              className={dashboardPrimaryClass()}
               onClick={() => window.location.reload()}
             >
               {copy.reloadAction}
-            </Button>
+            </button>
           </div>
         ) : shown.length === 0 ? (
           <p className="mt-3 max-w-md text-body text-foreground-secondary">

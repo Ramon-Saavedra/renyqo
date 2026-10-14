@@ -423,6 +423,56 @@ describe("ListingEditView", () => {
     expect(updateListing).not.toHaveBeenCalled();
   });
 
+  it("keeps editing when the discard dialog is closed or dismissed with Escape", async () => {
+    const user = userEvent.setup();
+    const { onCancel } = renderEditView();
+
+    const title = screen.getByRole("textbox", {
+      name: listingEditCopy.fields.title,
+    });
+    await user.clear(title);
+    await user.type(title, "Renovierte Wohnung");
+    await user.click(
+      screen.getByRole("button", { name: listingEditCopy.cancel }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: listingEditCopy.discardModal.title }),
+    ).toBeInstanceOf(HTMLElement);
+    const discardButton = screen.getByRole("button", {
+      name: listingEditCopy.discardModal.secondary,
+    });
+    expect(discardButton.className).toContain("text-danger");
+    const stayButtons = screen.getAllByRole("button", {
+      name: listingEditCopy.discardModal.primary,
+    });
+    expect(
+      stayButtons.some((button) =>
+        button.className.includes("border-border-strong"),
+      ),
+    ).toBe(true);
+
+    const [closeButton] = stayButtons;
+    await user.click(closeButton as HTMLButtonElement);
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect((title as HTMLInputElement).value).toBe("Renovierte Wohnung");
+
+    await user.click(
+      screen.getByRole("button", { name: listingEditCopy.cancel }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: listingEditCopy.discardModal.title }),
+    ).toBeInstanceOf(HTMLElement);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(onCancel).not.toHaveBeenCalled();
+    expect((title as HTMLInputElement).value).toBe("Renovierte Wohnung");
+  });
+
   it("updates the address visibility hint when the setting changes", async () => {
     const user = userEvent.setup();
     renderEditView();

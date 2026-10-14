@@ -55,14 +55,11 @@ describe("Button", () => {
 
   it("renders every variant with a semantic class marker", () => {
     const markers: Record<ButtonVariant, string> = {
-      primary: "bg-primary",
-      secondary: "bg-primary-tint",
+      primary: "bg-button-primary",
       outline: "border-border-strong",
       ghost: "bg-transparent",
       danger: "text-danger",
       dangerGhost: "bg-transparent",
-      primaryGhost: "bg-transparent",
-      inverseGhost: "bg-transparent",
     };
 
     for (const variant of Object.keys(markers) as ButtonVariant[]) {
@@ -113,7 +110,8 @@ describe("buttonClass", () => {
   it("returns primary variant with md size by default", () => {
     const result = buttonClass("primary");
     expect(result).toContain("h-11");
-    expect(result).toContain("bg-primary");
+    expect(result).toContain("bg-button-primary");
+    expect(result.split(/\s+/)).not.toContain("bg-primary");
   });
 
   it("returns ghost variant with sm size by default for backward compat", () => {
@@ -132,7 +130,8 @@ describe("buttonClass", () => {
   it("keeps extra classes separate from explicit size selection", () => {
     const result = buttonClass("primary", "sm custom-width");
     expect(result).toContain("h-11");
-    expect(result).toContain("bg-primary");
+    expect(result).toContain("bg-button-primary");
+    expect(result.split(/\s+/)).not.toContain("bg-primary");
     expect(result).toContain("sm custom-width");
   });
 });
@@ -159,18 +158,13 @@ describe("buttonClassWithSize", () => {
     expect(result).not.toContain("border-danger");
   });
 
-  it.each([
-    ["primaryGhost", "hover:bg-primary-tint"],
-    ["inverseGhost", "hover:bg-primary-foreground/20"],
-  ] as const)(
-    "provides transparent %s icon controls",
-    (variant, hoverClass) => {
-      const result = buttonClassWithSize(variant, "icon-xs");
+  it("keeps ghost transparent with the shared hover fill", () => {
+    const result = buttonClassWithSize("ghost", "icon-xs");
 
-      expect(result).toContain("bg-transparent");
-      expect(result).toContain(hoverClass);
-      expect(result).toContain("h-7");
-      expect(result).toContain("w-7");
-    },
-  );
+    expect(result).toContain("bg-transparent");
+    expect(result).toContain("text-foreground-secondary");
+    expect(result).toContain("hover:bg-background-muted");
+    expect(result).toContain("h-7");
+    expect(result).toContain("w-7");
+  });
 });

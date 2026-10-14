@@ -250,7 +250,7 @@ export function AiCaptureResultPane({
         <button
           type="button"
           onClick={onEditInput}
-          className={buttonClass("secondary")}
+          className={buttonClass("outline")}
         >
           {copy.result.editInput}
         </button>

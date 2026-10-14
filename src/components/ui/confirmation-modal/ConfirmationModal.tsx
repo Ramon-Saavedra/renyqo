@@ -6,6 +6,7 @@ import { Info, X } from "lucide-react";
 import {
   Button,
   buttonClass,
+  buttonClassWithSize,
   type ButtonVariant,
 } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -140,7 +141,7 @@ export function ConfirmationModal({
           </button>
           <button
             type="button"
-            className={buttonClass("secondary", ACTION_BUTTON_CLASS)}
+            className={buttonClass("outline", ACTION_BUTTON_CLASS)}
             onClick={onSecondary}
             disabled={actionPending}
           >
@@ -149,7 +150,11 @@ export function ConfirmationModal({
           {tertiaryLabel && onTertiary && (
             <button
               type="button"
-              className={buttonClass("secondary", ACTION_BUTTON_CLASS)}
+              className={buttonClassWithSize(
+                "ghost",
+                "md",
+                ACTION_BUTTON_CLASS,
+              )}
               onClick={onTertiary}
               disabled={actionPending || tertiaryDisabled}
             >

@@ -27,6 +27,10 @@ html {
   --color-primary: var(--primary);
   --color-primary-default: var(--primary-default);
   --color-primary-hover: var(--primary-hover);
+  --color-button-primary: var(--button-primary);
+  --color-button-primary-hover: var(--button-primary-hover);
+  --color-dashboard-button-primary: var(--dashboard-button-primary);
+  --color-dashboard-button-primary-hover: var(--dashboard-button-primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-primary-tint: var(--primary-tint);
   --color-primary-foreground: var(--primary-foreground);
@@ -158,6 +162,10 @@ html {
   --primary-default: #536783;
   --primary: var(--primary-default);
   --primary-hover: #40536f;
+  --button-primary: var(--primary-default);
+  --button-primary-hover: #40536f;
+  --dashboard-button-primary: var(--button-primary);
+  --dashboard-button-primary-hover: var(--button-primary-hover);
   --primary-soft: #d2d9eb;
   --primary-tint: #e1e7f4;
   --primary-foreground: #ffffff;
@@ -253,48 +261,64 @@ html {
   --primary-hover: #355c60;
   --primary-tint: rgb(63 110 115 / 0.13);
   --primary-soft: rgb(63 110 115 / 0.22);
+  --dashboard-button-primary: #3f6e73;
+  --dashboard-button-primary-hover: #355c60;
 }
 [data-accent="salbei"] {
   --primary: #708465;
   --primary-hover: #5e704f;
   --primary-tint: rgb(112 132 101 / 0.13);
   --primary-soft: rgb(112 132 101 / 0.22);
+  --dashboard-button-primary: #708465;
+  --dashboard-button-primary-hover: #5e704f;
 }
 [data-accent="sand"] {
   --primary: #7a4656;
   --primary-hover: #673a4a;
   --primary-tint: rgb(122 70 86 / 0.13);
   --primary-soft: rgb(122 70 86 / 0.22);
+  --dashboard-button-primary: #7a4656;
+  --dashboard-button-primary-hover: #673a4a;
 }
 [data-accent="apricot"] {
   --primary: #665a93;
   --primary-hover: #554a7c;
   --primary-tint: rgb(102 90 147 / 0.13);
   --primary-soft: rgb(102 90 147 / 0.22);
+  --dashboard-button-primary: #665a93;
+  --dashboard-button-primary-hover: #554a7c;
 }
 [data-accent="altrosa"] {
   --primary: #7a5a44;
   --primary-hover: #674a38;
   --primary-tint: rgb(122 90 68 / 0.13);
   --primary-soft: rgb(122 90 68 / 0.22);
+  --dashboard-button-primary: #7a5a44;
+  --dashboard-button-primary-hover: #674a38;
 }
 [data-accent="flieder"] {
   --primary: #9a8452;
   --primary-hover: #816e44;
   --primary-tint: rgb(154 132 82 / 0.13);
   --primary-soft: rgb(154 132 82 / 0.22);
+  --dashboard-button-primary: #9a8452;
+  --dashboard-button-primary-hover: #816e44;
 }
 [data-accent="eisblau"] {
   --primary: #5b616b;
   --primary-hover: #4a4f58;
   --primary-tint: rgb(91 97 107 / 0.13);
   --primary-soft: rgb(91 97 107 / 0.22);
+  --dashboard-button-primary: #5b616b;
+  --dashboard-button-primary-hover: #4a4f58;
 }
 [data-accent="stein"] {
   --primary: #476b52;
   --primary-hover: #3a5943;
   --primary-tint: rgb(71 107 82 / 0.13);
   --primary-soft: rgb(71 107 82 / 0.22);
+  --dashboard-button-primary: #476b52;
+  --dashboard-button-primary-hover: #3a5943;
 }
 body {
   background: var(--background);

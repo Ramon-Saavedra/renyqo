@@ -120,7 +120,7 @@ export function HistorySection({
         <div className="flex flex-wrap gap-1 border-t border-border px-2.5 py-1.5">
           {history.expanded && history.hasMore && history.load !== "error" ? (
             <Button
-              variant="primaryGhost"
+              variant="ghost"
               size="md"
               disabled={history.load === "loading-more"}
               onClick={history.loadMore}
@@ -129,7 +129,7 @@ export function HistorySection({
             </Button>
           ) : null}
           <Button
-            variant="primaryGhost"
+            variant="ghost"
             size="md"
             aria-expanded={history.expanded}
             onClick={history.expanded ? history.collapse : history.expand}

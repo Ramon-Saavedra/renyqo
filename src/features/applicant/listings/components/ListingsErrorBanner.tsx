@@ -20,7 +20,7 @@ export function ListingsErrorBanner({
       <span className={TEXT_CLASS}>{message}</span>
       <button
         type="button"
-        className={buttonClassWithSize("outline", "sm", "shrink-0")}
+        className={buttonClassWithSize("primary", "sm", "shrink-0")}
         onClick={onRetry}
       >
         {listingsCopy.error.retry}

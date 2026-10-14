@@ -93,7 +93,7 @@ export function ApplicationsOverview() {
                   : copy.loadError
               }
               action={
-                <Button variant="outline" onClick={reload}>
+                <Button variant="primary" onClick={reload}>
                   {copy.retry}
                 </Button>
               }
@@ -182,7 +182,7 @@ export function ApplicationsOverview() {
         {state.nextCursor ? (
           <div className="flex flex-col items-center gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={loadMore}
               disabled={state.loadingMore}
             >

@@ -190,7 +190,7 @@ function WorkflowStatus({
           </div>
         ) : null}
         {onRetry ? (
-          <Button type="button" variant="outline" onClick={onRetry}>
+          <Button type="button" variant="primary" onClick={onRetry}>
             {applicantWorkflowCopy.retry}
           </Button>
         ) : null}

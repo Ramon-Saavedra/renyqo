@@ -47,7 +47,7 @@ function AuthSessionError() {
       </p>
       <button
         type="button"
-        className={buttonClass("outline")}
+        className={buttonClass("primary")}
         onClick={invalidateCurrentUser}
       >
         {currentUserSessionCopy.retry}

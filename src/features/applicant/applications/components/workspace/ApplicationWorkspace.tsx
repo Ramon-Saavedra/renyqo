@@ -44,11 +44,11 @@ function WorkspaceMessage({
         {...(text ? { text } : {})}
         action={
           onRetry ? (
-            <Button variant="outline" onClick={onRetry}>
+            <Button variant="primary" onClick={onRetry}>
               {copy.retry}
             </Button>
           ) : (
-            <Link href={OVERVIEW_PATH} className={buttonClass("outline")}>
+            <Link href={OVERVIEW_PATH} className={buttonClass("ghost")}>
               {copy.back}
             </Link>
           )

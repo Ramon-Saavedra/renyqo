@@ -153,7 +153,7 @@ export function ListingPositionDialog({
                   onClose(true);
                 }}
                 className={buttonClassWithSize(
-                  current ? "secondary" : "ghost",
+                  current ? "outline" : "ghost",
                   "icon-sm",
                   "shrink-0 tabular-nums",
                 )}

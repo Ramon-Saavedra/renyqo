@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Link2 } from "lucide-react";
 import { SiFacebook, SiWhatsapp } from "react-icons/si";
+import { buttonVariantClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { BrandIcon } from "@/components/ui/icon/BrandIcon";
 import { cn } from "@/lib/utils/cn";
@@ -22,12 +23,11 @@ const SIDEBAR_ROW_CLASS = "mt-auto grid grid-cols-3 gap-1 pt-2";
 
 const BUTTON_CLASS =
   "inline-flex h-6.5 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-sm border border-primary-foreground/20 bg-primary-foreground/10 px-1.5 text-caption font-medium text-primary-foreground hover:border-primary-foreground/35 hover:bg-primary-foreground/20";
-const POPOVER_BUTTON_CLASS =
-  "inline-flex h-7 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-sm border border-border-strong bg-background-muted px-1.5 text-caption font-medium text-foreground-secondary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+const POPOVER_BUTTON_CLASS = `inline-flex h-7 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-sm px-1.5 text-caption font-medium focus-visible:outline-none focus-visible:shadow-focus ${buttonVariantClass("ghost")}`;
 const SIDEBAR_BUTTON_CLASS =
   "inline-flex h-5.5 min-w-0 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/40 bg-primary-foreground/20 text-primary-foreground hover:border-primary-foreground/60 hover:bg-primary-foreground/30 focus-visible:outline-none focus-visible:shadow-focus";
 const SIDEBAR_BUTTON_INACTIVE_CLASS =
-  "inline-flex h-5.5 min-w-0 cursor-pointer items-center justify-center rounded-sm border border-border-strong bg-background-muted text-foreground-secondary hover:border-foreground-tertiary hover:bg-background-subtle hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
+  "inline-flex h-5.5 min-w-0 cursor-pointer items-center justify-center rounded-sm border border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/15 focus-visible:outline-none focus-visible:shadow-focus";
 
 const LABEL_CLASS = "truncate";
 

@@ -60,7 +60,7 @@ function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="primary"
               className="h-8.5"
               disabled={!scheduleReady || acting}
               onClick={() => {
@@ -81,7 +81,7 @@ function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="primary"
               className="h-8.5"
               disabled={!scheduleReady || acting}
               onClick={() => {
@@ -119,7 +119,7 @@ function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant="primary"
             disabled={acting}
             onClick={() => void session.completeCurrentViewing()}
           >

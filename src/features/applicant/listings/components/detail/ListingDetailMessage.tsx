@@ -54,7 +54,7 @@ export function ListingDetailMessage({
         <p className={LEAD_CLASS}>{lead}</p>
       </div>
 
-      <Link href={backHref} className={buttonClass("primary")}>
+      <Link href={backHref} className={buttonClass("ghost")}>
         {listingDetailCopy.backLinkShort}
       </Link>
     </div>

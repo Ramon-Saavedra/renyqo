@@ -77,7 +77,7 @@ function ActivityList({ model }: { readonly model: ApplicantWorkflowModel }) {
         <div className="mt-2 flex flex-wrap gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             className="self-start"
             disabled={activityStatus === "loading" || !session}
@@ -93,7 +93,7 @@ function ActivityList({ model }: { readonly model: ApplicantWorkflowModel }) {
           {showingFull ? (
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               className="self-start"
               onClick={() => {
@@ -108,7 +108,7 @@ function ActivityList({ model }: { readonly model: ApplicantWorkflowModel }) {
       ) : showingFull ? (
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           size="sm"
           className="mt-2 self-start"
           onClick={() => {
