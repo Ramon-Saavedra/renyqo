@@ -326,7 +326,7 @@ export function ListingReportDialog({
         <div className={ACTIONS_CLASS}>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={onClose}
             disabled={pending}

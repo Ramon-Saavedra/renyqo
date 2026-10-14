@@ -138,7 +138,7 @@ export function ListingEditView({
             type="button"
             onClick={handleCancel}
             disabled={imagesPending || saving || saved}
-            className={cn(buttonClass("secondary"), ACTION_BUTTON_CLASS)}
+            className={cn(buttonClass("outline"), ACTION_BUTTON_CLASS)}
           >
             {listingEditCopy.cancel}
           </button>
@@ -220,10 +220,13 @@ export function ListingEditView({
         open={showDiscardModal}
         title={listingEditCopy.discardModal.title}
         text={listingEditCopy.discardModal.text}
-        primaryLabel={listingEditCopy.discardModal.primary}
-        secondaryLabel={listingEditCopy.discardModal.secondary}
-        onPrimary={keepEditing}
-        onSecondary={confirmDiscard}
+        primaryLabel={listingEditCopy.discardModal.secondary}
+        primaryVariant="danger"
+        secondaryLabel={listingEditCopy.discardModal.primary}
+        onPrimary={confirmDiscard}
+        onSecondary={keepEditing}
+        onClose={keepEditing}
+        closeLabel={listingEditCopy.discardModal.primary}
         icon={Pencil}
       />
     </>

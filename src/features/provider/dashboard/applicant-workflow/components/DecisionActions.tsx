@@ -51,7 +51,7 @@ function TenantSelection({
       )}
       <Button
         type="button"
-        variant="outline"
+        variant="primary"
         size={fullWidth ? "md" : "sm"}
         disabled={!canSelectForRental || !session || pending}
         aria-describedby={canSelectForRental ? undefined : hintId}

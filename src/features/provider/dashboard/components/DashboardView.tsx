@@ -12,7 +12,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { Button } from "@/components/ui/button/Button";
+import { dashboardPrimaryClass } from "../dashboard-button";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { moveProviderListingToPosition } from "@/features/provider/listings-overview/api/provider-listings";
@@ -277,13 +277,13 @@ function DashboardViewContent({
             <p className="mt-2.5 max-w-md text-body text-foreground-secondary">
               {dashboardCopy.fullError.body}
             </p>
-            <Button
+            <button
               type="button"
-              className="mt-6"
+              className={dashboardPrimaryClass("mt-6")}
               onClick={() => window.location.reload()}
             >
               {dashboardCopy.fullError.retry}
-            </Button>
+            </button>
           </div>
         </div>
       </PageShell>
@@ -304,7 +304,7 @@ function DashboardViewContent({
             </p>
             <Link
               href={dashboardCopy.topbar.newListingHref}
-              className="mt-6 inline-flex min-h-11 items-center rounded-md bg-primary px-4.5 text-action font-medium text-primary-foreground hover:bg-primary-hover"
+              className={dashboardPrimaryClass("mt-6")}
             >
               {dashboardCopy.topbar.newListing}
             </Link>

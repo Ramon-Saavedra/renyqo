@@ -428,7 +428,7 @@ export function CreateAccountForm({ idPrefix, role }: CreateAccountFormProps) {
       {onboardingError && (
         <Button
           type="button"
-          variant="secondary"
+          variant="outline"
           disabled={loading}
           onClick={() => void resolveOnboardingPath()}
           className="mb-4 w-full justify-center"

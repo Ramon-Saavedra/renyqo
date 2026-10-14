@@ -54,8 +54,11 @@ describe("SelectedObjectCard", () => {
     const editLink = screen.getByRole("link", { name: /Bearbeiten/i });
     const previewLink = screen.getByRole("link", { name: /Zur Übersicht/i });
     expect(editLink.getAttribute("href")).toBe("/provider/listings/object-1");
-    expect(editLink.className).toContain("bg-primary");
-    expect(editLink.className).toContain("hover:bg-primary-hover");
+    expect(editLink.className).toContain("bg-dashboard-button-primary");
+    expect(editLink.className).toContain(
+      "hover:bg-dashboard-button-primary-hover",
+    );
+    expect(editLink.className.split(/\s+/)).not.toContain("bg-primary");
     expect(previewLink.className).toContain("bg-transparent");
     expect(previewLink.className).toContain("hover:bg-background-muted");
     const shareButton = screen.getByRole("button", { name: "Teilen" });

@@ -183,7 +183,11 @@ function DocumentRows({
                     <Button
                       type="button"
                       size="sm"
-                      variant="outline"
+                      variant={
+                        document.canReview && document.documentId
+                          ? "outline"
+                          : "primary"
+                      }
                       disabled={session.acting}
                       onClick={() => {
                         const documentId = document.documentId;
@@ -197,7 +201,7 @@ function DocumentRows({
                     <Button
                       type="button"
                       size="sm"
-                      variant="outline"
+                      variant="primary"
                       disabled={session.acting}
                       onClick={() => {
                         const documentId = document.documentId;
@@ -240,6 +244,7 @@ function DocumentRows({
         title={copy.cancelTitle}
         text={confirming ? copy.cancelText(confirming.label) : ""}
         primaryLabel={copy.cancelConfirm}
+        primaryVariant="danger"
         primaryAriaLabel={copy.cancel}
         primaryPendingLabel={copy.cancelPending}
         primaryPending={session?.cancelling ?? false}
@@ -403,7 +408,7 @@ function RequestControl({ model }: { readonly model: ApplicantWorkflowModel }) {
           ) : null}
           <Button
             type="button"
-            variant="outline"
+            variant="primary"
             size="sm"
             className="self-start"
             disabled={pending || session.acting || selected.size === 0}

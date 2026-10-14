@@ -194,6 +194,32 @@ describe("CreateListingForm", () => {
     confirmSpy.mockRestore();
   });
 
+  it("keeps the draft when the unsaved-changes dialog is closed or dismissed with Escape", async () => {
+    const user = userEvent.setup();
+
+    renderCreateListingForm();
+
+    const city = screen.getByPlaceholderText("Berlin");
+    await user.type(city, "Berlin");
+    await user.click(screen.getByRole("link", { name: "Zurück" }));
+
+    const [closeButton] = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    });
+    await user.click(closeButton as HTMLButtonElement);
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect((city as HTMLInputElement).value).toBe("Berlin");
+
+    await user.click(screen.getByRole("link", { name: "Zurück" }));
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+    expect((city as HTMLInputElement).value).toBe("Berlin");
+  });
+
   it("scrolls to the first missing field when publishing with an empty form", () => {
     const originalScrollIntoView = Element.prototype.scrollIntoView;
     const scrollIntoView = vi.fn();

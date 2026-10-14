@@ -25,6 +25,7 @@ export interface ActionConfig {
   readonly shortLabel: string;
   readonly loadingLabel: string;
   readonly icon: LucideIcon;
+  readonly variant: "primary" | "outline";
 }
 
 const PUBLISH_ACTION: ActionConfig = {
@@ -33,6 +34,7 @@ const PUBLISH_ACTION: ActionConfig = {
   shortLabel: actions.publishShort,
   loadingLabel: actions.publishing,
   icon: Globe,
+  variant: "primary",
 };
 
 const DRAFT_ACTION: ActionConfig = {
@@ -41,6 +43,7 @@ const DRAFT_ACTION: ActionConfig = {
   shortLabel: actions.draftShort,
   loadingLabel: actions.drafting,
   icon: FileText,
+  variant: "outline",
 };
 
 const ARCHIVE_ACTION: ActionConfig = {
@@ -49,6 +52,7 @@ const ARCHIVE_ACTION: ActionConfig = {
   shortLabel: actions.archiveShort,
   loadingLabel: actions.archiving,
   icon: Archive,
+  variant: "outline",
 };
 
 const PAUSE_ACTION: ActionConfig = {
@@ -57,6 +61,7 @@ const PAUSE_ACTION: ActionConfig = {
   shortLabel: actions.pauseShort,
   loadingLabel: actions.pausing,
   icon: Pause,
+  variant: "outline",
 };
 
 const RESUME_ACTION: ActionConfig = {
@@ -65,6 +70,7 @@ const RESUME_ACTION: ActionConfig = {
   shortLabel: actions.resumeShort,
   loadingLabel: actions.resuming,
   icon: Play,
+  variant: "primary",
 };
 
 export function buildActions(listing: ListingDetail): ActionConfig[] {

@@ -138,7 +138,7 @@ function ViewingResponse({
               {copy.characters(note.length, VIEWING_CHANGE_MESSAGE_MAX_LENGTH)}
             </span>
             <div className="flex flex-wrap gap-2">
-              <Button variant="ghost" size="md" disabled={busy} onClick={close}>
+              <Button variant="outline" disabled={busy} onClick={close}>
                 {copy.cancel}
               </Button>
               <Button

@@ -52,8 +52,8 @@ describe("ActionsBar", () => {
     });
 
     expect(draftButton).toBeInstanceOf(HTMLButtonElement);
-    expect(draftButton.className).toContain("bg-primary-tint");
-    expect(draftButton.className).toContain("border-primary-soft");
+    expect(draftButton.className).toContain("bg-transparent");
+    expect(draftButton.className).toContain("border-border-strong");
   });
 
   it("focuses the related field when a missing item is clicked", () => {

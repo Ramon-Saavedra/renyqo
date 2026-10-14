@@ -24,7 +24,7 @@ export function DetailErrorState({ onRetry }: DetailErrorStateProps) {
       <p className={LEAD_CLASS}>{listingDetailCopy.error.lead}</p>
       <button
         type="button"
-        className={buttonClass("outline", "justify-center mt-1")}
+        className={buttonClass("primary", "justify-center mt-1")}
         onClick={onRetry}
       >
         <AppIcon icon={RotateCw} size={13} strokeWidth={1.6} decorative />

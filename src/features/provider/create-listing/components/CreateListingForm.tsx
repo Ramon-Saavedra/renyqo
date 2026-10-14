@@ -384,10 +384,9 @@ export function CreateListingForm() {
         open={pendingHref !== null}
         title={createListingCopy.headerNav.unsavedChangesModal.title}
         text={createListingCopy.headerNav.unsavedChangesModal.text}
-        primaryLabel={createListingCopy.headerNav.unsavedChangesModal.primary}
-        secondaryLabel={
-          createListingCopy.headerNav.unsavedChangesModal.secondary
-        }
+        primaryLabel={createListingCopy.headerNav.unsavedChangesModal.secondary}
+        primaryVariant="danger"
+        secondaryLabel={createListingCopy.headerNav.unsavedChangesModal.primary}
         tertiaryLabel={
           canSaveBeforeLeave
             ? createListingCopy.headerNav.unsavedChangesModal.tertiary
@@ -396,8 +395,10 @@ export function CreateListingForm() {
         tertiaryPendingLabel={
           createListingCopy.headerNav.unsavedChangesModal.tertiaryPending
         }
-        onPrimary={keepEditing}
-        onSecondary={continueNavigation}
+        onPrimary={continueNavigation}
+        onSecondary={keepEditing}
+        onClose={keepEditing}
+        closeLabel={createListingCopy.headerNav.unsavedChangesModal.primary}
         onTertiary={saveAndContinueNavigation}
         tertiaryPending={submitStatus === "saving"}
         error={

@@ -7,6 +7,7 @@ import type * as ListingsApi from "@/lib/api/listings";
 import { getProviderListing } from "../api/provider-listing-detail";
 import { deleteListingImage } from "@/lib/api/listings";
 import { listingEditCopy } from "../edit/copy";
+import { listingDetailCopy } from "../copy/listing-detail";
 import { ListingDetailView } from "./ListingDetailView";
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
@@ -90,6 +91,17 @@ describe("ListingDetailView", () => {
     render(<ListingDetailView listingId="listing-1" />);
 
     await screen.findByRole("heading", { name: "Wohnung in Berlin" });
+    const editButton = screen.getByRole("button", { name: "Bearbeiten" });
+    expect(editButton.className).toContain("bg-transparent");
+    expect(editButton.className).toContain("border-border-strong");
+    expect(
+      screen.getByRole("button", { name: "Veröffentlichen" }).className,
+    ).toContain("bg-button-primary");
+    const backLink = screen.getByRole("link", {
+      name: /Zurück zu Meine Objekte/,
+    });
+    expect(backLink.className).toContain("bg-transparent");
+    expect(backLink.className).not.toContain("border-border-strong");
     await user.click(screen.getByRole("button", { name: "Bearbeiten" }));
 
     expect(
@@ -175,5 +187,66 @@ describe("ListingDetailView", () => {
     await waitFor(() =>
       expect((cancel as HTMLButtonElement).disabled).toBe(false),
     );
+  });
+
+  it("uses the published listing action hierarchy", async () => {
+    vi.mocked(getProviderListing).mockResolvedValue({
+      ...BASE,
+      status: "published",
+      publishedAt: "2026-07-03T10:00:00.000Z",
+    });
+    render(<ListingDetailView listingId="listing-1" />);
+
+    await screen.findByRole("heading", { name: "Wohnung in Berlin" });
+
+    const editButton = screen.getByRole("button", { name: "Bearbeiten" });
+    expect(editButton.className).toContain("bg-button-primary");
+    expect(
+      screen.getByRole("button", { name: listingDetailCopy.actions.pause })
+        .className,
+    ).toContain("border-border-strong");
+    const backLink = screen.getByRole("link", {
+      name: /Zurück zu Meine Objekte/,
+    });
+    expect(backLink.className).toContain("bg-transparent");
+    expect(backLink.className).not.toContain("border-border-strong");
+    expect(backLink.className).toContain("h-11");
+  });
+
+  it("keeps editing when the leave dialog is closed or dismissed with Escape", async () => {
+    const user = userEvent.setup();
+    render(<ListingDetailView listingId="listing-1" />);
+
+    await screen.findByRole("heading", { name: "Wohnung in Berlin" });
+    await user.click(screen.getByRole("button", { name: "Bearbeiten" }));
+
+    const title = screen.getByRole("textbox", { name: "Objekttitel" });
+    await user.clear(title);
+    await user.type(title, "Renovierte Wohnung");
+    await user.click(
+      screen.getByRole("button", { name: listingDetailCopy.backLabel }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "Änderungen verwerfen?" }),
+    ).toBeInstanceOf(HTMLElement);
+
+    const [closeButton] = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    });
+    await user.click(closeButton as HTMLButtonElement);
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect((title as HTMLInputElement).value).toBe("Renovierte Wohnung");
+
+    await user.click(
+      screen.getByRole("button", { name: listingDetailCopy.backLabel }),
+    );
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(routerPush).not.toHaveBeenCalled();
+    expect((title as HTMLInputElement).value).toBe("Renovierte Wohnung");
   });
 });

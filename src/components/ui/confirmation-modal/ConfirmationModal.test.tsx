@@ -90,13 +90,43 @@ describe("ConfirmationModal", () => {
       tertiaryLabel: "Als Entwurf speichern & verlassen",
     });
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Als Entwurf speichern & verlassen",
-      }),
-    );
+    const tertiaryButton = screen.getByRole("button", {
+      name: "Als Entwurf speichern & verlassen",
+    });
+    expect(tertiaryButton.className).toContain("h-11");
+    expect(tertiaryButton.className).not.toContain("border-border-strong");
+
+    await user.click(tertiaryButton);
 
     expect(onTertiary).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps close and Escape on the stay handler when leave is the danger primary", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const onPrimary = vi.fn();
+    renderModal({
+      primaryLabel: "Ohne Speichern verlassen",
+      primaryVariant: "danger",
+      secondaryLabel: "Weiter bearbeiten",
+      onPrimary,
+      onClose,
+      closeLabel: "Weiter bearbeiten",
+      tertiaryLabel: "Als Entwurf speichern & verlassen",
+    });
+
+    const [closeButton] = screen.getAllByRole("button", {
+      name: "Weiter bearbeiten",
+    });
+    await user.click(closeButton as HTMLButtonElement);
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onPrimary).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+
+    expect(onClose).toHaveBeenCalledTimes(2);
+    expect(onPrimary).not.toHaveBeenCalled();
   });
 
   it("shows pending label and disables actions while tertiary action is pending", () => {
@@ -238,6 +268,24 @@ describe("ConfirmationModal", () => {
 
     fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
     expect(document.activeElement).toBe(secondaryButton);
+  });
+
+  it("keeps the confirm action on the stable primary token inside an accent scope", () => {
+    const { container } = render(
+      <div data-accent="sand">
+        <ConfirmationModal {...BASE_PROPS} open onTertiary={vi.fn()} />
+      </div>,
+    );
+
+    const dialog = screen.getByRole("dialog");
+    const confirm = screen
+      .getAllByRole("button", { name: "Weiter bearbeiten" })
+      .find((button) => button.className.includes("bg-button-primary"));
+    expect(container.contains(dialog)).toBe(true);
+    expect(dialog.closest("[data-accent]")).not.toBeNull();
+    expect(confirm).toBeInstanceOf(HTMLButtonElement);
+    expect(confirm?.className.split(/\s+/)).not.toContain("bg-primary");
+    expect(confirm?.className).not.toContain("bg-dashboard-button-primary");
   });
 
   it("keeps focus in the dialog while actions are pending", () => {

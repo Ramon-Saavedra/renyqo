@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, Pencil } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ApiError } from "@/lib/api/client";
-import { Button } from "@/components/ui/button/Button";
-import { buttonClassWithSize } from "@/components/ui/button/Button";
+import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { ListingsTopbarActions } from "../../listings-overview/components/ListingsTopbarActions";
@@ -275,7 +274,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                 <Link
                   href={listingDetailCopy.backHref}
                   className={cn(
-                    buttonClassWithSize("secondary", "md"),
+                    buttonClassWithSize("ghost", "md"),
                     ACTION_BUTTON_LAYOUT,
                     "no-underline",
                   )}
@@ -295,7 +294,13 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                 </Link>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button
-                    variant="secondary"
+                    variant={
+                      listing.status === "published" ||
+                      listing.status === "archived" ||
+                      listing.status === "rented"
+                        ? "primary"
+                        : "outline"
+                    }
                     onClick={enterEditMode}
                     disabled={pendingAction !== null}
                     aria-label={listingEditCopy.edit}
@@ -323,6 +328,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                       loadingLabel={config.loadingLabel}
                       pending={pendingAction === config.action}
                       disabled={pendingAction !== null}
+                      variant={config.variant}
                       onClick={() => handleAction(config.action)}
                     />
                   ))}
@@ -367,10 +373,13 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
         open={pendingLeave}
         title="Änderungen verwerfen?"
         text="Du hast ungespeicherte Änderungen. Wenn du die Seite verlässt, gehen diese Änderungen verloren."
-        primaryLabel="Weiter bearbeiten"
-        secondaryLabel="Ohne Speichern verlassen"
-        onPrimary={cancelLeave}
-        onSecondary={confirmLeave}
+        primaryLabel="Ohne Speichern verlassen"
+        primaryVariant="danger"
+        secondaryLabel="Weiter bearbeiten"
+        onPrimary={confirmLeave}
+        onSecondary={cancelLeave}
+        onClose={cancelLeave}
+        closeLabel="Weiter bearbeiten"
       />
     </>
   );

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { buttonClass } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
 
 interface SocialButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -6,8 +7,7 @@ interface SocialButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
 }
 
-const BASE_CLASS =
-  "inline-flex h-11 w-full cursor-pointer items-center justify-center gap-2.5 rounded-md border border-border-strong bg-background text-action font-medium text-foreground hover:border-foreground-tertiary hover:bg-background-muted focus-visible:outline-none focus-visible:shadow-focus";
+const BASE_CLASS = buttonClass("outline", "w-full justify-center gap-2.5");
 
 export function SocialButton({
   icon,

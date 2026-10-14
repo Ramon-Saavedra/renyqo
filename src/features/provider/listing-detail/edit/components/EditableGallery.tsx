@@ -16,6 +16,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import {
@@ -385,7 +386,7 @@ export function EditableGallery({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-action font-medium text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+            className={buttonClass("primary")}
           >
             <AppIcon
               icon={uploading ? Loader : Upload}

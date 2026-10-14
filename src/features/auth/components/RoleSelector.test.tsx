@@ -77,7 +77,7 @@ describe("RoleSelector", () => {
     it("renders the Weiter CTA with the primary button styling", () => {
       render(<RoleSelector />);
 
-      expect(getWeiterCta().className).toContain("bg-primary");
+      expect(getWeiterCta().className).toContain("bg-button-primary");
     });
 
     it("keeps the primary action in a non-scrolling footer below the role cards", () => {

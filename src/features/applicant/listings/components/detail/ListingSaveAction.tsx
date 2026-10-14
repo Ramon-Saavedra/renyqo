@@ -38,7 +38,7 @@ export function ListingSaveAction({
       <div className={WRAPPER_CLASS}>
         <Link
           href={LISTING_LOGIN_PATH}
-          className={buttonClassWithSize("primaryGhost", "sm")}
+          className={buttonClassWithSize("ghost", "sm")}
         >
           <AppIcon icon={Heart} size={14} strokeWidth={1.8} decorative />
           {save.label}
@@ -50,7 +50,7 @@ export function ListingSaveAction({
   return (
     <div className={WRAPPER_CLASS}>
       <Button
-        variant="primaryGhost"
+        variant="ghost"
         size="sm"
         aria-pressed={saved}
         disabled={submitting || session === "loading"}

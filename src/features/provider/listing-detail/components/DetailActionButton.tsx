@@ -39,7 +39,7 @@ export function DetailActionButton({
   pending,
   disabled = false,
   onClick,
-  variant = "secondary",
+  variant = "outline",
 }: DetailActionButtonProps) {
   return (
     <button

@@ -94,7 +94,7 @@ export function ListingApplyBox({
         <ListingSignals ui={ui} surface="detail" />
         {ui.action === "withdraw" ? (
           <Button
-            variant="outline"
+            variant="danger"
             disabled={
               withdrawalState.status === "submitting" ||
               withdrawalState.status === "success"

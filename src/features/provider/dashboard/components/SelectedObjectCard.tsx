@@ -10,6 +10,8 @@ import {
   Share2,
   type LucideIcon,
 } from "lucide-react";
+import { buttonVariantClass } from "@/components/ui/button/Button";
+import { DASHBOARD_PRIMARY_COLOR_CLASS } from "../dashboard-button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { OBJECT_TYPE_LABEL } from "@/lib/api/listings";
@@ -45,9 +47,9 @@ const STATUS_TEXT_CLASS: Record<DashboardObject["status"], string> = {
 
 const ACTION_CLASS =
   "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-4 text-action font-medium max-sm:w-11 max-sm:justify-center max-sm:px-0";
-const PRIMARY_ACTION_CLASS = `${ACTION_CLASS} bg-primary text-primary-foreground hover:bg-primary-hover`;
-const SECONDARY_ACTION_CLASS = `${ACTION_CLASS} bg-transparent text-foreground-secondary hover:bg-background-muted hover:text-foreground`;
-const DISABLED_SECONDARY_ACTION_CLASS = `${ACTION_CLASS} border border-border text-foreground-tertiary cursor-not-allowed`;
+const PRIMARY_ACTION_CLASS = `${ACTION_CLASS} ${DASHBOARD_PRIMARY_COLOR_CLASS}`;
+const SECONDARY_ACTION_CLASS = `${ACTION_CLASS} ${buttonVariantClass("ghost")}`;
+const DISABLED_SECONDARY_ACTION_CLASS = `${ACTION_CLASS} ${buttonVariantClass("ghost")} cursor-not-allowed disabled:opacity-50`;
 const ACTION_LABEL_CLASS = "max-sm:sr-only";
 
 function resolveAttentionText(object: DashboardObject): string | null {

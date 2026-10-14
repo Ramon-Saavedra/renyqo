@@ -3,13 +3,10 @@ import { cn } from "@/lib/utils/cn";
 
 export type ButtonVariant =
   | "primary"
-  | "secondary"
   | "outline"
   | "ghost"
   | "danger"
-  | "dangerGhost"
-  | "primaryGhost"
-  | "inverseGhost";
+  | "dangerGhost";
 
 export type ButtonSize =
   | "md"
@@ -38,20 +35,15 @@ const SIZE_CLASS: Record<ButtonSize, string> = {
  */
 const DEFAULT_SIZE: Record<ButtonVariant, ButtonSize> = {
   primary: "md",
-  secondary: "md",
   outline: "md",
   ghost: "sm",
   danger: "md",
   dangerGhost: "sm",
-  primaryGhost: "sm",
-  inverseGhost: "sm",
 };
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
   primary:
-    "border border-primary bg-primary text-primary-foreground hover:border-primary-hover hover:bg-primary-hover",
-  secondary:
-    "border border-primary-soft bg-primary-tint text-primary hover:border-primary hover:bg-primary hover:text-primary-foreground",
+    "border border-button-primary bg-button-primary text-primary-foreground hover:border-button-primary-hover hover:bg-button-primary-hover",
   outline:
     "border border-border-strong bg-transparent text-foreground-secondary hover:border-foreground-tertiary hover:bg-background-muted hover:text-foreground",
   ghost:
@@ -59,11 +51,17 @@ const VARIANT_CLASS: Record<ButtonVariant, string> = {
   danger:
     "border border-danger/20 bg-background text-danger hover:bg-danger/10",
   dangerGhost: "bg-transparent text-danger hover:bg-danger/10",
-  primaryGhost:
-    "bg-transparent text-primary hover:bg-primary-tint hover:text-primary-hover",
-  inverseGhost:
-    "bg-transparent text-primary-foreground hover:bg-primary-foreground/20",
 };
+
+/** Color classes for a variant, without size. Use when the control cannot take the standard size. */
+export function buttonVariantClass(variant: ButtonVariant): string {
+  return VARIANT_CLASS[variant];
+}
+
+/** Shared button frame without a color variant. */
+export function buttonFrameClass(size: ButtonSize = "md"): string {
+  return [BASE_CLASS, SIZE_CLASS[size]].join(" ");
+}
 
 /**
  * Composes a button class string from a variant and optional extra classes.

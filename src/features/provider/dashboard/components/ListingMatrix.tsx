@@ -13,7 +13,7 @@ import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { GripVertical, Home, Maximize2, X } from "lucide-react";
-import { Button } from "@/components/ui/button/Button";
+import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import {
   formatArea,
@@ -225,7 +225,7 @@ function ListingPreviewContent({
           {!selected ? (
             <Button
               type="button"
-              variant="outline"
+              variant="primary"
               onClick={() => {
                 onSelect(object.id);
                 onClose();
@@ -236,7 +236,7 @@ function ListingPreviewContent({
           ) : null}
           <Link
             href={href}
-            className="flex min-h-11 items-center px-3 text-action font-medium text-primary"
+            className={buttonClassWithSize("ghost", "md", "no-underline")}
           >
             {copy.openListing}
           </Link>

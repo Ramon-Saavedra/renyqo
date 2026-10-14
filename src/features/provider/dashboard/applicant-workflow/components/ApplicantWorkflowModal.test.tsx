@@ -1097,7 +1097,7 @@ describe("document request cancellation", () => {
       name: (accessibleName) => accessibleName === "Anfrage entfernen",
     });
     expect(remove.textContent).toBe("Entfernen");
-    expect(remove.className).toContain("bg-primary");
+    expect(remove.className).toContain("text-danger");
     expect(close.getAttribute("aria-label")).toBe("Dialog schließen");
     expect(document.activeElement).toBe(close);
     await user.tab();
