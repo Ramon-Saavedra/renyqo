@@ -256,42 +256,50 @@ describe("applicant workspace", () => {
 
 describe("applicant conversation", () => {
   it.each([true, false])(
-    "preserves history and disabled sending with expectedResponder=null and isOpen=%s",
-    async (isOpen) => {
+    "preserves history and disabled sending with lifecycle read-only and hasMessages=%s",
+    async (hasMessages) => {
       const history = [message(1, "PROVIDER", "Hallo")];
       vi.mocked(apiGet).mockResolvedValue(
         conversationPage(history, {
-          isOpen,
+          hasMessages,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         }),
       );
       await expect(loadCompleteConversation(APPLICATION_ID)).resolves.toEqual({
         messages: history,
         capabilities: {
-          isOpen,
+          hasMessages,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         },
       });
     },
   );
 
-  it("preserves the provider turn without adding a read-only field", async () => {
+  it("preserves explicit reply permission independently of history", async () => {
     const history = [message(1, "APPLICANT", "Antwort")];
     vi.mocked(apiGet).mockResolvedValue(
       conversationPage(history, {
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: false,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
       }),
     );
     await expect(loadCompleteConversation(APPLICATION_ID)).resolves.toEqual({
       messages: history,
       capabilities: {
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: false,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
       },
     });
   });

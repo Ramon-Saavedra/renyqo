@@ -7,6 +7,7 @@ import {
   markConversationRead,
   nextConversationSequence,
   sendConversationMessage,
+  setApplicantReplies,
 } from "./conversation";
 import { WorkspaceContractError } from "./workspace";
 
@@ -27,9 +28,11 @@ function history(messages: unknown[]) {
     applicationId: "application-1",
     conversationId: "conversation-1",
     openedAt: AT,
-    isOpen: true,
+    hasMessages: true,
     canCurrentUserSend: false,
-    expectedResponder: "APPLICANT",
+    applicantRepliesEnabled: true,
+    canCurrentUserManageApplicantReplies: false,
+    sendBlockReason: null,
     unreadCount: 0,
     lastMessage: messages[0] ?? null,
     messages,
@@ -58,7 +61,7 @@ describe("conversation contract", () => {
     const parsed = await getConversationHistory("application-1");
 
     expect(parsed.messages).toEqual([]);
-    expect(parsed.expectedResponder).toBe("APPLICANT");
+    expect(parsed.applicantRepliesEnabled).toBe(true);
   });
 
   it("accepts the live message shape with senderType", async () => {
@@ -118,5 +121,30 @@ describe("conversation contract", () => {
       id: "message-1",
     });
     await expect(markConversationRead("application-1", 1)).resolves.toBe(1);
+  });
+});
+
+describe("applicant reply permission contract", () => {
+  it("sends a desired boolean and parses authoritative capabilities", async () => {
+    const capabilities = {
+      applicantRepliesEnabled: false,
+      canCurrentUserSend: true,
+      canCurrentUserManageApplicantReplies: true,
+      sendBlockReason: null,
+    };
+    vi.mocked(apiPatch).mockResolvedValue(capabilities);
+    await expect(setApplicantReplies("application-1", false)).resolves.toEqual(
+      capabilities,
+    );
+    expect(apiPatch).toHaveBeenLastCalledWith(
+      "/api/v1/provider/applications/application-1/conversation/applicant-replies",
+      { applicantRepliesEnabled: false },
+    );
+  });
+  it("rejects an incomplete capability response", async () => {
+    vi.mocked(apiPatch).mockResolvedValue({ applicantRepliesEnabled: true });
+    await expect(setApplicantReplies("application-1", true)).rejects.toThrow(
+      WorkspaceContractError,
+    );
   });
 });

@@ -1,11 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  CalendarClock,
-  FileUp,
-  HeartHandshake,
-  MessageSquareText,
-} from "lucide-react";
-import type { ConversationMessage } from "../api/conversation";
+import { CalendarClock, FileUp, HeartHandshake } from "lucide-react";
 import type { DocumentRequestTimeline } from "../api/documents";
 import type {
   ApplicantPendingAction,
@@ -21,7 +15,6 @@ const copy = applicationsCopy.nextStep;
 export type WorkspaceArea = "messages" | "documents" | "viewing";
 
 export type NextStepIntent =
-  | { readonly kind: "focus-composer" }
   | { readonly kind: "upload"; readonly requestId: string }
   | { readonly kind: "show-viewing" }
   | { readonly kind: "answer-interest"; readonly viewingId: string };
@@ -38,8 +31,6 @@ export interface NextStepItem {
 
 function pendingActionKey(action: ApplicantPendingAction): string {
   switch (action.type) {
-    case "RESPOND_TO_MESSAGE":
-      return action.type;
     case "UPLOAD_REQUESTED_DOCUMENT":
       return `${action.type}:${action.target.requestId}`;
     default:
@@ -49,18 +40,7 @@ function pendingActionKey(action: ApplicantPendingAction): string {
 
 interface NextStepContext {
   readonly workspace: ApplicantWorkspace;
-  readonly messages: readonly ConversationMessage[];
   readonly timelines: ReadonlyMap<string, DocumentRequestTimeline>;
-}
-
-function lastProviderMessage(
-  messages: readonly ConversationMessage[],
-): ConversationMessage | null {
-  for (let index = messages.length - 1; index >= 0; index -= 1) {
-    const message = messages[index];
-    if (message?.senderType === "PROVIDER") return message;
-  }
-  return null;
 }
 
 export function toNextStepItem(
@@ -69,23 +49,6 @@ export function toNextStepItem(
 ): NextStepItem {
   const key = pendingActionKey(action);
   switch (action.type) {
-    case "RESPOND_TO_MESSAGE": {
-      const last = lastProviderMessage(context.messages);
-      return {
-        key,
-        icon: MessageSquareText,
-        title: copy.message.title,
-        text: last
-          ? copy.message.text(
-              formatDate(last.createdAt),
-              formatTime(last.createdAt),
-            )
-          : copy.message.fallbackText,
-        cta: copy.message.cta,
-        area: "messages",
-        intent: { kind: "focus-composer" },
-      };
-    }
     case "UPLOAD_REQUESTED_DOCUMENT": {
       const request = context.workspace.documentsSummary.currentRequests.find(
         (item) => item.requestId === action.target.requestId,

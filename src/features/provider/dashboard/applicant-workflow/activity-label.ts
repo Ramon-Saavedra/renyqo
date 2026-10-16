@@ -20,6 +20,8 @@ const EVENT_LABEL: Record<WorkspaceActivityItem["type"], string> = {
   APPLICATION_REJECTED: "Bewerbung abgelehnt",
   APPLICATION_RESTORED: "Bewerbung wiederhergestellt",
   APPLICATION_ACCEPTED: "Als Mieter ausgewählt",
+  APPLICANT_REPLIES_ENABLED: "Antworten freigegeben",
+  APPLICANT_REPLIES_DISABLED: "Antworten gesperrt",
   CONVERSATION_OPENED: "Unterhaltung begonnen",
   MESSAGE_SENT: "Nachricht gesendet",
   DOCUMENT_REQUESTED: "Unterlage angefordert",

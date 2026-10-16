@@ -10,28 +10,26 @@
     "publicReason": null
   },
   "attention": {
-    "pendingActionCount": 1,
+    "pendingActionCount": 0,
     "actionableUnreadMessageCount": 1,
-    "hasPendingAction": true,
+    "hasPendingAction": false,
     "applicationId": "application-reply",
-    "pendingActions": [
-      {
-        "type": "RESPOND_TO_MESSAGE",
-        "source": "CONVERSATION"
-      }
-    ],
+    "pendingActions": [],
     "historicalUnreadMessageCount": 1,
     "conversation": {
-      "isOpen": true,
-      "isReadOnly": false,
-      "expectedResponder": "PROVIDER"
+      "hasMessages": true,
+      "applicantRepliesEnabled": true,
+      "canCurrentUserManageApplicantReplies": true,
+      "sendBlockReason": null,
+      "canCurrentUserSend": true
     },
     "asOf": "2026-10-05T09:00:00.000Z"
   },
   "conversationSummary": {
-    "isOpen": true,
-    "isReadOnly": false,
-    "expectedResponder": "PROVIDER",
+    "hasMessages": true,
+    "applicantRepliesEnabled": true,
+    "canCurrentUserManageApplicantReplies": true,
+    "sendBlockReason": null,
     "canCurrentUserSend": true
   },
   "documentsSummary": {

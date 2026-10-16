@@ -1,5 +1,7 @@
 "use client";
 
+import { useApplicantReplyPermission } from "./hooks/useApplicantReplyPermission";
+
 import {
   createContext,
   useCallback,
@@ -56,6 +58,7 @@ type ActionResult = "done" | "busy" | "failed";
 type ActionArea = "messages" | "documents" | "viewing";
 
 interface WorkflowSessionValue {
+  readonly replyPermission: ReturnType<typeof useApplicantReplyPermission>;
   readonly model: ApplicantWorkflowModel;
   readonly messages: readonly ConversationMessage[];
   readonly messagesStatus: LoadStatus;
@@ -133,6 +136,10 @@ export function WorkflowSession({
   const model = useMemo(
     () => buildApplicantWorkflowModel(workspace, listing),
     [workspace, listing],
+  );
+  const replyPermission = useApplicantReplyPermission(
+    workspace.application.id,
+    reloadWorkspace,
   );
   const [messages, setMessages] = useState<readonly ConversationMessage[]>([]);
   const [messagesStatus, setMessagesStatus] = useState<LoadStatus>("idle");
@@ -300,7 +307,9 @@ export function WorkflowSession({
         setActionArea(null);
         reloadWorkspace();
         return "done";
-      } catch {
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 409)
+          reloadWorkspace();
         setActionError(applicantWorkflowCopy.messages.sendError);
         return "failed";
       } finally {
@@ -326,6 +335,7 @@ export function WorkflowSession({
 
   const value = useMemo<WorkflowSessionValue>(
     () => ({
+      replyPermission,
       model,
       messages,
       messagesStatus,
@@ -499,6 +509,7 @@ export function WorkflowSession({
       },
     }),
     [
+      replyPermission,
       actionArea,
       actionError,
       acting,

@@ -33,19 +33,21 @@ beforeEach(() => {
 });
 
 describe("conversation request ordering", () => {
-  it("loads readable history independently of isOpen and blocks disallowed sending", async () => {
+  it("loads readable history independently of hasMessages and blocks disallowed sending", async () => {
     vi.mocked(loadCompleteConversation).mockResolvedValue(
       loadedConversation([initial], {
-        isOpen: false,
+        hasMessages: false,
         canCurrentUserSend: false,
-        expectedResponder: null,
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "LIFECYCLE_READ_ONLY",
       }),
     );
     const { result } = renderHook(() =>
       useConversation({
         applicationId: "application-test",
         snapshotKey: "one",
-        isOpen: false,
+        hasMessages: false,
         onSent: vi.fn(),
       }),
     );
@@ -63,27 +65,29 @@ describe("conversation request ordering", () => {
       .mockResolvedValueOnce(loadedConversation([initial]))
       .mockReturnValueOnce(refresh.promise);
     const { result, rerender } = renderHook(
-      ({ snapshotKey, isOpen }) =>
+      ({ snapshotKey, hasMessages }) =>
         useConversation({
           applicationId: "application-test",
           snapshotKey,
-          isOpen,
+          hasMessages,
           onSent: vi.fn(),
         }),
-      { initialProps: { snapshotKey: "one", isOpen: true } },
+      { initialProps: { snapshotKey: "one", hasMessages: true } },
     );
     await waitFor(() => expect(result.current.load.status).toBe("ready"));
     expect(result.current.messages).toEqual([initial]);
-    rerender({ snapshotKey: "two", isOpen: false });
+    rerender({ snapshotKey: "two", hasMessages: false });
     expect(result.current.messages).toEqual([initial]);
     expect(result.current.capabilities).toBeNull();
     await act(async () => {
       expect(await result.current.send("Antwort")).toBe(false);
       refresh.resolve(
         loadedConversation([], {
-          isOpen: false,
+          hasMessages: false,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         }),
       );
     });
@@ -99,21 +103,23 @@ describe("conversation request ordering", () => {
       .mockResolvedValueOnce(loadedConversation([initial, sent]))
       .mockResolvedValueOnce(
         loadedConversation([initial], {
-          isOpen: false,
+          hasMessages: false,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         }),
       );
     vi.mocked(sendConversationMessage).mockResolvedValue(sent);
     const { result, rerender } = renderHook(
-      ({ snapshotKey, isOpen }) =>
+      ({ snapshotKey, hasMessages }) =>
         useConversation({
           applicationId: "application-test",
           snapshotKey,
-          isOpen,
+          hasMessages,
           onSent: vi.fn(),
         }),
-      { initialProps: { snapshotKey: "one", isOpen: true } },
+      { initialProps: { snapshotKey: "one", hasMessages: true } },
     );
     await waitFor(() => expect(result.current.load.status).toBe("ready"));
     await act(async () => {
@@ -121,9 +127,9 @@ describe("conversation request ordering", () => {
     });
     await waitFor(() => {
       expect(result.current.load.status).toBe("ready");
-      expect(result.current.capabilities?.canCurrentUserSend).toBe(false);
+      expect(result.current.capabilities?.canCurrentUserSend).toBe(true);
     });
-    rerender({ snapshotKey: "two", isOpen: false });
+    rerender({ snapshotKey: "two", hasMessages: false });
     await waitFor(() => expect(result.current.load.status).toBe("ready"));
     expect(result.current.messages).toEqual([initial, sent]);
   });
@@ -142,7 +148,7 @@ describe("conversation request ordering", () => {
         useConversation({
           applicationId: "application-test",
           snapshotKey,
-          isOpen: true,
+          hasMessages: true,
           onSent: vi.fn(),
         }),
       { initialProps: { snapshotKey: "one" } },
@@ -169,7 +175,7 @@ describe("conversation request ordering", () => {
         useConversation({
           applicationId: "application-test",
           snapshotKey,
-          isOpen: true,
+          hasMessages: true,
           onSent,
         }),
       { initialProps: { snapshotKey: "one" } },
@@ -195,7 +201,7 @@ describe("conversation request ordering", () => {
     await act(async () => {
       fresh.resolve(loadedConversation([initial, sent]));
     });
-    expect(result.current.capabilities?.canCurrentUserSend).toBe(false);
+    expect(result.current.capabilities?.canCurrentUserSend).toBe(true);
     expect(result.current.messages).toEqual([initial, sent]);
   });
 
@@ -210,7 +216,7 @@ describe("conversation request ordering", () => {
         useConversation({
           applicationId: "application-test",
           snapshotKey,
-          isOpen: true,
+          hasMessages: true,
           onSent: vi.fn(),
         }),
       { initialProps: { snapshotKey: "one" } },
@@ -240,7 +246,7 @@ describe("conversation request ordering", () => {
         useConversation({
           applicationId: "application-test",
           snapshotKey: "one",
-          isOpen: true,
+          hasMessages: true,
           onSent,
         }),
       );

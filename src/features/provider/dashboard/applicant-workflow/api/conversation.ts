@@ -1,3 +1,5 @@
+import { conversationCapabilitiesSchema } from "@/components/shared/conversation/capabilities";
+import { conversationSummarySchema } from "@/components/shared/conversation/capabilities";
 import { z } from "zod";
 import {
   apiGet,
@@ -19,13 +21,11 @@ const conversationMessageSchema = z.object({
   readAt: dateTimeSchema.nullable(),
 });
 
-const conversationHistorySchema = z.object({
+const conversationHistorySchema = conversationSummarySchema.extend({
   applicationId: z.string().min(1),
   conversationId: z.string().min(1).nullable(),
   openedAt: dateTimeSchema.nullable(),
-  isOpen: z.boolean(),
-  canCurrentUserSend: z.boolean(),
-  expectedResponder: senderSchema.nullable(),
+
   unreadCount: z.number().int().nonnegative(),
   lastMessage: conversationMessageSchema.nullable(),
   messages: z.array(conversationMessageSchema),
@@ -124,4 +124,17 @@ export async function markConversationRead(
   const parsed = markReadSchema.safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
   return parsed.data.markedCount;
+}
+
+export async function setApplicantReplies(
+  applicationId: string,
+  applicantRepliesEnabled: boolean,
+) {
+  const response = await apiPatch<unknown>(
+    `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/conversation/applicant-replies`,
+    { applicantRepliesEnabled },
+  );
+  const parsed = conversationCapabilitiesSchema.safeParse(response);
+  if (!parsed.success) throw new WorkspaceContractError();
+  return parsed.data;
 }

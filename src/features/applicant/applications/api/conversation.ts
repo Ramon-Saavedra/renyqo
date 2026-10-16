@@ -1,3 +1,4 @@
+import { conversationSummarySchema } from "@/components/shared/conversation/capabilities";
 import { z } from "zod";
 import {
   apiGet,
@@ -20,11 +21,9 @@ const messageSchema = z.object({
   readAt: dateTimeSchema.nullable(),
 });
 
-const conversationPageSchema = z.object({
+const conversationPageSchema = conversationSummarySchema.extend({
   applicationId: z.string().min(1),
-  isOpen: z.boolean(),
-  canCurrentUserSend: z.boolean(),
-  expectedResponder: conversationSideSchema.nullable(),
+
   unreadCount: z.number().int().nonnegative(),
   messages: z.array(messageSchema),
   hasMore: z.boolean(),
@@ -39,7 +38,11 @@ export type ConversationMessage = z.infer<typeof messageSchema>;
 export type ConversationPage = z.infer<typeof conversationPageSchema>;
 export type ConversationCapabilities = Pick<
   ConversationPage,
-  "isOpen" | "canCurrentUserSend" | "expectedResponder"
+  | "hasMessages"
+  | "canCurrentUserSend"
+  | "applicantRepliesEnabled"
+  | "canCurrentUserManageApplicantReplies"
+  | "sendBlockReason"
 >;
 
 export interface LoadedConversation {
@@ -100,9 +103,12 @@ export async function loadCompleteConversation(
       options,
     );
     capabilities = {
-      isOpen: page.isOpen,
+      hasMessages: page.hasMessages,
       canCurrentUserSend: page.canCurrentUserSend,
-      expectedResponder: page.expectedResponder,
+      applicantRepliesEnabled: page.applicantRepliesEnabled,
+      canCurrentUserManageApplicantReplies:
+        page.canCurrentUserManageApplicantReplies,
+      sendBlockReason: page.sendBlockReason,
     };
     for (const message of page.messages) {
       if (seen.has(message.id)) continue;

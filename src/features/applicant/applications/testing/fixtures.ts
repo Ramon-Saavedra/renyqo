@@ -67,15 +67,20 @@ export function createWorkspace(
       actionableUnreadMessageCount: 0,
       historicalUnreadMessageCount: 0,
       conversation: {
-        isOpen: false,
-        isReadOnly: false,
-        expectedResponder: "PROVIDER",
+        canCurrentUserSend: false,
+        hasMessages: false,
+
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "APPLICANT_REPLIES_DISABLED",
       },
     },
     conversationSummary: {
-      isOpen: false,
-      isReadOnly: false,
-      expectedResponder: "PROVIDER",
+      hasMessages: false,
+
+      applicantRepliesEnabled: false,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: "APPLICANT_REPLIES_DISABLED",
       canCurrentUserSend: false,
     },
     documentsSummary: {
@@ -141,9 +146,11 @@ export function conversationPage(
 ): ConversationPage {
   return {
     applicationId: APPLICATION_ID,
-    isOpen: true,
+    hasMessages: true,
     canCurrentUserSend: true,
-    expectedResponder: "APPLICANT",
+    applicantRepliesEnabled: true,
+    canCurrentUserManageApplicantReplies: false,
+    sendBlockReason: null,
     unreadCount: 0,
     messages: [...messages],
     hasMore: false,
@@ -156,22 +163,18 @@ export function loadedConversation(
   messages: readonly ConversationMessage[],
   overrides: Partial<ConversationPage> = {},
 ) {
-  const last = messages.at(-1);
   const page = conversationPage(messages, {
-    canCurrentUserSend: last?.senderType === "PROVIDER",
-    expectedResponder: last
-      ? last.senderType === "PROVIDER"
-        ? "APPLICANT"
-        : "PROVIDER"
-      : null,
     ...overrides,
   });
   return {
     messages: page.messages,
     capabilities: {
-      isOpen: page.isOpen,
+      hasMessages: page.hasMessages,
       canCurrentUserSend: page.canCurrentUserSend,
-      expectedResponder: page.expectedResponder,
+      applicantRepliesEnabled: page.applicantRepliesEnabled,
+      canCurrentUserManageApplicantReplies:
+        page.canCurrentUserManageApplicantReplies,
+      sendBlockReason: page.sendBlockReason,
     },
   };
 }
@@ -199,9 +202,11 @@ export function overviewCard(
       hasPendingAction: false,
     },
     conversation: {
-      isOpen: false,
-      isReadOnly: false,
-      expectedResponder: "PROVIDER",
+      hasMessages: false,
+
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: null,
       canCurrentUserSend: false,
     },
     documents: {

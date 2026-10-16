@@ -1,3 +1,4 @@
+import { conversationSummarySchema } from "@/components/shared/conversation/capabilities";
 import { z } from "zod";
 
 export const APPLICATION_STATUSES = [
@@ -64,12 +65,7 @@ export const compactListingSchema = z.object({
   imageUrl: z.string().min(1).nullable(),
 });
 
-export const compactConversationSchema = z.object({
-  isOpen: z.boolean(),
-  isReadOnly: z.boolean(),
-  expectedResponder: conversationSideSchema.nullable(),
-  canCurrentUserSend: z.boolean(),
-});
+export const compactConversationSchema = conversationSummarySchema;
 
 const viewingInterestResultSchema = z.object({
   interest: z.enum(VIEWING_INTERESTS),

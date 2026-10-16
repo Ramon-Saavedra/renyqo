@@ -19,7 +19,7 @@ const listing: WorkflowListingContext = {
 };
 
 describe("buildApplicantWorkflowModel", () => {
-  it("renders the reply action from the real parsed workspace structure", () => {
+  it("keeps unread messages independent from pending actions", () => {
     const workspace = parseApplicantWorkspace(
       applicantReplyWorkspace,
       applicantReplyWorkspace.application.id,
@@ -27,11 +27,10 @@ describe("buildApplicantWorkflowModel", () => {
     const model = buildApplicantWorkflowModel(workspace, listing);
 
     expect(model.nextStep).toMatchObject({
-      kind: "pending",
-      title: "Nachricht beantworten",
+      kind: "clear",
     });
     expect(model.canSend).toBe(true);
-    expect(model.expectedResponder).toBe("PROVIDER");
+    expect(model.applicantRepliesEnabled).toBe(true);
     expect(model.summaries.messages.value).toBe("1 ungelesen");
     expect(model.documents).toHaveLength(3);
     expect(model.viewing?.viewingId).toBe("viewing-2");
@@ -44,6 +43,8 @@ describe("buildApplicantWorkflowModel", () => {
         ...applicantReplyWorkspace,
         attention: {
           ...applicantReplyWorkspace.attention,
+          hasPendingAction: true,
+          pendingActionCount: 4,
           pendingActions: [
             {
               type: "REVIEW_DOCUMENT",
