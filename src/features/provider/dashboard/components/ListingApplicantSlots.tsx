@@ -48,7 +48,7 @@ const WARNING_ORDER: readonly CandidateWarning[] = [
 ];
 
 const CARD_CLASS =
-  "fixed z-30 w-48 rounded-md border border-border bg-background p-2 shadow-card";
+  "fixed z-30 w-48 rounded-md border border-border dark:border-border-strong bg-background p-2";
 
 const INITIALS_CLASS =
   "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary-soft font-display text-caption font-semibold text-primary";

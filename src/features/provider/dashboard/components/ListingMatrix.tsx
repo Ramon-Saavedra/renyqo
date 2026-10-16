@@ -97,7 +97,7 @@ function focusEnabledListingControl(trigger: HTMLElement) {
 }
 
 const PREVIEW_CLOSE_BUTTON_CLASS =
-  "absolute top-2 right-2 z-10 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm bg-background text-foreground-secondary shadow-card hover:text-foreground";
+  "absolute top-2 right-2 z-10 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm bg-background text-foreground-secondary hover:text-foreground";
 
 function useIsCompactViewport(): boolean {
   const [isCompact, setIsCompact] = useState(false);
@@ -636,7 +636,7 @@ export function ListingMatrix({
                 onDragOver={(event) => handleDragOver(event, object.id)}
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
-                className={`group relative flex items-start gap-1 rounded-md border px-2 py-1 ${CELL_WIDTH_CLASS} ${selected ? "border-transparent shadow-card" : "border-border"} ${draggedId === object.id ? "opacity-40" : ""}`}
+                className={`group relative flex items-start gap-1 rounded-md border px-2 py-1 ${CELL_WIDTH_CLASS} ${selected ? "border-primary bg-primary-tint ring-3 ring-primary-tint shadow-card" : "border-border"} ${draggedId === object.id ? "opacity-40" : ""}`}
               >
                 <div className="min-w-0 flex-1">
                   <div className="mb-1">
@@ -772,8 +772,8 @@ export function ListingMatrix({
                   tabIndex={-1}
                   className={
                     isCompactViewport
-                      ? "fixed top-1/2 left-1/2 z-30 max-h-[80dvh] w-72.5 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md border border-border bg-background shadow-card"
-                      : "fixed z-30 w-72.5 overflow-hidden rounded-md border border-border bg-background shadow-card"
+                      ? "fixed top-1/2 left-1/2 z-30 max-h-[80dvh] w-72.5 max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-md border border-border bg-background"
+                      : "fixed z-30 w-72.5 overflow-hidden rounded-md border border-border bg-background"
                   }
                   style={
                     isCompactViewport

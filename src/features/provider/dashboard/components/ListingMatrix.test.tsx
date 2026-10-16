@@ -75,6 +75,78 @@ function drag(
 }
 
 describe("ListingMatrix", () => {
+  it("keeps the selected app shadow and selection ring independent", () => {
+    const { container } = render(
+      <ListingMatrix
+        objects={[buildObject("A"), buildObject("B")]}
+        selectedId="A"
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(cell(container, "A").classList.contains("border-primary")).toBe(
+      true,
+    );
+    expect(cell(container, "A").classList.contains("ring-primary-tint")).toBe(
+      true,
+    );
+    expect(cell(container, "A").classList.contains("shadow-card")).toBe(true);
+    expect(cell(container, "B").classList.contains("ring-primary-tint")).toBe(
+      false,
+    );
+    expect(listingButton(container, "A").getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+  });
+
+  it("preserves compact preview presentation and dismissal without elevation", async () => {
+    const previousMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn((query: string) => ({
+      matches: query === "(max-width: 639px)",
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+    try {
+      render(
+        <ListingMatrix
+          objects={[buildObject("A")]}
+          selectedId={null}
+          onSelect={vi.fn()}
+        />,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "Vorschau zu A" }));
+      const preview = await screen.findByRole("dialog", {
+        name: "Vorschau zu A",
+      });
+      for (const token of [
+        "fixed",
+        "top-1/2",
+        "left-1/2",
+        "w-72.5",
+        "max-h-[80dvh]",
+        "overflow-y-auto",
+      ])
+        expect(preview.classList.contains(token)).toBe(true);
+      expect(preview.className).not.toMatch(/(?:^|\s)shadow-/);
+      expect(preview.querySelector("button")?.className).not.toMatch(
+        /(?:^|\s)shadow-/,
+      );
+      expect(preview.hasAttribute("aria-modal")).toBe(false);
+      expect(preview.parentElement).toBe(document.body);
+      expect(document.querySelector('[role="presentation"]')).toBeNull();
+      const close = preview.querySelector("button");
+      expect(close?.classList.contains("bg-background")).toBe(true);
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(screen.queryByRole("dialog")).toBeNull();
+    } finally {
+      window.matchMedia = previousMatchMedia;
+    }
+  });
+
   it("uses the backend display order when it is provided", async () => {
     const { container } = render(
       <ListingMatrix

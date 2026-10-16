@@ -54,7 +54,7 @@ export function FlagChip({ warning }: { warning: CandidateWarning }) {
           <span
             id={tooltipId}
             role="tooltip"
-            className="border-border-strong bg-background text-foreground fixed z-20 border text-[10.5px] leading-none font-normal whitespace-normal shadow-card"
+            className="border-border-strong bg-background text-foreground fixed z-20 border text-[10.5px] leading-none font-normal whitespace-normal"
             style={{
               top: position.top,
               left: position.left,

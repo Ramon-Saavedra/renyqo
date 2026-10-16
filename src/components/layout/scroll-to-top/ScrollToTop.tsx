@@ -37,7 +37,7 @@ export function ScrollToTop() {
       type="button"
       aria-label="Nach oben"
       onClick={handleClick}
-      className={`fixed bottom-4 right-4 z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full shadow-card focus-visible:outline-none focus-visible:shadow-focus sm:bottom-6 sm:right-6 ${buttonVariantClass("primary")}`}
+      className={`fixed bottom-4 right-4 z-40 inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus-visible:outline-none focus-visible:shadow-focus sm:bottom-6 sm:right-6 ${buttonVariantClass("primary")}`}
     >
       <AppIcon icon={ArrowUp} size={18} strokeWidth={1.8} decorative />
     </button>

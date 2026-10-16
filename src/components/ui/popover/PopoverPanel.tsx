@@ -37,7 +37,7 @@ interface PopoverTriggerProps {
 }
 
 const PANEL_BASE_CLASS =
-  "absolute top-full z-40 rounded-md border border-border bg-background shadow-card";
+  "absolute top-full z-40 rounded-md border border-border dark:border-border-strong bg-background shadow-card";
 
 type CloseReason = "escape" | "programmatic";
 

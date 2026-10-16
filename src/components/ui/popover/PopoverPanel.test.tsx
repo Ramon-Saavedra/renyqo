@@ -20,6 +20,15 @@ function renderPanel() {
 }
 
 describe("PopoverPanel", () => {
+  it("uses the shared app shadow and a dark-mode boundary", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: "Test Panel" }));
+    const panel = screen.getByRole("dialog");
+    expect(panel.classList.contains("shadow-card")).toBe(true);
+    expect(panel.classList.contains("dark:border-border-strong")).toBe(true);
+  });
+
   it("renders the trigger and hides the panel initially", () => {
     renderPanel();
 

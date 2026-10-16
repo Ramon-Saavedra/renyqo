@@ -40,7 +40,7 @@ interface ConfirmationModalProps {
 const OVERLAY_CLASS =
   "fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 px-gutter";
 const PANEL_CLASS =
-  "relative w-full max-w-md rounded-md border border-border bg-background p-5 shadow-card sm:max-w-xl";
+  "relative w-full max-w-md rounded-md border border-border dark:border-border-strong bg-background p-5 sm:max-w-xl";
 const CLOSE_BUTTON_CLASS = "absolute right-3 top-3";
 const ICON_WRAP_CLASS =
   "mb-4 flex h-9 w-9 items-center justify-center rounded-md border border-primary-soft bg-primary-tint text-primary";

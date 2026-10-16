@@ -192,7 +192,7 @@ export function AiCaptureSection({
       data-open={capture.isOpen}
       aria-label={copy.closed.title}
       className={cn(
-        "rounded-md border border-border bg-background-muted data-[open=true]:border-border-strong data-[open=true]:shadow-card",
+        "rounded-md border border-border bg-background-muted data-[open=true]:border-border-strong",
         className,
       )}
     >

@@ -35,6 +35,17 @@ function renderModal(
 }
 
 describe("ConfirmationModal", () => {
+  it("separates the shadowless panel without changing the backdrop", () => {
+    renderModal();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog.className).not.toMatch(/(?:^|\s)shadow-/);
+    expect(dialog.classList.contains("dark:border-border-strong")).toBe(true);
+    expect(dialog.parentElement?.classList.contains("bg-foreground/20")).toBe(
+      true,
+    );
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
+  });
+
   it("does not render when closed", () => {
     renderModal({ open: false });
 

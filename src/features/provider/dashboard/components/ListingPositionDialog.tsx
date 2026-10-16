@@ -106,7 +106,7 @@ export function ListingPositionDialog({
       role="dialog"
       aria-label={`Position von ${object.title} ändern`}
       tabIndex={-1}
-      className="fixed z-30 w-max max-w-xs rounded-md border border-border bg-background p-3 shadow-card outline-none"
+      className="fixed z-30 w-max max-w-xs rounded-md border border-border dark:border-border-strong bg-background p-3 shadow-card outline-none"
       style={{
         top: position?.top ?? 0,
         left: position?.left ?? 0,

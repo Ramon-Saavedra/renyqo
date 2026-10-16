@@ -19,9 +19,9 @@
   cursor: pointer;
 }
 .photo-drop:hover {
+  box-shadow: var(--card-shadow);
   border-color: color-mix(in srgb, var(--primary) 55%, var(--border-strong));
   background: var(--background-subtle);
-  box-shadow: 0 10px 28px -18px rgb(14 14 14 / 0.28);
 }
 .photo-drop:focus-visible {
   outline: none;
