@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/form/Input";
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button/Button";
@@ -9,8 +10,7 @@ import { WorkflowSection } from "./WorkflowSection";
 
 const copy = applicantWorkflowCopy.viewing;
 
-const SCHEDULE_INPUT_CLASS =
-  "h-8.5 min-w-0 rounded-md border border-border-strong bg-input px-2.5 text-caption text-foreground outline-none scheme-light hover:border-foreground-tertiary focus:border-primary focus:shadow-focus dark:scheme-dark";
+const SCHEDULE_INPUT_CLASS = "min-w-0 scheme-light dark:scheme-dark";
 
 function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
   const session = useOptionalWorkflowSession();
@@ -42,19 +42,21 @@ function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
       ) : null}
       {canSchedule ? (
         <div className="flex flex-wrap items-center gap-2">
-          <input
+          <Input
+            density="compact"
             type="date"
             aria-label={copy.pickDate}
             value={date}
             onChange={(event) => setDate(event.target.value)}
             className={`${SCHEDULE_INPUT_CLASS} w-full flex-1 basis-40 sm:w-auto`}
           />
-          <input
+          <Input
+            density="compact"
             type="time"
             aria-label={copy.pickTime}
             value={time}
             onChange={(event) => setTime(event.target.value)}
-            className={`${SCHEDULE_INPUT_CLASS} w-28 shrink-0`}
+            className={`${SCHEDULE_INPUT_CLASS} w-28! shrink-0`}
           />
           {session && model.canProposeViewing ? (
             <Button

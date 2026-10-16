@@ -1,3 +1,4 @@
+import { COMPOUND_BUTTON_FOCUS_CLASS } from "@/components/ui/form/control-styles";
 import { Minus, Plus } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { FormField } from "@/components/ui/form/FormField";
@@ -120,7 +121,7 @@ export function FactsEditCard({
               aria-label="Kaution verringern"
               disabled={form.depositMonths === null || form.depositMonths <= 1}
               onClick={() => changeDepositMonths(form.depositMonths! - 1)}
-              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+              className={`grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary enabled:hover:bg-background-muted enabled:hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary ${COMPOUND_BUTTON_FOCUS_CLASS}`}
             >
               <AppIcon icon={Minus} size={16} strokeWidth={1.8} decorative />
             </button>
@@ -141,7 +142,7 @@ export function FactsEditCard({
               aria-label="Kaution erhöhen"
               disabled={form.depositMonths !== null && form.depositMonths >= 3}
               onClick={() => changeDepositMonths((form.depositMonths ?? 1) + 1)}
-              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+              className={`grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary enabled:hover:bg-background-muted enabled:hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary ${COMPOUND_BUTTON_FOCUS_CLASS}`}
             >
               <AppIcon icon={Plus} size={16} strokeWidth={1.8} decorative />
             </button>

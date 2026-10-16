@@ -411,6 +411,13 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     );
     const date = await screen.findByLabelText("Datum wählen");
     const time = screen.getByLabelText("Uhrzeit wählen");
+    for (const field of [date, time]) {
+      expect(field.classList.contains("h-8.5")).toBe(true);
+      expect(field.classList.contains("h-11")).toBe(false);
+      expect(field.classList.contains("focus:border-primary-default")).toBe(
+        true,
+      );
+    }
     fireEvent.change(date, { target: { value: "2026-11-04" } });
     fireEvent.change(time, { target: { value: "18:00" } });
     const propose = screen.getByRole("button", { name: "Termin vorschlagen" });
@@ -1153,6 +1160,15 @@ describe("document request cancellation", () => {
     expect(insurance.closest("label")?.className).toContain("bg-warning/10");
     const other = screen.getByRole("checkbox", { name: "Sonstiges" });
     expect(other.closest("label")?.className).toContain("bg-queue-4/10");
+    await user.click(other);
+    const otherField = screen.getByRole("textbox", { name: "Bezeichnung" });
+    expect(otherField.classList.contains("focus:border-primary-default")).toBe(
+      true,
+    );
+    expect(otherField.classList.contains("h-8.5")).toBe(true);
+    expect(otherField.getAttribute("maxlength")).toBe("100");
+    await user.type(otherField, "Referenz");
+    expect((otherField as HTMLInputElement).value).toBe("Referenz");
     await user.click(option);
     expect(option.closest("label")?.className).toContain("bg-primary/20");
     expect(option.closest("label")?.className).toContain("border-primary");

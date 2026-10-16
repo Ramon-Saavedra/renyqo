@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/form/Input";
 import {
   useEffect,
   useId,
@@ -387,7 +388,8 @@ function RequestControl({ model }: { readonly model: ApplicantWorkflowModel }) {
           {selected.has("OTHER") ? (
             <label className="flex flex-col gap-1 text-caption text-foreground">
               {copy.otherLabel}
-              <input
+              <Input
+                density="compact"
                 type="text"
                 value={otherLabel}
                 maxLength={100}
@@ -395,7 +397,6 @@ function RequestControl({ model }: { readonly model: ApplicantWorkflowModel }) {
                   setOtherLabel(event.target.value);
                   setLabelIssue(null);
                 }}
-                className="h-8.5 rounded-md border border-border-strong bg-input px-2.5 text-caption"
               />
             </label>
           ) : null}
