@@ -1,3 +1,4 @@
+import { FIELD_STATE_CLASS } from "./control-styles";
 import { ChevronDown } from "lucide-react";
 import type { SelectHTMLAttributes } from "react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -9,7 +10,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const SELECT_CLASS =
-  "h-11 w-full appearance-none rounded-md border border-border-strong bg-input pr-9 pl-3.5 text-action text-foreground outline-none hover:border-foreground-tertiary focus:border-primary focus:bg-input focus:shadow-focus";
+  "h-11 w-full appearance-none rounded-md border border-border-strong bg-input pr-9 pl-3.5 text-action text-foreground outline-none";
 
 export function Select({
   className,
@@ -20,7 +21,12 @@ export function Select({
   return (
     <span className="relative inline-flex w-full">
       <select
-        className={cn(SELECT_CLASS, saved && SAVED_FIELD_CLASS, className)}
+        className={cn(
+          SELECT_CLASS,
+          FIELD_STATE_CLASS,
+          saved && SAVED_FIELD_CLASS,
+          className,
+        )}
         {...rest}
       >
         {children}

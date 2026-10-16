@@ -1,5 +1,6 @@
 "use client";
 
+import { COMPOUND_BUTTON_FOCUS_CLASS } from "@/components/ui/form/control-styles";
 import { cn } from "@/lib/utils/cn";
 import { Building2, DoorOpen, Home, Minus, Plus } from "lucide-react";
 import { CardCheckbox } from "@/components/ui/form/CardCheckbox";
@@ -280,7 +281,7 @@ export function ObjektdatenSection({
               aria-label="Kaution verringern"
               disabled={draft.depositMonths <= 1}
               onClick={() => changeDepositMonths(draft.depositMonths - 1)}
-              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+              className={`grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary enabled:hover:bg-background-muted enabled:hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary ${COMPOUND_BUTTON_FOCUS_CLASS}`}
             >
               <AppIcon icon={Minus} size={16} strokeWidth={1.8} decorative />
             </button>
@@ -303,7 +304,7 @@ export function ObjektdatenSection({
               aria-label="Kaution erhöhen"
               disabled={draft.depositMonths >= 3}
               onClick={() => changeDepositMonths(draft.depositMonths + 1)}
-              className="grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary hover:bg-background-muted hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary"
+              className={`grid h-full w-10.5 cursor-pointer place-items-center text-foreground-secondary enabled:hover:bg-background-muted enabled:hover:text-foreground disabled:cursor-not-allowed disabled:text-foreground-tertiary ${COMPOUND_BUTTON_FOCUS_CLASS}`}
             >
               <AppIcon icon={Plus} size={16} strokeWidth={1.8} decorative />
             </button>

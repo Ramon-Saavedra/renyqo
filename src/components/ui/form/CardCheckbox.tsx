@@ -17,7 +17,7 @@ interface CardCheckboxProps {
 const WRAPPER_CLASS =
   "flex cursor-pointer items-start gap-3 rounded-md border bg-background-muted px-3 py-3";
 const BOX_CLASS =
-  "mt-0.25 grid h-4 w-4 shrink-0 place-items-center rounded-sm border";
+  "mt-0.25 grid h-4 w-4 shrink-0 place-items-center rounded-sm border peer-focus-visible:shadow-focus peer-focus-visible:outline-2 peer-focus-visible:outline-primary-default";
 
 export function CardCheckbox({
   id,
@@ -50,7 +50,7 @@ export function CardCheckbox({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="sr-only"
+        className="peer sr-only"
       />
       <span aria-hidden="true" className={boxClass}>
         <AppIcon

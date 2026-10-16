@@ -1,3 +1,4 @@
+import { COMPOUND_BUTTON_FOCUS_CLASS } from "./control-styles";
 import { SAVED_FIELD_CLASS } from "./saved-field";
 import { cn } from "@/lib/utils/cn";
 
@@ -16,9 +17,9 @@ interface NumberStepperProps {
 const GROUP_CLASS =
   "flex h-11 items-center overflow-hidden rounded-md border border-border-strong bg-input";
 const BTN_CLASS =
-  "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg hover:bg-background-muted disabled:cursor-not-allowed disabled:bg-transparent";
+  "grid h-full w-10.5 cursor-pointer place-items-center bg-transparent text-lg enabled:hover:bg-background-muted disabled:cursor-not-allowed disabled:bg-transparent";
 const BTN_COLOR_CLASS =
-  "text-foreground-secondary hover:text-foreground disabled:text-foreground-tertiary";
+  "text-foreground-secondary enabled:hover:text-foreground disabled:text-foreground-tertiary";
 const VAL_CLASS = "flex-1 text-center text-action";
 const NUM_CLASS = "font-mono tabular-nums";
 
@@ -54,7 +55,11 @@ export function NumberStepper({
   };
 
   const display = isNull ? nullLabel : value;
-  const btnClass = cn(BTN_CLASS, !saved && BTN_COLOR_CLASS);
+  const btnClass = cn(
+    BTN_CLASS,
+    COMPOUND_BUTTON_FOCUS_CLASS,
+    !saved && BTN_COLOR_CLASS,
+  );
   const valClass = cn(
     VAL_CLASS,
     !isNull && NUM_CLASS,
