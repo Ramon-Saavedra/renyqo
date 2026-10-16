@@ -31,9 +31,11 @@ vi.mock("../../api/conversation", async (importOriginal) => ({
   loadCompleteConversation: vi.fn().mockResolvedValue({
     messages: [],
     capabilities: {
-      isOpen: false,
+      hasMessages: false,
       canCurrentUserSend: false,
-      expectedResponder: null,
+      applicantRepliesEnabled: false,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: "LIFECYCLE_READ_ONLY",
     },
   }),
   sendConversationMessage: vi.fn(),
@@ -80,7 +82,10 @@ describe("ApplicationWorkspace states", () => {
     renderWorkspace(
       createWorkspace({
         application: { status: "WAITING", activeAt: null },
-        conversationSummary: { isOpen: false, isReadOnly: true },
+        conversationSummary: {
+          hasMessages: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
+        },
       }),
     );
 
@@ -92,9 +97,7 @@ describe("ApplicationWorkspace states", () => {
     expect(screen.queryByText("Dein nächster Schritt")).toBeNull();
     expect(screen.queryByText(/prüft deine Bewerbung/)).toBeNull();
     expect(
-      await screen.findByText(
-        "Während du auf der Warteliste stehst, ist keine Unterhaltung möglich.",
-      ),
+      await screen.findByText("Diese Unterhaltung ist derzeit nur lesbar."),
     ).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.queryByRole("button", { name: /hochladen/ })).toBeNull();
@@ -177,16 +180,17 @@ describe("ApplicationWorkspace states", () => {
     vi.mocked(loadCompleteConversation).mockResolvedValueOnce({
       messages: [],
       capabilities: {
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: true,
-        expectedResponder: "APPLICANT",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
       },
     });
     renderWorkspace(
       createWorkspace({
         attention: {
           pendingActions: [
-            { type: "RESPOND_TO_MESSAGE", source: "CONVERSATION" },
             {
               type: "RESPOND_TO_VIEWING",
               source: "VIEWING",
@@ -194,7 +198,7 @@ describe("ApplicationWorkspace states", () => {
             },
           ],
         },
-        conversationSummary: { isOpen: true, canCurrentUserSend: true },
+        conversationSummary: { hasMessages: true, canCurrentUserSend: true },
         viewingSummary: {
           current: viewingSnapshot(),
           latest: viewingSnapshot(),
@@ -236,7 +240,10 @@ describe("ApplicationWorkspace states", () => {
     renderWorkspace(
       createWorkspace({
         application: { status: "ACCEPTED" },
-        conversationSummary: { isOpen: true, isReadOnly: true },
+        conversationSummary: {
+          hasMessages: true,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
+        },
         capabilities: { canWithdraw: false },
       }),
     );
@@ -249,7 +256,7 @@ describe("ApplicationWorkspace states", () => {
     expect(screen.queryByText(/Vertrag/)).toBeNull();
     expect(screen.queryByText("Dein nächster Schritt")).toBeNull();
     expect(
-      await screen.findByText("Diese Unterhaltung ist abgeschlossen."),
+      await screen.findByText("Diese Unterhaltung ist derzeit nur lesbar."),
     ).toBeTruthy();
     expect(
       screen.queryByRole("button", { name: "Bewerbung zurückziehen" }),
@@ -264,7 +271,7 @@ describe("ApplicationWorkspace states", () => {
           rejectedAt: "2026-09-12T08:05:00.000Z",
           publicReason: "LISTING_RENTED",
         },
-        conversationSummary: { isReadOnly: true },
+        conversationSummary: { sendBlockReason: "LIFECYCLE_READ_ONLY" },
         capabilities: { canWithdraw: false },
       }),
     );
@@ -286,7 +293,7 @@ describe("ApplicationWorkspace states", () => {
           status: "WITHDRAWN",
           withdrawnAt: "2026-08-22T18:15:00.000Z",
         },
-        conversationSummary: { isReadOnly: true },
+        conversationSummary: { sendBlockReason: "LIFECYCLE_READ_ONLY" },
         capabilities: { canWithdraw: false },
       }),
     );
@@ -388,7 +395,7 @@ describe("ApplicationWorkspace withdrawal", () => {
             status: "WITHDRAWN",
             withdrawnAt: "2026-10-04T09:25:00.000Z",
           },
-          conversationSummary: { isReadOnly: true },
+          conversationSummary: { sendBlockReason: "LIFECYCLE_READ_ONLY" },
           capabilities: { canWithdraw: false },
         },
         "2026-10-04T09:25:00.000Z",

@@ -49,9 +49,11 @@ vi.mock("../api/conversation", async (importOriginal) => {
       applicationId: "application-1",
       conversationId: null,
       openedAt: null,
-      isOpen: false,
+      hasMessages: false,
       canCurrentUserSend: false,
-      expectedResponder: null,
+      applicantRepliesEnabled: false,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: "LIFECYCLE_READ_ONLY",
       unreadCount: 0,
       lastMessage: null,
       messages: [],
@@ -127,9 +129,11 @@ async function renderModal(
     applicationId: "application-1",
     conversationId: null,
     openedAt: null,
-    isOpen: false,
+    hasMessages: false,
     canCurrentUserSend: false,
-    expectedResponder: null,
+    applicantRepliesEnabled: false,
+    canCurrentUserManageApplicantReplies: false,
+    sendBlockReason: "LIFECYCLE_READ_ONLY",
     unreadCount: 0,
     lastMessage: null,
     messages: [],
@@ -251,7 +255,9 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     expect(
       isDisabled(screen.getByRole("button", { name: "Als Mieter auswählen" })),
     ).toBe(true);
-    expect(screen.queryByRole("checkbox")).toBeNull();
+    expect(
+      screen.getByRole("checkbox", { name: "Antworten erlauben" }),
+    ).toBeTruthy();
   });
 
   it("sends one message when the submit control is activated twice", async () => {
@@ -261,18 +267,22 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
       ...workspace,
       conversationSummary: {
         ...workspace.conversationSummary,
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: true,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
       },
     });
     vi.mocked(getConversationHistory).mockResolvedValue({
       applicationId: "application-1",
       conversationId: null,
       openedAt: null,
-      isOpen: true,
+      hasMessages: true,
       canCurrentUserSend: true,
-      expectedResponder: "PROVIDER",
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: null,
       unreadCount: 0,
       lastMessage: null,
       messages: [],
@@ -322,9 +332,11 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
       ...workspace,
       conversationSummary: {
         ...workspace.conversationSummary,
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: true,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
       },
     });
     vi.mocked(sendConversationMessage).mockRejectedValue(new Error("failed"));
@@ -537,9 +549,11 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
         applicationId: "application-1",
         conversationId: "conversation-1",
         openedAt: "2026-10-04T11:00:00.000Z",
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: true,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
         unreadCount: 2,
         lastMessage: first,
         messages: [first],
@@ -550,9 +564,11 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
         applicationId: "application-1",
         conversationId: "conversation-1",
         openedAt: "2026-10-04T11:00:00.000Z",
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: true,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: null,
         unreadCount: 2,
         lastMessage: second,
         messages: [second],
@@ -591,9 +607,11 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
       applicationId: "application-1",
       conversationId: "conversation-1",
       openedAt: "2026-10-04T11:00:00.000Z",
-      isOpen: true,
+      hasMessages: true,
       canCurrentUserSend: true,
-      expectedResponder: "PROVIDER",
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: null,
       unreadCount: 1,
       lastMessage: message,
       messages: [message],
@@ -681,7 +699,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     const { onClose } = await renderModal();
 
     const closeButton = screen.getByRole("button", { name: "Schließen" });
-    expect(document.activeElement).toBe(closeButton);
+    await waitFor(() => expect(document.activeElement).toBe(closeButton));
     await user.click(closeButton);
 
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -780,10 +798,22 @@ describe("ApplicantWorkflowModal on compact viewports", () => {
       await user.tab();
       expect(document.activeElement).toBe(panel);
       await user.tab();
+      if (tabName === "Chat") {
+        expect(document.activeElement).toBe(
+          screen.getByRole("checkbox", { name: "Antworten erlauben" }),
+        );
+        await user.tab();
+      }
       expect(document.activeElement).toBe(
         screen.getByRole("button", { name: "Schließen" }),
       );
       await user.tab({ shift: true });
+      if (tabName === "Chat") {
+        expect(document.activeElement).toBe(
+          screen.getByRole("checkbox", { name: "Antworten erlauben" }),
+        );
+        await user.tab({ shift: true });
+      }
       expect(document.activeElement).toBe(panel);
     },
   );
@@ -1327,9 +1357,11 @@ describe("activity list collapse", () => {
       applicationId: "application-1",
       conversationId: null,
       openedAt: null,
-      isOpen: false,
+      hasMessages: false,
       canCurrentUserSend: false,
-      expectedResponder: null,
+      applicantRepliesEnabled: false,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: "LIFECYCLE_READ_ONLY",
       unreadCount: 0,
       lastMessage: null,
       messages: [],

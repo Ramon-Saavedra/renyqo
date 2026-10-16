@@ -1,5 +1,4 @@
 import type { ConversationMessage } from "../api/conversation";
-import type { ApplicationStatus } from "../api/shared-schemas";
 import { applicationsCopy } from "../copy";
 import { calendarDayKey, formatTime, relativeDayLabel } from "./format-date";
 
@@ -47,18 +46,14 @@ export function buildMessageTimeline(
   return entries;
 }
 
-export type ConversationNotice =
-  | "notStarted"
-  | "notStartedWaiting"
-  | "closed"
-  | "notYourTurn";
-
-export function conversationNotice(
-  conversation: { readonly isOpen: boolean; readonly isReadOnly: boolean },
-  status: ApplicationStatus,
-): ConversationNotice {
-  if (!conversation.isOpen && status === "WAITING") return "notStartedWaiting";
-  if (conversation.isReadOnly) return "closed";
-  if (!conversation.isOpen) return "notStarted";
-  return "notYourTurn";
+export type ConversationNotice = "repliesDisabled" | "closed";
+export function conversationNotice(conversation: {
+  readonly sendBlockReason:
+    | "LIFECYCLE_READ_ONLY"
+    | "APPLICANT_REPLIES_DISABLED"
+    | null;
+}): ConversationNotice {
+  return conversation.sendBlockReason === "LIFECYCLE_READ_ONLY"
+    ? "closed"
+    : "repliesDisabled";
 }

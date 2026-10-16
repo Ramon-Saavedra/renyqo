@@ -1,3 +1,4 @@
+import { ApplicantReplyPermission } from "./ApplicantReplyPermission";
 import { useState } from "react";
 import { LockKeyhole, MessageSquare, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button/Button";
@@ -85,18 +86,7 @@ export function MessageComposer({
       ? null
       : model.conversationReadOnly
         ? copy.readOnlyText(model.applicant.name)
-        : !model.conversationOpen
-          ? copy.conversationClosed
-          : model.expectedResponder === "APPLICANT"
-            ? copy.sendBlockedUntilApplicant(model.applicant.name)
-            : copy.sendUnavailable;
-
-  const turn =
-    blockedReason || !model.conversationOpen || model.conversationReadOnly
-      ? null
-      : model.canSend
-        ? copy.waitingForYou
-        : null;
+        : copy.sendUnavailable;
 
   return (
     <form
@@ -161,8 +151,6 @@ export function MessageComposer({
         >
           {blockedReason}
         </p>
-      ) : turn ? (
-        <p className="text-caption text-foreground-secondary">{turn}</p>
       ) : null}
       {session?.actionArea === "messages" &&
       session.actionError &&
@@ -207,6 +195,7 @@ export function MessagesSection({
           <ReadOnlyNotice model={model} />
           <MessageList />
         </div>
+        <ApplicantReplyPermission model={model} />
         <MessageComposer model={model} />
       </div>
     </WorkflowSection>
@@ -226,6 +215,7 @@ export function MessagesPanel({
         className="self-start"
       />
       <ReadOnlyNotice model={model} />
+      <ApplicantReplyPermission model={model} />
       <MessageList />
     </div>
   );

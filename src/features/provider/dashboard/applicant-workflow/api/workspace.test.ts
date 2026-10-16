@@ -36,16 +36,19 @@ function emptyWorkspace(applicationId: string) {
       actionableUnreadMessageCount: 0,
       historicalUnreadMessageCount: 0,
       conversation: {
-        expectedResponder: "PROVIDER",
-        isOpen: false,
-        isReadOnly: false,
+        canCurrentUserSend: true,
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: true,
+        sendBlockReason: null,
+        hasMessages: false,
       },
     },
     conversationSummary: {
       canCurrentUserSend: true,
-      expectedResponder: "PROVIDER",
-      isOpen: false,
-      isReadOnly: false,
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: true,
+      sendBlockReason: null,
+      hasMessages: false,
     },
     documentsSummary: {
       canRequestDocuments: true,
@@ -81,13 +84,13 @@ describe("parseApplicantWorkspace", () => {
       applicantReplyWorkspace.application.id,
     );
 
-    expect(workspace.attention.pendingActions).toEqual([
-      { type: "RESPOND_TO_MESSAGE", source: "CONVERSATION" },
-    ]);
+    expect(workspace.attention.pendingActions).toEqual([]);
     expect(workspace.conversationSummary).toEqual({
-      isOpen: true,
-      isReadOnly: false,
-      expectedResponder: "PROVIDER",
+      hasMessages: true,
+
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: true,
+      sendBlockReason: null,
       canCurrentUserSend: true,
     });
     expect(workspace.documentsSummary.currentRequests).toHaveLength(3);
@@ -124,8 +127,8 @@ describe("parseApplicantWorkspace", () => {
   });
 
   it.each([
-    ["RESPOND_TO_MESSAGE"],
-    [{ type: "RESPOND_TO_MESSAGE", source: "DOCUMENT" }],
+    ["UNSUPPORTED_ACTION"],
+    [{ type: "UNSUPPORTED_ACTION", source: "DOCUMENT" }],
     [
       {
         type: "REVIEW_DOCUMENT",
@@ -225,7 +228,7 @@ describe("parseApplicantWorkspace", () => {
     );
 
     expect(workspace.conversationSummary.canCurrentUserSend).toBe(true);
-    expect(workspace.attention.conversation.isOpen).toBe(false);
+    expect(workspace.attention.conversation.hasMessages).toBe(false);
     expect(workspace.documentsSummary.currentRequests).toEqual([]);
     expect(workspace.viewingSummary.nextAction).toBe("NONE");
     expect(workspace.viewingSummary.current).toBeNull();

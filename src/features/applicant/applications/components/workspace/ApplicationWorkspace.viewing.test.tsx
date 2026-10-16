@@ -41,9 +41,11 @@ vi.mock("../../api/conversation", async (importOriginal) => ({
   loadCompleteConversation: vi.fn().mockResolvedValue({
     messages: [],
     capabilities: {
-      isOpen: true,
+      hasMessages: true,
       canCurrentUserSend: false,
-      expectedResponder: null,
+      applicantRepliesEnabled: false,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: "LIFECYCLE_READ_ONLY",
     },
   }),
 }));

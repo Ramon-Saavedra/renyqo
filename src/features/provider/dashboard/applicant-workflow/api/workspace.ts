@@ -1,11 +1,8 @@
+import { conversationSummarySchema } from "@/components/shared/conversation/capabilities";
 import { z } from "zod";
 import { ApiError, apiGet, type ApiRequestOptions } from "@/lib/api/client";
 
 const providerPendingActionSchema = z.discriminatedUnion("source", [
-  z.object({
-    type: z.literal("RESPOND_TO_MESSAGE"),
-    source: z.literal("CONVERSATION"),
-  }),
   z.object({
     type: z.literal("REVIEW_DOCUMENT"),
     source: z.literal("DOCUMENT"),
@@ -51,6 +48,8 @@ const ACTIVITY_TYPES = [
   "APPLICATION_RESTORED",
   "APPLICATION_ACCEPTED",
   "CONVERSATION_OPENED",
+  "APPLICANT_REPLIES_ENABLED",
+  "APPLICANT_REPLIES_DISABLED",
   "MESSAGE_SENT",
   "DOCUMENT_REQUESTED",
   "DOCUMENT_REQUEST_CANCELLED",
@@ -127,11 +126,7 @@ export const activityItemSchema = z.object({
   payload: activityPayloadSchema.nullable(),
 });
 
-const conversationStateSchema = z.object({
-  expectedResponder: z.enum(["PROVIDER", "APPLICANT"]).nullable(),
-  isOpen: z.boolean(),
-  isReadOnly: z.boolean(),
-});
+const conversationStateSchema = conversationSummarySchema;
 
 export const applicantWorkspaceSchema = z.object({
   application: z.object({
@@ -162,9 +157,7 @@ export const applicantWorkspaceSchema = z.object({
     historicalUnreadMessageCount: z.number().int().nonnegative(),
     conversation: conversationStateSchema,
   }),
-  conversationSummary: conversationStateSchema.extend({
-    canCurrentUserSend: z.boolean(),
-  }),
+  conversationSummary: conversationStateSchema,
   documentsSummary: z.object({
     canRequestDocuments: z.boolean(),
     counts: z.object({

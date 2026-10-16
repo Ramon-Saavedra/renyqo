@@ -36,15 +36,19 @@ export function createApplicantWorkspace(
       actionableUnreadMessageCount: 0,
       historicalUnreadMessageCount: 0,
       conversation: {
-        expectedResponder: "PROVIDER",
-        isOpen: true,
-        isReadOnly: false,
+        canCurrentUserSend: true,
+        applicantRepliesEnabled: true,
+        canCurrentUserManageApplicantReplies: true,
+        sendBlockReason: null,
+        hasMessages: true,
       },
     },
     conversationSummary: {
-      expectedResponder: "PROVIDER",
-      isOpen: true,
-      isReadOnly: false,
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: true,
+      sendBlockReason: null,
+      hasMessages: true,
+
       canCurrentUserSend: false,
     },
     documentsSummary: {

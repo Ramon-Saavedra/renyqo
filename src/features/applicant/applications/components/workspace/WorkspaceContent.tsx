@@ -65,7 +65,7 @@ export function WorkspaceContent({
   const conversation = useConversation({
     applicationId,
     snapshotKey,
-    isOpen: workspace.conversationSummary.isOpen,
+    hasMessages: workspace.conversationSummary.hasMessages,
     onSent: refresh,
   });
   const requests = workspace.documentsSummary.currentRequests;
@@ -100,7 +100,6 @@ export function WorkspaceContent({
     workspace.attention.pendingActions.map((action) =>
       toNextStepItem(action, {
         workspace,
-        messages: conversation.messages,
         timelines:
           timelines.state.status === "ready"
             ? timelines.state.data
@@ -122,9 +121,6 @@ export function WorkspaceContent({
       behavior: "smooth",
       block: "start",
     });
-    if (item.intent.kind === "focus-composer") {
-      document.getElementById(composerId)?.focus({ preventScroll: true });
-    }
     if (item.intent.kind === "upload") {
       transfers.openPicker(item.intent.requestId);
     }
@@ -165,7 +161,6 @@ export function WorkspaceContent({
             className="order-1 lg:order-none"
             conversation={conversation}
             summary={workspace.conversationSummary}
-            status={status}
             highlighted={highlight === "messages"}
             now={new Date()}
             sectionRef={messagesRef}

@@ -32,7 +32,7 @@ export interface ConversationController {
 interface UseConversationOptions {
   readonly applicationId: string;
   readonly snapshotKey: string;
-  readonly isOpen: boolean;
+  readonly hasMessages: boolean;
   readonly onSent: () => void;
 }
 
@@ -48,7 +48,7 @@ function mergeMessages(
 export function useConversation({
   applicationId,
   snapshotKey,
-  isOpen,
+  hasMessages,
   onSent,
 }: UseConversationOptions): ConversationController {
   const [load, setLoad] = useState<ConversationLoad>({ status: "loading" });
@@ -124,7 +124,7 @@ export function useConversation({
       });
 
     return () => controller.abort();
-  }, [applicationId, snapshotKey, isOpen, retryKey]);
+  }, [applicationId, snapshotKey, hasMessages, retryKey]);
 
   const retry = useCallback(() => {
     generationRef.current += 1;

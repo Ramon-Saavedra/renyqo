@@ -83,13 +83,6 @@ export const applicationsCopy = {
     calmText: "Aktuell ist nichts von dir zu tun.",
     calmViewing: (date: string, time: string) =>
       ` Deine Besichtigung ist am ${date} um ${time} Uhr.`,
-    message: {
-      title: "Nachricht beantworten",
-      text: (date: string, time: string) =>
-        `Der Anbieter hat dir am ${date} um ${time} Uhr geschrieben und wartet auf deine Antwort.`,
-      fallbackText: "Der Anbieter wartet auf deine Antwort.",
-      cta: "Zur Nachricht",
-    },
     upload: {
       title: (label: string) => `${label} hochladen`,
       fallbackLabel: "Unterlage",
@@ -180,7 +173,6 @@ export const applicationsCopy = {
   messages: {
     title: "Nachrichten",
     readOnly: "Nur lesbar",
-    replyExpected: "Antwort erwartet",
     logLabel: "Nachrichtenverlauf mit dem Anbieter",
     provider: "Anbieter",
     you: "Du",
@@ -204,18 +196,12 @@ export const applicationsCopy = {
     readError:
       "Der Lesestatus konnte nicht aktualisiert werden. Deine Nachrichten bleiben sichtbar.",
     notices: {
-      notStarted: {
-        title: "Der Anbieter hat die Unterhaltung noch nicht begonnen.",
-        waitingText:
-          "Während du auf der Warteliste stehst, ist keine Unterhaltung möglich.",
-        text: "Du kannst antworten, sobald der Anbieter dir schreibt.",
-      },
-      notYourTurn: {
-        title: "Du bist gerade nicht an der Reihe.",
-        text: "Du kannst wieder antworten, sobald der Anbieter dir schreibt.",
+      repliesDisabled: {
+        title: "Antworten sind nicht freigegeben.",
+        text: "Der Anbieter hat Antworten derzeit nicht freigegeben. Du kannst Nachrichten weiterhin lesen.",
       },
       closed: {
-        title: "Diese Unterhaltung ist abgeschlossen.",
+        title: "Diese Unterhaltung ist derzeit nur lesbar.",
         text: "Der bisherige Verlauf bleibt für dich lesbar.",
       },
     },

@@ -70,6 +70,16 @@ const FIXED: Record<
     icon: Undo2,
     tone: "neutral",
   },
+  APPLICANT_REPLIES_ENABLED: {
+    label: "Antworten freigegeben",
+    icon: MessageSquare,
+    tone: "neutral",
+  },
+  APPLICANT_REPLIES_DISABLED: {
+    label: "Antworten gesperrt",
+    icon: MessageSquare,
+    tone: "neutral",
+  },
   CONVERSATION_OPENED: {
     label: "Unterhaltung begonnen",
     icon: MessageSquare,

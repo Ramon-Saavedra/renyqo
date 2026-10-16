@@ -31,9 +31,8 @@ export const applicantWorkflowCopy = {
     unavailableTitle: "Nachrichten noch nicht verfügbar",
     unavailableText: (name: string) =>
       `Nachrichten mit ${name} sind hier noch nicht verfügbar.`,
-    firstMessage: "Erste Nachricht senden",
     composerLabel: (name: string) => `Nachricht an ${name}`,
-    composerPlaceholder: "Erste Nachricht schreiben …",
+    composerPlaceholder: "Nachricht schreiben …",
     send: "Senden",
     sendError:
       "Die Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
@@ -43,12 +42,6 @@ export const applicantWorkflowCopy = {
       "Der Lesestatus konnte nicht aktualisiert werden. Die Nachrichten bleiben sichtbar.",
     empty: "Noch keine Nachrichten.",
     readOnly: "Nur lesen",
-    waitingForYou: "Wartet auf deine Antwort.",
-    waitingForApplicant: (name: string) =>
-      `Wartet auf die Antwort von ${name}.`,
-    sendBlockedUntilApplicant: (name: string) =>
-      `Du kannst erst schreiben, wenn du eine Antwort von ${name} erhalten hast.`,
-    conversationClosed: "Diese Unterhaltung ist geschlossen.",
     sendUnavailable: "Du kannst hier gerade keine Nachricht senden.",
     readOnlyText: (name: string) =>
       `Nachrichten mit ${name} können gelesen, aber nicht beantwortet werden.`,

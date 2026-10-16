@@ -88,9 +88,11 @@ function history(body: string): ConversationHistory {
     applicationId: "application-1",
     conversationId: null,
     openedAt: null,
-    isOpen: false,
+    hasMessages: false,
     canCurrentUserSend: false,
-    expectedResponder: null,
+    applicantRepliesEnabled: false,
+    canCurrentUserManageApplicantReplies: false,
+    sendBlockReason: "LIFECYCLE_READ_ONLY",
     unreadCount: 0,
     lastMessage: null,
     messages: [

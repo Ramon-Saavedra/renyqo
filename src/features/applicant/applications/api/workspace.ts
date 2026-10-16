@@ -11,17 +11,12 @@ import {
   applicationStatusSchema,
   compactConversationSchema,
   compactListingSchema,
-  conversationSideSchema,
   dateTimeSchema,
   documentCountsSchema,
   viewingSummarySchema,
 } from "./shared-schemas";
 
 const pendingActionSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("RESPOND_TO_MESSAGE"),
-    source: z.literal("CONVERSATION"),
-  }),
   z.object({
     type: z.literal("UPLOAD_REQUESTED_DOCUMENT"),
     source: z.literal("DOCUMENT"),
@@ -69,11 +64,7 @@ const workspaceSchema = z.object({
     hasPendingAction: z.boolean(),
     actionableUnreadMessageCount: z.number().int().nonnegative(),
     historicalUnreadMessageCount: z.number().int().nonnegative(),
-    conversation: z.object({
-      isOpen: z.boolean(),
-      isReadOnly: z.boolean(),
-      expectedResponder: conversationSideSchema.nullable(),
-    }),
+    conversation: compactConversationSchema,
   }),
   conversationSummary: compactConversationSchema,
   documentsSummary: z.object({

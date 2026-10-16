@@ -74,17 +74,18 @@ function openWorkspace(
     {
       attention: canCurrentUserSend
         ? {
-            pendingActions: [
-              { type: "RESPOND_TO_MESSAGE", source: "CONVERSATION" },
-            ],
+            pendingActions: [],
             pendingActionCount: 1,
             hasPendingAction: true,
           }
         : {},
       conversationSummary: {
-        isOpen: true,
-        isReadOnly: false,
-        expectedResponder: canCurrentUserSend ? "APPLICANT" : "PROVIDER",
+        hasMessages: true,
+
+        applicantRepliesEnabled: canCurrentUserSend,
+        sendBlockReason: canCurrentUserSend
+          ? null
+          : "APPLICANT_REPLIES_DISABLED",
         canCurrentUserSend,
       },
     },
@@ -141,7 +142,9 @@ describe("ApplicationWorkspace conversation", () => {
     await user.keyboard("{Control>}{Enter}{/Control}");
 
     await screen.findByText("Meine Antwort");
-    await waitFor(() => expect(screen.queryByRole("textbox")).toBeNull());
+    await waitFor(() =>
+      expect(screen.getByRole("textbox")).toHaveProperty("value", ""),
+    );
     expect(send).toHaveBeenCalledExactlyOnceWith(
       APPLICATION_ID,
       "Meine Antwort",
@@ -243,9 +246,9 @@ describe("ApplicationWorkspace conversation", () => {
       resolveSend(message(2, "APPLICANT", "Zum 01.12. wäre ideal."));
     });
 
-    expect(
-      await screen.findByText("Du bist gerade nicht an der Reihe."),
-    ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole("textbox")).toHaveProperty("value", ""),
+    );
     expect(getWorkspace).toHaveBeenCalledTimes(2);
   });
 
@@ -276,19 +279,21 @@ describe("ApplicationWorkspace conversation", () => {
     loadConversation.mockResolvedValue(
       loadedConversation([PROVIDER_MESSAGE], {
         canCurrentUserSend: false,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "APPLICANT_REPLIES_DISABLED",
       }),
     );
 
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
 
     expect(
-      await screen.findByText("Du bist gerade nicht an der Reihe."),
+      await screen.findByText("Antworten sind nicht freigegeben."),
     ).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
-    expect(screen.queryByText("Nur lesbar")).toBeNull();
+    expect(screen.queryByText("Nur lesbar")).toBeTruthy();
     expect(
-      screen.queryByText("Diese Unterhaltung ist abgeschlossen."),
+      screen.queryByText("Diese Unterhaltung ist derzeit nur lesbar."),
     ).toBeNull();
   });
 
@@ -296,18 +301,18 @@ describe("ApplicationWorkspace conversation", () => {
     getWorkspace.mockResolvedValue(createWorkspace());
     loadConversation.mockResolvedValue(
       loadedConversation([], {
-        isOpen: false,
+        hasMessages: false,
         canCurrentUserSend: false,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "APPLICANT_REPLIES_DISABLED",
       }),
     );
 
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
 
     expect(
-      await screen.findByText(
-        "Der Anbieter hat die Unterhaltung noch nicht begonnen.",
-      ),
+      await screen.findByText("Antworten sind nicht freigegeben."),
     ).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(loadConversation).toHaveBeenCalledOnce();
@@ -318,13 +323,14 @@ describe("ApplicationWorkspace conversation", () => {
     loadConversation.mockResolvedValue(
       loadedConversation([PROVIDER_MESSAGE], {
         canCurrentUserSend: false,
-        expectedResponder: "PROVIDER",
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "APPLICANT_REPLIES_DISABLED",
       }),
     );
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
-    await screen.findByText("Du bist gerade nicht an der Reihe.");
+    await screen.findByText("Antworten sind nicht freigegeben.");
     expect(screen.queryByRole("textbox")).toBeNull();
-    expect(screen.queryByText("Antwort erwartet")).toBeNull();
   });
 
   it("allows a reply when conversation permission changed after the workspace fetch", async () => {
@@ -332,21 +338,23 @@ describe("ApplicationWorkspace conversation", () => {
       createWorkspace({
         listing: { status: "ARCHIVED" },
         conversationSummary: {
-          isOpen: true,
-          isReadOnly: true,
+          hasMessages: true,
+
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         },
       }),
     );
     loadConversation.mockResolvedValue(loadedConversation([PROVIDER_MESSAGE]));
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
     await screen.findByRole("textbox", { name: "Antwort an den Anbieter" });
-    expect(screen.getByText("Antwort erwartet")).toBeTruthy();
+    expect(screen.getByRole("textbox")).toHaveProperty("disabled", false);
     expect(screen.getByRole("textbox")).toHaveProperty("disabled", false);
     expect(screen.queryByText("Nur lesbar")).toBeNull();
     expect(
-      screen.queryByText("Diese Unterhaltung ist abgeschlossen."),
+      screen.queryByText("Diese Unterhaltung ist derzeit nur lesbar."),
     ).toBeNull();
   });
 
@@ -354,16 +362,17 @@ describe("ApplicationWorkspace conversation", () => {
     getWorkspace.mockResolvedValue(openWorkspace(true));
     loadConversation.mockResolvedValue(
       loadedConversation([PROVIDER_MESSAGE], {
-        isOpen: true,
+        hasMessages: true,
         canCurrentUserSend: false,
-        expectedResponder: null,
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "LIFECYCLE_READ_ONLY",
       }),
     );
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
-    await screen.findByText("Diese Unterhaltung ist abgeschlossen.");
+    await screen.findByText("Diese Unterhaltung ist derzeit nur lesbar.");
     expect(screen.getByText(PROVIDER_MESSAGE.body)).toBeTruthy();
     expect(screen.getByText("Nur lesbar")).toBeTruthy();
-    expect(screen.queryByText("Antwort erwartet")).toBeNull();
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(send).not.toHaveBeenCalled();
   });
@@ -375,28 +384,31 @@ describe("ApplicationWorkspace conversation", () => {
         createWorkspace({
           application: { status },
           conversationSummary: {
-            isOpen: true,
-            isReadOnly: true,
+            hasMessages: true,
+
             canCurrentUserSend: false,
-            expectedResponder: null,
+            applicantRepliesEnabled: false,
+            canCurrentUserManageApplicantReplies: false,
+            sendBlockReason: "LIFECYCLE_READ_ONLY",
           },
           capabilities: { canWithdraw: false },
         }),
       );
       loadConversation.mockResolvedValue(
         loadedConversation([PROVIDER_MESSAGE], {
-          isOpen: true,
+          hasMessages: true,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         }),
       );
       render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
       await screen.findByText(PROVIDER_MESSAGE.body);
       expect(screen.getByText("Nur lesbar")).toBeTruthy();
       expect(
-        screen.getByText("Diese Unterhaltung ist abgeschlossen."),
+        screen.getByText("Diese Unterhaltung ist derzeit nur lesbar."),
       ).toBeTruthy();
-      expect(screen.queryByText("Antwort erwartet")).toBeNull();
       expect(screen.queryByRole("textbox")).toBeNull();
       expect(screen.queryByRole("button", { name: "Senden" })).toBeNull();
       expect(send).not.toHaveBeenCalled();
@@ -407,13 +419,15 @@ describe("ApplicationWorkspace conversation", () => {
     getWorkspace.mockResolvedValue(openWorkspace(true));
     loadConversation.mockResolvedValue(
       loadedConversation([PROVIDER_MESSAGE], {
-        isOpen: false,
+        hasMessages: false,
         canCurrentUserSend: false,
-        expectedResponder: null,
+        applicantRepliesEnabled: false,
+        canCurrentUserManageApplicantReplies: false,
+        sendBlockReason: "LIFECYCLE_READ_ONLY",
       }),
     );
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
-    await screen.findByText("Diese Unterhaltung ist abgeschlossen.");
+    await screen.findByText("Diese Unterhaltung ist derzeit nur lesbar.");
     expect(screen.getByText("Nur lesbar")).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
   });
@@ -429,9 +443,11 @@ describe("conversation revalidation", () => {
       .mockResolvedValueOnce(loadedConversation([PROVIDER_MESSAGE]))
       .mockResolvedValueOnce(
         loadedConversation([PROVIDER_MESSAGE], {
-          isOpen: true,
+          hasMessages: true,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         }),
       );
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
@@ -440,7 +456,7 @@ describe("conversation revalidation", () => {
     });
     await user.type(composer, "Entwurf behalten");
     act(() => window.dispatchEvent(new Event("focus")));
-    await screen.findByText("Diese Unterhaltung ist abgeschlossen.");
+    await screen.findByText("Diese Unterhaltung ist derzeit nur lesbar.");
     expect(screen.getByRole("textbox")).toBe(composer);
     expect(composer).toHaveProperty("value", "Entwurf behalten");
     expect(composer).toHaveProperty("disabled", true);
@@ -450,7 +466,6 @@ describe("conversation revalidation", () => {
     );
     expect(screen.getByText("Nur lesbar")).toBeTruthy();
     expect(screen.getByText(PROVIDER_MESSAGE.body)).toBeTruthy();
-    expect(screen.queryByText("Antwort erwartet")).toBeNull();
     await user.click(screen.getByRole("button", { name: "Senden" }));
     fireEvent.keyDown(composer, { key: "Enter", ctrlKey: true });
     expect(send).not.toHaveBeenCalled();
@@ -463,9 +478,11 @@ describe("conversation revalidation", () => {
         createWorkspace(
           {
             conversationSummary: {
-              isOpen: false,
-              isReadOnly: true,
-              expectedResponder: null,
+              hasMessages: false,
+
+              applicantRepliesEnabled: false,
+              canCurrentUserManageApplicantReplies: false,
+              sendBlockReason: "LIFECYCLE_READ_ONLY",
               canCurrentUserSend: false,
             },
           },
@@ -492,13 +509,15 @@ describe("conversation revalidation", () => {
     await act(async () => {
       finishRefresh(
         loadedConversation([], {
-          isOpen: false,
+          hasMessages: false,
           canCurrentUserSend: false,
-          expectedResponder: null,
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "LIFECYCLE_READ_ONLY",
         }),
       );
     });
-    await screen.findByText("Diese Unterhaltung ist abgeschlossen.");
+    await screen.findByText("Diese Unterhaltung ist derzeit nur lesbar.");
     expect(screen.getByText(PROVIDER_MESSAGE.body)).toBeTruthy();
     expect(screen.getByText("Nur lesbar")).toBeTruthy();
     expect(screen.queryByRole("textbox")).toBeNull();
@@ -531,7 +550,9 @@ describe("conversation revalidation", () => {
       .mockResolvedValue(
         loadedConversation([PROVIDER_MESSAGE], {
           canCurrentUserSend: false,
-          expectedResponder: "PROVIDER",
+          applicantRepliesEnabled: false,
+          canCurrentUserManageApplicantReplies: false,
+          sendBlockReason: "APPLICANT_REPLIES_DISABLED",
         }),
       );
     send.mockRejectedValue(new ApiError(409, "internal conflict"));

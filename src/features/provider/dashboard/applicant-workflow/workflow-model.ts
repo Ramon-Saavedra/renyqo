@@ -103,15 +103,14 @@ export interface ApplicantWorkflowModel {
   readonly canSend: boolean;
   readonly canRequestDocuments: boolean;
   readonly canProposeViewing: boolean;
-  readonly conversationOpen: boolean;
-  readonly expectedResponder: "PROVIDER" | "APPLICANT" | null;
+  readonly applicantRepliesEnabled: boolean;
+  readonly canManageApplicantReplies: boolean;
   readonly conversationReadOnly: boolean;
   readonly documents: readonly WorkflowDocumentRow[];
   readonly viewing: WorkflowViewingCard | null;
 }
 
 const PENDING_LABEL: Record<ProviderPendingAction["type"], string> = {
-  RESPOND_TO_MESSAGE: "Nachricht beantworten",
   REVIEW_DOCUMENT: "Unterlage prüfen",
   RESPOND_TO_VIEWING_CHANGE_REQUEST: "Terminänderung beantworten",
   CLOSE_UNANSWERED_VIEWING: "Offenen Termin schließen",
@@ -312,9 +311,9 @@ export function buildApplicantWorkflowModel(
       messages: summary(
         "messages",
         unread > 0 ? `${unread} ungelesen` : "Keine ungelesenen",
-        conversation.isReadOnly
+        conversation.sendBlockReason === "LIFECYCLE_READ_ONLY"
           ? "Nur lesen"
-          : conversation.isOpen
+          : conversation.hasMessages
             ? "Offen"
             : "Geschlossen",
         unread > 0 ? "primary" : "neutral",
@@ -351,9 +350,11 @@ export function buildApplicantWorkflowModel(
     canSend: conversation.canCurrentUserSend,
     canRequestDocuments: workspace.documentsSummary.canRequestDocuments,
     canProposeViewing: workspace.viewingSummary.canPropose,
-    conversationOpen: conversation.isOpen,
-    expectedResponder: conversation.expectedResponder,
-    conversationReadOnly: conversation.isReadOnly,
+    applicantRepliesEnabled: conversation.applicantRepliesEnabled,
+    canManageApplicantReplies:
+      conversation.canCurrentUserManageApplicantReplies,
+    conversationReadOnly:
+      conversation.sendBlockReason === "LIFECYCLE_READ_ONLY",
     documents: requests.map((request) => ({
       requestId: request.requestId,
       documentId: request.documentId,
