@@ -68,6 +68,7 @@ describe("ListingApplicantSlots", () => {
     fireEvent.focus(firstSlot);
 
     const tooltip = await screen.findByRole("tooltip");
+    expect(tooltip.className).not.toMatch(/(?:^|\s)shadow-/);
     expect(tooltip.textContent).toContain("Anna Lehmann");
     expect(tooltip.textContent).toContain("2 Personen");
     expect(tooltip.textContent).toContain("Rauchen klären");

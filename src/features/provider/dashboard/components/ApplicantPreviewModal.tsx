@@ -42,7 +42,7 @@ export function ApplicantPreviewModal({
         aria-labelledby={titleId}
         aria-describedby={applicant.introduction ? descriptionId : undefined}
         tabIndex={-1}
-        className="bg-background border-border relative max-h-full w-full max-w-md overflow-y-auto rounded-md border p-6 shadow-card"
+        className="bg-background border-border dark:border-border-strong relative max-h-full w-full max-w-md overflow-y-auto rounded-md border p-6"
         onClick={(event) => event.stopPropagation()}
       >
         <Button

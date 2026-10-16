@@ -27,9 +27,10 @@ interface ListingRowProps {
 }
 
 const ROW_BASE_CLASS =
-  "cursor-pointer rounded-md border bg-background-muted px-4 py-4 focus-visible:outline-none focus-visible:shadow-focus sm:px-5";
+  "cursor-pointer rounded-md border bg-background-muted px-4 py-4 hover:shadow-card focus-visible:outline-none focus-visible:shadow-focus sm:px-5";
 const ROW_DEFAULT_CLASS = "border-border/50 hover:border-border";
-const ROW_SELECTED_CLASS = "border-primary shadow-focus hover:border-primary";
+const ROW_SELECTED_CLASS =
+  "border-primary ring-3 ring-primary-tint hover:border-primary";
 const ROW_INACTIVE_CLASS = "opacity-75";
 
 const ROW_CONTENT_CLASS = "flex flex-col gap-3.5 sm:flex-row sm:gap-4";

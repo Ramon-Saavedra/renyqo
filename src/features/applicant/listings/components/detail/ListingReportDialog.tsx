@@ -32,7 +32,7 @@ interface ListingReportDialogProps {
 const OVERLAY_CLASS =
   "fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 px-gutter";
 const PANEL_CLASS =
-  "relative max-h-full min-h-0 w-full max-w-md overflow-y-auto rounded-md border border-border bg-background p-5 shadow-card scrollbar-slim";
+  "relative max-h-full min-h-0 w-full max-w-md overflow-y-auto rounded-md border border-border dark:border-border-strong bg-background p-5 scrollbar-slim";
 const CLOSE_BUTTON_CLASS = "absolute right-3 top-3";
 const TITLE_CLASS = "pr-8 text-title font-medium text-foreground";
 const LEAD_CLASS = "mt-2 text-caption text-foreground-secondary";

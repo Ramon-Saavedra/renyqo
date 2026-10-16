@@ -23,7 +23,7 @@ const ERROR_CLASS =
   "pointer-events-auto mt-1 max-w-full text-right text-caption break-words text-danger";
 
 const SAVE_BUTTON_CLASS =
-  "pointer-events-auto inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm bg-background p-0 text-primary shadow-card hover:text-primary-hover hover:shadow-card-hover focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
+  "pointer-events-auto inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-sm bg-background p-0 text-primary hover:shadow-card disabled:shadow-none hover:text-primary-hover focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50";
 
 const { save } = listingDetailCopy;
 

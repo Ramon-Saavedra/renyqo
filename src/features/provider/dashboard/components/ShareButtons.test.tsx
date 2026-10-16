@@ -6,6 +6,23 @@ import { ShareButtons } from "./ShareButtons";
 const writeText = vi.fn();
 
 describe("ShareButtons", () => {
+  it("leaves popup surface and elevation to its owner", () => {
+    const { container } = render(
+      <ShareButtons
+        title="Wohnung"
+        shareUrl="https://renyqo.test/one"
+        variant="popover"
+      />,
+    );
+    const content = container.firstElementChild;
+    expect(content?.className).not.toMatch(
+      /(?:^|\s)(?:shadow-|border(?:\s|$)|bg-background)/,
+    );
+    expect(
+      screen.getByRole("button", { name: "Link kopieren" }),
+    ).not.toBeNull();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     Object.defineProperty(window.navigator, "clipboard", {

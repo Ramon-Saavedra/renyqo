@@ -66,7 +66,6 @@ html {
 
   --shadow-focus: var(--focus-ring);
   --shadow-card: var(--card-shadow);
-  --shadow-card-hover: var(--card-shadow-hover);
   --shadow-tint-ring: 0 0 0 3px var(--primary-tint);
   --shadow-cover-ring: inset 0 0 0 1.5px var(--primary);
 
@@ -194,9 +193,8 @@ html {
   --watermark-cycle-duration: 120s;
 
   --focus-ring: 0 0 0 3px rgb(83 103 131 / 0.18);
-  --card-shadow: 0px 0px 12px 0px #536783;
-  --card-shadow-hover:
-    0 8px 18px rgb(14 14 14 / 0.1), 0 20px 44px rgb(14 14 14 / 0.14);
+  --card-shadow: 0 0 12px 0
+    color-mix(in srgb, var(--primary-default) 18%, transparent);
 
   --typeface-display:
     var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
@@ -251,9 +249,8 @@ html {
   --watermark-opacity-peak: 0.5;
 
   --focus-ring: 0 0 0 3px rgb(83 103 131 / 0.25);
-  --card-shadow: 0px 0px 12px 0px #536783;
-  --card-shadow-hover:
-    0 8px 18px rgb(0 0 0 / 0.7), 0 22px 48px rgb(0 0 0 / 0.85);
+  --card-shadow: 0 0 12px 0
+    color-mix(in srgb, var(--primary-default) 38%, transparent);
 }
 
 [data-accent="pastellblau"] {
@@ -384,10 +381,18 @@ body {
 }
 
 .ai-glow {
+  position: relative;
+}
+.ai-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
   box-shadow: 0 0 0 0 transparent;
 }
-.ai-glow:hover,
-.ai-glow:focus-visible {
+.ai-glow:hover::before,
+.ai-glow:focus-visible::before {
   animation: ai-glow-pulse 6s ease-in-out infinite;
 }
 @keyframes ai-glow-pulse {
@@ -400,8 +405,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ai-glow:hover,
-  .ai-glow:focus-visible {
+  .ai-glow:hover::before,
+  .ai-glow:focus-visible::before {
     animation: none;
   }
 }

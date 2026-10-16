@@ -89,7 +89,7 @@ export function ApplicantWorkflowModal({
           "flex w-full flex-col overflow-hidden bg-background focus-visible:outline-none",
           compact
             ? "h-dvh"
-            : "max-h-full max-w-5xl rounded-md border border-border shadow-card",
+            : "max-h-full max-w-5xl rounded-md border border-border dark:border-border-strong",
         )}
       >
         {ready ? (

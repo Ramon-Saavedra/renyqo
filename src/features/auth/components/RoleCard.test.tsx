@@ -25,6 +25,14 @@ const baseProps = {
 } as const;
 
 describe("RoleCard", () => {
+  it("keeps selection and keyboard feedback without decorative elevation", () => {
+    render(<RoleCard {...baseProps} active />);
+    const option = screen.getByRole("radio");
+    expect(option.className).not.toMatch(/(?:^|\s)shadow-/);
+    expect(option.classList.contains("border-primary")).toBe(true);
+    expect(option.classList.contains("focus-visible:shadow-focus")).toBe(true);
+  });
+
   it("renders a radio-like role option with its main content", () => {
     render(<RoleCard {...baseProps} />);
 

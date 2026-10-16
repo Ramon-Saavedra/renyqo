@@ -31,6 +31,17 @@ function renderDrawer(
 }
 
 describe("FilterDrawer", () => {
+  it("keeps its existing scrim and sheet presentation without elevation", () => {
+    renderDrawer();
+    const sheet = screen.getByRole("dialog");
+    expect(sheet.className).not.toMatch(/(?:^|\s)shadow-/);
+    expect(sheet.classList.contains("bottom-0")).toBe(true);
+    expect(sheet.classList.contains("dark:border-border-strong")).toBe(true);
+    expect(
+      sheet.previousElementSibling?.classList.contains("bg-foreground/40"),
+    ).toBe(true);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -7,7 +7,7 @@ import { consumeFlash } from "@/lib/utils/flash";
 import "@/components/ui/loading/shared-animations.css";
 
 const TOAST_CLASS =
-  "fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-md border border-success-surface-border bg-success-surface px-4 py-3 text-caption font-medium text-success-on-surface shadow-card rq-fade-in";
+  "fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-md border border-success-surface-border bg-success-surface px-4 py-3 text-caption font-medium text-success-on-surface rq-fade-in";
 
 const VISIBLE_MS = 3000;
 

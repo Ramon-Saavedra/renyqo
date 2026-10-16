@@ -32,7 +32,7 @@ const TONE_CLASS: Record<MatchBadgeTone, string> = {
   new: "bg-input text-foreground-secondary",
   match: "bg-success-surface text-success-on-surface",
   "no-match": "bg-foreground-tertiary/15 text-foreground-secondary",
-  incomplete: "bg-warning/25 text-warning shadow-[0_0_6px_var(--warning)]",
+  incomplete: "bg-warning/25 text-warning",
   "not-selected":
     "bg-exit-provider-discarded-bg text-exit-provider-discarded-fg",
 };

@@ -169,7 +169,7 @@ Design tokens (color, typography, spacing, radius, shadow) are declared in [`src
 
 ```tsx
 // Correct
-<section className="bg-background text-foreground border-border shadow-card rounded-md" />
+<section className="bg-background text-foreground border-border rounded-md" />
 
 // Wrong
 <section className="bg-[#566582] text-[42px] leading-[1.05]" />

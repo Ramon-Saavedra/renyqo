@@ -27,6 +27,17 @@ const BASE: ListingOverviewItem = {
 };
 
 describe("ListingRow", () => {
+  it("shares hover elevation without replacing selected or keyboard focus rings", () => {
+    const { container } = render(
+      <ListingRow listing={BASE} onAction={vi.fn()} selected now={NOW} />,
+    );
+    const row = container.querySelector("article");
+    expect(row?.classList.contains("hover:shadow-card")).toBe(true);
+    expect(row?.classList.contains("shadow-card")).toBe(false);
+    expect(row?.classList.contains("ring-primary-tint")).toBe(true);
+    expect(row?.classList.contains("focus-visible:shadow-focus")).toBe(true);
+  });
+
   it("renders the listing summary and actions trigger", () => {
     render(<ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />);
 

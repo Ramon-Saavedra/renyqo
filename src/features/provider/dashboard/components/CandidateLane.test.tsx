@@ -20,6 +20,24 @@ const fullCandidateSet = Array.from({ length: 5 }, (_, index) => ({
 }));
 
 describe("CandidateLane", () => {
+  it("elevates actionable applicant cards on hover while keeping button focus", () => {
+    const { container } = render(
+      <CandidateLane
+        actives={[candidate]}
+        waitingCount={0}
+        onOpenPreview={vi.fn()}
+      />,
+    );
+    const card = container.querySelector("[data-rq-candidate-card]");
+    expect(card?.classList.contains("hover:shadow-card")).toBe(true);
+    expect(card?.classList.contains("shadow-card")).toBe(false);
+    expect(
+      screen
+        .getByRole("button", { name: /Anna Lehmann/ })
+        .classList.contains("focus-visible:shadow-focus"),
+    ).toBe(true);
+  });
+
   it("announces waiting count changes", () => {
     const { rerender } = render(
       <CandidateLane

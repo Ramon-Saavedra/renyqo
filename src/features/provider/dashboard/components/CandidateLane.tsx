@@ -21,7 +21,7 @@ const GRID_CLASS =
   "grid grid-cols-2 gap-3 @min-[640px]:grid-cols-3 @min-[1024px]:grid-cols-6";
 
 const CARD_CLASS =
-  "group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border/50 bg-background-muted";
+  "group relative flex min-w-0 flex-col overflow-hidden rounded-md border border-border/50 bg-background-muted hover:shadow-card";
 
 const PROFILE_BUTTON_CLASS =
   "block w-full flex-1 cursor-pointer px-card-x py-card-y text-left focus-visible:outline-none focus-visible:shadow-focus hover:bg-background-subtle";
