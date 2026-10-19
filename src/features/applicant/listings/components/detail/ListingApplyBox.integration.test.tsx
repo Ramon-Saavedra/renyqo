@@ -26,6 +26,42 @@ function box(admission: ApplicationAdmission) {
 beforeEach(() => vi.clearAllMocks());
 
 describe("ListingApplyBox conflict reconciliation", () => {
+  it("keeps a generic eligibility rejection visible after admission refetch and permits retry", async () => {
+    vi.mocked(apiPost).mockRejectedValue(
+      new ApiError(
+        422,
+        "internal eligibility diagnostics",
+        "http",
+        "APPLICANT_NOT_ELIGIBLE",
+        {
+          canApply: false,
+          evaluatedAt: "2026-10-19T12:00:00.000Z",
+          reasons: ["household_income_below_requirement"],
+          warnings: [],
+        },
+      ),
+    );
+    const view = render(box(createAdmission()));
+    fireEvent.click(screen.getByRole("button", { name: "Bewerben" }));
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Dein Profil erfüllt die Voraussetzungen derzeit nicht.",
+    );
+    view.rerender(box(createAdmission({ hasApplicationHistory: true })));
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Dein Profil erfüllt die Voraussetzungen derzeit nicht.",
+    );
+    expect(
+      screen.queryByText(/internal eligibility|household_income/),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "Bewerben" }));
+    await waitFor(() => expect(apiPost).toHaveBeenCalledTimes(2));
+    expect((await screen.findByRole("alert")).textContent).toBe(
+      "Dein Profil erfüllt die Voraussetzungen derzeit nicht.",
+    );
+  });
   it.each([
     createAdmission({ hasApplicationHistory: true }),
     createAdmission({

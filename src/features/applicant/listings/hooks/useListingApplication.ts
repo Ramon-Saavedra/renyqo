@@ -21,14 +21,13 @@ export type ListingApplicationState =
   | { readonly status: "submitting" }
   | { readonly status: "success"; readonly application: ListingApplication }
   | {
-      readonly status: "eligibility-rejected";
-    }
-  | {
       readonly status: "error";
       readonly message: string;
       readonly blockReason: ApplicationSubmissionBlockReason | null;
     };
 function messageFor(error: unknown): string {
+  if (error instanceof ListingEligibilityRejectedError)
+    return applicationBlockCopy.APPLICANT_NOT_ELIGIBLE;
   if (!(error instanceof ApiError)) return applicationAdmissionCopy.failed;
   if (error.status === 409) {
     const reason = applicationSubmissionBlockReasonSchema.safeParse(error.code);
@@ -63,7 +62,6 @@ export function useListingApplication(id: string) {
     (admission: ApplicationAdmission) =>
       setState((current) =>
         current.status === "success" ||
-        current.status === "eligibility-rejected" ||
         (current.status === "error" &&
           current.blockReason !== null &&
           (admission.canSubmitApplication ||
@@ -93,20 +91,14 @@ export function useListingApplication(id: string) {
     } catch (error) {
       if (requestGeneration !== generation.current) return;
       invalidateListingApplicationData();
-      if (error instanceof ListingEligibilityRejectedError)
-        setState({
-          status: "eligibility-rejected",
-        });
-      else {
-        const reason = applicationSubmissionBlockReasonSchema.safeParse(
-          error instanceof ApiError && error.status === 409 ? error.code : null,
-        );
-        setState({
-          status: "error",
-          message: messageFor(error),
-          blockReason: reason.success ? reason.data : null,
-        });
-      }
+      const reason = applicationSubmissionBlockReasonSchema.safeParse(
+        error instanceof ApiError && error.status === 409 ? error.code : null,
+      );
+      setState({
+        status: "error",
+        message: messageFor(error),
+        blockReason: reason.success ? reason.data : null,
+      });
     } finally {
       if (requestGeneration === generation.current)
         isSubmittingRef.current = false;

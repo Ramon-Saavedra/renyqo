@@ -126,8 +126,7 @@ export function ListingApplyBox({
             disabled={
               ui.action !== "submit" ||
               state.status === "submitting" ||
-              state.status === "success" ||
-              state.status === "eligibility-rejected"
+              state.status === "success"
             }
             onClick={() => void handleApply()}
           >
