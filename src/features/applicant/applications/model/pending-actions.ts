@@ -119,19 +119,34 @@ export function toNextStepItem(
 export function presentNextSteps(
   items: readonly NextStepItem[],
 ): readonly NextStepItem[] {
-  const uploads = items.filter((item) => item.intent.kind === "upload");
-  if (uploads.length === 0) return items;
-  const others = items.filter((item) => item.intent.kind !== "upload");
+  const uploadCount = items.filter(
+    (item) => item.intent.kind === "upload",
+  ).length;
+  if (uploadCount === 0) return items;
+
   const aggregate: NextStepItem = {
     key: UPLOAD_AGGREGATE_KEY,
     icon: FileUp,
     title: copy.upload.aggregateTitle,
-    text: copy.upload.aggregateText(uploads.length),
+    text: copy.upload.aggregateText(uploadCount),
     cta: copy.upload.navigateCta,
     area: "documents",
     intent: { kind: "show-documents" },
   };
-  return [aggregate, ...others];
+
+  let aggregateInserted = false;
+  const presented: NextStepItem[] = [];
+  for (const item of items) {
+    if (item.intent.kind === "upload") {
+      if (!aggregateInserted) {
+        presented.push(aggregate);
+        aggregateInserted = true;
+      }
+      continue;
+    }
+    presented.push(item);
+  }
+  return presented;
 }
 
 export function orderNextSteps(

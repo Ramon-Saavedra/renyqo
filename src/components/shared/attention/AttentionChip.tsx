@@ -3,10 +3,15 @@ import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import type { AttentionChipModel } from "@/lib/attention/chips";
 import { AttentionCountBadge } from "./AttentionCountBadge";
-import "./attention-message-chip.css";
 
 const BASE_CLASS =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 py-0.5 text-caption";
+
+const MESSAGE_CHIP_CLASS =
+  "rq-attention-message-chip border border-primary-soft bg-conversation-surface font-medium text-primary dark:border-border-strong dark:bg-primary-tint dark:text-foreground-secondary";
+
+const MESSAGE_ICON_PILL_CLASS =
+  "rq-attention-message-icon-pill inline-flex h-7 min-w-7 items-center justify-center gap-1 rounded-full border border-primary-soft bg-conversation-surface px-1.5 text-caption font-semibold text-primary shadow-sm dark:border-border-strong dark:bg-primary-tint dark:text-foreground-secondary";
 
 interface AttentionChipProps {
   readonly chip: AttentionChipModel;
@@ -21,7 +26,7 @@ export function AttentionChip({ chip, className }: AttentionChipProps) {
       className={cn(
         BASE_CLASS,
         isMessage
-          ? "rq-attention-message-chip border"
+          ? MESSAGE_CHIP_CLASS
           : chip.emphasis
             ? "border-primary-soft bg-primary-tint font-semibold text-primary"
             : "border-border bg-background-muted font-normal text-foreground",
@@ -40,7 +45,6 @@ interface AttentionIconBadgeProps {
   readonly count?: number;
   readonly variant?: "pill" | "minimal";
   readonly tone?: "default" | "message";
-  /** Red count dot (#C72300); defaults to on for message tone. */
   readonly accentCount?: boolean;
   readonly className?: string;
 }
@@ -50,6 +54,9 @@ const ICON_BADGE_PILL_CLASS =
 
 const ICON_BADGE_MINIMAL_CLASS =
   "relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-foreground-secondary";
+
+const MESSAGE_ICON_MINIMAL_CLASS =
+  "rq-attention-message-icon-minimal text-primary dark:text-foreground-secondary";
 
 export function AttentionIconBadge({
   icon,
@@ -75,10 +82,10 @@ export function AttentionIconBadge({
         isMinimal
           ? cn(
               ICON_BADGE_MINIMAL_CLASS,
-              isMessage && "rq-attention-message-icon-minimal",
+              isMessage && MESSAGE_ICON_MINIMAL_CLASS,
             )
           : isMessage
-            ? "inline-flex h-7 min-w-7 items-center justify-center gap-1 rounded-full border px-1.5 text-caption font-semibold shadow-sm rq-attention-message-icon-pill"
+            ? MESSAGE_ICON_PILL_CLASS
             : ICON_BADGE_PILL_CLASS,
         className,
       )}

@@ -124,10 +124,23 @@ describe("ApplicationsOverview", () => {
               imageUrl: null,
             },
           }),
+          overviewCard({
+            applicationId: "withdrawn-1",
+            status: "WITHDRAWN",
+            withdrawnAt: "2026-09-20T10:00:00.000Z",
+            listing: {
+              id: "listing-withdrawn",
+              title: "Gartenwohnung",
+              city: "Berlin",
+              coldRent: 980,
+              status: "PUBLISHED",
+              imageUrl: null,
+            },
+          }),
         ],
         null,
-        3,
-        { all: 3, active: 1, waiting: 1, done: 1 },
+        4,
+        { all: 4, active: 1, waiting: 1, done: 2 },
       ),
     );
 
@@ -152,8 +165,45 @@ describe("ApplicationsOverview", () => {
 
     const done = screen.getByRole("region", { name: "Abgeschlossen" });
     expect(within(done).getByText("Absage")).toBeTruthy();
+    expect(within(done).getByText(/Absage am 01\.10\.2026/)).toBeTruthy();
     expect(
-      screen.getByText("3 Bewerbungen · 1 braucht deine Aufmerksamkeit"),
+      within(done).getByText(/Zurückgezogen am 20\.09\.2026/),
+    ).toBeTruthy();
+    expect(
+      screen.getByText("4 Bewerbungen · 1 braucht deine Aufmerksamkeit"),
+    ).toBeTruthy();
+  });
+
+  it("keeps the filter bar and retry when a grouped fetch fails", async () => {
+    const user = userEvent.setup();
+    getOverview
+      .mockResolvedValueOnce(
+        page([overviewCard({ applicationId: "active-1" })], null, 1, {
+          all: 1,
+          active: 1,
+          waiting: 0,
+          done: 0,
+        }),
+      )
+      .mockRejectedValueOnce(new Error("network"));
+
+    render(<ApplicationsOverview />);
+
+    const filter = await screen.findByRole("group", {
+      name: "Bewerbungen filtern",
+    });
+    await user.click(
+      within(filter).getByRole("button", { name: "Warteliste 0" }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Erneut versuchen" }),
+      ).toBeTruthy(),
+    );
+    expect(within(filter).getByRole("button", { name: "Alle 1" })).toBeTruthy();
+    expect(
+      within(filter).getByRole("button", { name: "Warteliste 0" }),
     ).toBeTruthy();
   });
 

@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils/cn";
-import "./attention-message-chip.css";
 
 export function formatAttentionCount(count: number): string {
   return count > 9 ? "9+" : String(count);
@@ -30,7 +29,6 @@ const SIZE_CLASS: Record<AttentionCountBadgeSize, string> = {
   ),
 };
 
-/** Shared red (#C72300) or primary count dot for attention UI. */
 export function AttentionCountBadge({
   count,
   size = "sm",
@@ -45,7 +43,7 @@ export function AttentionCountBadge({
       className={cn(
         SIZE_CLASS[size],
         variant === "accent"
-          ? "rq-attention-count-badge"
+          ? "rq-attention-count-badge bg-attention-count-bg text-attention-count-fg"
           : "bg-primary text-background",
         className,
       )}

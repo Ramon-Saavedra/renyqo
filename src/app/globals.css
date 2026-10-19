@@ -43,6 +43,8 @@ html {
   --color-warning: var(--warning);
   --color-warning-vivid: var(--warning-vivid);
   --color-danger: var(--danger);
+  --color-attention-count-bg: var(--attention-count-bg);
+  --color-attention-count-fg: var(--attention-count-fg);
 
   --color-exit-withdrawn-bg: var(--exit-withdrawn-bg);
   --color-exit-withdrawn-fg: var(--exit-withdrawn-fg);
@@ -177,6 +179,8 @@ html {
   --warning: #8b5f28;
   --warning-vivid: #fa8714;
   --danger: #dc2626;
+  --attention-count-bg: #c72300;
+  --attention-count-fg: var(--primary-foreground);
 
   --exit-withdrawn-bg: #c5d5e6;
   --exit-withdrawn-fg: #29496b;
