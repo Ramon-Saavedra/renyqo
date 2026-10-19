@@ -2,6 +2,8 @@ import type { LucideIcon } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { cn } from "@/lib/utils/cn";
 import type { AttentionChipModel } from "@/lib/attention/chips";
+import { AttentionCountBadge } from "./AttentionCountBadge";
+import "./attention-message-chip.css";
 
 const BASE_CLASS =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 py-0.5 text-caption";
@@ -12,13 +14,17 @@ interface AttentionChipProps {
 }
 
 export function AttentionChip({ chip, className }: AttentionChipProps) {
+  const isMessage = chip.kind === "messages";
+
   return (
     <span
       className={cn(
         BASE_CLASS,
-        chip.emphasis
-          ? "border-primary-soft bg-primary-tint font-semibold text-primary"
-          : "border-border bg-background-muted font-normal text-foreground",
+        isMessage
+          ? "rq-attention-message-chip border"
+          : chip.emphasis
+            ? "border-primary-soft bg-primary-tint font-semibold text-primary"
+            : "border-border bg-background-muted font-normal text-foreground",
         className,
       )}
     >
@@ -33,6 +39,9 @@ interface AttentionIconBadgeProps {
   readonly label: string;
   readonly count?: number;
   readonly variant?: "pill" | "minimal";
+  readonly tone?: "default" | "message";
+  /** Red count dot (#C72300); defaults to on for message tone. */
+  readonly accentCount?: boolean;
   readonly className?: string;
 }
 
@@ -42,16 +51,17 @@ const ICON_BADGE_PILL_CLASS =
 const ICON_BADGE_MINIMAL_CLASS =
   "relative inline-flex h-6 w-6 shrink-0 items-center justify-center text-foreground-secondary";
 
-const COUNT_BADGE_CLASS =
-  "absolute -top-0.5 -right-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-primary px-0.5 font-mono text-[10px] font-semibold leading-none text-background tabular-nums";
-
 export function AttentionIconBadge({
   icon,
   label,
   count,
   variant = "pill",
+  tone = "default",
+  accentCount,
   className,
 }: AttentionIconBadgeProps) {
+  const isMessage = tone === "message";
+  const useAccentCount = accentCount ?? isMessage;
   const isMinimal = variant === "minimal";
   const showCount =
     count !== undefined && count > 0 && (isMinimal ? true : count > 1);
@@ -62,7 +72,14 @@ export function AttentionIconBadge({
       aria-label={label}
       title={label}
       className={cn(
-        isMinimal ? ICON_BADGE_MINIMAL_CLASS : ICON_BADGE_PILL_CLASS,
+        isMinimal
+          ? cn(
+              ICON_BADGE_MINIMAL_CLASS,
+              isMessage && "rq-attention-message-icon-minimal",
+            )
+          : isMessage
+            ? "inline-flex h-7 min-w-7 items-center justify-center gap-1 rounded-full border px-1.5 text-caption font-semibold shadow-sm rq-attention-message-icon-pill"
+            : ICON_BADGE_PILL_CLASS,
         className,
       )}
     >
@@ -74,9 +91,10 @@ export function AttentionIconBadge({
       />
       {showCount ? (
         isMinimal ? (
-          <span className={COUNT_BADGE_CLASS} aria-hidden="true">
-            {count > 9 ? "9+" : count}
-          </span>
+          <AttentionCountBadge
+            count={count}
+            variant={useAccentCount ? "accent" : "primary"}
+          />
         ) : (
           <span className="font-mono text-meta tabular-nums">{count}</span>
         )

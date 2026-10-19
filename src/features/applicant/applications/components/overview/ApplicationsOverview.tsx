@@ -65,11 +65,49 @@ function groupCards(
     .filter((entry) => entry.cards.length > 0);
 }
 
-export function ApplicationsOverview() {
-  const { state, reload, loadMore } = useApplicationsOverview();
-  const [filter, setFilter] = useState<OverviewFilterValue>("ALL");
+function filterCount(
+  filter: OverviewFilterValue,
+  counts: {
+    readonly all: number;
+    readonly active: number;
+    readonly waiting: number;
+    readonly done: number;
+  },
+): number {
+  switch (filter) {
+    case "ALL":
+      return counts.all;
+    case "ACTIVE":
+      return counts.active;
+    case "WAITING":
+      return counts.waiting;
+    case "DONE":
+      return counts.done;
+  }
+}
 
-  if (state.status === "loading") {
+function filterOptions(
+  counts: {
+    readonly all: number;
+    readonly active: number;
+    readonly waiting: number;
+    readonly done: number;
+  },
+): readonly OverviewFilterOption[] {
+  return [
+    { value: "ALL", count: counts.all },
+    { value: "ACTIVE", count: counts.active },
+    { value: "WAITING", count: counts.waiting },
+    { value: "DONE", count: counts.done },
+  ];
+}
+
+export function ApplicationsOverview() {
+  const [filter, setFilter] = useState<OverviewFilterValue>("ALL");
+  const { state, counts, filterError, reload, loadMore } =
+    useApplicationsOverview(filter);
+
+  if (state.status === "loading" && counts === null) {
     return (
       <div className={CONTENT_CLASS}>
         <div className={INNER_CLASS}>
@@ -80,7 +118,7 @@ export function ApplicationsOverview() {
     );
   }
 
-  if (state.status === "error") {
+  if (state.status === "error" && counts === null) {
     return (
       <div className={CONTENT_CLASS}>
         <div className={INNER_CLASS}>
@@ -88,7 +126,7 @@ export function ApplicationsOverview() {
           <div role="alert">
             <ApplicationMessage
               title={
-                state.reason === "contract"
+                filterError === "contract"
                   ? copy.contractError
                   : copy.loadError
               }
@@ -104,15 +142,14 @@ export function ApplicationsOverview() {
     );
   }
 
-  const cards = state.items.map(toOverviewCardModel);
-  const complete = state.nextCursor === null;
-  const attention = cards.filter((card) => card.needsAttention).length;
-  const summary =
-    complete && attention > 0
-      ? `${copy.summary(state.totalCount)} · ${copy.attention(attention)}`
-      : copy.summary(state.totalCount);
+  const knownCounts = counts ?? {
+    all: 0,
+    active: 0,
+    waiting: 0,
+    done: 0,
+  };
 
-  if (state.totalCount === 0 || cards.length === 0) {
+  if (knownCounts.all === 0 && state.status === "ready") {
     return (
       <div className={CONTENT_CLASS}>
         <div className={INNER_CLASS}>
@@ -131,15 +168,48 @@ export function ApplicationsOverview() {
     );
   }
 
-  const options: readonly OverviewFilterOption[] = [
-    { value: "ALL", count: state.totalCount },
-    ...GROUP_ORDER.map((group) => ({
-      value: group,
-      count: complete
-        ? cards.filter((card) => card.status.group === group).length
-        : null,
-    })),
-  ];
+  const options = filterOptions(knownCounts);
+  const filteredTotal = filterCount(filter, knownCounts);
+
+  if (state.status === "loading" || state.status === "error") {
+    return (
+      <div className={CONTENT_CLASS}>
+        <div className={INNER_CLASS}>
+          <OverviewHeader summary={copy.summary(filteredTotal)} />
+          <OverviewFilter value={filter} options={options} onChange={setFilter} />
+          {state.status === "loading" ? (
+            <OverviewSkeleton />
+          ) : (
+            <div role="alert">
+              <ApplicationMessage
+                title={
+                  filterError === "contract"
+                    ? copy.contractError
+                    : copy.loadError
+                }
+                action={
+                  <Button variant="primary" onClick={reload}>
+                    {copy.retry}
+                  </Button>
+                }
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const cards = state.items.map(toOverviewCardModel);
+  const visibleCards =
+    filter === "ALL"
+      ? cards
+      : cards.filter((card) => card.status.group === filter);
+  const attention = visibleCards.filter((card) => card.needsAttention).length;
+  const summary =
+    state.nextCursor === null && attention > 0
+      ? `${copy.summary(filteredTotal)} · ${copy.attention(attention)}`
+      : copy.summary(filteredTotal);
   const groups = groupCards(cards, filter);
 
   return (

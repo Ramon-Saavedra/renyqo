@@ -194,10 +194,10 @@ describe("ListingApplyBox admission", () => {
     expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
     expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(
-      screen.getByText(
+      screen.queryByText(
         "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
       ),
-    ).toBeTruthy();
+    ).toBeNull();
     expect(screen.queryByText("Bereits beworben")).toBeNull();
 
     expect(
@@ -235,14 +235,8 @@ describe("ListingApplyBox admission", () => {
       "PROFILE_NO_LONGER_ELIGIBLE",
     );
 
-    expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
-    expect(screen.queryByText("Passt")).toBeNull();
-    expect(screen.queryByText("Passt nicht")).toBeNull();
-    expect(
-      screen.queryByText(
-        "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
-      ),
-    ).toBeNull();
+    expect(screen.queryByText("Bewerbung beendet")).toBeNull();
+    expect(screen.getByText("Passt zu deinem Profil")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(false);

@@ -17,16 +17,22 @@ vi.mock("../../api/overview", async (importOriginal) => {
 
 const getOverview = vi.mocked(getApplicantApplicationsOverview);
 
+function countsFromTotal(total: number) {
+  return { all: total, active: 0, waiting: 0, done: 0 };
+}
+
 function page(
   items: ApplicantApplicationsPage["items"],
   nextCursor: string | null,
   totalCount = items.length,
+  counts = countsFromTotal(totalCount),
 ): ApplicantApplicationsPage {
   return {
     asOf: "2026-10-04T09:20:00.000Z",
     items,
     pagination: { limit: 20, hasMore: nextCursor !== null, nextCursor },
     totalCount,
+    counts,
   };
 }
 
@@ -46,7 +52,7 @@ describe("ApplicationsOverview", () => {
   });
 
   it("shows the empty state with a way to find listings", async () => {
-    getOverview.mockResolvedValue(page([], null));
+    getOverview.mockResolvedValue(page([], null, 0, countsFromTotal(0)));
 
     render(<ApplicationsOverview />);
 
@@ -108,6 +114,7 @@ describe("ApplicationsOverview", () => {
           overviewCard({
             applicationId: "rejected-1",
             status: "REJECTED",
+            rejectedAt: "2026-10-01T12:00:00.000Z",
             listing: {
               id: "listing-rejected",
               title: "Dachgeschosswohnung",
@@ -119,6 +126,8 @@ describe("ApplicationsOverview", () => {
           }),
         ],
         null,
+        3,
+        { all: 3, active: 1, waiting: 1, done: 1 },
       ),
     );
 
@@ -148,18 +157,23 @@ describe("ApplicationsOverview", () => {
     ).toBeTruthy();
   });
 
-  it("filters loaded cards without inventing counts for unloaded pages", async () => {
+  it("reloads from the backend when the filter changes", async () => {
     const user = userEvent.setup();
-    getOverview.mockResolvedValue(
-      page(
-        [
-          overviewCard({ applicationId: "active-1" }),
-          overviewCard({ applicationId: "waiting-1", status: "WAITING" }),
-        ],
-        "cursor-2",
-        5,
-      ),
-    );
+    getOverview
+      .mockResolvedValueOnce(
+        page(
+          [
+            overviewCard({ applicationId: "active-1" }),
+            overviewCard({ applicationId: "waiting-1", status: "WAITING" }),
+          ],
+          null,
+          5,
+          { all: 5, active: 2, waiting: 1, done: 2 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        page([], null, 0, { all: 5, active: 2, waiting: 0, done: 2 }),
+      );
 
     render(<ApplicationsOverview />);
 
@@ -168,27 +182,41 @@ describe("ApplicationsOverview", () => {
     });
     expect(within(filter).getByRole("button", { name: "Alle 5" })).toBeTruthy();
     expect(
-      within(filter).getByRole("button", { name: "Warteliste" }),
+      within(filter).getByRole("button", { name: "Warteliste 1" }),
     ).toBeTruthy();
 
     await user.click(
-      within(filter).getByRole("button", { name: "Warteliste" }),
+      within(filter).getByRole("button", { name: "Warteliste 1" }),
     );
 
+    await waitFor(() =>
+      expect(getOverview).toHaveBeenLastCalledWith(null, "WAITING", {
+        signal: expect.any(AbortSignal),
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText("0 Bewerbungen")).toBeTruthy(),
+    );
+    expect(screen.queryByText(/brauchen deine Aufmerksamkeit/)).toBeNull();
     expect(screen.queryByRole("region", { name: "Aktiv" })).toBeNull();
-    expect(screen.getByRole("region", { name: "Warteliste" })).toBeTruthy();
     expect(
-      within(filter)
-        .getByRole("button", { name: "Warteliste" })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
+      screen.getByText("In dieser Ansicht gibt es keine Bewerbungen."),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Weitere Bewerbungen laden" }),
+    ).toBeNull();
   });
 
   it("loads the next backend page with the returned cursor", async () => {
     const user = userEvent.setup();
     getOverview
       .mockResolvedValueOnce(
-        page([overviewCard({ applicationId: "a-1" })], "cursor-2", 2),
+        page(
+          [overviewCard({ applicationId: "a-1" })],
+          "cursor-2",
+          2,
+          { all: 2, active: 1, waiting: 0, done: 1 },
+        ),
       )
       .mockResolvedValueOnce(
         page(
@@ -200,6 +228,7 @@ describe("ApplicationsOverview", () => {
           ],
           null,
           2,
+          { all: 2, active: 1, waiting: 0, done: 1 },
         ),
       );
 
@@ -209,7 +238,7 @@ describe("ApplicationsOverview", () => {
       await screen.findByRole("button", { name: "Weitere Bewerbungen laden" }),
     );
 
-    expect(getOverview).toHaveBeenLastCalledWith("cursor-2", {
+    expect(getOverview).toHaveBeenLastCalledWith("cursor-2", "ALL", {
       signal: expect.any(AbortSignal),
     });
     expect(
@@ -225,7 +254,12 @@ describe("ApplicationsOverview", () => {
     const user = userEvent.setup();
     getOverview
       .mockResolvedValueOnce(
-        page([overviewCard({ applicationId: "a-1" })], "cursor-2", 2),
+        page(
+          [overviewCard({ applicationId: "a-1" })],
+          "cursor-2",
+          2,
+          { all: 2, active: 1, waiting: 0, done: 1 },
+        ),
       )
       .mockRejectedValueOnce(new Error("network"));
 
@@ -247,7 +281,12 @@ describe("ApplicationsOverview", () => {
     getOverview
       .mockRejectedValueOnce(new Error("network"))
       .mockResolvedValueOnce(
-        page([overviewCard({ applicationId: "a-1" })], null),
+        page(
+          [overviewCard({ applicationId: "a-1" })],
+          null,
+          1,
+          { all: 1, active: 1, waiting: 0, done: 0 },
+        ),
       );
 
     render(<ApplicationsOverview />);

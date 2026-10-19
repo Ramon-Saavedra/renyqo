@@ -1,0 +1,40 @@
+/* Unread messages: same family as conversation bubbles (primary slate), not alert purple. */
+:root {
+  --attention-message-border: var(--primary-soft);
+  --attention-message-bg: var(--conversation-surface);
+  --attention-message-fg: var(--primary-default);
+  --attention-message-icon: var(--primary-default);
+}
+
+.dark {
+  --attention-message-border: color-mix(
+    in srgb,
+    var(--primary-default) 65%,
+    var(--border-strong)
+  );
+  --attention-message-bg: var(--primary-tint);
+  --attention-message-fg: #c8d2e3;
+  --attention-message-icon: #a8b6cc;
+}
+
+.rq-attention-message-chip {
+  border-color: var(--attention-message-border);
+  background-color: var(--attention-message-bg);
+  color: var(--attention-message-fg);
+  font-weight: 500;
+}
+
+.rq-attention-message-icon-pill {
+  border-color: var(--attention-message-border);
+  background-color: var(--attention-message-bg);
+  color: var(--attention-message-icon);
+}
+
+.rq-attention-message-icon-minimal {
+  color: var(--attention-message-icon);
+}
+
+.rq-attention-count-badge {
+  background-color: #c72300;
+  color: #ffffff;
+}

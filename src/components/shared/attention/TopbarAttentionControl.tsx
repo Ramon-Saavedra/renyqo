@@ -8,6 +8,7 @@ import { attentionCopy } from "@/lib/attention/copy";
 import type { GlobalAttentionRole } from "@/lib/attention/global-attention";
 import { useGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
 import { setStoredSelectedObjectId } from "@/features/provider/dashboard/selected-object-storage";
+import { AttentionCountBadge } from "./AttentionCountBadge";
 import { AttentionChip } from "./AttentionChip";
 
 interface TopbarAttentionControlProps {
@@ -61,12 +62,7 @@ export function TopbarAttentionControl({ role }: TopbarAttentionControlProps) {
         >
           <AppIcon icon={Bell} size={16} strokeWidth={2} decorative />
           {showBadge ? (
-            <span
-              className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono text-meta font-semibold leading-none tracking-normal tabular-nums text-background"
-              aria-hidden="true"
-            >
-              {count > 9 ? "9+" : count}
-            </span>
+            <AttentionCountBadge count={count} size="md" />
           ) : null}
         </button>
       )}

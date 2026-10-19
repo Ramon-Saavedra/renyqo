@@ -37,14 +37,15 @@ function locationLine(card: ApplicantApplicationCard): string | null {
 }
 
 function datesLine(card: ApplicantApplicationCard): string {
-  const submitted = copy.submittedAt(formatDate(card.submittedAt));
-  if (!card.activeAt) return submitted;
-  const active = formatDate(card.activeAt);
-  return `${submitted} · ${
-    card.status === "ACTIVE"
-      ? copy.activeSince(active)
-      : copy.activeFrom(active)
-  }`;
+  const parts = [copy.submittedAt(formatDate(card.submittedAt))];
+  if (card.status === "ACTIVE" && card.activeAt) {
+    parts.push(copy.activeSince(formatDate(card.activeAt)));
+  } else if (card.status === "REJECTED" && card.rejectedAt) {
+    parts.push(copy.rejectedAt(formatDate(card.rejectedAt)));
+  } else if (card.status === "WITHDRAWN" && card.withdrawnAt) {
+    parts.push(copy.withdrawnAt(formatDate(card.withdrawnAt)));
+  }
+  return parts.join(" · ");
 }
 
 export function toOverviewCardModel(

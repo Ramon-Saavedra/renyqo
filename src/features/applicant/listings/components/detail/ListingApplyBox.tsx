@@ -141,17 +141,9 @@ export function ListingApplyBox({
           </Link>
         ) : null}
       </div>
-      {ui.process === "ended-profile" && ui.compatibility === "no-match" && (
-        <p className="text-caption text-foreground-secondary">
-          {applicationAdmissionCopy.endedProfileDetail}
-        </p>
-      )}
       {ui.blockReason &&
         ui.blockReason !== "CURRENT_APPLICATION_EXISTS" &&
-        !(
-          ui.process === "ended-profile" &&
-          ui.blockReason === "APPLICANT_NOT_ELIGIBLE"
-        ) && (
+        ui.blockReason !== "APPLICANT_NOT_ELIGIBLE" && (
           <p className="text-caption text-foreground-secondary">
             {applicationBlockCopy[ui.blockReason]}
           </p>

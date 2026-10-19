@@ -107,7 +107,12 @@ describe("ListingApplyBox conflict reconciliation", () => {
           screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
         ).toBeTruthy();
       } else {
-        expect(screen.getByText(/Dein Profil erfüllt/)).toBeTruthy();
+        expect(screen.queryByText(/Dein Profil erfüllt/)).toBeNull();
+        expect(
+          screen
+            .getByRole("button", { name: "Bewerben" })
+            .hasAttribute("disabled"),
+        ).toBe(true);
       }
     },
   );

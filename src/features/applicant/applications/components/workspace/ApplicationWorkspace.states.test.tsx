@@ -166,9 +166,8 @@ describe("ApplicationWorkspace states", () => {
     const panel = await screen.findByRole("region", {
       name: "Dein nächster Schritt",
     });
-    expect(
-      within(panel).getByText("Einkommensnachweis hochladen"),
-    ).toBeTruthy();
+    expect(within(panel).getByText("Unterlagen einreichen")).toBeTruthy();
+    expect(within(panel).getByText(/1 Anforderung offen/)).toBeTruthy();
     expect(within(panel).getByText("2 offene Schritte")).toBeTruthy();
     expect(within(panel).getByText("Ebenfalls offen")).toBeTruthy();
     expect(
