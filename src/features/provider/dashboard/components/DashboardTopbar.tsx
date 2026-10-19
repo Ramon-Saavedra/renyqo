@@ -4,7 +4,7 @@ import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { DASHBOARD_PRIMARY_COLOR_CLASS } from "../dashboard-button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { Logo } from "@/components/ui/logo/Logo";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
+import { TopbarAccountSection } from "@/components/layout/app-topbar/TopbarAccountSection";
 import { dashboardCopy } from "../copy/dashboard";
 
 const ICON_SIZE = 15;
@@ -59,7 +59,10 @@ export function DashboardTopbar() {
         </Link>
 
         <div className={PROFILE_CLASS}>
-          <AccountMenu variant="full" />
+          <TopbarAccountSection
+            role="provider"
+            accountMenu={{ variant: "full" }}
+          />
         </div>
       </div>
     </header>

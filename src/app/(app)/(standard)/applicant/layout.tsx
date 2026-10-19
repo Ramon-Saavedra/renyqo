@@ -1,6 +1,6 @@
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
 import { APP_TOPBAR_CLASS } from "@/components/layout/app-topbar/topbar-classes";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
+import { TopbarAccountSection } from "@/components/layout/app-topbar/TopbarAccountSection";
 
 export default function ApplicantLayout({
   children,
@@ -12,7 +12,7 @@ export default function ApplicantLayout({
       <AppTopbar
         className={`${APP_TOPBAR_CLASS} w-full self-start bg-background`}
       >
-        <AccountMenu />
+        <TopbarAccountSection role="applicant" />
       </AppTopbar>
       {children}
     </>
