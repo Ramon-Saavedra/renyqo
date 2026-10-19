@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { APP_TOPBAR_STICKY_OFFSET_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 import { ApiError } from "@/lib/api/client";
+import { invalidateGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
 import {
   archiveProviderListing,
   getProviderListings,
@@ -235,13 +236,27 @@ export function ListingsView({
                   status: nextStatus,
                   updatedAt: new Date().toISOString(),
                   needsAttention:
-                    nextStatus === "archived" ? false : item.needsAttention,
-                  attentionReason:
-                    nextStatus === "archived" ? null : item.attentionReason,
+                    nextStatus !== "published" ? false : item.needsAttention,
+                  attention:
+                    nextStatus !== "published"
+                      ? {
+                          ...item.attention,
+                          applicationsWithPendingActions: 0,
+                          totalPendingActions: 0,
+                          actionableUnreadMessageCount: 0,
+                          categories: {
+                            documentUploadCount: 0,
+                            documentReviewCount: 0,
+                            viewingActionCount: 0,
+                          },
+                          nextRevalidateAt: null,
+                        }
+                      : item.attention,
                 }
               : item,
           ),
         );
+        invalidateGlobalAttention("provider");
       } catch (err) {
         setActionError(
           err instanceof ApiError && err.status === 0

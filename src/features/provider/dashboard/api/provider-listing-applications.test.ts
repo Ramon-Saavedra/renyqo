@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import { apiGet } from "@/lib/api/client";
 import {
   getProviderActiveApplications,
@@ -24,6 +25,7 @@ const activeApplication = {
   status: "ACTIVE" as const,
   applicant: baseApplicant,
   activeAt: "2026-08-30T14:23:00.000Z",
+  attention: emptyApplicationAttentionSummary(),
 };
 
 describe("getProviderActiveApplications", () => {

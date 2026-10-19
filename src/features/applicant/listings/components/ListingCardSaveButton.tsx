@@ -17,7 +17,7 @@ interface ListingCardSaveButtonProps {
 }
 
 const WRAPPER_CLASS =
-  "pointer-events-none absolute inset-x-2 top-2 z-10 flex flex-col items-end";
+  "pointer-events-none absolute top-2 right-2 z-10 flex max-w-[calc(100%-1rem)] flex-col items-end";
 
 const ERROR_CLASS =
   "pointer-events-auto mt-1 max-w-full text-right text-caption break-words text-danger";

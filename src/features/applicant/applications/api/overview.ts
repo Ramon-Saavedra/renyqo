@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { applicationAttentionSummarySchema } from "@/lib/attention/schemas";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import { ApplicantApplicationContractError } from "./errors";
 import {
@@ -19,11 +20,7 @@ const applicationCardSchema = z.object({
   submittedAt: dateTimeSchema,
   activeAt: dateTimeSchema.nullable(),
   listing: compactListingSchema,
-  attention: z.object({
-    pendingActionCount: z.number().int().nonnegative(),
-    actionableUnreadMessageCount: z.number().int().nonnegative(),
-    hasPendingAction: z.boolean(),
-  }),
+  attention: applicationAttentionSummarySchema,
   conversation: compactConversationSchema,
   documents: documentCountsSchema,
   viewing: viewingSummarySchema,

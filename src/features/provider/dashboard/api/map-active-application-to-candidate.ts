@@ -18,6 +18,7 @@ export function mapActiveApplicationToCandidate(
     warnings: application.applicant.warnings,
     introduction: application.applicant.introduction,
     activeAtLabel: formatActiveAtLabel(application.activeAt),
+    attention: application.attention,
   };
 }
 

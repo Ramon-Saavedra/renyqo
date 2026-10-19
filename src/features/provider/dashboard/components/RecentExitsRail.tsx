@@ -24,7 +24,7 @@ export interface RecentExitsRailProps {
 const HEAD_CLASS =
   "font-mono text-meta font-medium uppercase tracking-wide text-foreground-tertiary";
 const ROW_CLASS =
-  "mt-3.5 flex flex-col gap-2 @min-[640px]:flex-row @min-[640px]:flex-wrap @min-[640px]:items-center @min-[640px]:gap-3.5";
+  "flex flex-col gap-2 @min-[640px]:flex-row @min-[640px]:flex-wrap @min-[640px]:items-center @min-[640px]:gap-3.5";
 const CHIP_CLASS =
   "flex min-w-0 max-w-full flex-col gap-1 rounded-md py-2 pr-1.5 pl-3 @min-[640px]:w-auto";
 const CHIP_VARIANT_CLASS: Record<ExitedApplicantVisualState, string> = {
@@ -121,15 +121,15 @@ export function RecentExitsRail({
         aria-label={copy.title}
         ref={panelRef}
         tabIndex={-1}
-        className="mt-10"
+        className="mb-section"
       >
-        <h2 className={HEAD_CLASS}>{copy.title}</h2>
-        <p className="mt-1.5 max-w-md text-caption text-foreground-secondary">
+        <h2 className={`mb-2 ${HEAD_CLASS}`}>{copy.title}</h2>
+        <p className="mb-section max-w-md text-caption text-foreground-secondary">
           {copy.helper}
         </p>
 
         {hasError ? (
-          <p className="mt-3 text-caption text-foreground-tertiary">
+          <p className="mb-section text-caption text-foreground-tertiary">
             {copy.loadError}
           </p>
         ) : null}

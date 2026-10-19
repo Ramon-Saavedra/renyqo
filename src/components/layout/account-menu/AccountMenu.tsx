@@ -1,4 +1,5 @@
 "use client";
+import { clearGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -75,6 +76,7 @@ export function AccountMenu({
     setLoggingOut(true);
     try {
       await logout();
+      clearGlobalAttention();
       clearListingsSearchSession();
       invalidateCurrentUser();
       invalidateApplicantProfile();

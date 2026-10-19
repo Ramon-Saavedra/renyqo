@@ -17,6 +17,7 @@ import {
   subscribeListingsSearchBackHref,
 } from "../../utils/listings-search-params";
 import { ListingsErrorBanner } from "../ListingsErrorBanner";
+import { ApplicantListingAttentionLink } from "@/components/shared/attention/ApplicantListingAttentionLink";
 import { ListingDescription } from "./ListingDescription";
 import { ListingDetailHeader } from "./ListingDetailHeader";
 import { ListingDetailMessage } from "./ListingDetailMessage";
@@ -89,11 +90,16 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
             ) : null}
             <ListingDetailHeader listing={listing} session={session} />
 
-            <ListingPhotoMosaic
-              images={listing.images}
-              title={listing.title}
-              className="mt-6 mb-7"
-            />
+            <div className="mt-6 mb-7">
+              <ApplicantListingAttentionLink
+                attention={listing.applicationAttention}
+                className="pointer-events-auto mb-2 inline-flex rounded-sm focus-visible:outline-none focus-visible:shadow-focus"
+              />
+              <ListingPhotoMosaic
+                images={listing.images}
+                title={listing.title}
+              />
+            </div>
 
             <ListingFactsRow listing={listing} className="mb-6.5" />
 

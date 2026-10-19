@@ -18,6 +18,10 @@ import {
   TabRefreshProvider,
   useTabRefreshRevision,
 } from "../hooks/TabRefreshProvider";
+import {
+  emptyApplicationAttentionSummary,
+  emptyAttentionTotals,
+} from "@/lib/attention/fixtures";
 import { CandidatesSection } from "./CandidatesSection";
 import type { Candidate, DashboardObject } from "../types";
 
@@ -72,9 +76,8 @@ const publishedObject: DashboardObject = {
   updatedAt: "02.07.2026, 12:00",
   status: "published",
   activeApplicationsCount: 1,
+  attention: emptyAttentionTotals(),
   needsAttention: false,
-  attentionReason: null,
-  openQuestionsCount: 0,
 };
 
 const draftObject: DashboardObject = {
@@ -93,6 +96,7 @@ const candidates: readonly Candidate[] = [
     warnings: [],
     introduction: null,
     activeAtLabel: null,
+    attention: emptyApplicationAttentionSummary(),
   },
 ];
 
@@ -105,6 +109,7 @@ const candidateWithBothWarnings: Candidate = {
   warnings: ["pets_by_arrangement", "smoking_by_arrangement"],
   introduction: null,
   activeAtLabel: null,
+  attention: emptyApplicationAttentionSummary(),
 };
 
 const candidateWithSmokingWarning: Candidate = {
@@ -116,6 +121,7 @@ const candidateWithSmokingWarning: Candidate = {
   warnings: ["smoking_by_arrangement"],
   introduction: null,
   activeAtLabel: null,
+  attention: emptyApplicationAttentionSummary(),
 };
 
 const fiveCandidates: readonly Candidate[] = Array.from(
@@ -129,6 +135,7 @@ const fiveCandidates: readonly Candidate[] = Array.from(
     warnings: [],
     introduction: null,
     activeAtLabel: null,
+    attention: emptyApplicationAttentionSummary(),
   }),
 );
 
@@ -142,6 +149,7 @@ const fifoCandidates: readonly Candidate[] = [
     warnings: [],
     introduction: null,
     activeAtLabel: null,
+    attention: emptyApplicationAttentionSummary(),
   },
   {
     id: "candidate-fifo-2",
@@ -152,6 +160,7 @@ const fifoCandidates: readonly Candidate[] = [
     warnings: [],
     introduction: null,
     activeAtLabel: null,
+    attention: emptyApplicationAttentionSummary(),
   },
   {
     id: "candidate-fifo-3",
@@ -162,6 +171,7 @@ const fifoCandidates: readonly Candidate[] = [
     warnings: [],
     introduction: null,
     activeAtLabel: null,
+    attention: emptyApplicationAttentionSummary(),
   },
 ];
 
@@ -518,6 +528,7 @@ describe("CandidatesSection", () => {
         warnings: [],
         introduction: null,
         activeAtLabel: null,
+        attention: emptyApplicationAttentionSummary(),
       }),
     );
 

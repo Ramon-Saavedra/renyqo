@@ -12,6 +12,7 @@ import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import type { Candidate, DashboardObject, WaitingCountState } from "../types";
 import { ApplicantWorkflowModal } from "../applicant-workflow/components/ApplicantWorkflowModal";
 import { CandidateLane } from "./CandidateLane";
+import { DASHBOARD_BLOCK_CLASS } from "./dashboard-layout";
 
 interface CandidatesSectionProps {
   object: DashboardObject | null;
@@ -26,15 +27,16 @@ interface RejectedApplicationsState {
   readonly applicationIds: readonly string[];
 }
 
-const HEAD_CLASS = "flex flex-wrap items-baseline gap-x-3.5 gap-y-1.5";
+const HEAD_CLASS =
+  "mb-section flex flex-wrap items-baseline gap-x-3.5 gap-y-1.5";
 const TITLE_CLASS =
   "font-mono text-meta font-medium uppercase tracking-wide text-primary";
-const LEAD_CLASS = "mt-1 max-w-md text-caption text-foreground-tertiary";
+const LEAD_CLASS = "mb-section max-w-md text-caption text-foreground-tertiary";
 
-const DRAFT_CLASS = "mt-3 max-w-md text-body text-foreground-secondary";
+const DRAFT_CLASS = "max-w-md text-body text-foreground-secondary";
 
 const LOADING_GRID_CLASS =
-  "mt-4 grid grid-cols-2 gap-3 @min-[640px]:grid-cols-3 @min-[1024px]:grid-cols-6";
+  "grid grid-cols-2 gap-3 @min-[640px]:grid-cols-3 @min-[1024px]:grid-cols-6";
 const SKELETON_SLOT_CLASS =
   "flex min-w-0 flex-col gap-3 rounded-md bg-background-subtle px-card-x py-card-y";
 
@@ -122,8 +124,8 @@ function CandidatesSectionContent({
 
   if (object?.status === "draft") {
     return (
-      <section id="bewerbungen" className="mt-11">
-        <h3 className={TITLE_CLASS}>{copy.title}</h3>
+      <section id="bewerbungen" className={DASHBOARD_BLOCK_CLASS}>
+        <h3 className={`mb-section ${TITLE_CLASS}`}>{copy.title}</h3>
         <p className={LEAD_CLASS}>{copy.lead}</p>
         <p className={DRAFT_CLASS}>{copy.draftEmpty}</p>
       </section>
@@ -132,8 +134,12 @@ function CandidatesSectionContent({
 
   if (isLoading) {
     return (
-      <section id="bewerbungen" className="mt-11" aria-busy="true">
-        <h3 className={TITLE_CLASS}>{copy.title}</h3>
+      <section
+        id="bewerbungen"
+        className={DASHBOARD_BLOCK_CLASS}
+        aria-busy="true"
+      >
+        <h3 className={`mb-section ${TITLE_CLASS}`}>{copy.title}</h3>
         <div className={LOADING_GRID_CLASS}>{renderLoadingSlots()}</div>
       </section>
     );
@@ -145,7 +151,7 @@ function CandidatesSectionContent({
         ref={candidateLaneRef}
         id="bewerbungen"
         tabIndex={-1}
-        className="mt-11"
+        className={DASHBOARD_BLOCK_CLASS}
       >
         <div className={HEAD_CLASS}>
           <h3 className={TITLE_CLASS}>{copy.title}</h3>
@@ -161,7 +167,7 @@ function CandidatesSectionContent({
         ) : null}
 
         {hasError ? (
-          <div role="alert" className="mt-3 max-w-md">
+          <div role="alert" className="max-w-md">
             <p className="mb-3 text-body text-foreground-secondary">
               {copy.loadError}
             </p>
@@ -174,11 +180,11 @@ function CandidatesSectionContent({
             </button>
           </div>
         ) : shown.length === 0 ? (
-          <p className="mt-3 max-w-md text-body text-foreground-secondary">
+          <p className="max-w-md text-body text-foreground-secondary">
             {copy.noApplicants}
           </p>
         ) : (
-          <div className="mt-4">
+          <div>
             {waitingCountState.status === "error" ? (
               <p
                 role="status"

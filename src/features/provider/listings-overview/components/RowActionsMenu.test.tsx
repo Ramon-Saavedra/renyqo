@@ -2,13 +2,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import { createListingOverviewItem } from "../testing/listing-overview-fixtures";
 import type { ListingOverviewItem } from "../types";
 import { RowActionsMenu } from "./RowActionsMenu";
 
-const BASE: ListingOverviewItem = {
+const BASE: ListingOverviewItem = createListingOverviewItem({
   id: "test-1",
   title: "Testobject",
-  objectType: null,
   displayAddress: "Teststraße 1 · Berlin · 10000",
   coldRent: 900,
   deposit: 1800,
@@ -16,14 +16,10 @@ const BASE: ListingOverviewItem = {
   livingArea: 55,
   rooms: 2,
   activeApplicationsCount: 1,
-  openQuestionsCount: 0,
-  status: "published",
-  needsAttention: false,
-  attentionReason: null,
   createdAt: "2026-01-01",
   updatedAt: "2026-05-01",
   publishedAt: "2026-01-02",
-};
+});
 
 describe("RowActionsMenu", () => {
   it("does not show the menu by default", () => {

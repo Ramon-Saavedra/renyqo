@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/client";
+import { invalidateGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
 import {
   loadCompleteConversation,
   markConversationRead,
@@ -106,6 +107,7 @@ export function useConversation({
               last.sequence,
             );
             if (generationRef.current === generation) setReadFailed(false);
+            invalidateGlobalAttention("applicant");
           })
           .catch(() => {
             if (generationRef.current !== generation) return;

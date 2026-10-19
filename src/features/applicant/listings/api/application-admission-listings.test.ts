@@ -35,6 +35,7 @@ function payload(admission: unknown) {
     applicationStatus: "REJECTED",
     publicReason: "NOT_SELECTED",
     isSaved: true,
+    applicationAttention: null,
     admission,
     requirements: {
       schufaRequired: false,

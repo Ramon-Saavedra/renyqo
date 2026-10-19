@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { applicationAttentionSummarySchema } from "@/lib/attention/schemas";
 import { apiGet } from "@/lib/api/client";
 import { APPLICANT_INTRODUCTION_MAX_LENGTH } from "../types";
 
@@ -15,6 +16,7 @@ const providerActiveApplicationSchema = z.object({
   status: z.literal("ACTIVE"),
   applicant: providerApplicantSummarySchema,
   activeAt: z.string().datetime().nullable(),
+  attention: applicationAttentionSummarySchema,
 });
 
 const providerActiveApplicationsResponseSchema = z

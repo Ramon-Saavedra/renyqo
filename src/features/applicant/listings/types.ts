@@ -1,3 +1,4 @@
+import type { ApplicantListingAttention } from "@/lib/attention/types";
 import type { ApplicationAdmission } from "./api/application-admission";
 import type {
   ListingImage,
@@ -46,6 +47,7 @@ export interface PublicListing {
   readonly isNew: boolean;
   readonly coverImageUrl: string | null;
   readonly publishedAt: string;
+  readonly applicationAttention: ApplicantListingAttention | null;
 }
 
 export interface PublicListingDetail {
@@ -81,6 +83,7 @@ export interface PublicListingDetail {
   readonly suitableForPeopleCount: number | null;
   readonly petsPolicy: ApplicantPetPolicy | null;
   readonly smokingPolicy: SmokingPolicyBackend | null;
+  readonly applicationAttention: ApplicantListingAttention | null;
 }
 
 export interface ListingFilters {

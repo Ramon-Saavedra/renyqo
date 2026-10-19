@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AccountMenu } from "@/components/layout/account-menu/AccountMenu";
+import { TopbarAccountSection } from "@/components/layout/app-topbar/TopbarAccountSection";
 import { SessionPendingTopbarActions } from "@/components/layout/app-topbar/SessionPendingTopbarActions";
 import { buttonClass } from "@/components/ui/button/Button";
 import { isApplicantRole, isProviderRole } from "@/features/auth/utils/role";
@@ -56,7 +56,12 @@ export function ListingsTopbarActions() {
   }
 
   if (isApplicantRole(user.role)) {
-    return <AccountMenu variant="full" nameVisibility="tablet" />;
+    return (
+      <TopbarAccountSection
+        role="applicant"
+        accountMenu={{ variant: "full", nameVisibility: "tablet" }}
+      />
+    );
   }
 
   if (isProviderRole(user.role)) {

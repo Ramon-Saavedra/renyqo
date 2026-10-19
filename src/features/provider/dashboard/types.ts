@@ -1,8 +1,9 @@
-import type { ObjectTypeBackend } from "@/lib/api/listings";
 import type {
-  AttentionReason,
-  ListingStatus,
-} from "@/features/provider/listings-overview/types";
+  ApplicationAttentionSummary,
+  AttentionTotals,
+} from "@/lib/attention/types";
+import type { ObjectTypeBackend } from "@/lib/api/listings";
+import type { ListingStatus } from "@/features/provider/listings-overview/types";
 
 export type DashboardObjectStatus = ListingStatus;
 
@@ -23,9 +24,8 @@ export interface DashboardObject {
   readonly status: DashboardObjectStatus;
   readonly activeApplicationsCount: number;
   readonly coverImageUrl?: string | null;
+  readonly attention: AttentionTotals;
   readonly needsAttention: boolean;
-  readonly attentionReason: AttentionReason;
-  readonly openQuestionsCount: number;
 }
 
 export type CandidateWarning = "pets_by_arrangement" | "smoking_by_arrangement";
@@ -39,6 +39,7 @@ export interface Candidate {
   readonly warnings: readonly CandidateWarning[];
   readonly introduction: string | null;
   readonly activeAtLabel: string | null;
+  readonly attention: ApplicationAttentionSummary;
 }
 
 export const MAX_ACTIVE_APPLICATIONS = 5;

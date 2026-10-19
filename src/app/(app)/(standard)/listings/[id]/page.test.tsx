@@ -1,4 +1,4 @@
-import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { buildPublicListingDetail } from "@/features/applicant/listings/testing/public-listing-fixtures";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { ApiError } from "@/lib/api/client";
 import { getPublicListingDetail } from "@/features/applicant/listings/api/public-listings";
@@ -84,7 +84,7 @@ const applicantUser: SafeUser = {
 function mockListing(
   overrides: Partial<PublicListingDetail> = {},
 ): PublicListingDetail {
-  return {
+  return buildPublicListingDetail({
     id: "abc-123",
     title: "Zimmer in Berlin",
     location: "Berlin, Mitte",
@@ -94,30 +94,20 @@ function mockListing(
     coldRent: 620,
     additionalCosts: 80,
     matchesProfile: "match",
-    admission: createAdmission(),
-    hasApplied: false,
-    applicationStatus: null,
-    publicReason: null,
-    isSaved: false,
-    isNew: false,
     publishedAt: "2026-08-01",
-    street: null,
     zip: "10435",
     city: "Berlin",
     district: "Mitte",
     objectType: "APARTMENT",
     bedrooms: 1,
-    deposit: null,
-    depositMonths: null,
     shortDescription: "Helle Wohnung im vierten Stock.",
-    images: [],
     schufaRequired: true,
     incomeProofRequired: true,
     suitableForPeopleCount: 2,
     petsPolicy: "NOT_ALLOWED",
     smokingPolicy: "NOT_ALLOWED",
     ...overrides,
-  };
+  });
 }
 
 function mockResult(

@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import { getProviderActiveApplications } from "../api/provider-listing-applications";
 import type { ProviderActiveApplication } from "../api/provider-listing-applications";
 import {
@@ -31,6 +32,7 @@ describe("useListingApplicantNames", () => {
           warnings: ["pets_by_arrangement"],
           introduction: "Kurzer Text",
         },
+        attention: emptyApplicationAttentionSummary(),
       },
       {
         id: "application-2",
@@ -43,6 +45,7 @@ describe("useListingApplicantNames", () => {
           warnings: ["smoking_by_arrangement", "pets_by_arrangement"],
           introduction: null,
         },
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
 
@@ -93,6 +96,7 @@ describe("useListingApplicantNames", () => {
             warnings: [],
             introduction: null,
           },
+          attention: emptyApplicationAttentionSummary(),
         },
       ])
       .mockResolvedValueOnce([
@@ -107,6 +111,7 @@ describe("useListingApplicantNames", () => {
             warnings: [],
             introduction: null,
           },
+          attention: emptyApplicationAttentionSummary(),
         },
       ]);
 

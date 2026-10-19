@@ -8,6 +8,10 @@ vi.mock("next/navigation", () => ({
   usePathname: () => routeState.pathname,
 }));
 
+vi.mock("@/components/shared/attention/TopbarAttentionControl", () => ({
+  TopbarAttentionControl: () => null,
+}));
+
 vi.mock("@/components/layout/account-menu/AccountMenu", () => ({
   AccountMenu: ({ variant }: { variant: string }) => (
     <div>Account menu {variant}</div>

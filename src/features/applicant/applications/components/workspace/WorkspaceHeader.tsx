@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { MapPin } from "lucide-react";
+import { attentionCopy } from "@/lib/attention/copy";
+import { listingHref } from "@/lib/attention/navigation";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { formatEUR } from "@/features/applicant/listings/utils/format";
 import type { ApplicantWorkspace } from "../../api/workspace";
@@ -90,6 +93,12 @@ export function WorkspaceHeader({
                   )}
                 </span>
               )}
+              <Link
+                href={listingHref(listing.id)}
+                className="text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:shadow-focus"
+              >
+                {attentionCopy.workspaceBackToListing}
+              </Link>
             </p>
           </div>
           <ToneBadge

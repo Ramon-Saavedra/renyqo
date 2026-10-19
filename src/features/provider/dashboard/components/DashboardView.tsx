@@ -16,7 +16,13 @@ import { dashboardPrimaryClass } from "../dashboard-button";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { moveProviderListingToPosition } from "@/features/provider/listings-overview/api/provider-listings";
-import { dashboardCopy, SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
+import { dashboardCopy } from "../copy/dashboard";
+import {
+  getServerSelectedObjectId,
+  getStoredSelectedObjectId,
+  setStoredSelectedObjectId,
+  subscribeSelectedObject,
+} from "../selected-object-storage";
 import { useExitedApplications } from "../hooks/useExitedApplications";
 import { toListingApplicantPreview } from "../hooks/useListingApplicantNames";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
@@ -41,34 +47,6 @@ interface DashboardViewProps {
 
 interface DashboardViewContentProps {
   objects?: readonly DashboardObject[] | undefined;
-}
-
-function getStoredSelectedObjectId() {
-  return window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY);
-}
-
-function getServerSelectedObjectId() {
-  return null;
-}
-
-const selectedObjectListeners = new Set<() => void>();
-
-function emitSelectedObjectChange() {
-  for (const listener of selectedObjectListeners) listener();
-}
-
-function subscribeSelectedObject(onChange: () => void) {
-  selectedObjectListeners.add(onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    selectedObjectListeners.delete(onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
-function setStoredSelectedObjectId(id: string) {
-  window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, id);
-  emitSelectedObjectChange();
 }
 
 function useStoredSelectedObjectId() {
@@ -106,6 +84,15 @@ function DashboardViewContent({
   const [search, setSearch] = useState("");
   const selectedId = useStoredSelectedObjectId();
   const accent = useAccent();
+
+  useEffect(() => {
+    const listingId = new URLSearchParams(window.location.search).get(
+      "listingId",
+    );
+    if (listingId) {
+      setStoredSelectedObjectId(listingId);
+    }
+  }, []);
 
   const beginObjectsRequest = useCallback(() => {
     objectsRequestGenerationRef.current += 1;
@@ -320,7 +307,7 @@ function DashboardViewContent({
         <DashboardTopbar />
 
         <div className="@container px-3 pt-7 pb-16 lg:px-gutter">
-          <div className="mb-6 flex flex-col gap-2 rounded-md border border-border bg-primary px-parent-x py-parent-y sm:flex-row sm:items-center">
+          <div className="mb-section flex flex-col gap-2 rounded-md border border-border bg-primary px-parent-x py-parent-y sm:flex-row sm:items-center">
             <div className="w-full sm:max-w-90 sm:min-w-45 sm:flex-1">
               <DashboardSearch
                 value={search}
@@ -369,7 +356,7 @@ function DashboardViewContent({
             </span>
           </div>
 
-          <div className="mt-4">
+          <div className="mb-section">
             <ListingMatrix
               objects={matrixObjects}
               orderObjects={objects}

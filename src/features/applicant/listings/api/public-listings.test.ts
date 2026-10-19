@@ -35,6 +35,7 @@ function listingSummary(overrides: Record<string, unknown> = {}) {
     applicationStatus: null,
     publicReason: null,
     isSaved: false,
+    applicationAttention: null,
     ...overrides,
   };
 }
@@ -711,6 +712,7 @@ describe("getPublicListingDetail", () => {
       applicationStatus: null,
       publicReason: null,
       isSaved: false,
+      applicationAttention: null,
       requirements: {
         minimumHouseholdNetIncome: null,
         schufaRequired: true,

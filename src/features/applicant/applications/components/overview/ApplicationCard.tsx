@@ -1,24 +1,17 @@
 import Link from "next/link";
-import { ChevronRight, FileUp, MessageSquare } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { AttentionIndicators } from "@/components/shared/attention/AttentionIndicators";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { cn } from "@/lib/utils/cn";
 import { applicationsCopy } from "../../copy";
 import type { OverviewCardModel } from "../../model/overview-card";
 import { ListingThumbnail } from "../ListingThumbnail";
 import { ToneBadge } from "../ToneBadge";
-
-const INDICATOR_CLASS =
-  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-sm border px-2 py-0.5 text-caption";
 
 export function ApplicationCard({
   card,
 }: {
   readonly card: OverviewCardModel;
 }) {
-  const hasIndicators = Boolean(
-    card.pending || card.unread || card.missingDocuments || card.viewing,
-  );
-
   return (
     <Link
       href={card.href}
@@ -53,47 +46,8 @@ export function ApplicationCard({
         <span className="text-caption text-foreground-tertiary">
           {card.dates}
         </span>
-        {hasIndicators ? (
-          <span className="flex flex-wrap gap-1.5">
-            {card.pending ? (
-              <span
-                className={cn(
-                  INDICATOR_CLASS,
-                  "border-primary-soft bg-primary-tint font-semibold text-primary",
-                )}
-              >
-                <span
-                  aria-hidden="true"
-                  className="h-1.5 w-1.5 rounded-full bg-primary"
-                />
-                {card.pending}
-              </span>
-            ) : null}
-            {card.unread ? (
-              <ToneBadge
-                tone="neutral"
-                icon={MessageSquare}
-                label={card.unread}
-                className="font-normal text-foreground"
-              />
-            ) : null}
-            {card.missingDocuments ? (
-              <ToneBadge
-                tone="warning"
-                icon={FileUp}
-                label={card.missingDocuments}
-                className="font-normal"
-              />
-            ) : null}
-            {card.viewing ? (
-              <ToneBadge
-                tone="neutral"
-                icon={card.viewing.icon}
-                label={card.viewing.label}
-                className="font-normal text-foreground"
-              />
-            ) : null}
-          </span>
+        {card.attentionChips.length > 0 ? (
+          <AttentionIndicators chips={card.attentionChips} />
         ) : null}
       </span>
       <AppIcon

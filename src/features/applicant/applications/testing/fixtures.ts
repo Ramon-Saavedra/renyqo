@@ -1,3 +1,4 @@
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import type { ApplicantApplicationCard } from "../api/overview";
 import type {
   ConversationMessage,
@@ -74,6 +75,14 @@ export function createWorkspace(
         canCurrentUserManageApplicantReplies: false,
         sendBlockReason: "APPLICANT_REPLIES_DISABLED",
       },
+      categories: {
+        documentUploadCount: 0,
+        documentReviewCount: 0,
+        viewingActionCount: 0,
+      },
+      targets: [],
+      documentIndicators: [],
+      nextRevalidateAt: null,
     },
     conversationSummary: {
       hasMessages: false,
@@ -196,11 +205,7 @@ export function overviewCard(
       status: "PUBLISHED",
       imageUrl: null,
     },
-    attention: {
-      pendingActionCount: 0,
-      actionableUnreadMessageCount: 0,
-      hasPendingAction: false,
-    },
+    attention: emptyApplicationAttentionSummary(),
     conversation: {
       hasMessages: false,
 
