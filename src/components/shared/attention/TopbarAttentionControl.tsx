@@ -61,9 +61,7 @@ export function TopbarAttentionControl({ role }: TopbarAttentionControlProps) {
           title={triggerAriaLabel}
         >
           <AppIcon icon={Bell} size={16} strokeWidth={2} decorative />
-          {showBadge ? (
-            <AttentionCountBadge count={count} size="md" />
-          ) : null}
+          {showBadge ? <AttentionCountBadge count={count} size="md" /> : null}
         </button>
       )}
     >

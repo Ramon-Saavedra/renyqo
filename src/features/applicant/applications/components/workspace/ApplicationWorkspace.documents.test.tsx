@@ -164,9 +164,7 @@ describe("ApplicationWorkspace documents", () => {
         name: "Dein nächster Schritt",
       });
       expect(within(panel).getByText("Unterlagen einreichen")).toBeTruthy();
-      expect(
-        within(panel).getByText(/3 Anforderungen offen/),
-      ).toBeTruthy();
+      expect(within(panel).getByText(/3 Anforderungen offen/)).toBeTruthy();
       expect(within(panel).queryByText(/SCHUFA-Auskunft hochladen/)).toBeNull();
       const primary = within(panel).getByRole("button", {
         name: "Zu Unterlagen",

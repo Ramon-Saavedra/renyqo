@@ -21,8 +21,7 @@ export const APPLICANT_OVERVIEW_GROUPS = [
   "DONE",
 ] as const;
 
-export type ApplicantOverviewGroup =
-  (typeof APPLICANT_OVERVIEW_GROUPS)[number];
+export type ApplicantOverviewGroup = (typeof APPLICANT_OVERVIEW_GROUPS)[number];
 
 const applicationCardSchema = z.object({
   applicationId: z.string().min(1),

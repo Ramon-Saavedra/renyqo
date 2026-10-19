@@ -194,9 +194,7 @@ describe("ApplicationsOverview", () => {
         signal: expect.any(AbortSignal),
       }),
     );
-    await waitFor(() =>
-      expect(screen.getByText("0 Bewerbungen")).toBeTruthy(),
-    );
+    await waitFor(() => expect(screen.getByText("0 Bewerbungen")).toBeTruthy());
     expect(screen.queryByText(/brauchen deine Aufmerksamkeit/)).toBeNull();
     expect(screen.queryByRole("region", { name: "Aktiv" })).toBeNull();
     expect(
@@ -211,12 +209,12 @@ describe("ApplicationsOverview", () => {
     const user = userEvent.setup();
     getOverview
       .mockResolvedValueOnce(
-        page(
-          [overviewCard({ applicationId: "a-1" })],
-          "cursor-2",
-          2,
-          { all: 2, active: 1, waiting: 0, done: 1 },
-        ),
+        page([overviewCard({ applicationId: "a-1" })], "cursor-2", 2, {
+          all: 2,
+          active: 1,
+          waiting: 0,
+          done: 1,
+        }),
       )
       .mockResolvedValueOnce(
         page(
@@ -254,12 +252,12 @@ describe("ApplicationsOverview", () => {
     const user = userEvent.setup();
     getOverview
       .mockResolvedValueOnce(
-        page(
-          [overviewCard({ applicationId: "a-1" })],
-          "cursor-2",
-          2,
-          { all: 2, active: 1, waiting: 0, done: 1 },
-        ),
+        page([overviewCard({ applicationId: "a-1" })], "cursor-2", 2, {
+          all: 2,
+          active: 1,
+          waiting: 0,
+          done: 1,
+        }),
       )
       .mockRejectedValueOnce(new Error("network"));
 
@@ -281,12 +279,12 @@ describe("ApplicationsOverview", () => {
     getOverview
       .mockRejectedValueOnce(new Error("network"))
       .mockResolvedValueOnce(
-        page(
-          [overviewCard({ applicationId: "a-1" })],
-          null,
-          1,
-          { all: 1, active: 1, waiting: 0, done: 0 },
-        ),
+        page([overviewCard({ applicationId: "a-1" })], null, 1, {
+          all: 1,
+          active: 1,
+          waiting: 0,
+          done: 0,
+        }),
       );
 
     render(<ApplicationsOverview />);

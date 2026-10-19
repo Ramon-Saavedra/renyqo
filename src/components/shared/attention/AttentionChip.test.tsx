@@ -18,7 +18,9 @@ describe("AttentionChip message styling", () => {
       />,
     );
 
-    expect(container.querySelector(".rq-attention-message-chip")).not.toBeNull();
+    expect(
+      container.querySelector(".rq-attention-message-chip"),
+    ).not.toBeNull();
   });
 
   it("uses the message icon tone on compact listing indicators", () => {
@@ -35,9 +37,7 @@ describe("AttentionChip message styling", () => {
     expect(
       container.querySelector(".rq-attention-message-icon-minimal"),
     ).not.toBeNull();
-    expect(
-      container.querySelector(".rq-attention-count-badge"),
-    ).not.toBeNull();
+    expect(container.querySelector(".rq-attention-count-badge")).not.toBeNull();
     expect(screen.getByRole("img", { name: /ungelesene/ })).toBeTruthy();
   });
 });

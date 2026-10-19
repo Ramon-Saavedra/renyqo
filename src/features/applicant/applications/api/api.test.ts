@@ -199,9 +199,7 @@ describe("applicant applications overview", () => {
 
     await expect(
       getApplicantApplicationsOverview(null, "ALL"),
-    ).rejects.toBeInstanceOf(
-      ApplicantApplicationContractError,
-    );
+    ).rejects.toBeInstanceOf(ApplicantApplicationContractError);
   });
 });
 

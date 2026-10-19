@@ -86,14 +86,12 @@ function filterCount(
   }
 }
 
-function filterOptions(
-  counts: {
-    readonly all: number;
-    readonly active: number;
-    readonly waiting: number;
-    readonly done: number;
-  },
-): readonly OverviewFilterOption[] {
+function filterOptions(counts: {
+  readonly all: number;
+  readonly active: number;
+  readonly waiting: number;
+  readonly done: number;
+}): readonly OverviewFilterOption[] {
   return [
     { value: "ALL", count: counts.all },
     { value: "ACTIVE", count: counts.active },
@@ -126,9 +124,7 @@ export function ApplicationsOverview() {
           <div role="alert">
             <ApplicationMessage
               title={
-                filterError === "contract"
-                  ? copy.contractError
-                  : copy.loadError
+                filterError === "contract" ? copy.contractError : copy.loadError
               }
               action={
                 <Button variant="primary" onClick={reload}>
@@ -176,7 +172,11 @@ export function ApplicationsOverview() {
       <div className={CONTENT_CLASS}>
         <div className={INNER_CLASS}>
           <OverviewHeader summary={copy.summary(filteredTotal)} />
-          <OverviewFilter value={filter} options={options} onChange={setFilter} />
+          <OverviewFilter
+            value={filter}
+            options={options}
+            onChange={setFilter}
+          />
           {state.status === "loading" ? (
             <OverviewSkeleton />
           ) : (

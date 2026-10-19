@@ -177,10 +177,7 @@ export function NextStepPanel({
           </p>
         </div>
         {primaryInterest ? null : (
-          <Button
-            variant="primary"
-            onClick={() => onNavigate(primary)}
-          >
+          <Button variant="primary" onClick={() => onNavigate(primary)}>
             {primary.cta}
             <AppIcon icon={ArrowRight} size={16} decorative />
           </Button>
