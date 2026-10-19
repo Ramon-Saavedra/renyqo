@@ -11,13 +11,6 @@ vi.mock("@/lib/api/client", async (importOriginal) => ({
   apiPost: vi.fn(),
 }));
 
-vi.mock("../../hooks/useListingEligibility", () => ({
-  useListingEligibility: () => ({
-    status: "loaded",
-    eligibility: { canApply: true, reasons: [], warnings: [] },
-  }),
-}));
-
 function box(admission: ApplicationAdmission) {
   return (
     <ListingApplyBox

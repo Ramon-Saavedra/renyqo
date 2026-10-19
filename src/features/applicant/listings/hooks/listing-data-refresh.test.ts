@@ -5,13 +5,11 @@ import {
   getPublicListingDetail,
 } from "../api/public-listings";
 import { getSavedListings } from "../api/saved-listings";
-import { getListingEligibility } from "../api/listing-eligibility";
 import { getApplicantApplicationsOverview } from "../../applications/api/overview";
 import { useApplicationsOverview } from "../../applications/hooks/useApplicationsOverview";
 import { usePublicListings } from "./usePublicListings";
 import { usePublicListingDetail } from "./usePublicListingDetail";
 import { useSavedListings } from "./useSavedListings";
-import { useListingEligibility } from "./useListingEligibility";
 import { EMPTY_FILTERS } from "../types";
 import { invalidateListingApplicationData } from "../utils/listing-data-invalidation";
 
@@ -20,9 +18,6 @@ vi.mock("../api/public-listings", () => ({
   getPublicListingDetail: vi.fn(),
 }));
 vi.mock("../api/saved-listings", () => ({ getSavedListings: vi.fn() }));
-vi.mock("../api/listing-eligibility", () => ({
-  getListingEligibility: vi.fn(),
-}));
 vi.mock("../../applications/api/overview", () => ({
   getApplicantApplicationsOverview: vi.fn(),
 }));
@@ -40,12 +35,6 @@ beforeEach(() => {
     total: 0,
     nextCursor: null,
   });
-  vi.mocked(getListingEligibility).mockResolvedValue({
-    canApply: true,
-    reasons: [],
-    warnings: [],
-    evaluatedAt: "2026-10-10T00:00:00Z",
-  });
   vi.mocked(getApplicantApplicationsOverview).mockResolvedValue({
     asOf: "2026-10-10T00:00:00Z",
     items: [],
@@ -55,17 +44,15 @@ beforeEach(() => {
 });
 
 describe("listing application invalidation", () => {
-  it("refreshes mounted public, detail, saved, eligibility and application reads", async () => {
+  it("refreshes mounted public, detail, saved and application reads", async () => {
     renderHook(() => usePublicListings(EMPTY_FILTERS, "newest", true));
     renderHook(() => usePublicListingDetail("listing"));
     renderHook(() => useSavedListings());
-    renderHook(() => useListingEligibility("listing"));
     renderHook(() => useApplicationsOverview());
     const reads = [
       getPublicListings,
       getPublicListingDetail,
       getSavedListings,
-      getListingEligibility,
       getApplicantApplicationsOverview,
     ];
     await waitFor(() =>

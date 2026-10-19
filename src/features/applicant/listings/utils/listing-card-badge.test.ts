@@ -143,6 +143,24 @@ describe("resolveListingApplicationUi", () => {
     });
   });
 
+  it("does not keep not-selected from historical publicReason after cooldown ends", () => {
+    expect(
+      resolveListingApplicationUi({
+        admission: createAdmission({
+          hasApplicationHistory: true,
+          canSubmitApplication: true,
+          submissionBlockReason: null,
+        }),
+        matchesProfile: "match",
+        publicReason: "NOT_SELECTED",
+      }),
+    ).toMatchObject({
+      process: "none",
+      compatibility: "match",
+      action: "submit",
+    });
+  });
+
   it("does not expire a cooldown locally even with a past date", () => {
     expect(
       resolveListingApplicationUi({

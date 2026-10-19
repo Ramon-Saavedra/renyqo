@@ -2,6 +2,8 @@ import type { ApplicationSubmissionBlockReason } from "../api/application-admiss
 
 export const applicationAdmissionCopy = {
   applied: "Bereits beworben",
+  openApplication: "Zur Bewerbung",
+  myApplications: "Meine Bewerbungen",
   endedProfile: "Bewerbung beendet",
   endedProfileDetail:
     "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
@@ -12,7 +14,6 @@ export const applicationAdmissionCopy = {
   sent: "Bewerbung erfolgreich gesendet.",
   waiting: "Deine Bewerbung steht auf der Warteliste.",
   withdrawn: "Deine Bewerbung wurde zurückgezogen.",
-  eligibilityFailed: "Die Voraussetzungen konnten nicht gepr\u00fcft werden.",
   withdrawalFailed: "Die Bewerbung konnte nicht zur\u00fcckgezogen werden.",
   notFound: "Dieses Objekt ist nicht mehr verf\u00fcgbar.",
   forbidden: "Du kannst dich derzeit nicht auf dieses Objekt bewerben.",

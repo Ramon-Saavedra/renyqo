@@ -11,7 +11,6 @@ import {
   type ApplicationAdmission,
   type ApplicationSubmissionBlockReason,
 } from "../api/application-admission";
-import type { ListingEligibility } from "../api/listing-eligibility";
 import {
   applicationAdmissionCopy,
   applicationBlockCopy,
@@ -23,7 +22,6 @@ export type ListingApplicationState =
   | { readonly status: "success"; readonly application: ListingApplication }
   | {
       readonly status: "eligibility-rejected";
-      readonly eligibility: ListingEligibility;
     }
   | {
       readonly status: "error";
@@ -98,7 +96,6 @@ export function useListingApplication(id: string) {
       if (error instanceof ListingEligibilityRejectedError)
         setState({
           status: "eligibility-rejected",
-          eligibility: error.eligibility,
         });
       else {
         const reason = applicationSubmissionBlockReasonSchema.safeParse(

@@ -5,7 +5,6 @@ import { getPublicListingDetail } from "@/features/applicant/listings/api/public
 import { invalidateListingApplicationData } from "@/features/applicant/listings/utils/listing-data-invalidation";
 import type * as detailHook from "@/features/applicant/listings/hooks/usePublicListingDetail";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getListingEligibility } from "@/features/applicant/listings/api/listing-eligibility";
 import { reportListing } from "@/features/applicant/listings/api/listing-report";
 import type * as listingReportApi from "@/features/applicant/listings/api/listing-report";
 import {
@@ -48,10 +47,6 @@ vi.mock("@/lib/api/use-current-user", () => ({
   invalidateCurrentUser: vi.fn(),
 }));
 
-vi.mock("@/features/applicant/listings/api/listing-eligibility", () => ({
-  getListingEligibility: vi.fn(),
-}));
-
 vi.mock("@/features/applicant/listings/api/listing-saved", () => ({
   saveListing: vi.fn(),
   unsaveListing: vi.fn(),
@@ -70,7 +65,6 @@ vi.mock(
 
 const mockUseDetail = vi.mocked(usePublicListingDetail);
 const currentUser = vi.mocked(useCurrentUser);
-const eligibility = vi.mocked(getListingEligibility);
 
 const applicantUser: SafeUser = {
   id: "applicant-1",
@@ -129,12 +123,6 @@ describe("ListingDetailPage", () => {
       user: applicantUser,
       loading: false,
       error: false,
-    });
-    eligibility.mockResolvedValue({
-      canApply: true,
-      reasons: [],
-      warnings: [],
-      evaluatedAt: "2026-08-23T10:00:00.000Z",
     });
   });
 
@@ -267,9 +255,6 @@ describe("ListingDetailPage", () => {
     expect(
       screen.queryByText("Du möchtest dich auf dieses Mietobjekt bewerben?"),
     ).toBeNull();
-    await waitFor(() => {
-      expect(eligibility).toHaveBeenCalled();
-    });
   });
 
   it("renders Gemerkt when the listing is already saved", () => {
@@ -328,9 +313,6 @@ describe("ListingDetailPage", () => {
       screen.queryByText("Deine Bewerbung konnte nicht geladen werden."),
     ).toBeNull();
 
-    await waitFor(() => {
-      expect(eligibility).not.toHaveBeenCalled();
-    });
     expect(saveListing).not.toHaveBeenCalled();
     expect(unsaveListing).not.toHaveBeenCalled();
     expect(reportListing).not.toHaveBeenCalled();
@@ -378,9 +360,6 @@ describe("ListingDetailPage", () => {
     ).toBeInstanceOf(HTMLElement);
     expect(screen.queryByText("Passt zu deinem Profil")).toBeNull();
     expect(screen.queryByRole("button", { name: "Bewerben" })).toBeNull();
-    await waitFor(() => {
-      expect(eligibility).not.toHaveBeenCalled();
-    });
   });
 
   it("renders the not-found state with back link", () => {

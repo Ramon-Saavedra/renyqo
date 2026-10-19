@@ -19,6 +19,12 @@ describe("applicationWorkspaceHref", () => {
       "/applicant/applications/app-1",
     );
   });
+
+  it("encodes the application id", () => {
+    expect(applicationWorkspaceHref("app/1")).toBe(
+      "/applicant/applications/app%2F1",
+    );
+  });
 });
 
 describe("listingAttentionHref", () => {
