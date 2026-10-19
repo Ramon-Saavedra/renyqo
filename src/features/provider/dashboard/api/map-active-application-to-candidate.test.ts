@@ -1,3 +1,4 @@
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -26,6 +27,7 @@ function buildApplication(
       introduction: null,
       ...applicantOverrides,
     },
+    attention: emptyApplicationAttentionSummary(),
     ...applicationOverrides,
   };
 }
@@ -44,6 +46,7 @@ describe("mapActiveApplicationToCandidate", () => {
       warnings: [],
       introduction: null,
       activeAtLabel: null,
+      attention: emptyApplicationAttentionSummary(),
     });
   });
 

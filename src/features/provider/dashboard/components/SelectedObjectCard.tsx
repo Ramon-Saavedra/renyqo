@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  AlertTriangle,
-  Eye,
-  Home,
-  Pencil,
-  Share2,
-  type LucideIcon,
-} from "lucide-react";
+import { Eye, Home, Pencil, Share2, type LucideIcon } from "lucide-react";
 import { buttonVariantClass } from "@/components/ui/button/Button";
 import { DASHBOARD_PRIMARY_COLOR_CLASS } from "../dashboard-button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -19,10 +12,10 @@ import {
   formatArea,
   formatEUR,
 } from "@/features/provider/listings-overview/utils/format";
-import { REASON_LABELS } from "@/features/provider/listings-overview/components/AttentionPill";
 import { siteConfig } from "@/config/site";
 import { dashboardCopy, OBJECT_STATUS_LABEL } from "../copy/dashboard";
 import type { DashboardObject } from "../types";
+import { DASHBOARD_BLOCK_CLASS } from "./dashboard-layout";
 import { ShareButtons } from "./ShareButtons";
 
 interface SelectedObjectCardProps {
@@ -52,17 +45,6 @@ const SECONDARY_ACTION_CLASS = `${ACTION_CLASS} ${buttonVariantClass("ghost")}`;
 const DISABLED_SECONDARY_ACTION_CLASS = `${ACTION_CLASS} ${buttonVariantClass("ghost")} cursor-not-allowed disabled:opacity-50`;
 const ACTION_LABEL_CLASS = "max-sm:sr-only";
 
-function resolveAttentionText(object: DashboardObject): string | null {
-  if (!object.needsAttention || !object.attentionReason) return null;
-  if (
-    object.attentionReason === "open_questions" &&
-    object.openQuestionsCount > 0
-  ) {
-    return dashboardCopy.attention.openQuestions(object.openQuestionsCount);
-  }
-  return REASON_LABELS[object.attentionReason];
-}
-
 function ActionIcon({ icon: Icon }: { icon: LucideIcon }) {
   return <AppIcon icon={Icon} size={16} strokeWidth={1.7} decorative />;
 }
@@ -82,8 +64,6 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
     ? copy.updatedCaption
     : copy.publishedCaption;
 
-  const attentionText = resolveAttentionText(object);
-
   const facts = [
     { id: "rent", label: copy.coldRent, value: formatEUR(object.coldRent) },
     {
@@ -100,13 +80,13 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   ];
 
   return (
-    <section className="mt-section py-parent-y">
-      <h2 className="mb-parent-y font-display text-heading-md font-medium text-foreground">
+    <section className={DASHBOARD_BLOCK_CLASS}>
+      <h2 className="mb-section font-display text-heading-md font-medium text-foreground">
         {copy.sectionHeading}
       </h2>
-      <div className="flex flex-wrap items-start gap-card-x">
+      <div className="mb-section flex flex-wrap items-start gap-card-x">
         <div className="min-w-0 flex-1 basis-75">
-          <span className="flex items-center gap-2">
+          <span className="mb-2 flex items-center gap-2">
             <span
               aria-hidden="true"
               className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT_CLASS[object.status]}`}
@@ -122,7 +102,7 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
               </span>
             ) : null}
           </span>
-          <div className="mt-2 flex items-center gap-card-x">
+          <div className="flex items-center gap-card-x">
             {object.coverImageUrl ? (
               <Image
                 src={object.coverImageUrl}
@@ -142,29 +122,14 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-heading-lg font-normal tracking-tight text-foreground text-pretty">
+              <h1 className="mb-1 text-heading-lg font-normal tracking-tight text-foreground text-pretty">
                 {object.fullTitle}
               </h1>
-              <p className="mt-1 text-body text-foreground-secondary">
+              <p className="text-body text-foreground-secondary">
                 {object.address}
               </p>
             </div>
           </div>
-          {attentionText ? (
-            <p
-              role="status"
-              className="mt-2.5 flex items-center gap-1.75 text-caption text-warning"
-            >
-              <AppIcon
-                icon={AlertTriangle}
-                size={14}
-                strokeWidth={1.8}
-                decorative
-                className="shrink-0"
-              />
-              {attentionText}
-            </p>
-          ) : null}
         </div>
 
         <div className="flex shrink-0 flex-wrap gap-2">
@@ -225,7 +190,7 @@ export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
         </div>
       </div>
 
-      <div className="mt-parent-y flex flex-wrap gap-x-card-x gap-y-card-y font-mono text-caption">
+      <div className="flex flex-wrap gap-x-card-x gap-y-card-y font-mono text-caption">
         {facts.map((fact) => (
           <span key={fact.id} className="inline-flex items-baseline gap-2">
             <span className="text-foreground-tertiary">{fact.label}</span>

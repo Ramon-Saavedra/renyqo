@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useId, useRef, type RefObject } from "react";
+import { useCallback, useEffect, useId, useRef, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
 import { cn } from "@/lib/utils/cn";
+import { invalidateListingApplicationData } from "@/features/applicant/listings/utils/listing-data-invalidation";
+import { useRequestTabRefresh } from "../../hooks/TabRefreshProvider";
 import { useDialogFocus } from "@/hooks/useDialogFocus";
 import { applicantWorkflowCopy } from "../copy";
 import { useApplicantWorkspace } from "../hooks/useApplicantWorkspace";
@@ -39,6 +41,12 @@ export function ApplicantWorkflowModal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { state, reload } = useApplicantWorkspace(applicationId);
+  const requestTabRefresh = useRequestTabRefresh();
+  const reloadWorkspace = useCallback(() => {
+    reload();
+    invalidateListingApplicationData();
+    requestTabRefresh();
+  }, [reload, requestTabRefresh]);
   const ready = state.status === "ready" ? state.workspace : null;
 
   useDialogFocus({
@@ -96,7 +104,7 @@ export function ApplicantWorkflowModal({
           <WorkflowSession
             workspace={ready}
             listing={listing}
-            reloadWorkspace={reload}
+            reloadWorkspace={reloadWorkspace}
             onSelected={onSelected}
           >
             <LoadedWorkflow

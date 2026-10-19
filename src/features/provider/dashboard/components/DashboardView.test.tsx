@@ -9,6 +9,10 @@ import { getProviderDashboardObjects } from "../api/provider-dashboard";
 import { SELECTED_OBJECT_STORAGE_KEY } from "../copy/dashboard";
 import { useSelectedListingApplications } from "../hooks/useSelectedListingApplications";
 import { useExitedApplications } from "../hooks/useExitedApplications";
+import {
+  emptyApplicationAttentionSummary,
+  emptyAttentionTotals,
+} from "@/lib/attention/fixtures";
 import { DashboardView } from "./DashboardView";
 import type { Candidate, DashboardObject, ExitedApplicant } from "../types";
 
@@ -128,9 +132,8 @@ const objects: readonly DashboardObject[] = [
     updatedAt: "02.07.2026, 12:00",
     status: "published",
     activeApplicationsCount: 1,
+    attention: emptyAttentionTotals(),
     needsAttention: false,
-    attentionReason: null,
-    openQuestionsCount: 0,
   },
   {
     id: "second-object",
@@ -147,9 +150,8 @@ const objects: readonly DashboardObject[] = [
     updatedAt: "10.07.2026, 09:00",
     status: "draft",
     activeApplicationsCount: 0,
+    attention: emptyAttentionTotals(),
     needsAttention: false,
-    attentionReason: null,
-    openQuestionsCount: 0,
   },
 ];
 
@@ -163,6 +165,7 @@ const candidates: readonly Candidate[] = [
     warnings: [],
     introduction: null,
     activeAtLabel: null,
+    attention: emptyApplicationAttentionSummary(),
   },
 ];
 

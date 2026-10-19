@@ -8,6 +8,10 @@ import {
   getProviderActiveApplications,
   getProviderWaitingCount,
 } from "../api/provider-listing-applications";
+import {
+  emptyApplicationAttentionSummary,
+  emptyAttentionTotals,
+} from "@/lib/attention/fixtures";
 import type { DashboardObject } from "../types";
 import { DashboardView } from "./DashboardView";
 
@@ -79,9 +83,8 @@ const listing: DashboardObject = {
   updatedAt: "02.07.2026, 12:00",
   status: "published",
   activeApplicationsCount: 1,
+  attention: emptyAttentionTotals(),
   needsAttention: false,
-  attentionReason: null,
-  openQuestionsCount: 0,
   displayOrder: 1,
 };
 
@@ -96,6 +99,7 @@ const anna = {
     warnings: [],
     introduction: "Kurze Vorstellung",
   },
+  attention: emptyApplicationAttentionSummary(),
 };
 
 const clara = {

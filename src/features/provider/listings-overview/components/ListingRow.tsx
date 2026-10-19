@@ -12,7 +12,9 @@ import {
   formatEUR,
   formatRelative,
 } from "../utils/format";
-import { AttentionPill } from "./AttentionPill";
+import { AttentionIndicators } from "@/components/shared/attention/AttentionIndicators";
+import { buildListingAttentionChips } from "@/lib/attention/chips";
+import { hasListingAttentionSurface } from "@/lib/attention/visibility";
 import { ApplicationsMeter } from "./ApplicationsMeter";
 import { RowActionsMenu } from "./RowActionsMenu";
 import { StatusPill } from "./StatusPill";
@@ -90,6 +92,8 @@ export function ListingRow({
   const timestampTitle = listing.publishedAt
     ? `Veröffentlicht am ${timestampLabel}`
     : `Aktualisiert am ${timestampLabel}`;
+  const attentionChips = buildListingAttentionChips(listing.attention);
+  const showAttention = hasListingAttentionSurface(listing.attention);
 
   return (
     <article
@@ -142,9 +146,13 @@ export function ListingRow({
             <div className={HEADER_META_CLASS}>
               <div className={STATUS_CLUSTER_CLASS}>
                 <StatusPill status={listing.status} />
-                {listing.needsAttention && listing.attentionReason && (
-                  <AttentionPill reason={listing.attentionReason} />
-                )}
+                {showAttention ? (
+                  <AttentionIndicators
+                    chips={attentionChips}
+                    maxVisible={2}
+                    className="flex flex-wrap items-center gap-1"
+                  />
+                ) : null}
               </div>
               <DateTimeBadge
                 value={timestampLabel}

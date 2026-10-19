@@ -1,3 +1,4 @@
+import type { AttentionTotals } from "@/lib/attention/types";
 import type { ObjectTypeBackend } from "@/lib/api/listings";
 
 export const LISTING_STATUS = [
@@ -9,12 +10,6 @@ export const LISTING_STATUS = [
 ] as const;
 
 export type ListingStatus = (typeof LISTING_STATUS)[number];
-
-export type AttentionReason =
-  | "open_questions"
-  | "manual_review"
-  | "missing_data"
-  | null;
 
 export const MAX_ACTIVE_APPLICATIONS = 5;
 
@@ -36,9 +31,8 @@ export interface ListingOverviewItem {
 
   readonly activeApplicationsCount: number;
 
+  readonly attention: AttentionTotals;
   readonly needsAttention: boolean;
-  readonly attentionReason: AttentionReason;
-  readonly openQuestionsCount: number;
 
   readonly createdAt: string;
   readonly updatedAt: string;

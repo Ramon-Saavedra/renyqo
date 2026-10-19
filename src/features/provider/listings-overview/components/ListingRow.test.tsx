@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { createListingOverviewItem } from "../testing/listing-overview-fixtures";
 import type { ListingOverviewItem } from "../types";
 import { ListingRow } from "./ListingRow";
 
 const NOW = new Date("2026-05-22T12:00:00");
 
-const BASE: ListingOverviewItem = {
+const BASE: ListingOverviewItem = createListingOverviewItem({
   id: "row-1",
   title: "Helle Wohnung am Park",
-  objectType: null,
   displayAddress: "Parkstraße 12 · Berlin, Mitte · 10115",
   coldRent: 1200,
   deposit: 2400,
@@ -17,14 +17,10 @@ const BASE: ListingOverviewItem = {
   livingArea: 68,
   rooms: 2,
   activeApplicationsCount: 3,
-  openQuestionsCount: 0,
-  status: "published",
-  needsAttention: false,
-  attentionReason: null,
   createdAt: "2026-04-01",
   updatedAt: "2026-05-20T10:00:00",
   publishedAt: "2026-04-02T10:00:00",
-};
+});
 
 describe("ListingRow", () => {
   it("shares hover elevation without replacing selected or keyboard focus rings", () => {
@@ -99,22 +95,24 @@ describe("ListingRow", () => {
       <ListingRow listing={BASE} onAction={vi.fn()} now={NOW} />,
     );
 
-    expect(screen.queryByRole("img", { name: /Rückfragen/ })).toBeNull();
+    expect(screen.queryByText(/offene Schritte/i)).toBeNull();
 
     rerender(
       <ListingRow
         listing={{
           ...BASE,
           needsAttention: true,
-          attentionReason: "open_questions",
+          attention: {
+            ...BASE.attention,
+            totalPendingActions: 1,
+            applicationsWithPendingActions: 1,
+          },
         }}
         onAction={vi.fn()}
         now={NOW}
       />,
     );
 
-    expect(
-      screen.getByRole("img", { name: "Rückfragen offen" }),
-    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getByText("1 offener Schritt")).toBeInstanceOf(HTMLElement);
   });
 });

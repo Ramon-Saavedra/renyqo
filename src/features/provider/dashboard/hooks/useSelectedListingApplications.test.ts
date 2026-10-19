@@ -2,6 +2,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactNode } from "react";
 
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import {
   getProviderActiveApplications,
   getProviderWaitingCount,
@@ -76,6 +77,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: baseApplicant,
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(2);
@@ -128,6 +130,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: baseApplicant,
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockRejectedValue(new Error("network"));
@@ -154,6 +157,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: baseApplicant,
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(1);
@@ -187,6 +191,7 @@ describe("useSelectedListingApplications", () => {
           ...baseApplicant,
           name: "Ben Becker",
         },
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(0);
@@ -232,6 +237,7 @@ describe("useSelectedListingApplications", () => {
             name: "Ben Becker",
             peopleCount: 1,
           },
+          attention: emptyApplicationAttentionSummary(),
         },
       ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(0);
@@ -261,6 +267,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: baseApplicant,
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(2);
@@ -281,6 +288,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: { ...baseApplicant, name: "Ben Becker" },
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(0);
@@ -306,6 +314,7 @@ describe("useSelectedListingApplications", () => {
           status: "ACTIVE",
           activeAt: null,
           applicant: baseApplicant,
+          attention: emptyApplicationAttentionSummary(),
         },
       ])
       .mockRejectedValueOnce(new Error("network"));
@@ -342,6 +351,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: baseApplicant,
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(2);
@@ -362,6 +372,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: { ...baseApplicant, name: "Ben Becker" },
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(0);
@@ -400,6 +411,7 @@ describe("useSelectedListingApplications", () => {
         status: "ACTIVE",
         activeAt: null,
         applicant: baseApplicant,
+        attention: emptyApplicationAttentionSummary(),
       },
     ]);
     vi.mocked(getProviderWaitingCount).mockResolvedValue(2);

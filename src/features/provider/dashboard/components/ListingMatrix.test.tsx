@@ -1,4 +1,11 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { emptyAttentionTotals } from "@/lib/attention/fixtures";
 import { describe, expect, it, vi } from "vitest";
 import type { DashboardObject } from "../types";
 import { getProviderActiveApplications } from "../api/provider-listing-applications";
@@ -25,9 +32,8 @@ function buildObject(id: string): DashboardObject {
     status: "published",
     activeApplicationsCount: 0,
     coverImageUrl: null,
+    attention: emptyAttentionTotals(),
     needsAttention: false,
-    attentionReason: null,
-    openQuestionsCount: 0,
   };
 }
 
@@ -75,6 +81,54 @@ function drag(
 }
 
 describe("ListingMatrix", () => {
+  it("shows unread attention on an unselected listing and removes it after refreshed data", () => {
+    const quiet = buildObject("santiago");
+    const nordhorn = {
+      ...buildObject("nordhorn"),
+      attention: { ...emptyAttentionTotals(), actionableUnreadMessageCount: 1 },
+    };
+    const props = { selectedId: quiet.id, onSelect: vi.fn() };
+    const { container, rerender } = render(
+      <ListingMatrix {...props} objects={[quiet, nordhorn]} />,
+    );
+    expect(
+      within(cell(container, nordhorn.id)).getByRole("img", {
+        name: "1 ungelesene Nachricht",
+      }),
+    ).toBeTruthy();
+    expect(
+      within(cell(container, quiet.id)).queryByRole("img", {
+        name: /ungelesene/,
+      }),
+    ).toBeNull();
+    rerender(
+      <ListingMatrix {...props} objects={[quiet, buildObject("nordhorn")]} />,
+    );
+    expect(
+      screen.queryByRole("img", { name: "1 ungelesene Nachricht" }),
+    ).toBeNull();
+  });
+
+  it("shows document and viewing obligations independently of messages", () => {
+    const object = {
+      ...buildObject("nordhorn"),
+      attention: {
+        ...emptyAttentionTotals(),
+        totalPendingActions: 2,
+        categories: {
+          documentUploadCount: 0,
+          documentReviewCount: 1,
+          viewingActionCount: 1,
+        },
+      },
+    };
+    render(
+      <ListingMatrix objects={[object]} selectedId={null} onSelect={vi.fn()} />,
+    );
+    expect(screen.getByRole("img", { name: /Dokument/ })).toBeTruthy();
+    expect(screen.getByRole("img", { name: /Besichtigung/ })).toBeTruthy();
+    expect(screen.queryByRole("img", { name: /ungelesene/ })).toBeNull();
+  });
   it("keeps the selected app shadow and selection ring independent", () => {
     const { container } = render(
       <ListingMatrix

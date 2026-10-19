@@ -114,10 +114,6 @@ export const dashboardCopy = {
         : `${short}, ${status}, ${shown} von ${MAX_ACTIVE_APPLICATIONS} aktiven Bewerbungen — als aktuelles Objekt auswählen`;
     },
   },
-  attention: {
-    openQuestions: (count: number) =>
-      count === 1 ? "1 offene Bewerberfrage" : `${count} offene Bewerberfragen`,
-  },
   preview: {
     close: "Schließen",
   },

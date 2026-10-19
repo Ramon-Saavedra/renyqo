@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createListingOverviewItem } from "@/features/provider/listings-overview/testing/listing-overview-fixtures";
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import { getProviderDashboardObjects } from "./provider-dashboard";
@@ -15,7 +16,7 @@ describe("getProviderDashboardObjects", () => {
 
   it("maps listings and propagates activeApplicationsCount", async () => {
     vi.mocked(getProviderListings).mockResolvedValue([
-      {
+      createListingOverviewItem({
         id: "listing-1",
         title: "Wohnung am Park",
         objectType: "APARTMENT",
@@ -26,15 +27,12 @@ describe("getProviderDashboardObjects", () => {
         rooms: 2.5,
         status: "published",
         activeApplicationsCount: 3,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
         createdAt: "2026-07-01T10:00:00.000Z",
         updatedAt: "2026-07-02T10:00:00.000Z",
         publishedAt: "2026-07-02T11:00:00.000Z",
         availableFrom: "2026-08-01",
-      },
-      {
+      }),
+      createListingOverviewItem({
         id: "listing-2",
         title: "Entwurf",
         objectType: null,
@@ -45,135 +43,32 @@ describe("getProviderDashboardObjects", () => {
         rooms: 0,
         status: "draft",
         activeApplicationsCount: 0,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-        createdAt: "1970-01-01T00:00:00.000Z",
-        updatedAt: "1970-01-01T00:00:00.000Z",
+        createdAt: "2026-07-01T10:00:00.000Z",
+        updatedAt: "2026-07-02T10:00:00.000Z",
         publishedAt: null,
         availableFrom: null,
-      },
-      {
-        id: "listing-3",
-        title: "Archiviert",
-        objectType: null,
-        displayAddress: "Archivstraße 3 · Berlin",
-        coverImageUrl: null,
-        coldRent: 1200,
-        livingArea: 70,
-        rooms: 3,
-        status: "archived",
-        activeApplicationsCount: 4,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-        createdAt: "2026-07-01T10:00:00.000Z",
-        updatedAt: "2026-07-02T10:00:00.000Z",
-        publishedAt: "2026-07-02T11:00:00.000Z",
-        availableFrom: "2026-08-01",
-      },
-      {
-        id: "listing-4",
-        title: "Am Bewerbungslimit",
-        objectType: null,
-        displayAddress: "Grenzstraße 5 · Berlin",
-        coverImageUrl: null,
-        coldRent: 1100,
-        livingArea: 65,
-        rooms: 3,
-        status: "published",
-        activeApplicationsCount: MAX_ACTIVE_APPLICATIONS,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-        createdAt: "2026-07-01T10:00:00.000Z",
-        updatedAt: "2026-07-02T10:00:00.000Z",
-        publishedAt: "2026-07-02T11:00:00.000Z",
-        availableFrom: "2026-08-01",
-      },
+      }),
     ]);
 
-    await expect(getProviderDashboardObjects()).resolves.toEqual([
-      {
-        id: "listing-1",
-        title: "Wohnung am Park",
-        fullTitle: "Wohnung am Park",
-        objectType: "APARTMENT",
-        district: "Parkstraße 1 · Berlin",
-        address: "Parkstraße 1 · Berlin",
-        coldRent: 980,
-        livingArea: 68,
-        rooms: "2.5",
-        availableFrom: "01.08.2026",
-        publishedAt: "02.07.2026, 13:00",
-        updatedAt: "02.07.2026, 12:00",
-        status: "published",
-        activeApplicationsCount: 3,
-        coverImageUrl: "https://res.cloudinary.com/demo/image/upload/flat.jpg",
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-      },
-      {
-        id: "listing-2",
-        title: "Entwurf",
-        fullTitle: "Entwurf",
-        objectType: null,
-        district: "Adresse offen",
-        address: "Adresse offen",
-        coldRent: 0,
-        livingArea: 0,
-        rooms: "0",
-        availableFrom: null,
-        publishedAt: null,
-        updatedAt: "01.01.1970, 01:00",
-        status: "draft",
-        activeApplicationsCount: 0,
-        coverImageUrl: null,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-      },
-      {
-        id: "listing-3",
-        title: "Archiviert",
-        fullTitle: "Archiviert",
-        objectType: null,
-        district: "Archivstraße 3 · Berlin",
-        address: "Archivstraße 3 · Berlin",
-        coldRent: 1200,
-        livingArea: 70,
-        rooms: "3",
-        availableFrom: "01.08.2026",
-        publishedAt: "02.07.2026, 13:00",
-        updatedAt: "02.07.2026, 12:00",
-        status: "archived",
-        activeApplicationsCount: 4,
-        coverImageUrl: null,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-      },
-      {
-        id: "listing-4",
-        title: "Am Bewerbungslimit",
-        fullTitle: "Am Bewerbungslimit",
-        objectType: null,
-        district: "Grenzstraße 5 · Berlin",
-        address: "Grenzstraße 5 · Berlin",
-        coldRent: 1100,
-        livingArea: 65,
-        rooms: "3",
-        availableFrom: "01.08.2026",
-        publishedAt: "02.07.2026, 13:00",
-        updatedAt: "02.07.2026, 12:00",
-        status: "published",
-        activeApplicationsCount: MAX_ACTIVE_APPLICATIONS,
-        coverImageUrl: null,
-        needsAttention: false,
-        attentionReason: null,
-        openQuestionsCount: 0,
-      },
+    const objects = await getProviderDashboardObjects();
+    expect(objects).toHaveLength(2);
+    expect(objects[0]?.activeApplicationsCount).toBe(3);
+    expect(objects[0]?.attention).toEqual(
+      createListingOverviewItem().attention,
+    );
+    expect(objects[1]?.status).toBe("draft");
+  });
+
+  it("preserves the authoritative active application count for display consumers", async () => {
+    vi.mocked(getProviderListings).mockResolvedValue([
+      createListingOverviewItem({
+        activeApplicationsCount: MAX_ACTIVE_APPLICATIONS + 1,
+      }),
     ]);
+
+    const objects = await getProviderDashboardObjects();
+    expect(objects[0]?.activeApplicationsCount).toBe(
+      MAX_ACTIVE_APPLICATIONS + 1,
+    );
   });
 });

@@ -15,6 +15,11 @@ import Link from "next/link";
 import { GripVertical, Home, Maximize2, X } from "lucide-react";
 import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { AttentionIconIndicators } from "@/components/shared/attention/AttentionIconIndicators";
+import {
+  buildListingAttentionChips,
+  filterGlobalMenuAttentionChips,
+} from "@/lib/attention/chips";
 import {
   formatArea,
   formatEUR,
@@ -31,6 +36,7 @@ import {
 } from "./ListingApplicantSlots";
 import { ListingPositionControl } from "./ListingPositionControl";
 import { ListingPositionDialog } from "./ListingPositionDialog";
+import { DASHBOARD_MATRIX_CLASS as GRID_CLASS } from "./dashboard-layout";
 
 interface ListingMatrixProps {
   objects: readonly DashboardObject[];
@@ -67,9 +73,6 @@ const DIMMED_STATUS: readonly DashboardObjectStatus[] = [
   "archived",
   "rented",
 ];
-
-const GRID_CLASS =
-  "scrollbar-slim flex flex-nowrap items-start gap-x-3 gap-y-4 overflow-x-auto px-1 pt-2 pb-1";
 
 const CELL_WIDTH_CLASS = "w-36 shrink-0";
 
@@ -638,8 +641,14 @@ export function ListingMatrix({
                 onDragEnd={handleDragEnd}
                 className={`group relative flex items-start gap-1 rounded-md border px-2 py-1 ${CELL_WIDTH_CLASS} ${selected ? "border-primary bg-primary-tint ring-3 ring-primary-tint shadow-card" : "border-border"} ${draggedId === object.id ? "opacity-40" : ""}`}
               >
+                <AttentionIconIndicators
+                  chips={filterGlobalMenuAttentionChips(
+                    buildListingAttentionChips(object.attention),
+                  )}
+                  className="absolute -top-8 left-0 inline-flex h-6 items-center gap-1"
+                />
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1">
+                  <div className="relative mb-1">
                     <ListingThumb
                       object={object}
                       selected={selected}

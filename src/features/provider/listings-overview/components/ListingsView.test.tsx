@@ -8,6 +8,10 @@ import {
   getProviderListings,
   publishProviderListing,
 } from "../api/provider-listings";
+import {
+  createListingNeedingAttention,
+  createListingOverviewItem,
+} from "../testing/listing-overview-fixtures";
 import type { ListingOverviewItem } from "../types";
 import { ListingsView } from "./ListingsView";
 
@@ -27,10 +31,9 @@ vi.mock("next/navigation", () => ({
 const NOW = new Date("2026-05-22T15:00:00");
 
 const SAMPLE: readonly ListingOverviewItem[] = [
-  {
+  createListingOverviewItem({
     id: "a",
     title: "Helle 3-Zimmer Altbauwohnung",
-    objectType: null,
     displayAddress: "Schönhauser Allee 142 · Berlin, Prenzlauer Berg · 10437",
     coldRent: 1480,
     deposit: 2960,
@@ -38,19 +41,14 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     livingArea: 84,
     rooms: 3,
     activeApplicationsCount: 2,
-    openQuestionsCount: 0,
-    status: "published",
-    needsAttention: false,
-    attentionReason: null,
     createdAt: "2026-03-14",
     updatedAt: "2026-05-22T14:00:00",
     publishedAt: "2026-03-15T10:00:00",
     availableFrom: "2026-06-01",
-  },
-  {
+  }),
+  createListingNeedingAttention({
     id: "b",
     title: "Modernes Loft",
-    objectType: null,
     displayAddress: "Friedrichstraße 88 · Hamburg, Altona · 22765",
     coldRent: 2150,
     deposit: 4300,
@@ -58,19 +56,14 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     livingArea: 112,
     rooms: 4,
     activeApplicationsCount: 4,
-    openQuestionsCount: 1,
-    status: "published",
-    needsAttention: true,
-    attentionReason: "open_questions",
     createdAt: "2026-04-08",
     updatedAt: "2026-05-20T10:00:00",
     publishedAt: "2026-04-09T08:00:00",
     availableFrom: null,
-  },
-  {
+  }),
+  createListingOverviewItem({
     id: "c",
     title: "Entwurf Studio",
-    objectType: null,
     displayAddress: "Brüderstraße 8 · Leipzig, Zentrum-Süd · 04103",
     coldRent: 680,
     deposit: 1360,
@@ -78,19 +71,15 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     livingArea: 32,
     rooms: 1,
     activeApplicationsCount: 0,
-    openQuestionsCount: 0,
     status: "draft",
-    needsAttention: false,
-    attentionReason: null,
     createdAt: "2026-05-19",
     updatedAt: "2026-05-19T22:10:00",
     publishedAt: null,
     availableFrom: null,
-  },
-  {
+  }),
+  createListingOverviewItem({
     id: "d",
     title: "Penthouse mit Rheinblick",
-    objectType: null,
     displayAddress: "Konrad-Adenauer-Ufer 22 · Düsseldorf, Altstadt · 40213",
     coldRent: 3450,
     deposit: 10350,
@@ -98,15 +87,12 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     livingArea: 168,
     rooms: 5,
     activeApplicationsCount: 5,
-    openQuestionsCount: 0,
     status: "archived",
-    needsAttention: false,
-    attentionReason: null,
     createdAt: "2026-01-15",
     updatedAt: "2026-05-08T12:00:00",
     publishedAt: "2026-01-16T10:00:00",
     availableFrom: "2026-02-01",
-  },
+  }),
 ];
 
 function renderView(listings: readonly ListingOverviewItem[] = SAMPLE) {

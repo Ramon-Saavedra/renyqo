@@ -51,9 +51,8 @@ function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
     status: listing.status,
     activeApplicationsCount: listing.activeApplicationsCount,
     coverImageUrl: listing.coverImageUrl ?? null,
+    attention: listing.attention,
     needsAttention: listing.needsAttention,
-    attentionReason: listing.attentionReason,
-    openQuestionsCount: listing.openQuestionsCount,
   };
 }
 

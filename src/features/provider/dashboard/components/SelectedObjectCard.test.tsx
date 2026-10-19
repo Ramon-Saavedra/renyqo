@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { emptyAttentionTotals } from "@/lib/attention/fixtures";
 import { SelectedObjectCard } from "./SelectedObjectCard";
 import type { DashboardObject } from "../types";
 
@@ -35,9 +36,8 @@ const publishedObject: DashboardObject = {
   updatedAt: "01.07.2026, 09:15",
   status: "published",
   activeApplicationsCount: 3,
+  attention: emptyAttentionTotals(),
   needsAttention: false,
-  attentionReason: null,
-  openQuestionsCount: 0,
 };
 
 describe("SelectedObjectCard", () => {
@@ -78,8 +78,7 @@ describe("SelectedObjectCard", () => {
           updatedAt: "05.07.2026, 14:30",
           activeApplicationsCount: 0,
           needsAttention: false,
-          attentionReason: null,
-          openQuestionsCount: 0,
+          attention: emptyAttentionTotals(),
         }}
       />,
     );
@@ -121,8 +120,7 @@ describe("SelectedObjectCard", () => {
           status: "draft",
           activeApplicationsCount: 0,
           needsAttention: false,
-          attentionReason: null,
-          openQuestionsCount: 0,
+          attention: emptyAttentionTotals(),
         }}
       />,
     );
