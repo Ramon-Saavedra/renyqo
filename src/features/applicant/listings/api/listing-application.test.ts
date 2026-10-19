@@ -63,15 +63,17 @@ describe("applyToListing", () => {
         null,
         {
           canApply: false,
-          reasons: ["pets_not_allowed"],
+          reasons: [],
           warnings: [],
           evaluatedAt: "2026-08-23T10:00:00.000Z",
         },
       ),
     );
-    await expect(applyToListing("listing-1")).rejects.toBeInstanceOf(
-      ListingEligibilityRejectedError,
+    const error = await applyToListing("listing-1").catch(
+      (error: unknown) => error,
     );
+    expect(error).toBeInstanceOf(ListingEligibilityRejectedError);
+    expect(error).not.toHaveProperty("eligibility");
   });
 
   it("rejects malformed success payloads", async () => {

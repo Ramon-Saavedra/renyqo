@@ -211,7 +211,7 @@ describe("ListingCard", () => {
     expect(screen.getByText("Passt nicht")).toBeInstanceOf(HTMLElement);
   });
 
-  it("shows the active application and the matching profile together", () => {
+  it("shows an active application without the matching profile label", () => {
     render(
       <ListingCard
         listing={buildListing({
@@ -230,7 +230,8 @@ describe("ListingCard", () => {
       />,
     );
     expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
   });
 
   it("does not treat hasApplied alone as an applied badge", () => {
@@ -250,7 +251,7 @@ describe("ListingCard", () => {
     expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
   });
 
-  it("shows a waiting application beside the current mismatch", () => {
+  it("shows a waiting application without the current mismatch label", () => {
     render(
       <ListingCard
         listing={buildListing({
@@ -269,7 +270,8 @@ describe("ListingCard", () => {
       />,
     );
     expect(screen.getByText("Bereits beworben")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Passt nicht")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
   });
 
   it("does not show match badges when showMatch is false", () => {
@@ -326,7 +328,8 @@ describe("ListingCard", () => {
       />,
     );
     expect(screen.getByText("Nicht ausgewählt")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(screen.queryByText("Bereits beworben")).toBeNull();
     expect(screen.queryByText(/Erneut bewerben ab/)).toBeNull();
     expect(screen.queryByText(/2026/)).toBeNull();
@@ -350,7 +353,8 @@ describe("ListingCard", () => {
       />,
     );
     expect(screen.getByText("Objekt vermietet")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
   });
 
@@ -370,8 +374,80 @@ describe("ListingCard", () => {
       { showMatch: true },
     );
     expect(screen.getByText("Bewerbung beendet")).toBeInstanceOf(HTMLElement);
-    expect(screen.getByText("Passt nicht")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(screen.queryByText("Bereits beworben")).toBeNull();
+  });
+
+  it("shows an accepted application without a compatibility label", () => {
+    renderCard(
+      buildListing({
+        admission: createAdmission({
+          hasApplicationHistory: true,
+          currentApplicationId: "accepted-1",
+          currentApplicationStatus: "ACCEPTED",
+          canSubmitApplication: false,
+          submissionBlockReason: "APPLICATION_ACCEPTED",
+        }),
+        applicationStatus: "ACCEPTED",
+        matchesProfile: true,
+      }),
+      "applicant",
+      { showMatch: true },
+    );
+    expect(screen.getByText("Bewerbung angenommen")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
+  });
+
+  it("shows an unavailable application without a compatibility label", () => {
+    renderCard(
+      buildListing({
+        admission: createAdmission({
+          canSubmitApplication: false,
+          submissionBlockReason: "LISTING_NOT_ACCEPTING_APPLICATIONS",
+        }),
+        matchesProfile: false,
+      }),
+      "applicant",
+      { showMatch: true },
+    );
+    expect(screen.getByText("Bewerbung derzeit nicht möglich")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
+  });
+
+  it("keeps a historical profile ending visible after eligibility recovers", () => {
+    renderCard(
+      buildListing({
+        admission: createAdmission({ hasApplicationHistory: true }),
+        publicReason: "PROFILE_NO_LONGER_ELIGIBLE",
+        matchesProfile: true,
+      }),
+      "applicant",
+      { showMatch: true },
+    );
+    expect(screen.getByText("Bewerbung beendet")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
+  });
+
+  it("does not keep not-selected after the cooldown block is gone", () => {
+    renderCard(
+      buildListing({
+        admission: createAdmission({ hasApplicationHistory: true }),
+        publicReason: "NOT_SELECTED",
+        matchesProfile: true,
+      }),
+      "applicant",
+      { showMatch: true },
+    );
+    expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
+    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
   });
 
   it("does not show match badges when matchesProfile is null", () => {

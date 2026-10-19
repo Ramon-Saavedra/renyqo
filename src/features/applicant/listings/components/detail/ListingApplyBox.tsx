@@ -2,15 +2,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button, buttonClass } from "@/components/ui/button/Button";
+import { applicationWorkspaceHref } from "@/lib/attention/navigation";
 import type { ApplicationAdmission } from "../../api/application-admission";
 import { listingDetailCopy } from "../../copy/listing-detail";
 import {
   applicationAdmissionCopy,
   applicationBlockCopy,
 } from "../../copy/application-admission";
-import { REASON_COPY, WARNING_COPY } from "../../copy/listing-eligibility";
 import { useListingApplication } from "../../hooks/useListingApplication";
-import { useListingEligibility } from "../../hooks/useListingEligibility";
 import type { ListingViewerSessionStatus } from "../../hooks/useListingViewerSession";
 import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
 import type { ProfileMatchResult } from "../../types";
@@ -19,6 +18,27 @@ import { LISTING_REGISTER_PATH } from "../../utils/listing-auth-paths";
 import { resolveListingApplicationUi } from "../../utils/listing-card-badge";
 import { invalidateListingApplicationData } from "../../utils/listing-data-invalidation";
 import { ListingSignals } from "../ListingSignals";
+
+const APPLICATIONS_OVERVIEW_PATH = "/applicant/applications";
+
+function applicationNavigation(admission: ApplicationAdmission): {
+  readonly href: string;
+  readonly label: string;
+} | null {
+  if (admission.currentApplicationId !== null) {
+    return {
+      href: applicationWorkspaceHref(admission.currentApplicationId),
+      label: applicationAdmissionCopy.openApplication,
+    };
+  }
+  if (admission.hasApplicationHistory) {
+    return {
+      href: APPLICATIONS_OVERVIEW_PATH,
+      label: applicationAdmissionCopy.myApplications,
+    };
+  }
+  return null;
+}
 interface ListingApplyBoxProps {
   listingId: string;
   session: ListingViewerSessionStatus;
@@ -35,10 +55,6 @@ export function ListingApplyBox({
   admission,
   publicReason,
 }: ListingApplyBoxProps) {
-  const { eligibility, status } = useListingEligibility(
-    listingId,
-    session === "applicant",
-  );
   const { state, submit, reset, reconcile } = useListingApplication(listingId);
   const ui = resolveListingApplicationUi({
     admission,
@@ -86,8 +102,7 @@ export function ListingApplyBox({
         </Link>
       </div>
     );
-  const currentEligibility =
-    state.status === "eligibility-rejected" ? state.eligibility : eligibility;
+  const navigation = applicationNavigation(admission);
   return (
     <div className={BOX_CLASS}>
       <div className="flex flex-wrap items-center gap-3">
@@ -111,8 +126,7 @@ export function ListingApplyBox({
             disabled={
               ui.action !== "submit" ||
               state.status === "submitting" ||
-              state.status === "success" ||
-              state.status === "eligibility-rejected"
+              state.status === "success"
             }
             onClick={() => void handleApply()}
           >
@@ -121,6 +135,11 @@ export function ListingApplyBox({
               : applicationAdmissionCopy.apply}
           </Button>
         )}
+        {navigation ? (
+          <Link href={navigation.href} className={buttonClass("outline")}>
+            {navigation.label}
+          </Link>
+        ) : null}
       </div>
       {ui.process === "ended-profile" && ui.compatibility === "no-match" && (
         <p className="text-caption text-foreground-secondary">
@@ -136,28 +155,6 @@ export function ListingApplyBox({
           <p className="text-caption text-foreground-secondary">
             {applicationBlockCopy[ui.blockReason]}
           </p>
-        )}
-      {status === "error" && (
-        <p role="alert" className="text-caption text-danger">
-          {applicationAdmissionCopy.eligibilityFailed}
-        </p>
-      )}
-      {currentEligibility &&
-        !currentEligibility.canApply &&
-        currentEligibility.reasons.length > 0 && (
-          <ul className="list-disc pl-4 text-caption text-foreground-secondary">
-            {currentEligibility.reasons.map((reason) => (
-              <li key={reason}>{REASON_COPY[reason]}</li>
-            ))}
-          </ul>
-        )}
-      {currentEligibility?.canApply &&
-        currentEligibility.warnings.length > 0 && (
-          <ul className="list-disc pl-4 text-caption text-foreground-secondary">
-            {currentEligibility.warnings.map((warning) => (
-              <li key={warning}>{WARNING_COPY[warning]}</li>
-            ))}
-          </ul>
         )}
       {confirmation && (
         <p role="status" className="text-caption text-success">

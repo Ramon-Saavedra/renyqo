@@ -21,12 +21,6 @@ const submit = vi.fn();
 
 const withdraw = vi.fn();
 
-const eligibility = vi.fn();
-
-vi.mock("../../hooks/useListingEligibility", () => ({
-  useListingEligibility: () => eligibility(),
-}));
-
 vi.mock("../../hooks/useListingApplication", () => ({
   useListingApplication: () => ({
     state: { status: "idle" },
@@ -59,14 +53,31 @@ function setup(
 
 beforeEach(() => {
   vi.clearAllMocks();
-
-  eligibility.mockReturnValue({
-    status: "loaded",
-    eligibility: { canApply: true, reasons: [], warnings: [] },
-  });
 });
 
 describe("ListingApplyBox admission", () => {
+  it.each([false, true])(
+    "shows no personalized diagnostics and preserves admission permission %s",
+    (canApply) => {
+      setup(
+        createAdmission({
+          canSubmitApplication: canApply,
+          submissionBlockReason: canApply ? null : "APPLICANT_NOT_ELIGIBLE",
+        }),
+        canApply ? "match" : "no-match",
+      );
+      expect(screen.queryByRole("list")).toBeNull();
+      expect(
+        screen.queryByText(
+          /Haushaltseinkommen|Haustiere sind|household_income_below_requirement|pets_not_allowed|pets_by_arrangement/,
+        ),
+      ).toBeNull();
+      expect(
+        (screen.getByRole("button", { name: "Bewerben" }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(!canApply);
+    },
+  );
   it("follows refreshed admission after rejection, restoration, withdrawal and renewed rejection", () => {
     const rejected = createAdmission({
       hasApplicationHistory: true,
@@ -89,6 +100,7 @@ describe("ListingApplyBox admission", () => {
         />,
       );
     expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    expect(screen.queryByText("Passt")).toBeNull();
     update(
       createAdmission({
         hasApplicationHistory: true,
@@ -120,6 +132,7 @@ describe("ListingApplyBox admission", () => {
     ).toBe(false);
     update(rejected);
     expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    expect(screen.queryByText("Passt")).toBeNull();
     update(createAdmission({ hasApplicationHistory: true }));
     expect(
       screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
@@ -139,6 +152,8 @@ describe("ListingApplyBox admission", () => {
       );
 
       expect(screen.getByText("Bereits beworben")).toBeTruthy();
+      expect(screen.queryByText("Passt")).toBeNull();
+      expect(screen.queryByText("Passt nicht")).toBeNull();
 
       expect(
         screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
@@ -156,12 +171,7 @@ describe("ListingApplyBox admission", () => {
     expect(screen.queryByText("Bereits beworben")).toBeNull();
   });
 
-  it("uses admission permission independently of eligibility canApply", () => {
-    eligibility.mockReturnValue({
-      status: "loaded",
-      eligibility: { canApply: false, reasons: [], warnings: [] },
-    });
-
+  it("uses the authoritative admission permission", () => {
     setup();
 
     expect(
@@ -182,7 +192,7 @@ describe("ListingApplyBox admission", () => {
     );
 
     expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
-    expect(screen.getByText("Passt nicht")).toBeTruthy();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(
       screen.getByText(
         "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
@@ -195,23 +205,27 @@ describe("ListingApplyBox admission", () => {
     ).toBe(true);
   });
 
-  it("keeps an active application beside a current mismatch and still offers withdrawal", () => {
-    setup(
-      createAdmission({
-        currentApplicationId: "a",
-        currentApplicationStatus: "ACTIVE",
-        canSubmitApplication: false,
-        submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
-      }),
-      "no-match",
-    );
+  it.each(["ACTIVE", "WAITING"] as const)(
+    "keeps a %s application actionable without the mismatch label",
+    (status) => {
+      setup(
+        createAdmission({
+          currentApplicationId: "a",
+          currentApplicationStatus: status,
+          canSubmitApplication: false,
+          submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+        }),
+        "no-match",
+      );
 
-    expect(screen.getByText("Bereits beworben")).toBeTruthy();
-    expect(screen.getByText("Passt nicht")).toBeTruthy();
-    expect(
-      screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
-    ).toBeTruthy();
-  });
+      expect(screen.getByText("Bereits beworben")).toBeTruthy();
+      expect(screen.queryByText("Passt")).toBeNull();
+      expect(screen.queryByText("Passt nicht")).toBeNull();
+      expect(
+        screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
+      ).toBeTruthy();
+    },
+  );
 
   it("allows a new application after the profile matches again", () => {
     setup(
@@ -222,7 +236,8 @@ describe("ListingApplyBox admission", () => {
     );
 
     expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
-    expect(screen.getByText("Passt")).toBeTruthy();
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(
       screen.queryByText(
         "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
@@ -246,7 +261,8 @@ describe("ListingApplyBox admission", () => {
     );
 
     expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
-    expect(screen.getByText("Passt")).toBeTruthy();
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(
       screen.queryByText(
         "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
@@ -272,6 +288,8 @@ describe("ListingApplyBox admission", () => {
     );
 
     expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(screen.getByText(/leider nicht ausgew/)).toBeTruthy();
     expect(
       screen.queryByText(/Erneut bewerben ab|2000|Wartezeit|gesperrt/),
@@ -315,6 +333,215 @@ describe("ListingApplyBox admission", () => {
     setup(createAdmission(), "match", "anonymous");
 
     expect(screen.getByRole("link").getAttribute("href")).toContain("register");
+  });
+
+  it.each([
+    ["APPLICATION_ACCEPTED", "Bewerbung angenommen", "ACCEPTED"],
+    ["LISTING_RENTED", "Objekt vermietet", "REJECTED"],
+    [
+      "APPLICATION_HISTORY_REQUIRES_REVIEW",
+      "Bewerbung derzeit nicht möglich",
+      "REJECTED",
+    ],
+    [
+      "LISTING_NOT_ACCEPTING_APPLICATIONS",
+      "Bewerbung derzeit nicht möglich",
+      "REJECTED",
+    ],
+  ] as const)(
+    "shows %s without a compatibility label",
+    (reason, label, status) => {
+      setup(
+        createAdmission({
+          hasApplicationHistory: true,
+          currentApplicationId: "closed/1",
+          currentApplicationStatus: status,
+          canSubmitApplication: false,
+          submissionBlockReason: reason,
+        }),
+      );
+
+      expect(screen.getByText(label)).toBeTruthy();
+      expect(screen.queryByText("Passt")).toBeNull();
+      expect(screen.queryByText("Passt nicht")).toBeNull();
+      expect(
+        screen
+          .getByRole("link", { name: "Zur Bewerbung" })
+          .getAttribute("href"),
+      ).toBe("/applicant/applications/closed%2F1");
+      expect(
+        screen
+          .getByRole("button", { name: "Bewerben" })
+          .hasAttribute("disabled"),
+      ).toBe(true);
+    },
+  );
+
+  it("opens the current application when there are no attention notices", () => {
+    setup(
+      createAdmission({
+        currentApplicationId: "app/42",
+        currentApplicationStatus: "ACTIVE",
+        canSubmitApplication: false,
+        submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+      }),
+    );
+
+    const link = screen.getByRole("link", { name: "Zur Bewerbung" });
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toBe("/applicant/applications/app%2F42");
+    expect(
+      screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
+    ).toBeTruthy();
+    expect(submit).not.toHaveBeenCalled();
+    expect(withdraw).not.toHaveBeenCalled();
+  });
+
+  it("links rejected and withdrawn applications without replacing their actions", () => {
+    const view = setup(
+      createAdmission({
+        hasApplicationHistory: true,
+        currentApplicationId: "rejected-1",
+        currentApplicationStatus: "REJECTED",
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICATION_REAPPLICATION_COOLDOWN",
+        reapplyAvailableAt: "2026-11-01T00:00:00Z",
+      }),
+    );
+
+    expect(screen.getByText("Nicht ausgewählt")).toBeTruthy();
+    expect(screen.queryByText("Passt")).toBeNull();
+    expect(
+      screen.getByRole("link", { name: "Zur Bewerbung" }).getAttribute("href"),
+    ).toBe("/applicant/applications/rejected-1");
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(true);
+
+    view.rerender(
+      <ListingApplyBox
+        listingId="listing"
+        session="applicant"
+        matchesProfile="match"
+        admission={createAdmission({
+          hasApplicationHistory: true,
+          currentApplicationId: "withdrawn-1",
+          currentApplicationStatus: "WITHDRAWN",
+          canSubmitApplication: true,
+        })}
+        publicReason={null}
+      />,
+    );
+
+    expect(
+      screen.getByRole("link", { name: "Zur Bewerbung" }).getAttribute("href"),
+    ).toBe("/applicant/applications/withdrawn-1");
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(false);
+    expect(
+      screen.queryByRole("link", { name: "Meine Bewerbungen" }),
+    ).toBeNull();
+  });
+
+  it("links application history without guessing an application id", () => {
+    setup(
+      createAdmission({
+        hasApplicationHistory: true,
+        currentApplicationId: null,
+        currentApplicationStatus: "WITHDRAWN",
+      }),
+    );
+
+    expect(
+      screen
+        .getByRole("link", { name: "Meine Bewerbungen" })
+        .getAttribute("href"),
+    ).toBe("/applicant/applications");
+    expect(screen.queryByRole("link", { name: "Zur Bewerbung" })).toBeNull();
+  });
+
+  it("shows no application navigation without a current application or history", () => {
+    setup(createAdmission());
+
+    expect(screen.queryByRole("link", { name: "Zur Bewerbung" })).toBeNull();
+    expect(
+      screen.queryByRole("link", { name: "Meine Bewerbungen" }),
+    ).toBeNull();
+  });
+
+  it.each(["loading", "error", "other", "anonymous"] as const)(
+    "shows no application navigation for %s session",
+    (session) => {
+      setup(
+        createAdmission({
+          hasApplicationHistory: true,
+          currentApplicationId: "app-1",
+          currentApplicationStatus: "ACTIVE",
+          canSubmitApplication: false,
+          submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+        }),
+        "match",
+        session,
+      );
+
+      expect(screen.queryByRole("link", { name: "Zur Bewerbung" })).toBeNull();
+      expect(
+        screen.queryByRole("link", { name: "Meine Bewerbungen" }),
+      ).toBeNull();
+    },
+  );
+
+  it("follows the refreshed application id after apply, withdrawal, and reapplication", () => {
+    const view = setup(
+      createAdmission({
+        hasApplicationHistory: true,
+        currentApplicationId: "first-id",
+        currentApplicationStatus: "ACTIVE",
+        canSubmitApplication: false,
+        submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+      }),
+    );
+    const renderAdmission = (
+      admission: Parameters<typeof createAdmission>[0],
+    ) =>
+      view.rerender(
+        <ListingApplyBox
+          listingId="listing"
+          session="applicant"
+          matchesProfile="match"
+          admission={createAdmission({
+            hasApplicationHistory: true,
+            ...admission,
+          })}
+          publicReason={null}
+        />,
+      );
+
+    expect(
+      screen.getByRole("link", { name: "Zur Bewerbung" }).getAttribute("href"),
+    ).toBe("/applicant/applications/first-id");
+
+    renderAdmission({ currentApplicationId: null });
+    expect(screen.queryByRole("link", { name: "Zur Bewerbung" })).toBeNull();
+    expect(
+      screen
+        .getByRole("link", { name: "Meine Bewerbungen" })
+        .getAttribute("href"),
+    ).toBe("/applicant/applications");
+
+    renderAdmission({
+      currentApplicationId: "reapplied-id",
+      currentApplicationStatus: "WAITING",
+      canSubmitApplication: false,
+      submissionBlockReason: "CURRENT_APPLICATION_EXISTS",
+    });
+    expect(
+      screen.getByRole("link", { name: "Zur Bewerbung" }).getAttribute("href"),
+    ).toBe("/applicant/applications/reapplied-id");
+    expect(screen.queryByText("first-id")).toBeNull();
+    expect(submit).not.toHaveBeenCalled();
+    expect(withdraw).not.toHaveBeenCalled();
   });
 
   it("invalidates listing data after withdrawal", async () => {

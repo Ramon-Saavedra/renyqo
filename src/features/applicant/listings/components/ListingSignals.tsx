@@ -64,8 +64,15 @@ function soleCompatibilityLabel(
 }
 
 function secondaryCompatibilityLabel(
+  process: ListingProcessState,
   compatibility: ListingCompatibilityState,
 ): string | null {
+  if (
+    process !== "none" &&
+    (compatibility === "match" || compatibility === "no-match")
+  ) {
+    return null;
+  }
   switch (compatibility) {
     case "match":
       return listingsCopy.card.badgeMatch;
@@ -104,7 +111,7 @@ export function ListingSignals({ ui, surface }: ListingSignalsProps) {
       </MatchBadge>
     );
   }
-  const note = secondaryCompatibilityLabel(ui.compatibility);
+  const note = secondaryCompatibilityLabel(ui.process, ui.compatibility);
   return (
     <>
       <MatchBadge tone={processTone(ui.process)} size={size}>
