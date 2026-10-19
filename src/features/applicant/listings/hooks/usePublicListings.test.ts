@@ -1,4 +1,5 @@
 import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { buildPublicListing } from "../testing/public-listing-fixtures";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getPublicListings } from "../api/public-listings";
@@ -40,25 +41,16 @@ describe("usePublicListings", () => {
     vi.mocked(getPublicListings).mockResolvedValue(
       mockResponse({
         listings: [
-          {
+          buildPublicListing({
             id: "l1",
             title: "X",
             location: "",
             rooms: 1,
             livingArea: 1,
-            availableFrom: null,
             coldRent: 1,
             serviceCharge: 0,
-            matchesProfile: null,
-            admission: createAdmission(),
-            hasApplied: false,
-            applicationStatus: null,
-            publicReason: null,
-            isSaved: false,
-            isNew: false,
-            coverImageUrl: null,
             publishedAt: "",
-          },
+          }),
         ],
       }),
     );
@@ -151,6 +143,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
           total: 3,
@@ -178,6 +171,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
             {
               id: "l3",
@@ -197,6 +191,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
           total: 3,
@@ -247,6 +242,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
           total: 1,
@@ -296,6 +292,7 @@ describe("usePublicListings", () => {
             isNew: false,
             coverImageUrl: null,
             publishedAt: "",
+            applicationAttention: null,
           },
         ],
         nextCursor: null,
@@ -400,6 +397,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
           total: 1,
@@ -444,6 +442,7 @@ describe("usePublicListings", () => {
             isNew: false,
             coverImageUrl: null,
             publishedAt: "",
+            applicationAttention: null,
           },
         ],
         total: 99,
@@ -481,6 +480,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
         }),
@@ -565,6 +565,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
           total: 3,
@@ -593,6 +594,7 @@ describe("usePublicListings", () => {
               isNew: false,
               coverImageUrl: null,
               publishedAt: "",
+              applicationAttention: null,
             },
           ],
           total: 3,

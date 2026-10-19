@@ -6,6 +6,7 @@ import {
   type ApplicantApplicationsPage,
 } from "../../api/overview";
 import type * as overviewApi from "../../api/overview";
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import { overviewCard, viewingSnapshot } from "../../testing/fixtures";
 import { ApplicationsOverview } from "./ApplicationsOverview";
 
@@ -64,9 +65,15 @@ describe("ApplicationsOverview", () => {
           overviewCard({
             applicationId: "active-1",
             attention: {
+              ...emptyApplicationAttentionSummary(),
               pendingActionCount: 3,
               actionableUnreadMessageCount: 1,
               hasPendingAction: true,
+              categories: {
+                documentUploadCount: 1,
+                documentReviewCount: 0,
+                viewingActionCount: 1,
+              },
             },
             documents: {
               requestedCount: 2,
@@ -123,9 +130,9 @@ describe("ApplicationsOverview", () => {
       "/applicant/applications/active-1",
     );
     expect(within(activeLink).getByText("3 offene Schritte")).toBeTruthy();
-    expect(within(activeLink).getByText("1 neue Nachricht")).toBeTruthy();
-    expect(within(activeLink).getByText("1 Unterlage fehlt")).toBeTruthy();
-    expect(within(activeLink).getByText("Termin vorgeschlagen")).toBeTruthy();
+    expect(within(activeLink).getByText("1 ungelesene Nachricht")).toBeTruthy();
+    expect(within(activeLink).getByText("1 Dokument offen")).toBeTruthy();
+    expect(within(activeLink).getByText("1 Besichtigung offen")).toBeTruthy();
     expect(within(activeLink).queryAllByRole("button")).toHaveLength(0);
 
     const waiting = screen.getByRole("region", { name: "Warteliste" });

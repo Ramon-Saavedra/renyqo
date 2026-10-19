@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  attentionCategoryTotalsSchema,
+  attentionTargetSchema,
+  documentAttentionIndicatorSchema,
+} from "@/lib/attention/schemas";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import { activityItemSchema } from "./activity-schema";
 import {
@@ -65,6 +70,10 @@ const workspaceSchema = z.object({
     actionableUnreadMessageCount: z.number().int().nonnegative(),
     historicalUnreadMessageCount: z.number().int().nonnegative(),
     conversation: compactConversationSchema,
+    categories: attentionCategoryTotalsSchema,
+    targets: z.array(attentionTargetSchema),
+    documentIndicators: z.array(documentAttentionIndicatorSchema),
+    nextRevalidateAt: dateTimeSchema.nullable(),
   }),
   conversationSummary: compactConversationSchema,
   documentsSummary: z.object({

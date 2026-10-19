@@ -34,12 +34,6 @@ export const applicationsCopy = {
     submittedAt: (date: string) => `Beworben am ${date}`,
     activeSince: (date: string) => `Aktiv seit ${date}`,
     activeFrom: (date: string) => `Aktiv ab ${date}`,
-    pendingSteps: (count: number) =>
-      `${count} ${plural(count, "offener Schritt", "offene Schritte")}`,
-    unreadMessages: (count: number) =>
-      `${count} ${plural(count, "neue Nachricht", "neue Nachrichten")}`,
-    missingDocuments: (count: number) =>
-      `${count} ${plural(count, "Unterlage fehlt", "Unterlagen fehlen")}`,
     statusPrefix: "Status",
   },
   status: {
@@ -48,12 +42,6 @@ export const applicationsCopy = {
     ACCEPTED: "Zusage",
     REJECTED: "Absage",
     WITHDRAWN: "Zurückgezogen",
-  },
-  overviewViewing: {
-    PROPOSED: "Termin vorgeschlagen",
-    ACCEPTED: "Besichtigung bestätigt",
-    CHANGE_REQUESTED: "Andere Zeit angefragt",
-    COMPLETED: "Besichtigung stattgefunden",
   },
   workspace: {
     back: "Meine Bewerbungen",

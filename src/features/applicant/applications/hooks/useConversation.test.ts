@@ -10,6 +10,11 @@ import {
 } from "../api/conversation";
 import { loadedConversation, message } from "../testing/fixtures";
 import { useConversation } from "./useConversation";
+import { invalidateGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
+
+vi.mock("@/lib/attention/hooks/use-global-attention", () => ({
+  invalidateGlobalAttention: vi.fn(),
+}));
 
 vi.mock("../api/conversation", () => ({
   loadCompleteConversation: vi.fn(),
@@ -33,6 +38,47 @@ beforeEach(() => {
 });
 
 describe("conversation request ordering", () => {
+  it("refreshes attention only after the read acknowledgement succeeds", async () => {
+    const acknowledgement = deferred<number>();
+    vi.mocked(loadCompleteConversation).mockResolvedValue(
+      loadedConversation([initial]),
+    );
+    vi.mocked(markConversationRead).mockReturnValue(acknowledgement.promise);
+    renderHook(() =>
+      useConversation({
+        applicationId: "application-test",
+        snapshotKey: "one",
+        hasMessages: true,
+        onSent: vi.fn(),
+      }),
+    );
+    await waitFor(() =>
+      expect(markConversationRead).toHaveBeenCalledWith(
+        "application-test",
+        initial.sequence,
+      ),
+    );
+    expect(invalidateGlobalAttention).not.toHaveBeenCalled();
+    await act(async () => acknowledgement.resolve(1));
+    expect(invalidateGlobalAttention).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps attention unchanged when the read acknowledgement fails", async () => {
+    vi.mocked(loadCompleteConversation).mockResolvedValue(
+      loadedConversation([initial]),
+    );
+    vi.mocked(markConversationRead).mockRejectedValue(new Error("read failed"));
+    const { result } = renderHook(() =>
+      useConversation({
+        applicationId: "application-test",
+        snapshotKey: "one",
+        hasMessages: true,
+        onSent: vi.fn(),
+      }),
+    );
+    await waitFor(() => expect(result.current.readFailed).toBe(true));
+    expect(invalidateGlobalAttention).not.toHaveBeenCalled();
+  });
   it("loads readable history independently of hasMessages and blocks disallowed sending", async () => {
     vi.mocked(loadCompleteConversation).mockResolvedValue(
       loadedConversation([initial], {

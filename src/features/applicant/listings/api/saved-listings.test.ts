@@ -35,6 +35,7 @@ function savedItem(overrides: Record<string, unknown> = {}) {
     applicationStatus: null,
     publicReason: null,
     isSaved: true,
+    applicationAttention: null,
     ...overrides,
   };
 }

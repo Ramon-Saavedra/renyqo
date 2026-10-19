@@ -1,4 +1,4 @@
-import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { buildPublicListingDetail } from "../../testing/public-listing-fixtures";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { PublicListingDetail } from "../../types";
@@ -7,40 +7,25 @@ import { ListingRequirements } from "./ListingRequirements";
 function mockListing(
   overrides: Partial<PublicListingDetail> = {},
 ): PublicListingDetail {
-  return {
+  return buildPublicListingDetail({
     id: "l1",
     title: "Wohnung",
     location: "Berlin",
     rooms: 2,
     livingArea: 50,
-    availableFrom: null,
     coldRent: 800,
     additionalCosts: 100,
     matchesProfile: "match",
-    admission: createAdmission(),
-    hasApplied: false,
-    applicationStatus: null,
-    publicReason: null,
-    isSaved: false,
-    isNew: false,
     publishedAt: "2026-01-01",
-    street: null,
-    zip: null,
-    city: null,
-    district: null,
     objectType: "APARTMENT",
     bedrooms: 1,
-    deposit: null,
-    depositMonths: null,
-    shortDescription: null,
-    images: [],
     schufaRequired: false,
     incomeProofRequired: false,
     suitableForPeopleCount: null,
     petsPolicy: null,
     smokingPolicy: null,
     ...overrides,
-  };
+  });
 }
 
 describe("ListingRequirements", () => {

@@ -1,7 +1,10 @@
 import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { buildPublicListing } from "@/features/applicant/listings/testing/public-listing-fixtures";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { attentionCopy } from "@/lib/attention/copy";
+import { emptyApplicationAttentionSummary } from "@/lib/attention/fixtures";
 import { ApiError } from "@/lib/api/client";
 import { saveListing, unsaveListing } from "../api/listing-saved";
 import type { ListingViewerSessionStatus } from "../hooks/useListingViewerSession";
@@ -13,28 +16,7 @@ vi.mock("../api/listing-saved", () => ({
   unsaveListing: vi.fn(),
 }));
 
-function buildListing(overrides: Partial<PublicListing> = {}): PublicListing {
-  return {
-    id: "l1",
-    title: "Testwohnung",
-    location: "Berlin, Mitte",
-    rooms: 3,
-    livingArea: 80,
-    availableFrom: null,
-    coldRent: 1200,
-    serviceCharge: 200,
-    matchesProfile: null,
-    admission: createAdmission(),
-    hasApplied: false,
-    applicationStatus: null,
-    publicReason: null,
-    isSaved: false,
-    isNew: false,
-    coverImageUrl: null,
-    publishedAt: "2026-01-01T00:00:00.000Z",
-    ...overrides,
-  };
-}
+const buildListing = buildPublicListing;
 
 function renderCard(
   listing: PublicListing = buildListing(),
@@ -451,6 +433,175 @@ describe("ListingCard", () => {
     expect(link.getAttribute("href")).toBe("/listings/l1");
   });
 
+  it("does not render an attention link when applicationAttention is absent", () => {
+    renderCard(buildListing({ applicationAttention: null }));
+    expect(screen.queryByText(attentionCopy.unreadMessages(1))).toBeNull();
+    expect(screen.queryByText(attentionCopy.attentionBadge)).toBeNull();
+  });
+
+  it("renders unread-message attention specifically on the listing card", () => {
+    render(
+      <ListingCard
+        listing={buildListing({
+          id: "listing-99",
+          applicationAttention: {
+            ...emptyApplicationAttentionSummary(),
+            applicationId: "app-42",
+            actionableUnreadMessageCount: 1,
+          },
+        })}
+        href="/listings/listing-99"
+        session="applicant"
+      />,
+    );
+
+    const listingLink = screen.getByRole("link", { name: "Testwohnung" });
+    const attentionLink = screen.getByRole("link", {
+      name: attentionCopy.unreadMessages(1),
+    });
+
+    expect(screen.queryByText(attentionCopy.unreadMessages(1))).toBeNull();
+    expect(screen.queryByText(attentionCopy.attentionBadge)).toBeNull();
+    expect(
+      screen.getByRole("img", { name: attentionCopy.unreadMessages(1) }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(listingLink.getAttribute("href")).toBe("/listings/listing-99");
+    expect(attentionLink.getAttribute("href")).toBe(
+      "/applicant/applications/app-42",
+    );
+    expect(attentionLink).not.toBe(listingLink);
+  });
+
+  it("shows message and document icon badges from backend projection", () => {
+    render(
+      <ListingCard
+        listing={buildListing({
+          applicationAttention: {
+            ...emptyApplicationAttentionSummary(),
+            applicationId: "app-dup",
+            pendingActionCount: 4,
+            hasPendingAction: true,
+            actionableUnreadMessageCount: 1,
+            categories: {
+              documentUploadCount: 4,
+              documentReviewCount: 0,
+              viewingActionCount: 0,
+            },
+            documentIndicators: [
+              {
+                requestId: "req-1",
+                type: "SCHUFA",
+                customLabel: null,
+                status: "UPLOAD_REQUIRED",
+              },
+              {
+                requestId: "req-2",
+                type: "INCOME_PROOF",
+                customLabel: null,
+                status: "UPLOAD_REQUIRED",
+              },
+              {
+                requestId: "req-3",
+                type: "IDENTITY_DOCUMENT",
+                customLabel: null,
+                status: "UPLOAD_REQUIRED",
+              },
+              {
+                requestId: "req-4",
+                type: "LIABILITY_INSURANCE",
+                customLabel: null,
+                status: "UPLOAD_REQUIRED",
+              },
+            ],
+          },
+        })}
+        href="/listings/l1"
+        session="applicant"
+      />,
+    );
+
+    const attentionLink = screen.getByRole("link", {
+      name: /ungelesene Nachricht/,
+    });
+    expect(attentionLink.textContent).toContain("1");
+    expect(attentionLink.textContent).toContain("4");
+    expect(screen.getAllByRole("img")).toHaveLength(2);
+  });
+
+  it("renders document and viewing attention chips from backend projection", () => {
+    render(
+      <ListingCard
+        listing={buildListing({
+          applicationAttention: {
+            ...emptyApplicationAttentionSummary(),
+            applicationId: "app-doc",
+            categories: {
+              documentUploadCount: 0,
+              documentReviewCount: 0,
+              viewingActionCount: 1,
+            },
+            documentIndicators: [
+              {
+                requestId: "req-1",
+                type: "SCHUFA",
+                customLabel: null,
+                status: "UPLOAD_REQUIRED",
+              },
+            ],
+          },
+        })}
+        href="/listings/l1"
+        session="applicant"
+      />,
+    );
+
+    expect(screen.queryByText("SCHUFA erforderlich")).toBeNull();
+    expect(screen.queryByText(attentionCopy.viewingAction(1))).toBeNull();
+    expect(
+      screen.getByRole("img", { name: "SCHUFA erforderlich" }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen.getByRole("img", { name: attentionCopy.viewingAction(1) }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(
+      screen
+        .getByRole("link", {
+          name: /SCHUFA erforderlich/,
+        })
+        .getAttribute("href"),
+    ).toBe("/applicant/applications/app-doc");
+  });
+
+  it("uses customLabel for OTHER document indicators", () => {
+    render(
+      <ListingCard
+        listing={buildListing({
+          applicationAttention: {
+            ...emptyApplicationAttentionSummary(),
+            applicationId: "app-other",
+            documentIndicators: [
+              {
+                requestId: "req-2",
+                type: "OTHER",
+                customLabel: "Zusatzvereinbarung",
+                status: "UPLOAD_REQUIRED",
+              },
+            ],
+          },
+        })}
+        href="/listings/l1"
+        session="applicant"
+      />,
+    );
+
+    expect(screen.queryByText("Zusatzvereinbarung erforderlich")).toBeNull();
+    expect(
+      screen.getByRole("img", {
+        name: "Zusatzvereinbarung erforderlich",
+      }),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
   it("renders Merken when the listing is not saved", () => {
     render(
       <ListingCard
@@ -522,7 +673,7 @@ describe("ListingCard", () => {
     expect(alert.className).toContain("max-w-full");
     expect(alert.className).toContain("break-words");
     expect(alert.className).toContain("pointer-events-auto");
-    expect(alert.parentElement?.className).toContain("inset-x-2");
+    expect(alert.parentElement?.className).toContain("right-2");
     expect(alert.parentElement?.className).toContain("pointer-events-none");
   });
 

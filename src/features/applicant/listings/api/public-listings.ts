@@ -1,3 +1,4 @@
+import { applicantListingAttentionSchema } from "@/lib/attention/schemas";
 import { applicationAdmissionSchema } from "./application-admission";
 import { z } from "zod";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
@@ -105,6 +106,7 @@ const applicantListingSummarySchema = z.object({
   applicationStatus: listingApplicationStatusSchema.nullable(),
   publicReason: listingApplicationPublicReasonSchema.nullable(),
   isSaved: z.boolean(),
+  applicationAttention: applicantListingAttentionSchema.nullable(),
 });
 
 export class PublicListingsContractError extends Error {
@@ -141,6 +143,7 @@ export function mapPublicListing(value: unknown): PublicListing {
     isNew: listing.isNew,
     coverImageUrl: listing.coverImage?.secureUrl ?? null,
     publishedAt: listing.publishedAt ?? "",
+    applicationAttention: listing.applicationAttention,
   };
 }
 
@@ -176,6 +179,7 @@ const applicantListingDetailSchema = z.object({
   applicationStatus: listingApplicationStatusSchema.nullable(),
   publicReason: listingApplicationPublicReasonSchema.nullable(),
   isSaved: z.boolean(),
+  applicationAttention: applicantListingAttentionSchema.nullable(),
   requirements: z.object({
     schufaRequired: z.boolean(),
     incomeProofRequired: z.boolean(),
@@ -238,6 +242,7 @@ function mapPublicListingDetail(
     suitableForPeopleCount: value.requirements.suitableForPeopleCount,
     petsPolicy: value.requirements.petsPolicy,
     smokingPolicy: value.requirements.smokingPolicy,
+    applicationAttention: value.applicationAttention,
   };
 }
 

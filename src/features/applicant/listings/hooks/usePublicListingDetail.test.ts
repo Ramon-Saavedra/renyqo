@@ -1,4 +1,4 @@
-import { createAdmission } from "@/features/applicant/listings/testing/admission";
+import { buildPublicListingDetail } from "../testing/public-listing-fixtures";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
@@ -12,25 +12,15 @@ vi.mock("../api/public-listings", () => ({
 }));
 
 function mockListing(): PublicListingDetail {
-  return {
+  return buildPublicListingDetail({
     id: "d1",
     title: "Detail Listing",
     location: "Berlin",
     rooms: 2,
     livingArea: 50,
-    availableFrom: null,
     coldRent: 900,
     additionalCosts: 100,
-    matchesProfile: "unknown",
-    admission: createAdmission(),
-    hasApplied: false,
-    applicationStatus: null,
-    publicReason: null,
-    isSaved: false,
-    isNew: false,
     publishedAt: "2026-01-01T00:00:00.000Z",
-    street: null,
-    zip: null,
     city: null,
     district: null,
     objectType: null,
@@ -38,13 +28,7 @@ function mockListing(): PublicListingDetail {
     deposit: null,
     depositMonths: null,
     shortDescription: null,
-    images: [],
-    schufaRequired: false,
-    incomeProofRequired: false,
-    suitableForPeopleCount: null,
-    petsPolicy: null,
-    smokingPolicy: null,
-  };
+  });
 }
 
 describe("usePublicListingDetail", () => {

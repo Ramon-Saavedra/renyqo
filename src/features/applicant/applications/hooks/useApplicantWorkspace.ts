@@ -1,6 +1,9 @@
 "use client";
 
-import { subscribeListingApplicationData } from "../../listings/utils/listing-data-invalidation";
+import {
+  invalidateListingApplicationData,
+  subscribeListingApplicationData,
+} from "../../listings/utils/listing-data-invalidation";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -122,7 +125,7 @@ export function useApplicantWorkspace(applicationId: string): {
         ? { ...current, refreshing: true, refreshFailed: false }
         : { status: "loading" },
     );
-    setRequestKey((key) => key + 1);
+    invalidateListingApplicationData();
     return generationRef.current + 1;
   }, []);
 
