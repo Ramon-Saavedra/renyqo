@@ -106,6 +106,13 @@ describe("ListingApplyBox conflict reconciliation", () => {
         expect(
           screen.getByRole("button", { name: "Bewerbung zurückziehen" }),
         ).toBeTruthy();
+      } else if (admission.submissionBlockReason === "APPLICANT_NOT_ELIGIBLE") {
+        expect(screen.getByText(/Dein Profil erfüllt/)).toBeTruthy();
+        expect(
+          screen
+            .getByRole("button", { name: "Bewerben" })
+            .hasAttribute("disabled"),
+        ).toBe(true);
       } else {
         expect(screen.queryByText(/Dein Profil erfüllt/)).toBeNull();
         expect(
