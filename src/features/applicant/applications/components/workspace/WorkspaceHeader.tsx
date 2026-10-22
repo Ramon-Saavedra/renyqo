@@ -22,10 +22,9 @@ function dateFacts(application: ApplicantWorkspace["application"]): DateFact[] {
   const facts: DateFact[] = [
     { label: copy.submittedAt, value: formatDate(application.submittedAt) },
   ];
-  if (application.activeAt) {
+  if (application.status === "ACTIVE" && application.activeAt) {
     facts.push({
-      label:
-        application.status === "ACTIVE" ? copy.activeSince : copy.activeFrom,
+      label: copy.activeSince,
       value: formatDate(application.activeAt),
     });
   }

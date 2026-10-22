@@ -16,8 +16,11 @@ export type WorkspaceArea = "messages" | "documents" | "viewing";
 
 export type NextStepIntent =
   | { readonly kind: "upload"; readonly requestId: string }
+  | { readonly kind: "show-documents" }
   | { readonly kind: "show-viewing" }
   | { readonly kind: "answer-interest"; readonly viewingId: string };
+
+const UPLOAD_AGGREGATE_KEY = "UPLOAD_REQUESTED_DOCUMENT:aggregate";
 
 export interface NextStepItem {
   readonly key: string;
@@ -65,7 +68,7 @@ export function toNextStepItem(
         text: timeline
           ? copy.upload.text(formatDate(timeline.requestedAt))
           : copy.upload.fallbackText,
-        cta: copy.upload.cta,
+        cta: copy.upload.navigateCta,
         area: "documents",
         intent: { kind: "upload", requestId: action.target.requestId },
       };
@@ -111,6 +114,39 @@ export function toNextStepItem(
       };
     }
   }
+}
+
+export function presentNextSteps(
+  items: readonly NextStepItem[],
+): readonly NextStepItem[] {
+  const uploadCount = items.filter(
+    (item) => item.intent.kind === "upload",
+  ).length;
+  if (uploadCount === 0) return items;
+
+  const aggregate: NextStepItem = {
+    key: UPLOAD_AGGREGATE_KEY,
+    icon: FileUp,
+    title: copy.upload.aggregateTitle,
+    text: copy.upload.aggregateText(uploadCount),
+    cta: copy.upload.navigateCta,
+    area: "documents",
+    intent: { kind: "show-documents" },
+  };
+
+  let aggregateInserted = false;
+  const presented: NextStepItem[] = [];
+  for (const item of items) {
+    if (item.intent.kind === "upload") {
+      if (!aggregateInserted) {
+        presented.push(aggregate);
+        aggregateInserted = true;
+      }
+      continue;
+    }
+    presented.push(item);
+  }
+  return presented;
 }
 
 export function orderNextSteps(

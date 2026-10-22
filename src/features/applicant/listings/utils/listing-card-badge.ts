@@ -56,7 +56,10 @@ export function resolveListingApplicationUi(input: {
     reason !== "AUTHENTICATION_REQUIRED"
   )
     process = "unavailable";
-  else if (publicReason === "PROFILE_NO_LONGER_ELIGIBLE")
+  else if (
+    publicReason === "PROFILE_NO_LONGER_ELIGIBLE" &&
+    !admission.canSubmitApplication
+  )
     process = "ended-profile";
   return {
     process,

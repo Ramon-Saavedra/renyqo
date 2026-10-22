@@ -27,13 +27,14 @@ export const applicationsCopy = {
     emptyText:
       "Sobald du dich auf eine Wohnung bewirbst, findest du sie hier mit allen nächsten Schritten.",
     emptyCta: "Wohnungen finden",
-    emptyFilter: "In dieser Ansicht gibt es keine geladenen Bewerbungen.",
+    emptyFilter: "In dieser Ansicht gibt es keine Bewerbungen.",
     untitledListing: "Inserat ohne Titel",
     noImage: "Kein Foto vorhanden",
     coldRent: (rent: string) => `${rent} kalt`,
     submittedAt: (date: string) => `Beworben am ${date}`,
     activeSince: (date: string) => `Aktiv seit ${date}`,
-    activeFrom: (date: string) => `Aktiv ab ${date}`,
+    rejectedAt: (date: string) => `Absage am ${date}`,
+    withdrawnAt: (date: string) => `Zurückgezogen am ${date}`,
     statusPrefix: "Status",
   },
   status: {
@@ -78,6 +79,10 @@ export const applicationsCopy = {
         `Vom Anbieter angefordert am ${date}. Erlaubt sind PDF, JPEG und PNG.`,
       fallbackText: "Vom Anbieter angefordert. Erlaubt sind PDF, JPEG und PNG.",
       cta: "Datei hochladen",
+      navigateCta: "Zu Unterlagen",
+      aggregateTitle: "Unterlagen einreichen",
+      aggregateText: (count: number) =>
+        `${count} ${plural(count, "Anforderung", "Anforderungen")} offen. Details und Upload findest du unter Unterlagen.`,
     },
     viewing: {
       title: "Besichtigung bestätigen",

@@ -197,6 +197,8 @@ export function overviewCard(
     status: "ACTIVE",
     submittedAt: "2026-09-12T18:47:00.000Z",
     activeAt: "2026-09-18T09:30:00.000Z",
+    rejectedAt: null,
+    withdrawnAt: null,
     listing: {
       id: `listing-${overrides.applicationId}`,
       title: "Helle 3-Zimmer-Wohnung mit Balkon",

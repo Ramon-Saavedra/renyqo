@@ -13,6 +13,7 @@ import { useViewingDetail } from "../../hooks/useViewingDetail";
 import { formatTime, formatWeekdayDate } from "../../model/format-date";
 import {
   orderNextSteps,
+  presentNextSteps,
   toNextStepItem,
   type NextStepItem,
   type WorkspaceArea,
@@ -97,14 +98,16 @@ export function WorkspaceContent({
   }, [highlight]);
 
   const nextSteps = orderNextSteps(
-    workspace.attention.pendingActions.map((action) =>
-      toNextStepItem(action, {
-        workspace,
-        timelines:
-          timelines.state.status === "ready"
-            ? timelines.state.data
-            : EMPTY_TIMELINES,
-      }),
+    presentNextSteps(
+      workspace.attention.pendingActions.map((action) =>
+        toNextStepItem(action, {
+          workspace,
+          timelines:
+            timelines.state.status === "ready"
+              ? timelines.state.data
+              : EMPTY_TIMELINES,
+        }),
+      ),
     ),
     selectedStep,
   );
@@ -117,13 +120,10 @@ export function WorkspaceContent({
 
   const navigate = (item: NextStepItem) => {
     setHighlight(item.area);
-    areaRef[item.area].current?.scrollIntoView({
+    areaRef[item.area].current?.scrollIntoView?.({
       behavior: "smooth",
       block: "start",
     });
-    if (item.intent.kind === "upload") {
-      transfers.openPicker(item.intent.requestId);
-    }
   };
 
   const listingTitle =
@@ -138,8 +138,6 @@ export function WorkspaceContent({
           items={nextSteps}
           onNavigate={navigate}
           onSelect={setSelectedStep}
-          isUploadBlocked={transfers.isUploadBlocked}
-          canUpload={transfers.canUpload}
           interest={{
             canSubmit: (viewingId) =>
               findViewing(workspace.viewingSummary, viewingId)?.capabilities

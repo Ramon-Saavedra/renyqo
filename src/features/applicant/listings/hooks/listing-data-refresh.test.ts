@@ -40,6 +40,7 @@ beforeEach(() => {
     items: [],
     totalCount: 0,
     pagination: { limit: 20, hasMore: false, nextCursor: null },
+    counts: { all: 0, active: 0, waiting: 0, done: 0 },
   });
 });
 
@@ -48,7 +49,7 @@ describe("listing application invalidation", () => {
     renderHook(() => usePublicListings(EMPTY_FILTERS, "newest", true));
     renderHook(() => usePublicListingDetail("listing"));
     renderHook(() => useSavedListings());
-    renderHook(() => useApplicationsOverview());
+    renderHook(() => useApplicationsOverview("ALL"));
     const reads = [
       getPublicListings,
       getPublicListingDetail,

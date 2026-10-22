@@ -127,7 +127,7 @@ beforeEach(() => {
 
 describe("ApplicationWorkspace documents", () => {
   it.each(["denied", "missing"] as const)(
-    "disables primary and secondary upload steps for %s requests",
+    "routes next-step document actions to Unterlagen for %s requests",
     async (condition) => {
       const user = userEvent.setup();
       const workspace = workspaceWith([
@@ -163,25 +163,16 @@ describe("ApplicationWorkspace documents", () => {
       const panel = await screen.findByRole("region", {
         name: "Dein nächster Schritt",
       });
+      expect(within(panel).getByText("Unterlagen einreichen")).toBeTruthy();
+      expect(within(panel).getByText(/3 Anforderungen offen/)).toBeTruthy();
+      expect(within(panel).queryByText(/SCHUFA-Auskunft hochladen/)).toBeNull();
       const primary = within(panel).getByRole("button", {
-        name: "Datei hochladen",
+        name: "Zu Unterlagen",
       });
-      const secondary = within(panel).getByRole("button", {
-        name:
-          condition === "denied"
-            ? /Zusatzunterlage hochladen/
-            : /Unterlage hochladen/,
-      });
-      expect(primary).toHaveProperty("disabled", true);
-      expect(secondary).toHaveProperty("disabled", true);
-      expect(
-        within(panel).getByRole("button", {
-          name: /SCHUFA-Auskunft hochladen/,
-        }),
-      ).toHaveProperty("disabled", false);
+      expect(primary).toHaveProperty("disabled", false);
+      expect(within(panel).getAllByRole("button")).toHaveLength(1);
       const click = vi.spyOn(fileInput(), "click");
       await user.click(primary);
-      await user.click(secondary);
       expect(click).not.toHaveBeenCalled();
       expect(uploadRequestedDocument).not.toHaveBeenCalled();
       click.mockRestore();
@@ -240,8 +231,8 @@ describe("ApplicationWorkspace documents", () => {
       name: "Dein nächster Schritt",
     });
     expect(
-      within(nextStep).getByRole("button", { name: "Datei hochladen" }),
-    ).toHaveProperty("disabled", true);
+      within(nextStep).getByRole("button", { name: "Zu Unterlagen" }),
+    ).toHaveProperty("disabled", false);
     await user.click(
       within(region).getByRole("button", {
         name: "Sonstiges Dokument herunterladen",

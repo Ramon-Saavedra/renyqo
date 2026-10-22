@@ -161,12 +161,13 @@ describe("applicant applications overview", () => {
       items: [overviewCard({ applicationId: "a-1" })],
       pagination: { limit: 20, hasMore: true, nextCursor: "cursor-2" },
       totalCount: 21,
+      counts: { all: 21, active: 10, waiting: 5, done: 6 },
     });
 
-    const page = await getApplicantApplicationsOverview("cursor-1");
+    const page = await getApplicantApplicationsOverview("cursor-1", "ACTIVE");
 
     expect(apiGet).toHaveBeenCalledWith(
-      "/api/v1/applicant/applications/overview?limit=20&cursor=cursor-1",
+      "/api/v1/applicant/applications/overview?limit=20&group=ACTIVE&cursor=cursor-1",
       undefined,
     );
     expect(page.items).toHaveLength(1);
@@ -179,11 +180,12 @@ describe("applicant applications overview", () => {
       items: [],
       pagination: { limit: 20, hasMore: true, nextCursor: null },
       totalCount: 21,
+      counts: { all: 21, active: 0, waiting: 0, done: 0 },
     });
 
-    await expect(getApplicantApplicationsOverview(null)).rejects.toBeInstanceOf(
-      ApplicantApplicationContractError,
-    );
+    await expect(
+      getApplicantApplicationsOverview(null, "ALL"),
+    ).rejects.toBeInstanceOf(ApplicantApplicationContractError);
   });
 
   it("rejects unknown application statuses instead of normalizing them", async () => {
@@ -192,11 +194,12 @@ describe("applicant applications overview", () => {
       items: [{ ...overviewCard({ applicationId: "a-1" }), status: "REVIEW" }],
       pagination: { limit: 20, hasMore: false, nextCursor: null },
       totalCount: 1,
+      counts: { all: 1, active: 1, waiting: 0, done: 0 },
     });
 
-    await expect(getApplicantApplicationsOverview(null)).rejects.toBeInstanceOf(
-      ApplicantApplicationContractError,
-    );
+    await expect(
+      getApplicantApplicationsOverview(null, "ALL"),
+    ).rejects.toBeInstanceOf(ApplicantApplicationContractError);
   });
 });
 

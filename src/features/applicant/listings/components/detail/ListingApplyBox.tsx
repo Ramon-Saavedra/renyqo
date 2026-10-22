@@ -15,7 +15,10 @@ import { useListingWithdrawal } from "../../hooks/useListingWithdrawal";
 import type { ProfileMatchResult } from "../../types";
 import type { ListingApplicationPublicReason } from "../../types";
 import { LISTING_REGISTER_PATH } from "../../utils/listing-auth-paths";
-import { resolveListingApplicationUi } from "../../utils/listing-card-badge";
+import {
+  resolveListingApplicationUi,
+  type ListingApplicationUi,
+} from "../../utils/listing-card-badge";
 import { invalidateListingApplicationData } from "../../utils/listing-data-invalidation";
 import { ListingSignals } from "../ListingSignals";
 
@@ -48,6 +51,17 @@ interface ListingApplyBoxProps {
 }
 const BOX_CLASS =
   "flex w-fit flex-col gap-2.5 rounded-md border border-border p-4 max-sm:w-full";
+
+function showSubmissionBlockCopy(ui: ListingApplicationUi): boolean {
+  if (!ui.blockReason || ui.blockReason === "CURRENT_APPLICATION_EXISTS") {
+    return false;
+  }
+  if (ui.blockReason === "APPLICANT_NOT_ELIGIBLE") {
+    return ui.process !== "ended-profile";
+  }
+  return true;
+}
+
 export function ListingApplyBox({
   listingId,
   session,
@@ -141,21 +155,11 @@ export function ListingApplyBox({
           </Link>
         ) : null}
       </div>
-      {ui.process === "ended-profile" && ui.compatibility === "no-match" && (
+      {showSubmissionBlockCopy(ui) ? (
         <p className="text-caption text-foreground-secondary">
-          {applicationAdmissionCopy.endedProfileDetail}
+          {applicationBlockCopy[ui.blockReason!]}
         </p>
-      )}
-      {ui.blockReason &&
-        ui.blockReason !== "CURRENT_APPLICATION_EXISTS" &&
-        !(
-          ui.process === "ended-profile" &&
-          ui.blockReason === "APPLICANT_NOT_ELIGIBLE"
-        ) && (
-          <p className="text-caption text-foreground-secondary">
-            {applicationBlockCopy[ui.blockReason]}
-          </p>
-        )}
+      ) : null}
       {confirmation && (
         <p role="status" className="text-caption text-success">
           {confirmation}

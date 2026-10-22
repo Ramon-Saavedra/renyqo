@@ -506,6 +506,10 @@ describe("ListingMatrix", () => {
 
     await waitFor(() => {
       expect(order(container)).toEqual(["B", "C", "A"]);
+      expect(onReorder).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole("alert").textContent).toContain(
+        "die Übersicht konnte nicht aktualisiert werden",
+      );
     });
 
     fireEvent.click(

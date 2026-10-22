@@ -131,8 +131,6 @@ interface NextStepPanelProps {
   readonly interest: InterestControl;
   readonly onNavigate: (item: NextStepItem) => void;
   readonly onSelect: (key: string) => void;
-  readonly isUploadBlocked: (requestId: string) => boolean;
-  readonly canUpload: (requestId: string) => boolean;
 }
 
 export function NextStepPanel({
@@ -140,8 +138,6 @@ export function NextStepPanel({
   interest,
   onNavigate,
   onSelect,
-  isUploadBlocked,
-  canUpload,
 }: NextStepPanelProps) {
   const headingId = useId();
   const [primary, ...rest] = items;
@@ -181,15 +177,7 @@ export function NextStepPanel({
           </p>
         </div>
         {primaryInterest ? null : (
-          <Button
-            variant="primary"
-            disabled={
-              primary.intent.kind === "upload" &&
-              (!canUpload(primary.intent.requestId) ||
-                isUploadBlocked(primary.intent.requestId))
-            }
-            onClick={() => onNavigate(primary)}
-          >
+          <Button variant="primary" onClick={() => onNavigate(primary)}>
             {primary.cta}
             <AppIcon icon={ArrowRight} size={16} decorative />
           </Button>
@@ -212,11 +200,6 @@ export function NextStepPanel({
               <li key={item.key}>
                 <button
                   type="button"
-                  disabled={
-                    item.intent.kind === "upload" &&
-                    (!canUpload(item.intent.requestId) ||
-                      isUploadBlocked(item.intent.requestId))
-                  }
                   onClick={() =>
                     item.intent.kind === "answer-interest"
                       ? onSelect(item.key)

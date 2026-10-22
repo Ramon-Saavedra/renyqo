@@ -421,7 +421,7 @@ describe("ListingCard", () => {
     expect(screen.queryByText("Passt nicht")).toBeNull();
   });
 
-  it("keeps a historical profile ending visible after eligibility recovers", () => {
+  it("shows compatibility again when eligibility recovers after a profile ending", () => {
     renderCard(
       buildListing({
         admission: createAdmission({ hasApplicationHistory: true }),
@@ -431,8 +431,8 @@ describe("ListingCard", () => {
       "applicant",
       { showMatch: true },
     );
-    expect(screen.getByText("Bewerbung beendet")).toBeInstanceOf(HTMLElement);
-    expect(screen.queryByText("Passt")).toBeNull();
+    expect(screen.queryByText("Bewerbung beendet")).toBeNull();
+    expect(screen.getByText("Passt")).toBeInstanceOf(HTMLElement);
     expect(screen.queryByText("Nicht ausgewählt")).toBeNull();
   });
 

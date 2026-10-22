@@ -104,7 +104,7 @@ describe("resolveListingApplicationUi", () => {
         publicReason: "PROFILE_NO_LONGER_ELIGIBLE",
       }),
     ).toMatchObject({
-      process: "ended-profile",
+      process: "none",
       compatibility: "match",
       action: "submit",
     });

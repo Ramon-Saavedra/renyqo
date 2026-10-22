@@ -2,6 +2,7 @@ import {
   groupAttentionChipsForIcons,
   type AttentionChipModel,
 } from "@/lib/attention/chips";
+import { attentionIconGroupUsesAccentCount } from "./attention-accent-count";
 import { AttentionIconBadge } from "./AttentionChip";
 
 interface AttentionIconIndicatorsProps {
@@ -26,6 +27,8 @@ export function AttentionIconIndicators({
           label={group.label}
           count={group.count}
           variant="minimal"
+          tone={group.kind === "messages" ? "message" : "default"}
+          accentCount={attentionIconGroupUsesAccentCount(group.id)}
         />
       ))}
     </span>

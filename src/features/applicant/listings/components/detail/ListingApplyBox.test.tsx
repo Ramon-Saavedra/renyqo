@@ -194,10 +194,10 @@ describe("ListingApplyBox admission", () => {
     expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
     expect(screen.queryByText("Passt nicht")).toBeNull();
     expect(
-      screen.getByText(
+      screen.queryByText(
         "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
       ),
-    ).toBeTruthy();
+    ).toBeNull();
     expect(screen.queryByText("Bereits beworben")).toBeNull();
 
     expect(
@@ -227,6 +227,28 @@ describe("ListingApplyBox admission", () => {
     },
   );
 
+  it("shows eligibility copy when apply is blocked but the profile still matches", () => {
+    setup(
+      createAdmission({
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
+      }),
+      "match",
+      "applicant",
+      null,
+    );
+
+    expect(screen.getByText("Passt zu deinem Profil")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Dein Profil erfüllt die Voraussetzungen derzeit nicht.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
   it("allows a new application after the profile matches again", () => {
     setup(
       createAdmission({ hasApplicationHistory: true }),
@@ -235,14 +257,8 @@ describe("ListingApplyBox admission", () => {
       "PROFILE_NO_LONGER_ELIGIBLE",
     );
 
-    expect(screen.getByText("Bewerbung beendet")).toBeTruthy();
-    expect(screen.queryByText("Passt")).toBeNull();
-    expect(screen.queryByText("Passt nicht")).toBeNull();
-    expect(
-      screen.queryByText(
-        "Deine vorherige Bewerbung wurde beendet, weil dein Profil die Voraussetzungen nicht mehr erfüllt.",
-      ),
-    ).toBeNull();
+    expect(screen.queryByText("Bewerbung beendet")).toBeNull();
+    expect(screen.getByText("Passt zu deinem Profil")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
     ).toBe(false);
