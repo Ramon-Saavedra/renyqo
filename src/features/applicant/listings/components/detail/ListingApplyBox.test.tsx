@@ -227,6 +227,28 @@ describe("ListingApplyBox admission", () => {
     },
   );
 
+  it("shows eligibility copy when apply is blocked but the profile still matches", () => {
+    setup(
+      createAdmission({
+        canSubmitApplication: false,
+        submissionBlockReason: "APPLICANT_NOT_ELIGIBLE",
+      }),
+      "match",
+      "applicant",
+      null,
+    );
+
+    expect(screen.getByText("Passt zu deinem Profil")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Dein Profil erfüllt die Voraussetzungen derzeit nicht.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: "Bewerben" }).hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
   it("allows a new application after the profile matches again", () => {
     setup(
       createAdmission({ hasApplicationHistory: true }),

@@ -65,18 +65,36 @@ function groupCards(
     .filter((entry) => entry.cards.length > 0);
 }
 
+type OverviewCounts = {
+  readonly all: number;
+  readonly active: number;
+  readonly waiting: number;
+  readonly done: number;
+};
+
 function filterCount(
   filter: OverviewFilterValue,
-  counts: {
-    readonly all: number;
-    readonly active: number;
-    readonly waiting: number;
-    readonly done: number;
-  },
+  counts: OverviewCounts,
 ): number {
   switch (filter) {
     case "ALL":
       return counts.all;
+    case "ACTIVE":
+      return counts.active;
+    case "WAITING":
+      return counts.waiting;
+    case "DONE":
+      return counts.done;
+  }
+}
+
+function groupHeadingCount(
+  group: OverviewGroup,
+  filter: OverviewFilterValue,
+  counts: OverviewCounts,
+): number {
+  if (filter !== "ALL") return filterCount(filter, counts);
+  switch (group) {
     case "ACTIVE":
       return counts.active;
     case "WAITING":
@@ -236,7 +254,7 @@ export function ApplicationsOverview() {
                   {copy.filters[entry.group]}
                 </h2>
                 <span className="text-caption text-foreground-tertiary">
-                  {entry.cards.length}
+                  {groupHeadingCount(entry.group, filter, knownCounts)}
                 </span>
               </div>
               <ul className="flex flex-col gap-2.5">

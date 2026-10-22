@@ -147,6 +147,10 @@ describe("ApplicationsOverview", () => {
     render(<ApplicationsOverview />);
 
     const active = await screen.findByRole("region", { name: "Aktiv" });
+    expect(
+      within(active).getByRole("heading", { name: "Aktiv" }).nextElementSibling
+        ?.textContent,
+    ).toBe("1");
     const activeLink = within(active).getByRole("link");
     expect(activeLink.getAttribute("href")).toBe(
       "/applicant/applications/active-1",
@@ -159,11 +163,19 @@ describe("ApplicationsOverview", () => {
 
     const waiting = screen.getByRole("region", { name: "Warteliste" });
     expect(
+      within(waiting).getByRole("heading", { name: "Warteliste" })
+        .nextElementSibling?.textContent,
+    ).toBe("1");
+    expect(
       within(waiting).getByText("Altbauwohnung nahe Stadtpark"),
     ).toBeTruthy();
     expect(within(waiting).queryByText(/offene/)).toBeNull();
 
     const done = screen.getByRole("region", { name: "Abgeschlossen" });
+    expect(
+      within(done).getByRole("heading", { name: "Abgeschlossen" })
+        .nextElementSibling?.textContent,
+    ).toBe("2");
     expect(within(done).getByText("Absage")).toBeTruthy();
     expect(within(done).getByText(/Absage am 01\.10\.2026/)).toBeTruthy();
     expect(
@@ -253,6 +265,26 @@ describe("ApplicationsOverview", () => {
     expect(
       screen.queryByRole("button", { name: "Weitere Bewerbungen laden" }),
     ).toBeNull();
+  });
+
+  it("uses server group totals in section headings before all pages load", async () => {
+    getOverview.mockResolvedValue(
+      page([overviewCard({ applicationId: "active-1" })], "cursor-2", 5, {
+        all: 5,
+        active: 3,
+        waiting: 0,
+        done: 2,
+      }),
+    );
+
+    render(<ApplicationsOverview />);
+
+    const active = await screen.findByRole("region", { name: "Aktiv" });
+    expect(
+      within(active).getByRole("heading", { name: "Aktiv" }).nextElementSibling
+        ?.textContent,
+    ).toBe("3");
+    expect(within(active).getAllByRole("link")).toHaveLength(1);
   });
 
   it("loads the next backend page with the returned cursor", async () => {
