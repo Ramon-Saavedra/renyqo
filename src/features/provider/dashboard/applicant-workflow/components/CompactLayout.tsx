@@ -236,7 +236,13 @@ export function CompactLayout({
         ))}
       </div>
 
-      <div className="shrink-0 border-t border-border bg-background-muted px-4 pt-2.5 pb-5.5">
+      <div
+        className={
+          activeTab === "messages"
+            ? "shrink-0"
+            : "shrink-0 border-t border-border bg-background-muted px-4 pt-2.5 pb-5.5"
+        }
+      >
         <ActionBar tab={activeTab} model={model} />
       </div>
     </>

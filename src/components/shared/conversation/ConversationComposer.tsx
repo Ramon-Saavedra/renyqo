@@ -15,6 +15,7 @@ export function ConversationComposer({
   onChange,
   onSubmit,
   disabled,
+  disabledReason,
   sending,
   maxLength,
   label,
@@ -27,6 +28,7 @@ export function ConversationComposer({
 }: ConversationComposerProps) {
   const hintId = useId();
   const errorId = useId();
+  const reasonId = useId();
   const inputAreaRef = useRef<HTMLDivElement>(null);
   const blocked = disabled || sending;
 
@@ -85,7 +87,13 @@ export function ConversationComposer({
           placeholder={placeholder}
           className={cn("scrollbar-slim min-w-0 flex-1", styles.composerInput)}
           aria-invalid={invalid ? true : undefined}
-          aria-describedby={error ? `${hintId} ${errorId}` : hintId}
+          aria-describedby={[
+            hintId,
+            error ? errorId : null,
+            disabledReason ? reasonId : null,
+          ]
+            .filter(Boolean)
+            .join(" ")}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={(event) => {
             if (
@@ -122,6 +130,11 @@ export function ConversationComposer({
       >
         {hint}
       </span>
+      {disabledReason ? (
+        <p id={reasonId} className="text-caption text-foreground-secondary">
+          {disabledReason}
+        </p>
+      ) : null}
       {error ? (
         <p id={errorId} role="alert" className="text-caption text-warning">
           {error}

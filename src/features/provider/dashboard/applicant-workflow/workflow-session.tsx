@@ -72,7 +72,7 @@ interface WorkflowSessionValue {
   readonly activityCursor: string | null;
   readonly activityStatus: LoadStatus;
   readonly documentRounds: ReadonlyMap<string, number> | null;
-  readonly ensureMessages: () => void;
+  readonly ensureMessages: (retry?: boolean) => void;
   readonly sendMessage: (body: string) => Promise<ActionResult>;
   readonly requestDocuments: (
     inputs: readonly DocumentRequestInput[],
@@ -238,45 +238,49 @@ export function WorkflowSession({
       });
   }, [activityGeneration, model.applicationId]);
 
-  const ensureMessages = useCallback(() => {
-    if (messagesStatus !== "idle") return;
-    const request = messagesRequest.current + 1;
-    messagesRequest.current = request;
-    setMessagesStatus("loading");
-    setActionError(null);
-    void collectConversationMessages((afterSequence) =>
-      getConversationHistory(model.applicationId, afterSequence),
-    )
-      .then(async (loaded) => {
-        if (messagesRequest.current !== request) return;
-        setMessages(loaded);
-        const through = loaded
-          .filter(
-            (message) =>
-              message.senderType === "APPLICANT" && message.readAt === null,
-          )
-          .at(-1)?.sequence;
-        if (through !== undefined) {
-          try {
-            await markConversationRead(model.applicationId, through);
-            if (messagesRequest.current !== request) return;
-            reloadWorkspace();
-          } catch {
-            if (messagesRequest.current !== request) return;
-            setMessagesStatus("ready");
-            setActionArea("messages");
-            setActionError(applicantWorkflowCopy.messages.readError);
-            return;
+  const ensureMessages = useCallback(
+    (retry = false) => {
+      if (messagesStatus !== "idle" && !(retry && messagesStatus === "error"))
+        return;
+      const request = messagesRequest.current + 1;
+      messagesRequest.current = request;
+      setMessagesStatus("loading");
+      setActionError(null);
+      void collectConversationMessages((afterSequence) =>
+        getConversationHistory(model.applicationId, afterSequence),
+      )
+        .then(async (loaded) => {
+          if (messagesRequest.current !== request) return;
+          setMessages(loaded);
+          const through = loaded
+            .filter(
+              (message) =>
+                message.senderType === "APPLICANT" && message.readAt === null,
+            )
+            .at(-1)?.sequence;
+          if (through !== undefined) {
+            try {
+              await markConversationRead(model.applicationId, through);
+              if (messagesRequest.current !== request) return;
+              reloadWorkspace();
+            } catch {
+              if (messagesRequest.current !== request) return;
+              setMessagesStatus("ready");
+              setActionArea("messages");
+              setActionError(applicantWorkflowCopy.messages.readError);
+              return;
+            }
           }
-        }
-        setMessagesStatus("ready");
-      })
-      .catch((error: unknown) => {
-        if (messagesRequest.current !== request) return;
-        setMessagesStatus("error");
-        setActionError(actionMessage(error));
-      });
-  }, [messagesStatus, model.applicationId, reloadWorkspace]);
+          setMessagesStatus("ready");
+        })
+        .catch((error: unknown) => {
+          if (messagesRequest.current !== request) return;
+          setMessagesStatus("error");
+          setActionError(actionMessage(error));
+        });
+    },
+    [messagesStatus, model.applicationId, reloadWorkspace],
+  );
 
   const runAction = useCallback(
     async (

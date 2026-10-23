@@ -169,6 +169,22 @@ describe("Conversation presentation", () => {
 });
 
 describe("ConversationComposer", () => {
+  it("keeps the disabled reason visible and associated with the input", () => {
+    render(
+      <ConversationComposer
+        {...composerProps()}
+        disabled
+        disabledReason="Diese Bewerbung ist abgeschlossen."
+      />,
+    );
+    const reason = screen.getByText("Diese Bewerbung ist abgeschlossen.");
+    expect(reason.className).not.toContain("hidden");
+    expect(
+      screen.getByRole("textbox").getAttribute("aria-describedby")?.split(" "),
+    ).toContain(reason.id);
+    expect(screen.getByRole("textbox")).toHaveProperty("disabled", true);
+  });
+
   it("adjusts the measured input height as the controlled draft grows and clears", () => {
     const props = composerProps();
     const { rerender } = render(<ConversationComposer {...props} value="" />);
