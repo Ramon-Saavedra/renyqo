@@ -1,6 +1,7 @@
 "use client";
 
 import { useApplicantReplyPermission } from "./hooks/useApplicantReplyPermission";
+import { useProviderConversationRealtime } from "./hooks/useProviderConversationRealtime";
 
 import {
   createContext,
@@ -162,6 +163,19 @@ export function WorkflowSession({
     number
   > | null>(null);
   const messagesRequest = useRef(0);
+  useProviderConversationRealtime({
+    applicationId: model.applicationId,
+    active: messagesStatus === "loading" || messagesStatus === "ready",
+    requestRef: messagesRequest,
+    getMessages: () => messages,
+    applyMessages: (loaded) => {
+      setMessages(loaded);
+      setMessagesStatus("ready");
+    },
+    onError: () => {
+      setMessagesStatus((current) => (current === "ready" ? current : "error"));
+    },
+  });
   const previousAsOf = useRef(workspace.asOf);
   const actionLock = useRef(false);
   const proposalAttempt = useRef<IdempotentAttempt | null>(null);

@@ -11,6 +11,7 @@ import {
   type ConversationMessage,
 } from "../api/conversation";
 import { isCancelledRequest, isStateConflict } from "../api/errors";
+import { useApplicantConversationRealtime } from "./useApplicantConversationRealtime";
 
 export type ConversationLoad =
   | { readonly status: "loading" }
@@ -68,6 +69,22 @@ export function useConversation({
   const controllerRef = useRef<AbortController | null>(null);
   const confirmedRef = useRef<readonly ConversationMessage[]>([]);
   const mountedRef = useRef(false);
+
+  useApplicantConversationRealtime({
+    applicationId,
+    getMessages: () => messages,
+    applyMessages: (next) => {
+      setMessages((current) =>
+        mergeMessages(mergeMessages(current, next), confirmedRef.current),
+      );
+    },
+    onReadSuccess: () => {
+      if (mountedRef.current) setReadFailed(false);
+    },
+    onReadFailure: () => {
+      if (mountedRef.current) setReadFailed(true);
+    },
+  });
 
   useEffect(() => {
     mountedRef.current = true;

@@ -1,6 +1,7 @@
 "use client";
 
 import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
+import { subscribeConversationAttention } from "@/lib/realtime/attention";
 
 import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/client";
@@ -23,6 +24,14 @@ export function usePublicListingDetail(
   useEffect(
     () =>
       subscribeListingApplicationData(() => setReloadKey((value) => value + 1)),
+    [],
+  );
+  useEffect(
+    () =>
+      subscribeConversationAttention((notice) => {
+        if (!notice.refreshLists) return;
+        setReloadKey((value) => value + 1);
+      }),
     [],
   );
   const [listing, setListing] = useState<PublicListingDetail | null>(null);

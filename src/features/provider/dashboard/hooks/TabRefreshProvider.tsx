@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { subscribeConversationAttention } from "@/lib/realtime/attention";
 
 const COALESCE_MS = 250;
 
@@ -23,6 +24,15 @@ export function TabRefreshProvider({ children }: TabRefreshProviderProps) {
   const requestRefresh = useCallback(() => {
     setRevision((current) => current + 1);
   }, []);
+
+  useEffect(
+    () =>
+      subscribeConversationAttention((notice) => {
+        if (!notice.refreshLists) return;
+        requestRefresh();
+      }),
+    [requestRefresh],
+  );
 
   useEffect(() => {
     let lastRefreshAt = 0;

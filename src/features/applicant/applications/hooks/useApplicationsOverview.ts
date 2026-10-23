@@ -1,5 +1,6 @@
 "use client";
 
+import { subscribeConversationAttention } from "@/lib/realtime/attention";
 import { subscribeListingApplicationData } from "../../listings/utils/listing-data-invalidation";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -79,6 +80,14 @@ export function useApplicationsOverview(filter: OverviewFilterValue): {
   useEffect(
     () =>
       subscribeListingApplicationData(() => setReloadKey((value) => value + 1)),
+    [],
+  );
+  useEffect(
+    () =>
+      subscribeConversationAttention((notice) => {
+        if (!notice.refreshLists) return;
+        setReloadKey((value) => value + 1);
+      }),
     [],
   );
   const generationRef = useRef(0);

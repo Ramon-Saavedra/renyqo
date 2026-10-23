@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { subscribeConversationAttention } from "@/lib/realtime/attention";
 import { ApiError } from "@/lib/api/client";
 import {
   getApplicantWorkspace,
@@ -35,6 +36,18 @@ export function useApplicantWorkspace(applicationId: string): {
     );
     setReloadKey((current) => current + 1);
   }, []);
+
+  useEffect(() => {
+    return subscribeConversationAttention((notice) => {
+      if (
+        !notice.refreshAllSummaries &&
+        !notice.summaryApplicationIds.includes(applicationId)
+      ) {
+        return;
+      }
+      reload();
+    });
+  }, [applicationId, reload]);
 
   useEffect(() => {
     const controller = new AbortController();

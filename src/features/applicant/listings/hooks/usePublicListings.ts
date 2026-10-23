@@ -1,6 +1,7 @@
 "use client";
 
 import { subscribeListingApplicationData } from "../utils/listing-data-invalidation";
+import { subscribeConversationAttention } from "@/lib/realtime/attention";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getPublicListings } from "../api/public-listings";
@@ -91,6 +92,14 @@ export function usePublicListings(
       subscribeListingApplicationData(() =>
         setRetryCount((value) => value + 1),
       ),
+    [],
+  );
+  useEffect(
+    () =>
+      subscribeConversationAttention((notice) => {
+        if (!notice.refreshLists) return;
+        setRetryCount((value) => value + 1);
+      }),
     [],
   );
   const [queryTrail, setQueryTrail] = useState({
