@@ -11,10 +11,11 @@ import {
 import { useRouter } from "next/navigation";
 import { APP_TOPBAR_STICKY_OFFSET_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 import { ApiError } from "@/lib/api/client";
+import { Button } from "@/components/ui/button/Button";
 import { invalidateGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
+import { useProviderListingsRealtimeRefresh } from "../hooks/useProviderListingsRealtimeRefresh";
 import {
   archiveProviderListing,
-  getProviderListings,
   moveProviderListingToDraft,
   publishProviderListing,
 } from "../api/provider-listings";
@@ -42,7 +43,6 @@ interface ListingsViewProps {
   selectedListingId?: string | null;
 }
 
-type FetchStatus = "idle" | "loading" | "error";
 type ActionStatus = "publishing" | "drafting" | "archiving";
 
 function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
@@ -103,10 +103,6 @@ export function ListingsView({
   const [listings, setListings] = useState<readonly ListingOverviewItem[]>(
     initialListings ?? [],
   );
-  const [fetchStatus, setFetchStatus] = useState<FetchStatus>(
-    initialListings ? "idle" : "loading",
-  );
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionStatusById, setActionStatusById] = useState<
     Readonly<Record<string, ActionStatus>>
@@ -125,37 +121,21 @@ export function ListingsView({
     () => now ?? (activityTick > 0 ? new Date() : null),
     [now, activityTick],
   );
-
-  useEffect(() => {
-    if (initialListings) return;
-
-    let active = true;
-
-    async function loadListings() {
-      setFetchStatus("loading");
-      setFetchError(null);
-      try {
-        const data = await getProviderListings();
-        if (!active) return;
-        setListings(data);
-        setFetchStatus("idle");
-      } catch (err) {
-        if (!active) return;
-        setFetchError(
-          err instanceof ApiError && err.status === 0
-            ? "Netzwerkfehler — bitte versuche es erneut"
-            : "Mietobjekte konnten nicht geladen werden",
-        );
-        setFetchStatus("error");
-      }
-    }
-
-    void loadListings();
-
-    return () => {
-      active = false;
-    };
-  }, [initialListings]);
+  const applyRealtimeListings = useCallback(
+    (next: readonly ListingOverviewItem[]) => {
+      setListings(next);
+    },
+    [],
+  );
+  const {
+    status: fetchStatus,
+    error: fetchError,
+    refreshError,
+    retry,
+  } = useProviderListingsRealtimeRefresh(
+    initialListings === undefined,
+    applyRealtimeListings,
+  );
 
   const counts = useMemo(() => buildCounts(listings), [listings]);
 
@@ -329,11 +309,25 @@ export function ListingsView({
           </div>
         ) : null}
 
+        {refreshError ? (
+          <div
+            role="alert"
+            className="mb-4 rounded-md border border-border bg-background px-4 py-3 text-caption text-foreground-secondary"
+          >
+            {refreshError}
+            <Button variant="ghost" size="sm" onClick={retry} className="ml-2">
+              Erneut versuchen
+            </Button>
+          </div>
+        ) : null}
         {fetchStatus === "loading" ? (
           <ListingsLoadingSkeleton />
         ) : fetchStatus === "error" ? (
           <div className="rounded-md border border-border bg-background px-6 py-10 text-caption text-foreground-secondary">
             {fetchError}
+            <Button variant="ghost" size="sm" onClick={retry} className="ml-2">
+              Erneut versuchen
+            </Button>
           </div>
         ) : emptyVariant ? (
           <ListingsEmptyState
