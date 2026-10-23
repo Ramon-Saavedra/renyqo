@@ -34,6 +34,7 @@ export interface ConversationComposerProps {
   readonly onChange: (value: string) => void;
   readonly onSubmit: () => void;
   readonly disabled: boolean;
+  readonly disabledReason?: string | null;
   readonly sending: boolean;
   readonly maxLength?: number;
   readonly label: string;

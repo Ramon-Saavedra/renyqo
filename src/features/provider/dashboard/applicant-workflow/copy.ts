@@ -34,6 +34,10 @@ export const applicantWorkflowCopy = {
     composerLabel: (name: string) => `Nachricht an ${name}`,
     composerPlaceholder: "Nachricht schreiben …",
     send: "Senden",
+    sending: "Wird gesendet …",
+    shortcut: "Strg + Enter zum Senden",
+    own: "Du",
+    logLabel: "Nachrichtenverlauf",
     sendError:
       "Die Nachricht konnte nicht gesendet werden. Bitte versuche es erneut.",
     loading: "Nachrichten werden geladen",

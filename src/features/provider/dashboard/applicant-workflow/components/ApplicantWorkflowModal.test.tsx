@@ -231,6 +231,9 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     expect(screen.getByRole("region", { name: "Besichtigung" })).not.toBeNull();
     expect(screen.getByRole("region", { name: "Verlauf" })).not.toBeNull();
     expect(await screen.findByText("Noch keine Nachrichten.")).not.toBeNull();
+    expect(
+      screen.getByRole("log", { name: "Nachrichtenverlauf" }),
+    ).not.toBeNull();
     expect(screen.getByText("Keine Unterlagen angefordert.")).not.toBeNull();
     expect(screen.getByText("Kein Termin vorgeschlagen.")).not.toBeNull();
     expect(
@@ -258,6 +261,25 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     expect(
       screen.getByRole("checkbox", { name: "Antworten erlauben" }),
     ).toBeTruthy();
+  });
+
+  it("retries a failed conversation load without reopening the workflow", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getConversationHistory).mockClear();
+    vi.mocked(getConversationHistory).mockRejectedValueOnce(
+      new Error("offline"),
+    );
+    render(<MessageHarness workspace={createApplicantWorkspace()} />);
+    const retry = await screen.findByRole("button", {
+      name: "Erneut versuchen",
+    });
+    expect(getConversationHistory).toHaveBeenCalledTimes(1);
+    await user.click(retry);
+    expect(await screen.findByText("Noch keine Nachrichten.")).not.toBeNull();
+    expect(getConversationHistory).toHaveBeenCalledTimes(2);
+    expect(
+      screen.queryByRole("button", { name: "Erneut versuchen" }),
+    ).toBeNull();
   });
 
   it("sends one message when the submit control is activated twice", async () => {
@@ -799,6 +821,9 @@ describe("ApplicantWorkflowModal on compact viewports", () => {
       expect(document.activeElement).toBe(panel);
       await user.tab();
       if (tabName === "Chat") {
+        expect(
+          within(panel).getByRole("log", { name: "Nachrichtenverlauf" }),
+        ).not.toBeNull();
         expect(document.activeElement).toBe(
           screen.getByRole("checkbox", { name: "Antworten erlauben" }),
         );
