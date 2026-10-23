@@ -54,7 +54,7 @@ function conversationPath(applicationId: string): string {
   return `/api/v1/applicant/applications/${encodeURIComponent(applicationId)}/conversation`;
 }
 
-async function getConversationPage(
+export async function getConversationPage(
   applicationId: string,
   afterSequence: number,
   options?: ApiRequestOptions,

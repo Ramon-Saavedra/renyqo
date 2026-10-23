@@ -1,5 +1,6 @@
 "use client";
 
+import { subscribeConversationAttention } from "@/lib/realtime/attention";
 import {
   invalidateListingApplicationData,
   subscribeListingApplicationData,
@@ -117,6 +118,17 @@ export function useApplicantWorkspace(applicationId: string): {
     return () => controller.abort();
   }, [applicationId, requestKey]);
 
+  const reloadSnapshot = useCallback(() => {
+    generationRef.current += 1;
+    inFlightRef.current = true;
+    setState((current) =>
+      current.status === "ready"
+        ? { ...current, refreshing: true, refreshFailed: false }
+        : { status: "loading" },
+    );
+    setRequestKey((key) => key + 1);
+  }, []);
+
   const refresh = useCallback(() => {
     generationRef.current += 1;
     inFlightRef.current = true;
@@ -128,6 +140,18 @@ export function useApplicantWorkspace(applicationId: string): {
     invalidateListingApplicationData();
     return generationRef.current + 1;
   }, []);
+
+  useEffect(() => {
+    return subscribeConversationAttention((notice) => {
+      if (
+        !notice.refreshAllSummaries &&
+        !notice.summaryApplicationIds.includes(applicationId)
+      ) {
+        return;
+      }
+      reloadSnapshot();
+    });
+  }, [applicationId, reloadSnapshot]);
 
   const retry = useCallback(() => {
     generationRef.current += 1;
