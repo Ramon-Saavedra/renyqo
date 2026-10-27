@@ -24,6 +24,11 @@ interface ViewingStatePresentation {
 }
 
 export const VIEWING_STATE: Record<ViewingStatus, ViewingStatePresentation> = {
+  OUTCOME_PENDING: {
+    label: copy.states.OUTCOME_PENDING,
+    icon: CalendarClock,
+    tone: "neutral",
+  },
   PROPOSED: {
     label: copy.states.PROPOSED,
     icon: CalendarClock,

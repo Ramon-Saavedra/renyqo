@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { workflowTargetSchema } from "@/lib/viewing-workflow/target-schema";
 
 export const ATTENTION_SECTIONS = ["MESSAGES", "DOCUMENTS", "VIEWING"] as const;
 
@@ -30,6 +31,7 @@ export const attentionTargetSchema = z.object({
   requestId: z.string().min(1).optional(),
   documentId: z.string().min(1).optional(),
   viewingId: z.string().min(1).optional(),
+  workflowTarget: workflowTargetSchema.optional(),
 });
 
 export const documentAttentionIndicatorSchema = z.object({
