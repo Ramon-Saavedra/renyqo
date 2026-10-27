@@ -102,6 +102,7 @@ export function ProviderOutcome({
           <div className="flex flex-wrap gap-2">
             <Button
               variant={choice === "COMPLETED" ? "primary" : "outline"}
+              aria-pressed={choice === "COMPLETED"}
               size="sm"
               disabled={busy}
               onClick={() => setChoice("COMPLETED")}
@@ -110,6 +111,7 @@ export function ProviderOutcome({
             </Button>
             <Button
               variant={choice === "APPLICANT" ? "outline" : "ghost"}
+              aria-pressed={choice === "APPLICANT"}
               size="sm"
               className={choice === "APPLICANT" ? "text-warning" : undefined}
               disabled={busy}
@@ -122,6 +124,7 @@ export function ProviderOutcome({
               size="sm"
               disabled={busy}
               onClick={() => setChoice("PROVIDER")}
+              aria-pressed={choice === "PROVIDER"}
             >
               {copy.providerAbsent}
             </Button>
@@ -130,6 +133,7 @@ export function ProviderOutcome({
               size="sm"
               disabled={busy}
               onClick={() => setChoice("BOTH")}
+              aria-pressed={choice === "BOTH"}
             >
               {copy.bothAbsent}
             </Button>

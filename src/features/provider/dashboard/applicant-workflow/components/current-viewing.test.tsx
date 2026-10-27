@@ -419,9 +419,18 @@ describe("provider current viewing", () => {
       name: "Besichtigung beenden",
     });
     expect((confirm as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      screen.getByRole("button", {
+        name: "Ich bin verhindert",
+        pressed: false,
+      }),
+    ).not.toBeNull();
     await user.click(
       screen.getByRole("button", { name: "Ich bin verhindert" }),
     );
+    expect(
+      screen.getByRole("button", { name: "Ich bin verhindert", pressed: true }),
+    ).not.toBeNull();
     await user.click(
       screen.getByRole("button", { name: "Besichtigung beenden" }),
     );
@@ -452,6 +461,22 @@ describe("provider current viewing", () => {
           capability("RECORD_OUTCOME", { appointmentId: "appointment-1" }),
         ],
       });
+      await user.click(screen.getByRole("button", { name: label }));
+      expect(
+        screen.getByRole("button", { name: label, pressed: true }),
+      ).not.toBeNull();
+      expect(screen.getAllByRole("button", { pressed: true })).toHaveLength(1);
+      const otherLabel =
+        label === "Hat stattgefunden"
+          ? "Ich war nicht da"
+          : "Hat stattgefunden";
+      await user.click(screen.getByRole("button", { name: otherLabel }));
+      expect(
+        screen.getByRole("button", { name: label, pressed: false }),
+      ).not.toBeNull();
+      expect(
+        screen.getByRole("button", { name: otherLabel, pressed: true }),
+      ).not.toBeNull();
       await user.click(screen.getByRole("button", { name: label }));
       await user.click(
         screen.getByRole("button", { name: "Ergebnis speichern" }),

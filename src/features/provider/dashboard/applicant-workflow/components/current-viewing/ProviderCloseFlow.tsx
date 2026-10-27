@@ -79,6 +79,7 @@ export function ProviderCloseFlow({
             key={item}
             variant={reason === item ? "primary" : "outline"}
             size="sm"
+            aria-pressed={reason === item}
             disabled={busy}
             onClick={() => setReason(item)}
           >
