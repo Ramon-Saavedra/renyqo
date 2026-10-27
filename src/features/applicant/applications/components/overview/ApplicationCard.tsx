@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { AttentionIndicators } from "@/components/shared/attention/AttentionIndicators";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { CardViewingLines } from "@/features/viewing-workflow/present/CardViewingLines";
 import { applicationsCopy } from "../../copy";
 import type { OverviewCardModel } from "../../model/overview-card";
 import { ListingThumbnail } from "../ListingThumbnail";
@@ -16,7 +17,7 @@ export function ApplicationCard({
     <Link
       href={card.href}
       aria-label={card.ariaLabel}
-      className="flex w-full items-center gap-3 rounded-md border border-border bg-background-muted p-3 text-foreground transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:shadow-focus sm:gap-4 sm:p-3.5"
+      className="flex w-full items-center gap-3 rounded-md border border-border bg-background-muted p-3 text-foreground hover:border-border-strong focus-visible:outline-none focus-visible:shadow-focus sm:gap-4 sm:p-3.5"
     >
       <ListingThumbnail
         imageUrl={card.imageUrl}
@@ -46,6 +47,9 @@ export function ApplicationCard({
         <span className="text-caption text-foreground-tertiary">
           {card.dates}
         </span>
+        {card.viewingSummary ? (
+          <CardViewingLines summary={card.viewingSummary} />
+        ) : null}
         {card.attentionChips.length > 0 ? (
           <AttentionIndicators chips={card.attentionChips} />
         ) : null}
