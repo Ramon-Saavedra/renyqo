@@ -301,6 +301,89 @@ describe("Conversation scrolling", () => {
     expect(disconnect).toHaveBeenCalledOnce();
   });
 
+  it("opens an existing conversation at the latest messages", () => {
+    const { rerender } = render(
+      <ConversationMessages
+        {...messagesProps}
+        entries={[]}
+        scrollMode="contained"
+      />,
+    );
+    const log = screen.getByRole("log");
+    Object.defineProperty(log, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(log, "clientHeight", {
+      configurable: true,
+      value: 300,
+    });
+
+    rerender(
+      <ConversationMessages
+        {...messagesProps}
+        entries={[received, sent]}
+        scrollMode="contained"
+      />,
+    );
+    expect(log.scrollTop).toBe(1000);
+  });
+
+  it("keeps the scroll position when the same messages render again", () => {
+    let notifyResize: () => void = () => undefined;
+    vi.stubGlobal(
+      "ResizeObserver",
+      vi.fn(function (callback: ResizeObserverCallback) {
+        const observer: ResizeObserver = {
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+          disconnect: vi.fn(),
+        };
+        notifyResize = () => callback([], observer);
+        return observer;
+      }),
+    );
+    const { rerender } = render(
+      <ConversationMessages
+        {...messagesProps}
+        entries={[]}
+        scrollMode="contained"
+      />,
+    );
+    const log = screen.getByRole("log");
+    let height = 300;
+    Object.defineProperty(log, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(log, "clientHeight", {
+      configurable: true,
+      get: () => height,
+    });
+
+    rerender(
+      <ConversationMessages
+        {...messagesProps}
+        entries={[received]}
+        scrollMode="contained"
+      />,
+    );
+    expect(log.scrollTop).toBe(1000);
+    log.scrollTop = 200;
+    fireEvent.scroll(log);
+    rerender(
+      <ConversationMessages
+        {...messagesProps}
+        entries={[{ ...received }]}
+        scrollMode="contained"
+      />,
+    );
+    expect(log.scrollTop).toBe(200);
+    height = 240;
+    act(() => notifyResize());
+    expect(log.scrollTop).toBe(200);
+  });
+
   it("reveals the first message sent from an initially empty conversation", () => {
     const { rerender } = render(
       <ConversationMessages {...messagesProps} entries={[]} />,

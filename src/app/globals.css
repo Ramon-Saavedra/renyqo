@@ -135,6 +135,46 @@ html {
   padding-right: var(--gutter);
 }
 
+@utility pt-safe {
+  padding-top: var(--safe-area-top);
+}
+
+@utility pr-safe {
+  padding-right: var(--safe-area-right);
+}
+
+@utility pb-safe {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+@utility pl-safe {
+  padding-left: var(--safe-area-left);
+}
+
+@utility px-safe {
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
+}
+
+/* Keep the fixed topbar below a non-zero top inset without changing its
+   content box. A zero inset leaves the 5rem bar untouched. */
+.h-app-topbar {
+  height: calc(var(--spacing-app-topbar) + var(--safe-area-top));
+  border-top: var(--safe-area-top) solid var(--background);
+}
+
+.top-app-topbar {
+  top: calc(var(--spacing-app-topbar) + var(--safe-area-top));
+}
+
+.scroll-mt-app-topbar {
+  scroll-margin-top: calc(var(--spacing-app-topbar) + var(--safe-area-top));
+}
+
+.scroll-pt-app-topbar {
+  scroll-padding-top: calc(var(--spacing-app-topbar) + var(--safe-area-top));
+}
+
 @utility scrollbar-slim {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
@@ -142,6 +182,10 @@ html {
 
 :root {
   --gutter: 1rem;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
   --background: #edebe1;
   --background-subtle: #f1ead6;
   --background-muted: #faf5e7;

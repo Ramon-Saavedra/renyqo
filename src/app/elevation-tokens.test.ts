@@ -61,7 +61,7 @@ describe("elevation tokens", () => {
       "features/provider/dashboard/components/FlagChip.tsx",
       "features/provider/dashboard/components/SelectedObjectCard.tsx",
       "features/provider/dashboard/components/ShareButtons.tsx",
-      "features/provider/dashboard/applicant-workflow/components/ApplicantWorkflowModal.tsx",
+      "features/provider/dashboard/applicant-workflow/components/ApplicantWorkspaceView.tsx",
     ]) {
       expect(
         readFileSync(resolve(import.meta.dirname, "..", name), "utf8"),
