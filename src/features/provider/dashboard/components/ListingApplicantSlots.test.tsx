@@ -47,6 +47,22 @@ function renderSharedPreviews() {
 }
 
 describe("ListingApplicantSlots", () => {
+  it("uses the backend active count instead of the number of visible previews", () => {
+    render(
+      <ListingApplicantPreviewProvider>
+        <ListingApplicantSlots
+          listingId="listing-1"
+          activeApplicationsCount={3}
+          applicantsState={{ status: "loaded", previews: [preview] }}
+          onInteraction={vi.fn()}
+        />
+      </ListingApplicantPreviewProvider>,
+    );
+
+    expect(screen.getByLabelText("3 aktive Bewerbungen")).not.toBeNull();
+    expect(screen.getAllByRole("button")).toHaveLength(3);
+  });
+
   it("renders five compact slots and a preview card on focus", async () => {
     const onInteraction = vi.fn();
     render(
@@ -62,6 +78,7 @@ describe("ListingApplicantSlots", () => {
 
     expect(screen.getAllByRole("button")).toHaveLength(5);
     expect(screen.getByLabelText("5 aktive Bewerbungen")).not.toBeNull();
+    expect(screen.queryByLabelText("1 aktive Bewerbung")).toBeNull();
     const firstSlot = screen.getByRole("button", { name: "Anna Lehmann" });
     expect(firstSlot.className).toContain("h-4");
     expect(firstSlot.className).toContain("w-4");

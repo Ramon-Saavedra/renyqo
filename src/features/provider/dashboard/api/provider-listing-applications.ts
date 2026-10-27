@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { applicationAttentionSummarySchema } from "@/lib/attention/schemas";
 import { apiGet } from "@/lib/api/client";
+import { considerationSummarySchema } from "@/lib/viewing-workflow/consideration-schema";
+import { providerCardViewingSchema } from "@/features/viewing-workflow/present/card-viewing";
 import { APPLICANT_INTRODUCTION_MAX_LENGTH } from "../types";
 
 const providerApplicantSummarySchema = z.object({
@@ -17,6 +19,8 @@ const providerActiveApplicationSchema = z.object({
   applicant: providerApplicantSummarySchema,
   activeAt: z.string().datetime().nullable(),
   attention: applicationAttentionSummarySchema,
+  viewing: providerCardViewingSchema.optional(),
+  consideration: considerationSummarySchema.optional(),
 });
 
 const providerActiveApplicationsResponseSchema = z

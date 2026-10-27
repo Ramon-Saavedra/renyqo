@@ -2,9 +2,13 @@ import { Input } from "@/components/ui/form/Input";
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button/Button";
+import { useViewingSnapshot } from "@/features/viewing-workflow/snapshot/use-viewing-snapshot";
+import type { ViewingSnapshotState } from "@/features/viewing-workflow/snapshot/owner";
+import type { ViewingWorkflowProjection } from "@/lib/viewing-workflow/snapshot-schema";
 import { applicantWorkflowCopy } from "../copy";
 import { useOptionalWorkflowSession } from "../workflow-session";
 import type { ApplicantWorkflowModel } from "../workflow-model";
+import { ProviderCurrentViewing } from "./current-viewing/ProviderCurrentViewing";
 import { StatusTag } from "./StatusTag";
 import { WorkflowSection } from "./WorkflowSection";
 
@@ -23,7 +27,7 @@ function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
   const scheduleReady = date.length > 0 && time.length > 0;
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2.5" data-viewing-id={viewing?.viewingId}>
       {viewing ? (
         <p className="text-caption text-foreground">
           {viewing.statusLabel}
@@ -144,19 +148,72 @@ function ViewingDetails({ model }: { readonly model: ApplicantWorkflowModel }) {
   );
 }
 
+export function currentViewingLabel(
+  projection: ViewingWorkflowProjection | null,
+  fallback: string,
+): string {
+  if (
+    !projection ||
+    (projection.mode !== "CURRENT" && projection.mode !== "EMPTY")
+  ) {
+    return fallback;
+  }
+  if (projection.pendingProposal?.baseAppointmentId) return "Ersatzvorschlag";
+  if (projection.pendingProposal) return "Terminvorschlag";
+  if (projection.confirmedAppointment) return "Bestätigt";
+  return "Kein Termin";
+}
+
+function ProviderViewingBody({
+  model,
+  workflow,
+}: {
+  readonly model: ApplicantWorkflowModel;
+  readonly workflow: ViewingSnapshotState;
+}) {
+  const session = useOptionalWorkflowSession();
+  const projection = workflow.projection;
+  if (
+    projection &&
+    (projection.mode === "CURRENT" || projection.mode === "EMPTY")
+  ) {
+    return (
+      <ProviderCurrentViewing
+        applicationId={model.applicationId}
+        projection={projection}
+        refreshError={workflow.error !== null}
+        onChanged={() => {
+          session?.reloadWorkspace();
+        }}
+      />
+    );
+  }
+  return <ViewingDetails model={model} />;
+}
+
 export function ViewingSection({
   model,
 }: {
   readonly model: ApplicantWorkflowModel;
 }) {
+  const workflow = useViewingSnapshot(model.applicationId, "provider");
   return (
     <WorkflowSection
       icon={CalendarDays}
       title={copy.title}
-      aside={<StatusTag tone="neutral" label={model.summaries.viewing.value} />}
+      sectionKey="viewing"
+      aside={
+        <StatusTag
+          tone="neutral"
+          label={currentViewingLabel(
+            workflow.projection,
+            model.summaries.viewing.value,
+          )}
+        />
+      }
     >
       <div className="px-3.5 py-3">
-        <ViewingDetails model={model} />
+        <ProviderViewingBody model={model} workflow={workflow} />
       </div>
     </WorkflowSection>
   );
@@ -167,14 +224,18 @@ export function ViewingPanel({
 }: {
   readonly model: ApplicantWorkflowModel;
 }) {
+  const workflow = useViewingSnapshot(model.applicationId, "provider");
   return (
     <div className="flex flex-col gap-3.5">
       <StatusTag
         tone="neutral"
-        label={model.summaries.viewing.value}
+        label={currentViewingLabel(
+          workflow.projection,
+          model.summaries.viewing.value,
+        )}
         className="self-start"
       />
-      <ViewingDetails model={model} />
+      <ProviderViewingBody model={model} workflow={workflow} />
     </div>
   );
 }

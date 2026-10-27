@@ -1,16 +1,22 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowRight, UserRoundX } from "lucide-react";
 import type { CSSProperties } from "react";
 import { Avatar } from "@/components/ui/avatar/Avatar";
 import { Button } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { RenyqoSkeleton } from "@/components/ui/loading/RenyqoSkeleton";
+import { deepLinkHref } from "@/lib/navigation/deep-link";
 import { dashboardCopy } from "../copy/dashboard";
 import "./CandidateLane.css";
 import { AttentionIndicators } from "@/components/shared/attention/AttentionIndicators";
-import { buildApplicationAttentionChips } from "@/lib/attention/chips";
 import { hasApplicationAttentionSurface } from "@/lib/attention/visibility";
+import {
+  attentionChipsForViewingCard,
+  cardViewingCopy,
+} from "@/features/viewing-workflow/present/card-viewing";
+import { CardViewingLines } from "@/features/viewing-workflow/present/CardViewingLines";
 import { FlagChip } from "./FlagChip";
 import { resolveQueueTier } from "./candidate-lane-tokens";
 import type { Candidate, CandidateWarning } from "../types";
@@ -36,7 +42,7 @@ function CandidateAttentionSlot({
   attentionChips,
 }: {
   showAttention: boolean;
-  attentionChips: ReturnType<typeof buildApplicationAttentionChips>;
+  attentionChips: ReturnType<typeof attentionChipsForViewingCard>;
 }) {
   return (
     <div
@@ -68,7 +74,6 @@ export interface CandidateLaneProps {
   waitingCount: number;
   announceWaitingStatus?: boolean;
   capacity?: number;
-  onOpenPreview: (candidate: Candidate) => void;
   onRejectCandidate?: ((candidate: Candidate) => void) | undefined;
   rejectingApplicationId?: string | null | undefined;
 }
@@ -78,7 +83,6 @@ export function CandidateLane({
   waitingCount,
   announceWaitingStatus = true,
   capacity = 5,
-  onOpenPreview,
   onRejectCandidate,
   rejectingApplicationId = null,
 }: CandidateLaneProps) {
@@ -94,7 +98,10 @@ export function CandidateLane({
   const entries = actives.map((candidate) => ({
     candidate,
     attentionChips: hasApplicationAttentionSurface(candidate.attention)
-      ? buildApplicationAttentionChips(candidate.attention)
+      ? attentionChipsForViewingCard(
+          candidate.attention,
+          candidate.viewingSummary,
+        )
       : [],
   }));
 
@@ -131,9 +138,11 @@ export function CandidateLane({
                 data-rq-candidate-card=""
                 className={`${CARD_CLASS} flex min-h-0 flex-1 flex-col`}
               >
-                <button
-                  type="button"
-                  onClick={() => onOpenPreview(candidate)}
+                <Link
+                  href={deepLinkHref("provider", {
+                    applicationId: candidate.id,
+                    listingId: candidate.objectId,
+                  })}
                   aria-label={dashboardCopy.candidates.previewAction(
                     candidate.name,
                     candidate.household,
@@ -165,7 +174,17 @@ export function CandidateLane({
                       </span>
                     ) : null}
                   </span>
-                </button>
+                  {candidate.viewingSummary ? (
+                    <span className="mt-2 block">
+                      <CardViewingLines summary={candidate.viewingSummary} />
+                    </span>
+                  ) : null}
+                  {candidate.applicantNoShow ? (
+                    <span className="mt-1 block text-caption text-warning">
+                      {cardViewingCopy.noShow}
+                    </span>
+                  ) : null}
+                </Link>
 
                 <div className={ACTION_ROW_CLASS}>
                   <span className="flex min-w-0 flex-1 items-center gap-2">

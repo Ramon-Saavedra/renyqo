@@ -42,6 +42,17 @@ vi.mock("@/lib/api/auth", () => ({
   logout: vi.fn(),
 }));
 
+vi.mock("@/features/notifications/api/notifications", () => ({
+  getNotificationUnreadCount: vi.fn().mockResolvedValue({
+    asOf: "2026-10-26T08:00:00.000Z",
+    unreadCount: 0,
+    nextRevalidateAt: null,
+  }),
+  listNotifications: vi.fn(),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}));
+
 vi.mock("../api/provider-dashboard", () => ({
   getProviderDashboardObjects: vi.fn(),
 }));

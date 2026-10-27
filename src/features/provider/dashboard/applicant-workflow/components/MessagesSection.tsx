@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { LockKeyhole, MessageSquare } from "lucide-react";
 import { Conversation } from "@/components/shared/conversation/Conversation";
+import { MobileChatView } from "@/components/shared/conversation/MobileChatView";
 import { ConversationComposer } from "@/components/shared/conversation/ConversationComposer";
 import { ConversationMessages } from "@/components/shared/conversation/ConversationMessages";
 import { ConversationNotice } from "@/components/shared/conversation/ConversationNotice";
@@ -13,10 +14,11 @@ import { formatWorkflowTimestamp } from "../format-timestamp";
 import { useOptionalWorkflowSession } from "../workflow-session";
 import type { ApplicantWorkflowModel } from "../workflow-model";
 import { ApplicantReplyPermission } from "./ApplicantReplyPermission";
-import { StatusTag } from "./StatusTag";
 import { WorkflowSection } from "./WorkflowSection";
 
 const copy = applicantWorkflowCopy.messages;
+const REPLY_BAND_CLASS =
+  "border-b border-border bg-background-subtle px-card-x py-parent-y";
 
 function useMessagesProps(
   model: ApplicantWorkflowModel,
@@ -121,12 +123,10 @@ export function MessagesSection({
     <WorkflowSection
       icon={MessageSquare}
       title={copy.title}
-      aside={
-        <StatusTag tone="neutral" label={model.summaries.messages.value} />
-      }
+      sectionKey="messages"
     >
       <ReadOnlyNotice model={model} />
-      <div className="px-card-x py-parent-y">
+      <div className={REPLY_BAND_CLASS}>
         <ApplicantReplyPermission model={model} />
       </div>
       <Conversation
@@ -139,6 +139,33 @@ export function MessagesSection({
   );
 }
 
+export function DedicatedProviderChat({
+  model,
+  onClose,
+}: {
+  readonly model: ApplicantWorkflowModel;
+  readonly onClose: () => void;
+}) {
+  const messages = useMessagesProps(model);
+  const composer = useComposerProps(model);
+  return (
+    <MobileChatView
+      title={copy.title}
+      closeLabel={copy.closeChat}
+      onClose={onClose}
+      accessory={<ApplicantReplyPermission model={model} />}
+    >
+      <ReadOnlyNotice model={model} />
+      <Conversation
+        className="min-h-0 flex-1"
+        scrollMode="contained"
+        {...messages}
+        composer={composer}
+      />
+    </MobileChatView>
+  );
+}
+
 export function MessagesPanel({
   model,
 }: {
@@ -147,13 +174,10 @@ export function MessagesPanel({
   const messages = useMessagesProps(model);
   return (
     <div className="flex min-w-0 flex-col gap-3.5">
-      <StatusTag
-        tone="neutral"
-        label={model.summaries.messages.value}
-        className="self-start"
-      />
       <ReadOnlyNotice model={model} />
-      <ApplicantReplyPermission model={model} />
+      <div className={REPLY_BAND_CLASS}>
+        <ApplicantReplyPermission model={model} />
+      </div>
       <ConversationMessages {...messages} />
     </div>
   );
