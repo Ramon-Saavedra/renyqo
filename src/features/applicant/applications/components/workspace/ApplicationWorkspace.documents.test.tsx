@@ -32,6 +32,10 @@ vi.mock("../../api/workspace", async (importOriginal) => ({
   getApplicantWorkspace: vi.fn(),
 }));
 
+vi.mock("@/features/viewing-workflow/api/applicant-workflow", () => ({
+  getApplicantViewingWorkflow: vi.fn(() => new Promise(() => undefined)),
+}));
+
 vi.mock("../../api/conversation", async (importOriginal) => ({
   ...(await importOriginal<typeof conversationApi>()),
   loadCompleteConversation: vi.fn().mockResolvedValue({

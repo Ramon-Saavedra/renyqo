@@ -10,6 +10,8 @@ interface WorkspaceSectionProps {
   readonly highlighted?: boolean;
   readonly className?: string | undefined;
   readonly sectionRef?: Ref<HTMLElement>;
+  readonly sectionKey?: string;
+  readonly viewingId?: string | undefined;
   readonly children: ReactNode;
 }
 
@@ -20,6 +22,8 @@ export function WorkspaceSection({
   highlighted = false,
   className,
   sectionRef,
+  sectionKey,
+  viewingId,
   children,
 }: WorkspaceSectionProps) {
   const titleId = useId();
@@ -27,9 +31,11 @@ export function WorkspaceSection({
   return (
     <section
       ref={sectionRef}
+      data-section={sectionKey}
+      data-viewing-id={viewingId}
       aria-labelledby={titleId}
       className={cn(
-        "min-w-0 scroll-mt-6 overflow-hidden rounded-md border bg-background-muted transition-colors",
+        "min-w-0 scroll-mt-6 overflow-hidden rounded-md border bg-background-muted",
         highlighted ? "border-primary" : "border-border",
         className,
       )}

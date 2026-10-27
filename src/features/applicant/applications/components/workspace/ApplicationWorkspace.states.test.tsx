@@ -26,6 +26,10 @@ vi.mock("../../api/workspace", async (importOriginal) => ({
   getApplicantWorkspace: vi.fn(),
 }));
 
+vi.mock("@/features/viewing-workflow/api/applicant-workflow", () => ({
+  getApplicantViewingWorkflow: vi.fn(() => new Promise(() => undefined)),
+}));
+
 vi.mock("../../api/conversation", async (importOriginal) => ({
   ...(await importOriginal<typeof conversationApi>()),
   loadCompleteConversation: vi.fn().mockResolvedValue({
@@ -78,6 +82,26 @@ beforeEach(() => {
 });
 
 describe("ApplicationWorkspace states", () => {
+  it("keeps chat on the right of the wide workspace and first on compact", async () => {
+    renderWorkspace(createWorkspace());
+
+    const documents = await screen.findByRole("region", { name: "Unterlagen" });
+    const viewing = screen.getByRole("region", { name: "Besichtigung" });
+    const history = screen.getByRole("region", { name: "Verlauf" });
+    const messages = screen.getByRole("region", { name: "Nachrichten" });
+    const following = Node.DOCUMENT_POSITION_FOLLOWING;
+
+    expect(documents.compareDocumentPosition(viewing) & following).not.toBe(0);
+    expect(viewing.compareDocumentPosition(history) & following).not.toBe(0);
+    expect(history.compareDocumentPosition(messages) & following).not.toBe(0);
+    expect(documents.parentElement?.className).toContain("lg:col-span-3");
+    expect(messages.parentElement?.className).toContain("lg:col-span-2");
+    expect(messages.className).toContain("order-1");
+    expect(documents.className).toContain("order-2");
+    expect(viewing.className).toContain("order-3");
+    expect(history.className).toContain("order-4");
+  });
+
   it("renders the WAITING state without process actions or fake review language", async () => {
     renderWorkspace(
       createWorkspace({

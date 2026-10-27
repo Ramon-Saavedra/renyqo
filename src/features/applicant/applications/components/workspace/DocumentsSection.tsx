@@ -98,7 +98,11 @@ function DocumentRow({
     documentId !== null && transfers.downloadingId === documentId;
 
   return (
-    <li className="flex flex-col items-start gap-3 border-t border-border px-3.5 sm:px-5 py-3 first:border-t-0 sm:flex-row">
+    <li
+      data-request-id={request.requestId}
+      data-document-id={request.documentId ?? undefined}
+      className="flex flex-col items-start gap-3 border-t border-border px-3.5 sm:px-5 py-3 first:border-t-0 sm:flex-row"
+    >
       <span
         aria-hidden="true"
         className={cn(
@@ -202,6 +206,7 @@ export function DocumentsSection({
     <WorkspaceSection
       icon={FileText}
       title={copy.title}
+      sectionKey="documents"
       highlighted={highlighted}
       sectionRef={sectionRef}
       className={className}

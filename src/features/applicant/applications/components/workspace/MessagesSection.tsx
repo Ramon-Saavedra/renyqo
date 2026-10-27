@@ -1,12 +1,14 @@
-import { useState, type Ref } from "react";
+import { useId, useState, type Ref } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Lock, MessageSquare } from "lucide-react";
+import { ChevronRight, Lock, MessageSquare } from "lucide-react";
 import { Conversation } from "@/components/shared/conversation/Conversation";
+import { MobileChatView } from "@/components/shared/conversation/MobileChatView";
 import type {
   ConversationEntry,
   ConversationLoadState,
 } from "@/components/shared/conversation/types";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
+import { cn } from "@/lib/utils/cn";
 import { MAX_MESSAGE_LENGTH } from "../../api/conversation";
 import type { ApplicantWorkspace } from "../../api/workspace";
 import { applicationsCopy } from "../../copy";
@@ -36,7 +38,7 @@ const NOTICE: Record<
   },
 };
 
-interface MessagesSectionProps {
+interface MessagesSectionSharedProps {
   readonly conversation: ConversationController;
   readonly summary: ApplicantWorkspace["conversationSummary"];
   readonly highlighted: boolean;
@@ -46,15 +48,78 @@ interface MessagesSectionProps {
   readonly className?: string | undefined;
 }
 
-export function MessagesSection({
-  conversation,
-  summary,
-  highlighted,
-  now,
-  sectionRef,
-  composerId,
+type MessagesSectionProps =
+  | (MessagesSectionSharedProps & { readonly presentation?: "inline" })
+  | (MessagesSectionSharedProps & {
+      readonly presentation: "dedicated";
+      readonly onClose: () => void;
+    });
+
+export function MessagesEntry({
+  onOpen,
+  highlighted = false,
   className,
-}: MessagesSectionProps) {
+  sectionRef,
+}: {
+  readonly onOpen: () => void;
+  readonly highlighted?: boolean;
+  readonly className?: string | undefined;
+  readonly sectionRef?: Ref<HTMLElement>;
+}) {
+  const titleId = useId();
+  return (
+    <section
+      ref={sectionRef}
+      data-section="messages"
+      aria-labelledby={titleId}
+      className={cn(
+        "min-w-0 overflow-hidden rounded-md border bg-background-muted",
+        highlighted ? "border-primary" : "border-border",
+        className,
+      )}
+    >
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={copy.open}
+        className="flex w-full cursor-pointer items-center gap-2 px-3.5 py-3.5 text-left focus-visible:shadow-focus focus-visible:outline-none"
+      >
+        <AppIcon
+          icon={MessageSquare}
+          size={17}
+          strokeWidth={1.9}
+          className="text-foreground-secondary"
+          decorative
+        />
+        <span
+          id={titleId}
+          className="min-w-0 flex-1 font-display text-lead font-semibold text-foreground"
+        >
+          {copy.title}
+        </span>
+        <AppIcon
+          icon={ChevronRight}
+          size={16}
+          strokeWidth={2}
+          className="text-foreground-tertiary"
+          decorative
+        />
+      </button>
+    </section>
+  );
+}
+
+export function MessagesSection(props: MessagesSectionProps) {
+  const {
+    conversation,
+    summary,
+    highlighted,
+    now,
+    sectionRef,
+    composerId,
+    className,
+  } = props;
+  const dedicated = props.presentation === "dedicated";
   const [draft, setDraft] = useState("");
   const capabilities = conversation.capabilities;
   const currentSummary = capabilities ?? summary;
@@ -94,65 +159,84 @@ export function MessagesSection({
     });
   };
 
+  const readOnly =
+    currentSummary.sendBlockReason !== null ? (
+      <span className="inline-flex items-center gap-1.5 text-caption text-foreground-secondary">
+        <AppIcon icon={Lock} size={13} decorative />
+        {copy.readOnly}
+      </span>
+    ) : null;
+  const conversationView = (
+    <Conversation
+      className={dedicated ? "min-h-0 flex-1" : "h-96"}
+      scrollMode="contained"
+      entries={entries}
+      loadState={loadState}
+      emptyLabel={copy.empty}
+      logLabel={copy.logLabel}
+      statusMessage={conversation.readFailed ? copy.readError : null}
+      notice={
+        canSend ||
+        conversation.load.status === "loading" ||
+        conversation.load.status === "error"
+          ? null
+          : notice
+      }
+      composer={
+        canSend || draft.length > 0
+          ? {
+              id: composerId,
+              value: draft,
+              onChange: setDraft,
+              onSubmit: submit,
+              disabled: !canSend,
+              sending: conversation.sending,
+              maxLength: MAX_MESSAGE_LENGTH,
+              label: copy.composerLabel,
+              placeholder: copy.placeholder,
+              hint: copy.shortcut,
+              sendLabel: copy.send,
+              sendingLabel: copy.sending,
+              invalid: conversation.sendFailure === "invalid",
+              error: conversation.sendFailure
+                ? conversation.sendFailure === "invalid"
+                  ? copy.sendInvalid
+                  : conversation.sendFailure === "conflict"
+                    ? copy.sendConflict
+                    : copy.sendError
+                : null,
+            }
+          : null
+      }
+      {...(dedicated ? {} : { headerLabel: copy.provider })}
+    />
+  );
+
+  if (dedicated) {
+    return (
+      <MobileChatView
+        title={copy.provider}
+        closeLabel={copy.closeChat}
+        onClose={props.onClose}
+        section="messages"
+        {...(readOnly ? { status: readOnly } : {})}
+      >
+        {conversationView}
+      </MobileChatView>
+    );
+  }
+
   return (
     <WorkspaceSection
       icon={MessageSquare}
       title={copy.title}
+      sectionKey="messages"
       highlighted={highlighted}
       sectionRef={sectionRef}
       className={className}
-      aside={
-        currentSummary.sendBlockReason !== null ? (
-          <span className="inline-flex items-center gap-1.5 text-caption text-foreground-secondary">
-            <AppIcon icon={Lock} size={13} decorative />
-            {copy.readOnly}
-          </span>
-        ) : null
-      }
+      aside={readOnly}
     >
-      <Conversation
-        className="h-96"
-        scrollMode="contained"
-        headerLabel={copy.provider}
-        entries={entries}
-        loadState={loadState}
-        emptyLabel={copy.empty}
-        logLabel={copy.logLabel}
-        statusMessage={conversation.readFailed ? copy.readError : null}
-        notice={
-          canSend ||
-          conversation.load.status === "loading" ||
-          conversation.load.status === "error"
-            ? null
-            : notice
-        }
-        composer={
-          canSend || draft.length > 0
-            ? {
-                id: composerId,
-                value: draft,
-                onChange: setDraft,
-                onSubmit: submit,
-                disabled: !canSend,
-                sending: conversation.sending,
-                maxLength: MAX_MESSAGE_LENGTH,
-                label: copy.composerLabel,
-                placeholder: copy.placeholder,
-                hint: copy.shortcut,
-                sendLabel: copy.send,
-                sendingLabel: copy.sending,
-                invalid: conversation.sendFailure === "invalid",
-                error: conversation.sendFailure
-                  ? conversation.sendFailure === "invalid"
-                    ? copy.sendInvalid
-                    : conversation.sendFailure === "conflict"
-                      ? copy.sendConflict
-                      : copy.sendError
-                  : null,
-              }
-            : null
-        }
-      />
+      {conversationView}
     </WorkspaceSection>
   );
 }

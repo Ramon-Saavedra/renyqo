@@ -66,49 +66,44 @@ export function ApplicationWorkspace({
   const { state, refresh, retry } = useApplicantWorkspace(applicationId);
 
   return (
-    <div className="px-0 pt-8 sm:px-gutter">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-        <Link href={OVERVIEW_PATH} className={buttonClass("ghost", "w-fit")}>
-          <AppIcon icon={ArrowLeft} size={15} decorative />
-          {copy.back}
-        </Link>
-        {state.status === "loading" ? <WorkspaceSkeleton /> : null}
-        {state.status === "not-found" ? (
-          <WorkspaceMessage
-            title={copy.notFoundTitle}
-            text={copy.notFoundText}
+    <div className="flex flex-col gap-5 px-gutter pt-8">
+      <Link href={OVERVIEW_PATH} className={buttonClass("ghost", "w-fit")}>
+        <AppIcon icon={ArrowLeft} size={15} decorative />
+        {copy.back}
+      </Link>
+      {state.status === "loading" ? <WorkspaceSkeleton /> : null}
+      {state.status === "not-found" ? (
+        <WorkspaceMessage title={copy.notFoundTitle} text={copy.notFoundText} />
+      ) : null}
+      {state.status === "error" ? (
+        <WorkspaceMessage
+          title={
+            state.reason === "contract" ? copy.contractError : copy.loadError
+          }
+          onRetry={retry}
+        />
+      ) : null}
+      {state.status === "ready" ? (
+        <>
+          {state.refreshFailed ? (
+            <div
+              role="alert"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-caption text-warning"
+            >
+              <span>{copy.refreshError}</span>
+              <Button variant="ghost" onClick={refresh}>
+                {copy.retry}
+              </Button>
+            </div>
+          ) : null}
+          <WorkspaceContent
+            key={state.workspace.application.id}
+            workspace={state.workspace}
+            refresh={refresh}
+            acceptedGeneration={state.acceptedGeneration}
           />
-        ) : null}
-        {state.status === "error" ? (
-          <WorkspaceMessage
-            title={
-              state.reason === "contract" ? copy.contractError : copy.loadError
-            }
-            onRetry={retry}
-          />
-        ) : null}
-        {state.status === "ready" ? (
-          <>
-            {state.refreshFailed ? (
-              <div
-                role="alert"
-                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-caption text-warning"
-              >
-                <span>{copy.refreshError}</span>
-                <Button variant="ghost" onClick={refresh}>
-                  {copy.retry}
-                </Button>
-              </div>
-            ) : null}
-            <WorkspaceContent
-              key={state.workspace.application.id}
-              workspace={state.workspace}
-              refresh={refresh}
-              acceptedGeneration={state.acceptedGeneration}
-            />
-          </>
-        ) : null}
-      </div>
+        </>
+      ) : null}
     </div>
   );
 }
