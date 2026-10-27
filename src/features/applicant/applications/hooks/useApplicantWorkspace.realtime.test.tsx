@@ -5,6 +5,7 @@ import {
   resetRealtimeSchedules,
   scheduleConversationMessage,
   scheduleConversationSummary,
+  scheduleViewingChanged,
 } from "@/lib/realtime/attention";
 import { invalidateListingApplicationData } from "../../listings/utils/listing-data-invalidation";
 import { APPLICATION_ID, createWorkspace } from "../testing/fixtures";
@@ -59,5 +60,16 @@ describe("applicant workspace realtime refresh", () => {
     });
     expect(getApplicantWorkspace).toHaveBeenCalledTimes(2);
     expect(invalidateListingApplicationData).not.toHaveBeenCalled();
+  });
+
+  it("reloads the open workspace after a viewing hint", async () => {
+    const { result } = renderHook(() => useApplicantWorkspace(APPLICATION_ID));
+    await waitFor(() => expect(result.current.state.status).toBe("ready"));
+    vi.useFakeTimers();
+    scheduleViewingChanged("applicant", APPLICATION_ID, "listing-1");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(REALTIME_COALESCE_MS);
+    });
+    expect(getApplicantWorkspace).toHaveBeenCalledTimes(2);
   });
 });

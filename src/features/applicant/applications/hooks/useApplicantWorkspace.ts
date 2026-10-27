@@ -1,6 +1,10 @@
 "use client";
 
-import { subscribeConversationAttention } from "@/lib/realtime/attention";
+import {
+  noticeRefreshesApplication,
+  subscribeConversationAttention,
+} from "@/lib/realtime/attention";
+import { cachedViewingListingId } from "@/features/viewing-workflow/snapshot/owner";
 import {
   invalidateListingApplicationData,
   subscribeListingApplicationData,
@@ -144,8 +148,11 @@ export function useApplicantWorkspace(applicationId: string): {
   useEffect(() => {
     return subscribeConversationAttention((notice) => {
       if (
-        !notice.refreshAllSummaries &&
-        !notice.summaryApplicationIds.includes(applicationId)
+        !noticeRefreshesApplication(
+          notice,
+          applicationId,
+          cachedViewingListingId(applicationId),
+        )
       ) {
         return;
       }

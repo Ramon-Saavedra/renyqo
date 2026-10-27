@@ -65,6 +65,19 @@ export function formatTime(iso: string, timeZone = DEFAULT_TIME_ZONE): string {
   });
 }
 
+/** Compact card schedule, for example `12. Nov., 14:00`. */
+export function formatCardSchedule(
+  iso: string,
+  timeZone = DEFAULT_TIME_ZONE,
+): string {
+  const date = format(iso, timeZone, "card-date", {
+    day: "numeric",
+    month: "short",
+  });
+  const time = formatTime(iso, timeZone);
+  return date && time ? `${date}, ${time}` : "";
+}
+
 export function formatDateTime(
   iso: string,
   timeZone = DEFAULT_TIME_ZONE,

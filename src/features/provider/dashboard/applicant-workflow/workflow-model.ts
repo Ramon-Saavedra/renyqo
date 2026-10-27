@@ -30,6 +30,49 @@ export interface WorkflowListingContext {
   readonly livingArea: number;
 }
 
+export function workflowListingContext(
+  listingId: string | null,
+  detail: {
+    readonly title: string;
+    readonly city: string | null;
+    readonly coldRent: number | null;
+    readonly status: ListingStatus;
+    readonly rooms: number | null;
+    readonly livingArea: number | null;
+  } | null,
+): WorkflowListingContext {
+  const rooms =
+    detail?.rooms != null && Number.isFinite(detail.rooms)
+      ? String(detail.rooms)
+      : "";
+  const livingArea =
+    detail?.livingArea != null &&
+    Number.isFinite(detail.livingArea) &&
+    detail.livingArea > 0
+      ? detail.livingArea
+      : 0;
+  return {
+    id: listingId ?? "",
+    title: detail?.title ?? "",
+    city: detail?.city ?? "",
+    coldRent:
+      detail?.coldRent != null && Number.isFinite(detail.coldRent)
+        ? detail.coldRent
+        : 0,
+    status: detail?.status ?? "published",
+    rooms,
+    livingArea,
+  };
+}
+
+function listingContextMeta(listing: WorkflowListingContext): string {
+  if (!listing.rooms || listing.livingArea <= 0) return "";
+  return applicantWorkflowCopy.listingMeta(
+    listing.rooms,
+    formatArea(listing.livingArea),
+  );
+}
+
 export interface WorkflowApplicant {
   readonly name: string;
   readonly initials: string;
@@ -115,6 +158,7 @@ const PENDING_LABEL: Record<ProviderPendingAction["type"], string> = {
   RESPOND_TO_VIEWING_CHANGE_REQUEST: "Terminänderung beantworten",
   CLOSE_UNANSWERED_VIEWING: "Offenen Termin schließen",
   RECORD_VIEWING_OUTCOME: "Besichtigungsergebnis festhalten",
+  DECIDE_VIEWING_CONSIDERATION: "Weiteres Vorgehen festlegen",
 };
 
 const DOCUMENT_STATUS_LABEL = {
@@ -301,10 +345,7 @@ export function buildApplicantWorkflowModel(
     listing: {
       id: listing.id,
       title: listing.title,
-      meta: applicantWorkflowCopy.listingMeta(
-        listing.rooms,
-        formatArea(listing.livingArea),
-      ),
+      meta: listingContextMeta(listing),
     },
     nextStep: nextStep(workspace),
     summaries: {

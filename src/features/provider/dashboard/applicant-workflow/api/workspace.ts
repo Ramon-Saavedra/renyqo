@@ -1,6 +1,9 @@
 import { conversationSummarySchema } from "@/components/shared/conversation/capabilities";
 import { z } from "zod";
 import { ApiError, apiGet, type ApiRequestOptions } from "@/lib/api/client";
+import { considerationSummarySchema } from "@/lib/viewing-workflow/consideration-schema";
+import { workflowTargetSchema } from "@/lib/viewing-workflow/target-schema";
+import { publishEmbeddedViewingProjection } from "@/features/viewing-workflow/snapshot/publish-workspace";
 
 const providerPendingActionSchema = z.discriminatedUnion("source", [
   z.object({
@@ -16,9 +19,13 @@ const providerPendingActionSchema = z.discriminatedUnion("source", [
       "RESPOND_TO_VIEWING_CHANGE_REQUEST",
       "CLOSE_UNANSWERED_VIEWING",
       "RECORD_VIEWING_OUTCOME",
+      "DECIDE_VIEWING_CONSIDERATION",
     ]),
     source: z.literal("VIEWING"),
-    target: z.object({ viewingId: z.string().min(1) }),
+    target: z.object({
+      viewingId: z.string().min(1),
+      workflowTarget: workflowTargetSchema.optional(),
+    }),
   }),
 ]);
 
@@ -41,6 +48,12 @@ const ACTIVITY_TYPES = [
   "VIEWING_OUTCOME_CORRECTED",
   "VIEWING_INTEREST_CONFIRMED",
   "VIEWING_INTEREST_DECLINED",
+  "VIEWING_REPLACEMENT_PROPOSED",
+  "VIEWING_PROPOSAL_WITHDRAWN",
+  "VIEWING_PROPOSAL_EXPIRED",
+  "VIEWING_INTEREST_EXPIRED",
+  "VIEWING_CONSIDERATION_CHANGED",
+  "VIEWING_WORKFLOW_CLOSED",
   "APPLICATION_SUBMITTED",
   "APPLICATION_PROMOTED_TO_ACTIVE",
   "APPLICATION_WITHDRAWN",
@@ -182,6 +195,7 @@ export const applicantWorkspaceSchema = z.object({
     items: z.array(activityItemSchema).max(5),
     hasMore: z.boolean(),
   }),
+  consideration: considerationSummarySchema.optional(),
 });
 
 export type ApplicantWorkspace = z.infer<typeof applicantWorkspaceSchema>;
@@ -228,7 +242,9 @@ export async function getApplicantWorkspace(
       `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/workspace`,
       options,
     );
-    return parseApplicantWorkspace(response, applicationId);
+    const workspace = parseApplicantWorkspace(response, applicationId);
+    publishEmbeddedViewingProjection(applicationId, response, "provider");
+    return workspace;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       throw new WorkspaceInaccessibleError();

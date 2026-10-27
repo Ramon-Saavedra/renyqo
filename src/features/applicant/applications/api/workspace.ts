@@ -4,7 +4,9 @@ import {
   attentionTargetSchema,
   documentAttentionIndicatorSchema,
 } from "@/lib/attention/schemas";
+import { workflowTargetSchema } from "@/lib/viewing-workflow/target-schema";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
+import { publishEmbeddedViewingProjection } from "@/features/viewing-workflow/snapshot/publish-workspace";
 import { activityItemSchema } from "./activity-schema";
 import {
   ApplicantApplicationContractError,
@@ -30,12 +32,18 @@ const pendingActionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("RESPOND_TO_VIEWING"),
     source: z.literal("VIEWING"),
-    target: z.object({ viewingId: z.string().min(1) }),
+    target: z.object({
+      viewingId: z.string().min(1),
+      workflowTarget: workflowTargetSchema.optional(),
+    }),
   }),
   z.object({
     type: z.literal("CONFIRM_POST_VIEWING_INTEREST"),
     source: z.literal("VIEWING"),
-    target: z.object({ viewingId: z.string().min(1) }),
+    target: z.object({
+      viewingId: z.string().min(1),
+      workflowTarget: workflowTargetSchema.optional(),
+    }),
   }),
 ]);
 
@@ -115,7 +123,9 @@ export async function getApplicantWorkspace(
       `/api/v1/applicant/applications/${encodeURIComponent(applicationId)}/workspace`,
       options,
     );
-    return parseApplicantWorkspace(response, applicationId);
+    const workspace = parseApplicantWorkspace(response, applicationId);
+    publishEmbeddedViewingProjection(applicationId, response, "applicant");
+    return workspace;
   } catch (error) {
     if (isNotFoundResponse(error))
       throw new ApplicantApplicationNotFoundError();
