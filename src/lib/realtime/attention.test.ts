@@ -9,7 +9,11 @@ import {
   resetRealtimeSchedules,
   scheduleConversationMessage,
   scheduleConversationSummary,
+  scheduleLifecycleChanged,
+  scheduleListingApplicationsChanged,
+  scheduleNotificationsChanged,
   scheduleRealtimeResync,
+  scheduleViewingChanged,
   subscribeConversationAttention,
 } from "./attention";
 
@@ -54,6 +58,9 @@ describe("realtime attention", () => {
       refreshLists: true,
       refreshAllSummaries: false,
       summaryApplicationIds: [],
+      viewingApplicationIds: [],
+      listingIds: [],
+      refreshNotifications: false,
     });
     expect(catchUp).toHaveBeenCalledTimes(1);
     expect(openConversationCount()).toBe(1);
@@ -77,6 +84,9 @@ describe("realtime attention", () => {
       refreshLists: true,
       refreshAllSummaries: false,
       summaryApplicationIds: ["application-1"],
+      viewingApplicationIds: [],
+      listingIds: [],
+      refreshNotifications: false,
     });
 
     unsubscribe();
@@ -100,6 +110,9 @@ describe("realtime attention", () => {
       refreshLists: true,
       refreshAllSummaries: true,
       summaryApplicationIds: [],
+      viewingApplicationIds: [],
+      listingIds: [],
+      refreshNotifications: true,
     });
     expect(first).toHaveBeenCalledOnce();
     expect(second).toHaveBeenCalledOnce();
@@ -120,5 +133,86 @@ describe("realtime attention", () => {
     expect(catchUp).toHaveBeenCalledOnce();
     unsubscribe();
     unregister();
+  });
+
+  it("coalesces a viewing burst into one list, snapshot, and notification refresh", () => {
+    const notice = vi.fn();
+    const catchUp = vi.fn();
+    const unsubscribe = subscribeConversationAttention(notice);
+    const unregister = registerOpenConversation("application-1", catchUp);
+
+    scheduleViewingChanged("provider", "application-1", "listing-1");
+    scheduleViewingChanged("provider", "application-1", "listing-1");
+    scheduleLifecycleChanged("provider", "application-1", "listing-1");
+    vi.advanceTimersByTime(REALTIME_COALESCE_MS);
+
+    expect(invalidateGlobalAttention).toHaveBeenCalledTimes(1);
+    expect(notice).toHaveBeenCalledTimes(1);
+    expect(catchUp).toHaveBeenCalledOnce();
+    expect(notice).toHaveBeenCalledWith({
+      refreshLists: true,
+      refreshAllSummaries: false,
+      summaryApplicationIds: ["application-1"],
+      viewingApplicationIds: ["application-1"],
+      listingIds: ["listing-1"],
+      refreshNotifications: true,
+    });
+    unsubscribe();
+    unregister();
+  });
+
+  it("refreshes listing cards without inventing an application id", () => {
+    const notice = vi.fn();
+    const catchUp = vi.fn();
+    const unsubscribe = subscribeConversationAttention(notice);
+    const unregister = registerOpenConversation("application-1", catchUp);
+
+    scheduleListingApplicationsChanged("provider", "listing-1");
+    vi.advanceTimersByTime(REALTIME_COALESCE_MS);
+
+    expect(notice).toHaveBeenCalledWith({
+      refreshLists: true,
+      refreshAllSummaries: false,
+      summaryApplicationIds: [],
+      viewingApplicationIds: [],
+      listingIds: ["listing-1"],
+      refreshNotifications: true,
+    });
+    expect(catchUp).not.toHaveBeenCalled();
+    unsubscribe();
+    unregister();
+  });
+
+  it("refreshes only notifications for a notification hint", () => {
+    const notice = vi.fn();
+    const unsubscribe = subscribeConversationAttention(notice);
+    scheduleNotificationsChanged("applicant");
+    vi.advanceTimersByTime(REALTIME_COALESCE_MS);
+    expect(invalidateGlobalAttention).not.toHaveBeenCalled();
+    expect(notice).toHaveBeenCalledWith({
+      refreshLists: false,
+      refreshAllSummaries: false,
+      summaryApplicationIds: [],
+      viewingApplicationIds: [],
+      listingIds: [],
+      refreshNotifications: true,
+    });
+    unsubscribe();
+  });
+
+  it("leaves the current deep link in place while a hint flushes", () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/provider/applications/application-1?listingId=listing-1&section=viewing&proposalId=proposal-1",
+    );
+    scheduleViewingChanged("provider", "application-1", "listing-1");
+    vi.advanceTimersByTime(REALTIME_COALESCE_MS);
+    expect(window.location.pathname).toBe(
+      "/provider/applications/application-1",
+    );
+    expect(window.location.search).toBe(
+      "?listingId=listing-1&section=viewing&proposalId=proposal-1",
+    );
   });
 });

@@ -4,6 +4,7 @@ import {
   REALTIME_COALESCE_MS,
   resetRealtimeSchedules,
   scheduleConversationMessage,
+  scheduleListingApplicationsChanged,
 } from "@/lib/realtime/attention";
 import { getProviderListings } from "../api/provider-listings";
 import { useProviderListingsRealtimeRefresh } from "./useProviderListingsRealtimeRefresh";
@@ -40,6 +41,21 @@ describe("provider listings realtime refresh", () => {
     });
     expect(getProviderListings).toHaveBeenCalledTimes(2);
     expect(apply).toHaveBeenCalledWith([]);
+  });
+
+  it("refreshes listing counts once for a listing-wide hint", async () => {
+    const apply = vi.fn();
+    renderHook(() => useProviderListingsRealtimeRefresh(true, apply));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    vi.mocked(getProviderListings).mockClear();
+    await act(async () => {
+      scheduleListingApplicationsChanged("provider", "listing-1");
+      scheduleListingApplicationsChanged("provider", "listing-1");
+      await vi.advanceTimersByTimeAsync(REALTIME_COALESCE_MS);
+    });
+    expect(getProviderListings).toHaveBeenCalledTimes(1);
   });
 
   it("does not refresh a static listings fixture", async () => {

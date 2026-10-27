@@ -294,6 +294,9 @@ describe("RealtimeProvider", () => {
       refreshLists: true,
       refreshAllSummaries: false,
       summaryApplicationIds: ["application-1"],
+      viewingApplicationIds: [],
+      listingIds: [],
+      refreshNotifications: false,
     });
     unregister();
     unsubscribe();
