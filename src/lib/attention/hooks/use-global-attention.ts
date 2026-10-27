@@ -4,6 +4,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { getAttentionAggregate } from "../api/get-attention-aggregate";
 import {
   groupGlobalAttentionItems,
+  groupGlobalMessageItems,
   type GlobalAttentionRole,
 } from "../global-attention";
 import type { AttentionAggregateResponse } from "../types";
@@ -32,6 +33,8 @@ const stores = new Map<
     listeners: Set<() => void>;
     load: Promise<void> | null;
     fetchGeneration: number;
+    subscribers: number;
+    poll: number | null;
   }
 >();
 
@@ -43,6 +46,8 @@ function getStore(role: GlobalAttentionRole) {
       listeners: new Set(),
       load: null,
       fetchGeneration: 0,
+      subscribers: 0,
+      poll: null,
     };
     stores.set(role, store);
   }
@@ -170,11 +175,23 @@ export function useGlobalAttention(role: GlobalAttentionRole) {
   }, [role]);
 
   useEffect(() => {
-    void loadAttention(role);
-    // Quiet applications can acquire time-based actions outside the filtered result.
-    const timer = window.setInterval(refetch, 60_000);
-    return () => window.clearInterval(timer);
-  }, [role, refetch]);
+    const current = getStore(role);
+    current.subscribers += 1;
+    if (current.subscribers === 1) {
+      void loadAttention(role);
+      // Quiet applications can acquire time-based actions outside the filtered result.
+      current.poll = window.setInterval(() => {
+        invalidateGlobalAttention(role);
+      }, 60_000);
+    }
+    return () => {
+      current.subscribers -= 1;
+      if (current.subscribers === 0 && current.poll !== null) {
+        window.clearInterval(current.poll);
+        current.poll = null;
+      }
+    };
+  }, [role]);
 
   const loadMore = useCallback(() => {
     void loadAttention(role, true);
@@ -185,15 +202,17 @@ export function useGlobalAttention(role: GlobalAttentionRole) {
     refetch,
   );
 
-  const groups = snapshot.data
-    ? groupGlobalAttentionItems(snapshot.data.items, role)
-    : [];
+  const items = snapshot.data?.items;
+  const attentionGroups = items ? groupGlobalAttentionItems(items, role) : [];
+  const messageGroups = items ? groupGlobalMessageItems(items, role) : [];
 
   return {
     loading: snapshot.loading,
     error: snapshot.error,
-    count: snapshot.data?.pagination.totalApplications ?? 0,
-    groups,
+    attentionCount: snapshot.data?.totals.applicationsWithPendingActions ?? 0,
+    messageCount: snapshot.data?.totals.actionableUnreadMessageCount ?? 0,
+    attentionGroups,
+    messageGroups,
     hasMore: snapshot.data?.pagination.hasMore ?? false,
     loadMore,
     loadingMore: snapshot.loadingMore,

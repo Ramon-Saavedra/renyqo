@@ -31,7 +31,10 @@ describe("useGlobalAttention", () => {
     };
     const page = {
       asOf: "2026-10-19T00:00:00.000Z",
-      totals: emptyAttentionTotals(),
+      totals: {
+        ...emptyAttentionTotals(),
+        actionableUnreadMessageCount: 5,
+      },
       listings: [],
       items: [item],
       pagination: { limit: 20, offset: 0, hasMore: true, totalApplications: 2 },
@@ -47,17 +50,19 @@ describe("useGlobalAttention", () => {
     const { result, unmount } = renderHook(() =>
       useGlobalAttention("applicant"),
     );
-    await waitFor(() => expect(result.current.groups).toHaveLength(1));
+    await waitFor(() => expect(result.current.messageGroups).toHaveLength(1));
     act(() => result.current.loadMore());
     await waitFor(() => expect(result.current.loadMoreError).toBe(true));
-    expect(result.current.groups).toHaveLength(1);
-    expect(result.current.count).toBe(2);
+    expect(result.current.messageGroups).toHaveLength(1);
+    expect(result.current.attentionGroups).toHaveLength(0);
+    expect(result.current.messageCount).toBe(5);
+    expect(result.current.attentionCount).toBe(0);
     expect(result.current.error).toBe(false);
     act(() => result.current.loadMore());
-    await waitFor(() => expect(result.current.groups).toHaveLength(2));
+    await waitFor(() => expect(result.current.messageGroups).toHaveLength(2));
     act(() => clearGlobalAttention());
-    expect(result.current.groups).toHaveLength(0);
-    expect(result.current.count).toBe(0);
+    expect(result.current.messageGroups).toHaveLength(0);
+    expect(result.current.messageCount).toBe(0);
     unmount();
   });
   it.each(["applicant", "provider"] as const)(
@@ -92,16 +97,23 @@ describe("useGlobalAttention", () => {
         });
 
       const { result, unmount } = renderHook(() => useGlobalAttention(role));
-      await waitFor(() => expect(result.current.groups).toHaveLength(20));
+      await waitFor(() =>
+        expect(result.current.messageGroups).toHaveLength(20),
+      );
       expect(getAttentionAggregate).toHaveBeenCalledWith(role, {
         filter: "actionable",
         limit: 20,
         offset: 0,
       });
-      expect(result.current.count).toBe(21);
+      expect(result.current.messageCount).toBe(63);
+      expect(result.current.attentionCount).toBe(0);
+      expect(result.current.attentionGroups).toHaveLength(0);
       expect(result.current.hasMore).toBe(true);
       act(() => result.current.loadMore());
-      await waitFor(() => expect(result.current.groups).toHaveLength(21));
+      await waitFor(() =>
+        expect(result.current.messageGroups).toHaveLength(21),
+      );
+      expect(result.current.messageCount).toBe(63);
       expect(getAttentionAggregate).toHaveBeenLastCalledWith(role, {
         filter: "actionable",
         limit: 20,
@@ -111,4 +123,72 @@ describe("useGlobalAttention", () => {
       unmount();
     },
   );
+
+  it("reads badge totals from the aggregate and ignores message-only applications", async () => {
+    vi.mocked(getAttentionAggregate).mockResolvedValue({
+      asOf: "2026-10-19T00:00:00.000Z",
+      totals: {
+        ...emptyAttentionTotals(),
+        applicationsWithPendingActions: 2,
+        actionableUnreadMessageCount: 4,
+      },
+      listings: [],
+      items: [
+        {
+          ...emptyApplicationAttentionSummary(),
+          applicationId: "messages-only",
+          listingId: "listing-1",
+          listingTitle: "Nur Nachricht",
+          listingCity: null,
+          actionableUnreadMessageCount: 1,
+        },
+        {
+          ...emptyApplicationAttentionSummary(),
+          applicationId: "action-only",
+          listingId: "listing-2",
+          listingTitle: "Nur Aktion",
+          listingCity: null,
+          pendingActionCount: 1,
+          hasPendingAction: true,
+          categories: {
+            documentUploadCount: 0,
+            documentReviewCount: 0,
+            viewingActionCount: 1,
+          },
+        },
+        {
+          ...emptyApplicationAttentionSummary(),
+          applicationId: "mixed",
+          listingId: "listing-3",
+          listingTitle: "Beides",
+          listingCity: null,
+          pendingActionCount: 1,
+          hasPendingAction: true,
+          actionableUnreadMessageCount: 1,
+        },
+      ],
+      pagination: {
+        offset: 0,
+        limit: 20,
+        totalApplications: 8,
+        hasMore: false,
+      },
+    });
+
+    const { result, unmount } = renderHook(() =>
+      useGlobalAttention("applicant"),
+    );
+    await waitFor(() => expect(result.current.attentionGroups).toHaveLength(2));
+    expect(result.current.attentionCount).toBe(2);
+    expect(result.current.messageCount).toBe(4);
+    expect(
+      result.current.attentionGroups.flatMap((group) =>
+        group.chips.map((row) => row.chip.kind),
+      ),
+    ).toEqual(["viewing", "pending"]);
+    expect(
+      result.current.messageGroups.map((group) => group.applicationId),
+    ).toEqual(["messages-only", "mixed"]);
+    unmount();
+  });
 });

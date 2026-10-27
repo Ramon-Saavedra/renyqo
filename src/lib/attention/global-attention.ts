@@ -3,6 +3,11 @@ import {
   filterGlobalMenuAttentionChips,
 } from "./chips";
 import type { AttentionChipModel } from "./chips";
+import {
+  attentionChipDeepLink,
+  deepLinkHref,
+  messageDeepLink,
+} from "@/lib/navigation/deep-link";
 import { attentionCopy } from "./copy";
 import { applicationWorkspaceHref } from "./navigation";
 import { hasApplicationAttentionSurface } from "./visibility";
@@ -12,6 +17,7 @@ export type GlobalAttentionRole = "applicant" | "provider";
 
 export interface GlobalAttentionMenuChipRow {
   readonly id: string;
+  readonly href: string;
   readonly chip: AttentionChipModel;
 }
 
@@ -40,21 +46,78 @@ export function groupGlobalAttentionItems(
   for (const item of items) {
     if (!hasApplicationAttentionSurface(item)) continue;
 
-    const chips = filterGlobalMenuAttentionChips(
-      buildApplicationAttentionChips(item),
-    );
+    const chips = attentionMenuChips(buildApplicationAttentionChips(item));
     if (chips.length === 0) continue;
+
+    const uploadRequestIds = item.documentIndicators
+      .filter((indicator) => indicator.status === "UPLOAD_REQUIRED")
+      .map((indicator) => indicator.requestId);
+    let uploadIndex = 0;
+    const rows = chips.map((chip) => {
+      const requestId =
+        chip.kind === "documentUpload"
+          ? (uploadRequestIds[uploadIndex++] ?? null)
+          : null;
+      return {
+        id: `${item.applicationId}:${chip.kind}:${chip.label}`,
+        href: deepLinkHref(
+          role,
+          attentionChipDeepLink(item, chip.kind, requestId),
+        ),
+        chip,
+      };
+    });
 
     groups.push({
       applicationId: item.applicationId,
       listingId: item.listingId,
-      href: globalAttentionItemHref(item, role),
+      href: rows[0]?.href ?? globalAttentionItemHref(item, role),
       listingTitle: resolveGlobalListingTitle(item.listingTitle),
       listingCity: item.listingCity?.trim() ? item.listingCity.trim() : null,
-      chips: chips.map((chip) => ({
-        id: `${item.applicationId}:${chip.kind}:${chip.label}`,
-        chip,
-      })),
+      chips: rows,
+    });
+  }
+
+  return groups;
+}
+
+/** Topbar Aufmerksamkeit. Cards keep message chips from the shared builder. */
+export function attentionMenuChips(
+  chips: readonly AttentionChipModel[],
+): readonly AttentionChipModel[] {
+  return filterGlobalMenuAttentionChips(
+    chips.filter((chip) => chip.kind !== "messages"),
+  );
+}
+
+export function groupGlobalMessageItems(
+  items: readonly ApplicationAttentionListItem[],
+  role: GlobalAttentionRole,
+): readonly GlobalAttentionMenuGroup[] {
+  const groups: GlobalAttentionMenuGroup[] = [];
+
+  for (const item of items) {
+    if (item.actionableUnreadMessageCount <= 0) continue;
+
+    const messageChip = buildApplicationAttentionChips(item).find(
+      (chip) => chip.kind === "messages",
+    );
+    if (!messageChip) continue;
+
+    const href = deepLinkHref(role, messageDeepLink(item));
+    groups.push({
+      applicationId: item.applicationId,
+      listingId: item.listingId,
+      href,
+      listingTitle: resolveGlobalListingTitle(item.listingTitle),
+      listingCity: item.listingCity?.trim() ? item.listingCity.trim() : null,
+      chips: [
+        {
+          id: `${item.applicationId}:messages:${messageChip.label}`,
+          href,
+          chip: messageChip,
+        },
+      ],
     });
   }
 

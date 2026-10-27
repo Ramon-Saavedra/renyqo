@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { PopoverPanel } from "./PopoverPanel";
 
@@ -108,6 +108,37 @@ describe("PopoverPanel", () => {
 
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(document.activeElement).toBe(trigger);
+  });
+
+  it("shifts an overflowing panel back inside the viewport", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await user.click(screen.getByRole("button", { name: "Test Panel" }));
+    const dialog = screen.getByRole("dialog");
+    vi.spyOn(dialog, "getBoundingClientRect").mockReturnValue({
+      left: -72,
+      right: 250,
+      top: 40,
+      bottom: 200,
+      width: 322,
+      height: 160,
+      x: -72,
+      y: 40,
+      toJSON() {
+        return {};
+      },
+    });
+    const width = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: 390,
+    });
+    window.dispatchEvent(new Event("resize"));
+    expect(dialog.style.transform).toBe("translateX(88px)");
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: width,
+    });
   });
 
   it("toggles the panel on repeated trigger clicks", async () => {

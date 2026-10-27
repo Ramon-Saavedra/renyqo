@@ -29,6 +29,17 @@ vi.mock("@/lib/api/auth", () => ({
   logout: vi.fn(),
 }));
 
+vi.mock("@/features/notifications/api/notifications", () => ({
+  getNotificationUnreadCount: vi.fn().mockResolvedValue({
+    asOf: "2026-10-26T08:00:00.000Z",
+    unreadCount: 0,
+    nextRevalidateAt: null,
+  }),
+  listNotifications: vi.fn(),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}));
+
 describe("DashboardTopbar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -40,6 +51,14 @@ describe("DashboardTopbar", () => {
       providerType: "company",
       companyName: "Lehmann Wohnen",
     });
+  });
+
+  it("uses the shared page gutter", async () => {
+    render(<DashboardTopbar />);
+
+    const header = await screen.findByRole("banner");
+    expect(header.className).toContain("px-gutter");
+    expect(header.className.includes("px-3")).toBe(false);
   });
 
   it("mounts the shared account menu", async () => {

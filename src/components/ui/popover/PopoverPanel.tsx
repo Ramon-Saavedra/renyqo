@@ -38,6 +38,20 @@ interface PopoverTriggerProps {
 
 const PANEL_BASE_CLASS =
   "absolute top-full z-40 rounded-md border border-border dark:border-border-strong bg-background shadow-card";
+const PANEL_VIEWPORT_MARGIN = 16;
+
+function keepPanelInViewport(panel: HTMLElement): void {
+  panel.style.transform = "";
+  const rect = panel.getBoundingClientRect();
+  let shift = 0;
+  if (rect.left < PANEL_VIEWPORT_MARGIN) {
+    shift = PANEL_VIEWPORT_MARGIN - rect.left;
+  }
+  const overflowRight =
+    rect.right + shift - (window.innerWidth - PANEL_VIEWPORT_MARGIN);
+  if (overflowRight > 0) shift -= overflowRight;
+  panel.style.transform = shift === 0 ? "" : `translateX(${shift}px)`;
+}
 
 type CloseReason = "escape" | "programmatic";
 
@@ -84,8 +98,13 @@ export function PopoverPanel({
     wasOpenRef.current = true;
 
     const frame = requestAnimationFrame(() => {
+      if (panelRef.current) keepPanelInViewport(panelRef.current);
       panelRef.current?.focus();
     });
+
+    function handleResize() {
+      if (panelRef.current) keepPanelInViewport(panelRef.current);
+    }
 
     function handlePointerDown(event: PointerEvent) {
       if (!wrapRef.current?.contains(event.target as Node)) setOpen(false);
@@ -98,11 +117,13 @@ export function PopoverPanel({
       }
     }
 
+    window.addEventListener("resize", handleResize);
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       cancelAnimationFrame(frame);
+      window.removeEventListener("resize", handleResize);
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };

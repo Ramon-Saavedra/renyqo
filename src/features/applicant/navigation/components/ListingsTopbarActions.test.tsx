@@ -21,6 +21,17 @@ vi.mock("@/lib/api/use-current-user", async (importOriginal) => {
   };
 });
 
+vi.mock("@/features/notifications/api/notifications", () => ({
+  getNotificationUnreadCount: vi.fn().mockResolvedValue({
+    asOf: "2026-10-26T08:00:00.000Z",
+    unreadCount: 0,
+    nextRevalidateAt: null,
+  }),
+  listNotifications: vi.fn(),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}));
+
 vi.mock("@/components/layout/account-menu/AccountMenu", () => ({
   AccountMenu: ({
     variant,
