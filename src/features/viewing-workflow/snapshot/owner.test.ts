@@ -13,6 +13,7 @@ import {
   ensureViewingSnapshot,
   getViewingSnapshotState,
   invalidateViewingSnapshot,
+  invalidateViewingSnapshotsForListing,
   publishViewingSnapshot,
   refetchViewingSnapshot,
   resetViewingSnapshotsForTests,
@@ -46,6 +47,14 @@ const RESULT: WorkflowCommandResult = {
   appointmentId: null,
 };
 const REQUEST_KEY = "6b0f8c62-34a5-4d0e-9a4d-1b6d2b8e1a01";
+
+function pendingSnapshot() {
+  let resolve!: (value: ReturnType<typeof viewingSnapshot>) => void;
+  const promise = new Promise<ReturnType<typeof viewingSnapshot>>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
 
 function publish(
   projection: ReturnType<typeof viewingProjection>,
@@ -151,7 +160,7 @@ describe("viewing snapshot owner", () => {
     expect(getProviderViewingWorkflow).not.toHaveBeenCalled();
   });
 
-  it("coalesces concurrent fetches for one application", async () => {
+  it("coalesces concurrent passive reads for one application", async () => {
     let resolveGet: (value: ReturnType<typeof viewingSnapshot>) => void = () =>
       undefined;
     getApplicantViewingWorkflow.mockReturnValue(
@@ -160,8 +169,8 @@ describe("viewing snapshot owner", () => {
       }),
     );
 
-    const first = refetchViewingSnapshot(ID, "applicant");
-    const second = refetchViewingSnapshot(ID, "applicant");
+    const first = ensureViewingSnapshot(ID, "applicant");
+    const second = ensureViewingSnapshot(ID, "applicant");
 
     expect(first).toBe(second);
     expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(1);
@@ -174,6 +183,209 @@ describe("viewing snapshot owner", () => {
     publish(viewingProjection({ mode: "CURRENT", workflowRevision: 4 }));
     await ensureViewingSnapshot(ID, "applicant");
     expect(getApplicantViewingWorkflow).not.toHaveBeenCalled();
+  });
+
+  it.each(["applicant", "provider"] as const)(
+    "waits for a post-command GET when an older %s GET is still pending",
+    async (side) => {
+      const old = pendingSnapshot();
+      const fresh = pendingSnapshot();
+      const get =
+        side === "applicant"
+          ? getApplicantViewingWorkflow
+          : getProviderViewingWorkflow;
+      get.mockReturnValueOnce(old.promise).mockReturnValueOnce(fresh.promise);
+      publish(viewingProjection({ mode: "CURRENT", workflowRevision: 3 }));
+      const initial = refetchViewingSnapshot(ID, side);
+      const command = vi.fn().mockResolvedValue(RESULT);
+      let commandFinished = false;
+      const completion = commitViewingCommand(ID, side, command).then(
+        (outcome) => {
+          commandFinished = true;
+          return outcome;
+        },
+      );
+      await Promise.resolve();
+      expect(command).toHaveBeenCalledTimes(1);
+      expect(get).toHaveBeenCalledTimes(1);
+
+      old.resolve(
+        viewingSnapshot({
+          mode: "CURRENT",
+          workflowRevision: 4,
+          asOf: "2026-10-26T08:01:00.000Z",
+        }),
+      );
+      await vi.waitFor(() => expect(get).toHaveBeenCalledTimes(2));
+      expect(commandFinished).toBe(false);
+      expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(3);
+      // A ready cached projection must remain stale until the new GET completes.
+      expect(ensureViewingSnapshot(ID, side)).toBe(initial);
+
+      const postCommand = viewingSnapshot({
+        mode: "CURRENT",
+        workflowRevision: 5,
+        asOf: "2026-10-26T08:02:00.000Z",
+      });
+      fresh.resolve(postCommand);
+      await expect(completion).resolves.toEqual({
+        status: "success",
+        result: RESULT,
+      });
+      expect(getViewingSnapshotState(ID).snapshot).toBe(postCommand);
+      expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(5);
+      await ensureViewingSnapshot(ID, side);
+      expect(get).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each(["application", "listing"] as const)(
+    "queues one fresh GET for repeated %s invalidations during an in-flight GET",
+    async (scope) => {
+      const old = pendingSnapshot();
+      const fresh = pendingSnapshot();
+      getApplicantViewingWorkflow
+        .mockReturnValueOnce(old.promise)
+        .mockReturnValueOnce(fresh.promise);
+      publishViewingSnapshot(
+        viewingProjection({ mode: "CURRENT", workflowRevision: 3 }),
+        {
+          side: "applicant",
+          source: "workspace",
+          listingId: "listing-1",
+          snapshot: null,
+        },
+      );
+      const initial = refetchViewingSnapshot(ID);
+      for (let index = 0; index < 2; index += 1) {
+        if (scope === "application") void invalidateViewingSnapshot(ID);
+        else invalidateViewingSnapshotsForListing("listing-1");
+      }
+      expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(1);
+      old.resolve(
+        viewingSnapshot({
+          mode: "CURRENT",
+          workflowRevision: 4,
+          asOf: "2026-10-26T08:01:00.000Z",
+        }),
+      );
+      await vi.waitFor(() =>
+        expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(2),
+      );
+      expect(ensureViewingSnapshot(ID, "applicant")).toBe(initial);
+      expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(3);
+      fresh.resolve(
+        viewingSnapshot({
+          mode: "CURRENT",
+          workflowRevision: 6,
+          asOf: "2026-10-26T08:02:00.000Z",
+        }),
+      );
+      await initial;
+      await ensureViewingSnapshot(ID, "applicant");
+      expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(2);
+      expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(6);
+    },
+  );
+
+  it("keeps the snapshot stale when the queued GET fails and retries on a passive read", async () => {
+    const old = pendingSnapshot();
+    getApplicantViewingWorkflow
+      .mockReturnValueOnce(old.promise)
+      .mockRejectedValueOnce(new ApiError(500, "offline", "http"))
+      .mockResolvedValueOnce(
+        viewingSnapshot({
+          mode: "CURRENT",
+          workflowRevision: 5,
+          asOf: "2026-10-26T08:02:00.000Z",
+        }),
+      );
+    publish(viewingProjection({ mode: "CURRENT", workflowRevision: 3 }));
+    const initial = refetchViewingSnapshot(ID);
+    const invalidation = invalidateViewingSnapshot(ID);
+    old.resolve(
+      viewingSnapshot({
+        mode: "CURRENT",
+        workflowRevision: 4,
+        asOf: "2026-10-26T08:01:00.000Z",
+      }),
+    );
+    await Promise.all([initial, invalidation]);
+    expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(2);
+    expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(3);
+    expect(getViewingSnapshotState(ID).error).toBe("request");
+    await ensureViewingSnapshot(ID, "applicant");
+    expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(3);
+    expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(5);
+  });
+
+  it("preserves timestamp ordering and does not clear stale for a rejected GET", async () => {
+    const old = pendingSnapshot();
+    const fresh = pendingSnapshot();
+    getApplicantViewingWorkflow
+      .mockReturnValueOnce(old.promise)
+      .mockReturnValueOnce(fresh.promise)
+      .mockResolvedValueOnce(
+        viewingSnapshot({
+          mode: "CURRENT",
+          workflowRevision: 7,
+          asOf: "2026-10-26T08:04:00.000Z",
+        }),
+      );
+    publish(viewingProjection({ mode: "CURRENT", workflowRevision: 3 }));
+    const initial = refetchViewingSnapshot(ID);
+    void invalidateViewingSnapshot(ID);
+    old.resolve(
+      viewingSnapshot({
+        mode: "CURRENT",
+        workflowRevision: 4,
+        asOf: "2026-10-26T08:01:00.000Z",
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(2),
+    );
+    publish(
+      viewingProjection({
+        mode: "CURRENT",
+        workflowRevision: 7,
+        asOf: "2026-10-26T08:03:00.000Z",
+      }),
+    );
+    fresh.resolve(
+      viewingSnapshot({
+        mode: "CURRENT",
+        workflowRevision: 5,
+        asOf: "2026-10-26T08:02:00.000Z",
+      }),
+    );
+    await initial;
+    expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(7);
+    await ensureViewingSnapshot(ID, "applicant");
+    expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(3);
+    expect(getViewingSnapshotState(ID).snapshot?.asOf).toBe(
+      "2026-10-26T08:04:00.000Z",
+    );
+  });
+
+  it("does not continue an obsolete refresh chain after a store reset", async () => {
+    const old = pendingSnapshot();
+    const fresh = pendingSnapshot();
+    getApplicantViewingWorkflow
+      .mockReturnValueOnce(old.promise)
+      .mockReturnValueOnce(fresh.promise);
+    const initial = refetchViewingSnapshot(ID, "applicant");
+    void invalidateViewingSnapshot(ID);
+    resetViewingSnapshotsForTests();
+    const current = ensureViewingSnapshot(ID, "applicant");
+    old.resolve(viewingSnapshot({ mode: "CURRENT", workflowRevision: 4 }));
+    await initial;
+    expect(getApplicantViewingWorkflow).toHaveBeenCalledTimes(2);
+    expect(getViewingSnapshotState(ID).status).toBe("loading");
+    expect(ensureViewingSnapshot(ID, "applicant")).toBe(current);
+    fresh.resolve(viewingSnapshot({ mode: "CURRENT", workflowRevision: 9 }));
+    await current;
+    expect(getViewingSnapshotState(ID).projection?.workflowRevision).toBe(9);
   });
 
   it("refetches at nextRevalidateAt without changing the proposal locally", async () => {
