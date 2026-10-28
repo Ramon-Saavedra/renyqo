@@ -5,27 +5,11 @@ import type { ViewingWorkflowProjection } from "@/lib/viewing-workflow/snapshot-
 import { formatDateTime } from "../../../model/format-date";
 import { allowedCapability } from "../../../model/viewing-capability";
 import { currentViewingCopy as copy } from "./copy";
+import {
+  postViewingInterestObligation,
+  readOnlyInterestText,
+} from "./renderable-interest";
 import type { useApplicantViewingCommands } from "./useApplicantViewingCommands";
-
-function readOnlyInterest(
-  interest: ViewingWorkflowProjection["applicantInterest"],
-): string | null {
-  switch (interest?.state) {
-    case "STILL_INTERESTED":
-      return copy.interestStill;
-    case "NOT_INTERESTED":
-      return copy.interestNot;
-    case "PENDING":
-      return copy.interestPending;
-    case "EXPIRED":
-      return copy.interestExpired;
-    case "CLOSED":
-    case "LEGACY_UNANSWERED":
-      return copy.interestClosed;
-    default:
-      return null;
-  }
-}
 
 export function InterestResponse({
   applicationId,
@@ -42,16 +26,14 @@ export function InterestResponse({
     "SUBMIT_INTEREST",
   );
   const appointmentId = capability?.target.appointmentId ?? null;
-  const obligation = projection.obligations.find(
-    (item) => item.action === "APPLICANT_CONFIRM_POST_VIEWING_INTEREST",
-  );
+  const obligation = postViewingInterestObligation(projection);
   const deadline =
     projection.applicantInterest?.deadlineAt ?? obligation?.deadlineAt ?? null;
   const timeZone =
     projection.outcome?.timeZone ??
     projection.confirmedAppointment?.timeZone ??
     "Europe/Berlin";
-  const quiet = readOnlyInterest(projection.applicantInterest);
+  const quiet = readOnlyInterestText(projection.applicantInterest);
   if (!appointmentId && !quiet && !obligation) return null;
   const busy = commands.pending !== null;
 

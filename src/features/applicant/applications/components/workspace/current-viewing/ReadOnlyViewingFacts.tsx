@@ -24,11 +24,9 @@ function outcomeText(
   return copy.recorded;
 }
 
-export function ReadOnlyViewingFacts({
-  projection,
-}: {
-  readonly projection: ViewingWorkflowProjection;
-}) {
+export function readOnlyViewingFacts(
+  projection: ViewingWorkflowProjection,
+): readonly string[] {
   const expired =
     projection.pendingProposal === null &&
     projection.latestProposal?.effectiveResolution === "EXPIRED";
@@ -39,7 +37,7 @@ export function ReadOnlyViewingFacts({
     latestAppointment !== null &&
     (latestAppointment.status === "CANCELLED" ||
       latestAppointment.cancellation !== null);
-  const facts = [
+  return [
     projection.outcome ? outcomeText(projection.outcome) : null,
     cancelledWithoutConfirmed ? copy.cancelledFact : null,
     expired ? copy.expiredProposal : null,
@@ -49,6 +47,14 @@ export function ReadOnlyViewingFacts({
         : copy.closed
       : null,
   ].filter((fact): fact is string => fact !== null);
+}
+
+export function ReadOnlyViewingFacts({
+  projection,
+}: {
+  readonly projection: ViewingWorkflowProjection;
+}) {
+  const facts = readOnlyViewingFacts(projection);
   if (facts.length === 0) return null;
 
   return (

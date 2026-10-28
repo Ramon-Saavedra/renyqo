@@ -54,6 +54,22 @@ const RESULT: WorkflowCommandResult = {
   appointmentId: "appointment-1",
 };
 
+function interestObligation() {
+  return {
+    action: "APPLICANT_CONFIRM_POST_VIEWING_INTEREST" as const,
+    responsibleSide: "APPLICANT" as const,
+    deadlineAt: "2026-10-29T16:00:00.000Z",
+    target: {
+      applicationId: ID,
+      workflowId: "workflow-1",
+      proposalId: null,
+      appointmentId: "appointment-1",
+      section: "VIEWING" as const,
+      action: "APPLICANT_CONFIRM_POST_VIEWING_INTEREST",
+    },
+  };
+}
+
 function capability(
   action: WorkflowCapability["action"],
   allowed: boolean,
@@ -650,6 +666,75 @@ describe("applicant current viewing", () => {
     expect(
       screen.queryByRole("button", { name: "Weiter interessiert" }),
     ).toBeNull();
+  });
+
+  it("shows read-only interest when the current snapshot has no appointment or outcome", () => {
+    renderCurrent({
+      confirmedAppointment: null,
+      pendingProposal: null,
+      outcome: null,
+      applicantInterest: {
+        appointmentId: "appointment-1",
+        state: "STILL_INTERESTED",
+        storedState: "STILL_INTERESTED",
+        deadlineAt: null,
+        respondedAt: "2026-10-28T18:00:00.000Z",
+        lifecycleExpiryPending: false,
+      },
+      obligations: [],
+      nextObligation: null,
+      capabilities: [
+        capability("SUBMIT_INTEREST", false, {
+          appointmentId: "appointment-1",
+        }),
+      ],
+    });
+    expect(screen.queryByText("Kein Termin")).toBeNull();
+    expect(
+      screen.queryByText("Der Anbieter hat noch keinen Termin vorgeschlagen."),
+    ).toBeNull();
+    expect(screen.getByText("Du bist weiterhin interessiert.")).toBeInstanceOf(
+      HTMLElement,
+    );
+  });
+
+  it("shows an outstanding interest obligation without an appointment or outcome", () => {
+    renderCurrent({
+      confirmedAppointment: null,
+      pendingProposal: null,
+      outcome: null,
+      applicantInterest: null,
+      obligations: [interestObligation()],
+      nextObligation: null,
+      capabilities: [capability("SUBMIT_INTEREST", false)],
+    });
+    expect(screen.queryByText("Kein Termin")).toBeNull();
+    expect(
+      screen.queryByText("Der Anbieter hat noch keinen Termin vorgeschlagen."),
+    ).toBeNull();
+    expect(
+      screen.getByText(
+        "Deine Rückmeldung nach der Besichtigung steht noch aus.",
+      ),
+    ).toBeInstanceOf(HTMLElement);
+  });
+
+  it("shows the next interest obligation when the obligations list is empty", () => {
+    renderCurrent({
+      confirmedAppointment: null,
+      pendingProposal: null,
+      outcome: null,
+      applicantInterest: null,
+      obligations: [],
+      nextObligation: interestObligation(),
+      capabilities: [capability("SUBMIT_INTEREST", false)],
+    });
+    expect(screen.queryByText("Kein Termin")).toBeNull();
+    expect(
+      screen.getByText(
+        "Deine Rückmeldung nach der Besichtigung steht noch aus.",
+      ),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("keeps the legacy viewing flow for LEGACY mode", () => {

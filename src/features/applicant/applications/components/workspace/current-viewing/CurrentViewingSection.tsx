@@ -9,23 +9,30 @@ import { ConfirmedAppointmentBlock } from "./ConfirmedAppointmentBlock";
 import { currentViewingCopy as copy } from "./copy";
 import { InterestResponse } from "./InterestResponse";
 import { PendingProposalBlock } from "./PendingProposalBlock";
-import { ReadOnlyViewingFacts } from "./ReadOnlyViewingFacts";
+import {
+  ReadOnlyViewingFacts,
+  readOnlyViewingFacts,
+} from "./ReadOnlyViewingFacts";
+import { hasRenderableInterest } from "./renderable-interest";
 import { useApplicantViewingCommands } from "./useApplicantViewingCommands";
 
-function isEmpty(projection: ViewingWorkflowProjection): boolean {
-  return (
-    projection.mode === "EMPTY" ||
-    (!projection.confirmedAppointment &&
-      !projection.pendingProposal &&
-      !projection.outcome &&
-      projection.closure?.state !== "CLOSED" &&
-      projection.latestProposal?.effectiveResolution !== "EXPIRED" &&
-      projection.latestAppointment?.status !== "CANCELLED" &&
-      !allowedCapability(projection.capabilities, "SUBMIT_INTEREST") &&
-      !allowedCapability(projection.capabilities, "COUNTERPROPOSE") &&
-      !allowedCapability(projection.capabilities, "PROPOSE_REPLACEMENT") &&
-      !allowedCapability(projection.capabilities, "CANCEL_APPOINTMENT"))
+function hasRenderableCurrentViewing(
+  projection: ViewingWorkflowProjection,
+): boolean {
+  if (projection.mode === "EMPTY") return false;
+  return Boolean(
+    projection.confirmedAppointment ||
+    projection.pendingProposal ||
+    allowedCapability(projection.capabilities, "COUNTERPROPOSE") ||
+    allowedCapability(projection.capabilities, "PROPOSE_REPLACEMENT") ||
+    allowedCapability(projection.capabilities, "CANCEL_APPOINTMENT") ||
+    hasRenderableInterest(projection) ||
+    readOnlyViewingFacts(projection).length > 0,
   );
+}
+
+function isEmpty(projection: ViewingWorkflowProjection): boolean {
+  return !hasRenderableCurrentViewing(projection);
 }
 
 export function CurrentViewingSection({
