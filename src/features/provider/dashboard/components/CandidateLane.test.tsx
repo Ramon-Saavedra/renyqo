@@ -204,8 +204,8 @@ describe("CandidateLane", () => {
     expect(onRejectCandidate).toHaveBeenCalledWith(candidate);
   });
 
-  it("shows the confirmed appointment and an open replacement without a viewing action", () => {
-    const { container } = render(
+  it("keeps backend viewing obligations above the card even with a schedule summary until resolved", () => {
+    const { container, rerender } = render(
       <CandidateLane
         actives={[
           {
@@ -236,14 +236,35 @@ describe("CandidateLane", () => {
     expect(screen.getByText("Ersatzvorschlag offen")).toBeInstanceOf(
       HTMLElement,
     );
-    expect(screen.queryByText("1 offener Schritt")).toBeNull();
-    expect(screen.queryByText("1 Besichtigung offen")).toBeNull();
+    const slot = container.querySelector("[data-rq-candidate-attention-slot]");
+    for (const label of ["1 offener Schritt", "1 Besichtigung offen"]) {
+      expect(slot?.contains(screen.getByText(label))).toBe(true);
+    }
     expect(
       screen.queryByRole("button", { name: "Termin annehmen" }),
     ).toBeNull();
     const card = container.querySelector("[data-rq-candidate-card]");
     expect(card?.className).not.toContain("bg-danger");
     expect(card?.className).not.toContain("border-danger");
+    rerender(
+      <CandidateLane
+        actives={[
+          {
+            ...candidate,
+            viewingSummary: {
+              primary: "Termin 12. Nov., 14:00",
+              secondary: null,
+            },
+          },
+        ]}
+        waitingCount={0}
+      />,
+    );
+    expect(screen.queryByText("1 offener Schritt")).toBeNull();
+    expect(screen.queryByText("1 Besichtigung offen")).toBeNull();
+    expect(screen.getByText("Termin 12. Nov., 14:00")).toBeInstanceOf(
+      HTMLElement,
+    );
   });
 
   it("marks an applicant no-show without turning the card into an error", () => {

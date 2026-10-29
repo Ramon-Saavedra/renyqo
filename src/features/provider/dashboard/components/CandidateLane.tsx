@@ -12,10 +12,8 @@ import { dashboardCopy } from "../copy/dashboard";
 import "./CandidateLane.css";
 import { AttentionIndicators } from "@/components/shared/attention/AttentionIndicators";
 import { hasApplicationAttentionSurface } from "@/lib/attention/visibility";
-import {
-  attentionChipsForViewingCard,
-  cardViewingCopy,
-} from "@/features/viewing-workflow/present/card-viewing";
+import { buildApplicationAttentionChips } from "@/lib/attention/chips";
+import { cardViewingCopy } from "@/features/viewing-workflow/present/card-viewing";
 import { CardViewingLines } from "@/features/viewing-workflow/present/CardViewingLines";
 import { FlagChip } from "./FlagChip";
 import { resolveQueueTier } from "./candidate-lane-tokens";
@@ -42,7 +40,7 @@ function CandidateAttentionSlot({
   attentionChips,
 }: {
   showAttention: boolean;
-  attentionChips: ReturnType<typeof attentionChipsForViewingCard>;
+  attentionChips: ReturnType<typeof buildApplicationAttentionChips>;
 }) {
   return (
     <div
@@ -98,10 +96,7 @@ export function CandidateLane({
   const entries = actives.map((candidate) => ({
     candidate,
     attentionChips: hasApplicationAttentionSurface(candidate.attention)
-      ? attentionChipsForViewingCard(
-          candidate.attention,
-          candidate.viewingSummary,
-        )
+      ? buildApplicationAttentionChips(candidate.attention)
       : [],
   }));
 
