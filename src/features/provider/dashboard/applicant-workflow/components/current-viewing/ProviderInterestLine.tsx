@@ -11,7 +11,9 @@ function interestLine(
   if (interest.state === "STILL_INTERESTED") return copy.interestStill;
   if (interest.state === "NOT_INTERESTED") return copy.interestNot;
   if (interest.state === "EXPIRED") return copy.interestExpired;
-  if (interest.state === "CLOSED") return copy.interestClosed;
+  if (interest.state === "CLOSED" || interest.state === "LEGACY_UNANSWERED") {
+    return copy.interestClosed;
+  }
   return null;
 }
 

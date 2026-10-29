@@ -577,12 +577,40 @@ describe("provider current viewing", () => {
       screen.getByText("Der Bewerber ist weiterhin interessiert."),
     ).toBeInstanceOf(HTMLElement);
     still.unmount();
-    renderCurrent({
+    const notInterested = renderCurrent({
       mode: "CURRENT",
       applicantInterest: { ...interest, state: "NOT_INTERESTED" },
     });
     expect(
       screen.getByText("Der Bewerber ist nicht mehr interessiert."),
+    ).toBeInstanceOf(HTMLElement);
+    notInterested.unmount();
+    const expired = renderCurrent({
+      mode: "CURRENT",
+      applicantInterest: { ...interest, state: "EXPIRED" },
+    });
+    expect(
+      screen.getByText("Die Frist für die Rückmeldung ist abgelaufen."),
+    ).toBeInstanceOf(HTMLElement);
+    expired.unmount();
+    const closed = renderCurrent({
+      mode: "CURRENT",
+      applicantInterest: { ...interest, state: "CLOSED" },
+    });
+    expect(
+      screen.getByText(
+        "Für diese Besichtigung ist keine Rückmeldung mehr offen.",
+      ),
+    ).toBeInstanceOf(HTMLElement);
+    closed.unmount();
+    renderCurrent({
+      mode: "CURRENT",
+      applicantInterest: { ...interest, state: "LEGACY_UNANSWERED" },
+    });
+    expect(
+      screen.getByText(
+        "Für diese Besichtigung ist keine Rückmeldung mehr offen.",
+      ),
     ).toBeInstanceOf(HTMLElement);
   });
 
