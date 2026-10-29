@@ -9,6 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -19,8 +20,12 @@ import { moveProviderListingToPosition } from "@/features/provider/listings-over
 import { dashboardCopy } from "../copy/dashboard";
 import {
   getServerSelectedObjectId,
+  getServerUrlSelectedListingId,
   getStoredSelectedObjectId,
+  getUrlSelectedListingId,
+  selectDashboardListing,
   setStoredSelectedObjectId,
+  subscribeSelectedListing,
   subscribeSelectedObject,
 } from "../selected-object-storage";
 import { useExitedApplications } from "../hooks/useExitedApplications";
@@ -33,6 +38,8 @@ import {
 import { setStoredAccent, useAccent } from "../hooks/useAccent";
 import type { DashboardObject } from "../types";
 import { AccentPicker } from "./AccentPicker";
+import { providerWorkspaceHrefFromDashboardSearch } from "@/lib/navigation/deep-link";
+import { useUrlSearch } from "@/lib/navigation/url-search";
 import { CandidatesSection } from "./CandidatesSection";
 import { DashboardLoadingSkeleton } from "./DashboardLoadingSkeleton";
 import { DashboardSearch } from "./DashboardSearch";
@@ -54,6 +61,14 @@ function useStoredSelectedObjectId() {
     subscribeSelectedObject,
     getStoredSelectedObjectId,
     getServerSelectedObjectId,
+  );
+}
+
+function useUrlSelectedListingId() {
+  return useSyncExternalStore(
+    subscribeSelectedListing,
+    getUrlSelectedListingId,
+    getServerUrlSelectedListingId,
   );
 }
 
@@ -82,17 +97,19 @@ function DashboardViewContent({
   const [loadError, setLoadError] = useState(false);
   const objects = refreshedObjects ?? initialObjects ?? loadedObjects;
   const [search, setSearch] = useState("");
-  const selectedId = useStoredSelectedObjectId();
+  const storedId = useStoredSelectedObjectId();
+  const urlListingId = useUrlSelectedListingId();
+  const router = useRouter();
+  const locationSearch = useUrlSearch();
+  const legacyWorkspaceHref = useMemo(
+    () => providerWorkspaceHrefFromDashboardSearch(locationSearch),
+    [locationSearch],
+  );
   const accent = useAccent();
 
   useEffect(() => {
-    const listingId = new URLSearchParams(window.location.search).get(
-      "listingId",
-    );
-    if (listingId) {
-      setStoredSelectedObjectId(listingId);
-    }
-  }, []);
+    if (legacyWorkspaceHref) router.replace(legacyWorkspaceHref);
+  }, [legacyWorkspaceHref, router]);
 
   const beginObjectsRequest = useCallback(() => {
     objectsRequestGenerationRef.current += 1;
@@ -177,13 +194,29 @@ function DashboardViewContent({
     );
   }, [orderedObjects, search]);
 
-  const selected = useMemo(
-    () =>
-      orderedObjects.find((object) => object.id === selectedId) ??
-      orderedObjects[0] ??
-      null,
-    [orderedObjects, selectedId],
-  );
+  const selected = useMemo(() => {
+    if (isLoading || orderedObjects.length === 0) return null;
+    if (urlListingId) {
+      const fromUrl = orderedObjects.find(
+        (object) => object.id === urlListingId,
+      );
+      if (fromUrl) return fromUrl;
+    }
+    if (storedId) {
+      const fromStorage = orderedObjects.find(
+        (object) => object.id === storedId,
+      );
+      if (fromStorage) return fromStorage;
+    }
+    return orderedObjects[0] ?? null;
+  }, [isLoading, orderedObjects, storedId, urlListingId]);
+
+  useEffect(() => {
+    if (isLoading || !urlListingId) return;
+    if (!orderedObjects.some((object) => object.id === urlListingId)) return;
+    if (getStoredSelectedObjectId() === urlListingId) return;
+    setStoredSelectedObjectId(urlListingId);
+  }, [isLoading, orderedObjects, urlListingId]);
   const hasSearch = search.trim().length > 0;
   const shownSelected = useMemo(() => {
     if (!selected) return null;
@@ -254,7 +287,7 @@ function DashboardViewContent({
       <PageShell className="lg:pb-0">
         <div data-accent={accent}>
           <DashboardTopbar />
-          <div role="alert" className="px-3 pt-21 lg:px-gutter">
+          <div role="alert" className="px-gutter pt-21">
             <p className="font-mono text-meta font-medium uppercase tracking-wide text-danger">
               {dashboardCopy.fullError.eyebrow}
             </p>
@@ -282,7 +315,7 @@ function DashboardViewContent({
       <PageShell className="lg:pb-0">
         <div data-accent={accent}>
           <DashboardTopbar />
-          <div className="px-3 pt-21 lg:px-gutter">
+          <div className="px-gutter pt-21">
             <h1 className="text-heading-xl font-normal tracking-tight text-foreground">
               {dashboardCopy.object.emptyTitle}
             </h1>
@@ -306,7 +339,7 @@ function DashboardViewContent({
       <div data-accent={accent}>
         <DashboardTopbar />
 
-        <div className="@container px-3 pt-7 pb-16 lg:px-gutter">
+        <div className="@container px-gutter pt-7 pb-16">
           <div className="mb-section flex flex-col gap-2 rounded-md border border-border bg-primary px-parent-x py-parent-y sm:flex-row sm:items-center">
             <div className="w-full sm:max-w-90 sm:min-w-45 sm:flex-1">
               <DashboardSearch
@@ -361,7 +394,7 @@ function DashboardViewContent({
               objects={matrixObjects}
               orderObjects={objects}
               selectedId={shownSelected?.id ?? null}
-              onSelect={setStoredSelectedObjectId}
+              onSelect={selectDashboardListing}
               onReorder={handleReorder}
               preloadedApplicants={preloadedApplicants}
             />

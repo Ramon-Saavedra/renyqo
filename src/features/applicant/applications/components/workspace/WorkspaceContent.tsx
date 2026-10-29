@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ApplicantWorkspace } from "../../api/workspace";
 import type { DocumentRequestTimeline } from "../../api/documents";
 import { applicationsCopy } from "../../copy";
@@ -18,16 +18,42 @@ import {
   type NextStepItem,
   type WorkspaceArea,
 } from "../../model/pending-actions";
+import { useViewingSnapshot } from "@/features/viewing-workflow/snapshot/use-viewing-snapshot";
+import { readDeepLink } from "@/lib/navigation/deep-link";
+import { useCompactViewport } from "@/lib/viewport/use-compact-viewport";
+import { useDeepLinkActivity } from "@/lib/navigation/deep-link-activity";
+import { focusDeepLink } from "@/lib/navigation/deep-link-focus";
+import { useUrlSearch } from "@/lib/navigation/url-search";
 import { displayedViewing, findViewing } from "../../model/viewing";
+import { ApplicantViewing } from "./ApplicantViewing";
 import { ApplicationStatePanel } from "./ApplicationStatePanel";
 import { DocumentsSection } from "./DocumentsSection";
 import { HistorySection } from "./HistorySection";
-import { MessagesSection } from "./MessagesSection";
+import { MessagesEntry, MessagesSection } from "./MessagesSection";
 import { CalmNextStep, NextStepPanel } from "./NextStepPanel";
-import { ViewingSection } from "./ViewingSection";
 import { WithdrawSection } from "./WithdrawSection";
 import { WorkspaceHeader } from "./WorkspaceHeader";
 
+function currentNextSteps(
+  items: readonly NextStepItem[],
+): readonly NextStepItem[] {
+  return items.map((item) => {
+    if (item.intent.kind === "answer-interest") {
+      return {
+        ...item,
+        cta: applicationsCopy.nextStep.viewing.cta,
+        intent: { kind: "show-viewing" },
+      };
+    }
+    if (item.intent.kind === "show-viewing") {
+      return {
+        ...item,
+        text: applicationsCopy.nextStep.viewing.fallbackText,
+      };
+    }
+    return item;
+  });
+}
 const HIGHLIGHT_MS = 1800;
 const EMPTY_TIMELINES: ReadonlyMap<string, DocumentRequestTimeline> = new Map();
 
@@ -78,9 +104,13 @@ export function WorkspaceContent({
     requests,
   );
   const viewing = displayedViewing(workspace.viewingSummary);
+  const viewingWorkflow = useViewingSnapshot(applicationId, "applicant");
+  const workflowMode = viewingWorkflow.projection?.mode;
   const viewingDetail = useViewingDetail(
     applicationId,
-    viewing?.viewingId ?? null,
+    workflowMode === "CURRENT" || workflowMode === "EMPTY"
+      ? null
+      : (viewing?.viewingId ?? null),
     snapshotKey,
   );
   const viewingActions = useViewingActions(
@@ -90,6 +120,51 @@ export function WorkspaceContent({
     workspace.viewingSummary,
   );
   const history = useActivityHistory(applicationId, snapshotKey);
+  const search = useUrlSearch();
+  const link = useMemo(
+    () => readDeepLink(new URLSearchParams(search)),
+    [search],
+  );
+  const compact = useCompactViewport();
+  const [manualChat, setManualChat] = useState(false);
+  const [dismissedSearch, setDismissedSearch] = useState<string | null>(null);
+  const dedicatedChat =
+    compact &&
+    (manualChat || (link.section === "messages" && dismissedSearch !== search));
+
+  function openChat() {
+    setDismissedSearch(null);
+    setManualChat(true);
+  }
+
+  function closeChat() {
+    setManualChat(false);
+    if (link.section === "messages") setDismissedSearch(search);
+  }
+
+  useDeepLinkActivity(history, link.activityId, link.section);
+
+  useEffect(() => {
+    if (link.section === "messages" && dedicatedChat) return;
+    if (
+      !link.section &&
+      !link.activityId &&
+      !link.requestId &&
+      !link.proposalId &&
+      !link.appointmentId &&
+      !link.viewingId
+    ) {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      focusDeepLink(link);
+    });
+    const timer = window.setTimeout(() => focusDeepLink(link), 50);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [dedicatedChat, history.expanded, history.items, history.load, link]);
 
   useEffect(() => {
     if (!highlight) return;
@@ -111,6 +186,8 @@ export function WorkspaceContent({
     ),
     selectedStep,
   );
+  const visibleSteps =
+    workflowMode === "CURRENT" ? currentNextSteps(nextSteps) : nextSteps;
 
   const areaRef = {
     messages: messagesRef,
@@ -120,6 +197,10 @@ export function WorkspaceContent({
 
   const navigate = (item: NextStepItem) => {
     setHighlight(item.area);
+    if (compact && item.area === "messages") {
+      openChat();
+      return;
+    }
     areaRef[item.area].current?.scrollIntoView?.({
       behavior: "smooth",
       block: "start",
@@ -131,76 +212,102 @@ export function WorkspaceContent({
     applicationsCopy.overview.untitledListing;
 
   return (
-    <div className="flex flex-col gap-5">
-      <WorkspaceHeader workspace={workspace} titleId={titleId} />
-      {nextSteps.length > 0 ? (
-        <NextStepPanel
-          items={nextSteps}
-          onNavigate={navigate}
-          onSelect={setSelectedStep}
-          interest={{
-            canSubmit: (viewingId) =>
-              findViewing(workspace.viewingSummary, viewingId)?.capabilities
-                .canSubmitInterest ?? false,
-            pending: viewingActions.pending === "interest",
-            failed: viewingActions.failed === "interest",
-            isBlocked: viewingActions.isBlocked,
-            conflict: viewingActions.conflict,
-            submit: viewingActions.submitInterest,
-          }}
+    <>
+      {dedicatedChat ? (
+        <MessagesSection
+          presentation="dedicated"
+          onClose={closeChat}
+          conversation={conversation}
+          summary={workspace.conversationSummary}
+          highlighted={false}
+          now={new Date()}
+          sectionRef={messagesRef}
+          composerId={composerId}
         />
-      ) : status === "ACTIVE" ? (
-        <CalmNextStep extra={calmViewingNote(workspace)} />
       ) : null}
-      <ApplicationStatePanel workspace={workspace} />
-      <div className="grid gap-5 lg:grid-cols-5 lg:items-start">
-        <div className="contents lg:col-span-3 lg:flex lg:flex-col lg:gap-5">
-          <MessagesSection
-            className="order-1 lg:order-none"
-            conversation={conversation}
-            summary={workspace.conversationSummary}
-            highlighted={highlight === "messages"}
-            now={new Date()}
-            sectionRef={messagesRef}
-            composerId={composerId}
+      <div hidden={dedicatedChat || undefined} className="flex flex-col gap-5">
+        <WorkspaceHeader workspace={workspace} titleId={titleId} />
+        {visibleSteps.length > 0 ? (
+          <NextStepPanel
+            items={visibleSteps}
+            onNavigate={navigate}
+            onSelect={setSelectedStep}
+            interest={{
+              canSubmit: (viewingId) =>
+                findViewing(workspace.viewingSummary, viewingId)?.capabilities
+                  .canSubmitInterest ?? false,
+              pending: viewingActions.pending === "interest",
+              failed: viewingActions.failed === "interest",
+              isBlocked: viewingActions.isBlocked,
+              conflict: viewingActions.conflict,
+              submit: viewingActions.submitInterest,
+            }}
           />
-          <HistorySection
-            className="order-4 lg:order-none"
-            preview={workspace.activityPreview.items}
-            previewHasMore={workspace.activityPreview.hasMore}
-            history={history}
-          />
+        ) : status === "ACTIVE" ? (
+          <CalmNextStep extra={calmViewingNote(workspace)} />
+        ) : null}
+        <ApplicationStatePanel workspace={workspace} />
+        <div className="grid gap-5 lg:grid-cols-5 lg:items-start">
+          <div className="contents lg:col-span-3 lg:flex lg:flex-col lg:gap-5">
+            <DocumentsSection
+              className="order-2 lg:order-none"
+              requests={requests}
+              timelines={timelines}
+              status={status}
+              transfers={transfers}
+              bindFileInput={transfers.bindInput}
+              highlighted={highlight === "documents"}
+              sectionRef={documentsRef}
+            />
+            <ApplicantViewing
+              workflow={viewingWorkflow}
+              onChanged={refresh}
+              legacy={{
+                className: "order-3 lg:order-none",
+                viewing,
+                detail: viewingDetail,
+                status,
+                actions: viewingActions,
+                highlighted: highlight === "viewing",
+                sectionRef: viewingRef,
+              }}
+            />
+            <HistorySection
+              className="order-4 lg:order-none"
+              preview={workspace.activityPreview.items}
+              history={history}
+            />
+          </div>
+          <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-5">
+            {compact ? (
+              <MessagesEntry
+                className="order-1 lg:order-none"
+                sectionRef={messagesRef}
+                highlighted={highlight === "messages"}
+                onOpen={openChat}
+              />
+            ) : (
+              <MessagesSection
+                className="order-1 lg:order-none"
+                conversation={conversation}
+                summary={workspace.conversationSummary}
+                highlighted={highlight === "messages"}
+                now={new Date()}
+                sectionRef={messagesRef}
+                composerId={composerId}
+              />
+            )}
+          </div>
         </div>
-        <div className="contents lg:col-span-2 lg:flex lg:flex-col lg:gap-5">
-          <DocumentsSection
-            className="order-2 lg:order-none"
-            requests={requests}
-            timelines={timelines}
+        {workspace.capabilities.canWithdraw ? (
+          <WithdrawSection
+            applicationId={applicationId}
+            listingTitle={listingTitle}
             status={status}
-            transfers={transfers}
-            bindFileInput={transfers.bindInput}
-            highlighted={highlight === "documents"}
-            sectionRef={documentsRef}
+            onWithdrawn={refresh}
           />
-          <ViewingSection
-            className="order-3 lg:order-none"
-            viewing={viewing}
-            detail={viewingDetail}
-            status={status}
-            actions={viewingActions}
-            highlighted={highlight === "viewing"}
-            sectionRef={viewingRef}
-          />
-        </div>
+        ) : null}
       </div>
-      {workspace.capabilities.canWithdraw ? (
-        <WithdrawSection
-          applicationId={applicationId}
-          listingTitle={listingTitle}
-          status={status}
-          onWithdrawn={refresh}
-        />
-      ) : null}
-    </div>
+    </>
   );
 }

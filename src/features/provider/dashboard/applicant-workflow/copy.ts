@@ -28,6 +28,7 @@ export const applicantWorkflowCopy = {
   },
   messages: {
     title: "Nachrichten",
+    closeChat: "Chat schließen",
     unavailableTitle: "Nachrichten noch nicht verfügbar",
     unavailableText: (name: string) =>
       `Nachrichten mit ${name} sind hier noch nicht verfügbar.`,
@@ -123,7 +124,8 @@ export const applicantWorkflowCopy = {
     actorApplicant: "Bewerber",
     actorSystem: "System",
     applicationActive: "Bewerbung aktiv geworden",
-    empty: "Noch kein Verlauf.",
+    empty: "Noch keine Einträge.",
+    loadMore: "Weitere laden",
     showAll: "Alle anzeigen",
     showMore: "Weitere anzeigen",
     showLess: "Weniger anzeigen",

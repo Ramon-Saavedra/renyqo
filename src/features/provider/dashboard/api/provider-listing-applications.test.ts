@@ -26,6 +26,12 @@ const activeApplication = {
   applicant: baseApplicant,
   activeAt: "2026-08-30T14:23:00.000Z",
   attention: emptyApplicationAttentionSummary(),
+  viewing: {
+    mode: "EMPTY" as const,
+    confirmedAppointment: null,
+    pendingProposal: null,
+    nextObligation: null,
+  },
 };
 
 describe("getProviderActiveApplications", () => {

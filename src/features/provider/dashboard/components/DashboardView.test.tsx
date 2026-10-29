@@ -32,15 +32,30 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const { routerReplace } = vi.hoisted(() => ({
+  routerReplace: vi.fn(),
+}));
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    replace: vi.fn(),
+    replace: routerReplace,
   }),
 }));
 
 vi.mock("@/lib/api/auth", () => ({
   getCurrentUser: vi.fn(),
   logout: vi.fn(),
+}));
+
+vi.mock("@/features/notifications/api/notifications", () => ({
+  getNotificationUnreadCount: vi.fn().mockResolvedValue({
+    asOf: "2026-10-26T08:00:00.000Z",
+    unreadCount: 0,
+    nextRevalidateAt: null,
+  }),
+  listNotifications: vi.fn(),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
 }));
 
 vi.mock("../api/provider-dashboard", () => ({
@@ -207,6 +222,7 @@ describe("DashboardView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.localStorage.clear();
+    window.history.replaceState(null, "", "/provider/dashboard");
     vi.mocked(getProviderDashboardObjects).mockResolvedValue([]);
     vi.mocked(moveProviderListingToPosition).mockResolvedValue(undefined);
     vi.mocked(rejectProviderApplication).mockResolvedValue();
@@ -269,6 +285,58 @@ describe("DashboardView", () => {
     expect(useSelectedListingApplications).toHaveBeenCalledWith(
       "second-object",
       "draft",
+    );
+    expect(window.location.search).toContain("listingId=second-object");
+  });
+
+  it("uses the listing id in the URL instead of storage or the first listing", async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/provider/dashboard?listingId=second-object",
+    );
+    window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, "first-object");
+    mockApplicationsState({ candidates: [] });
+
+    render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Zweite Wohnung in Hamburg")).not.toBeNull();
+    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+    expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBe(
+      "second-object",
+    );
+  });
+
+  it("does not select the first listing while dashboard data is still loading", () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/provider/dashboard?listingId=second-object",
+    );
+    vi.mocked(getProviderDashboardObjects).mockReturnValue(
+      new Promise(() => undefined),
+    );
+
+    render(<DashboardView />);
+
+    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+    expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBeNull();
+  });
+
+  it("falls back to the stored listing when the URL id is unknown", async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/provider/dashboard?listingId=missing",
+    );
+    window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, "second-object");
+    mockApplicationsState({ candidates: [] });
+
+    render(<DashboardView objects={objects} />);
+
+    expect(await screen.findByText("Zweite Wohnung in Hamburg")).not.toBeNull();
+    expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBe(
+      "second-object",
     );
   });
 
@@ -671,5 +739,20 @@ describe("DashboardView", () => {
     await waitFor(() => {
       expect(listingCellOrder()).toEqual(["beta", "alpha"]);
     });
+  });
+
+  it("redirects a legacy application query to the application page", async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/provider/dashboard?listingId=first-object&applicationId=candidate-first&section=activity&activityId=activity-1",
+    );
+    render(<DashboardView objects={objects} />);
+    await waitFor(() => {
+      expect(routerReplace).toHaveBeenCalledWith(
+        "/provider/applications/candidate-first?listingId=first-object&section=activity&activityId=activity-1",
+      );
+    });
+    expect(screen.queryByRole("dialog", { name: "Anna A." })).toBeNull();
   });
 });

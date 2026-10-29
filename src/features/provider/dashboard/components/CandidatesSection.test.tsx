@@ -4,15 +4,9 @@ import {
   render,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getConversationHistory } from "../applicant-workflow/api/conversation";
-import type * as conversationApi from "../applicant-workflow/api/conversation";
-import { getApplicantWorkspace } from "../applicant-workflow/api/workspace";
-import type * as workspaceApi from "../applicant-workflow/api/workspace";
-import { createApplicantWorkspace } from "../applicant-workflow/testing/workspace-fixture";
+import { describe, expect, it, vi } from "vitest";
 import { rejectProviderApplication } from "../api/provider-application-rejection";
 import {
   TabRefreshProvider,
@@ -25,41 +19,25 @@ import {
 import { CandidatesSection } from "./CandidatesSection";
 import type { Candidate, DashboardObject } from "../types";
 
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 vi.mock("../api/provider-application-rejection", () => ({
   rejectProviderApplication: vi.fn(),
 }));
-
-vi.mock("../applicant-workflow/api/workspace", async (importOriginal) => {
-  const actual = await importOriginal<typeof workspaceApi>();
-  return {
-    ...actual,
-    getApplicantWorkspace: vi.fn(),
-  };
-});
-
-vi.mock("../applicant-workflow/api/conversation", async (importOriginal) => {
-  const actual = await importOriginal<typeof conversationApi>();
-  return {
-    ...actual,
-    getConversationHistory: vi.fn().mockResolvedValue({
-      applicationId: "application-1",
-      conversationId: null,
-      openedAt: null,
-      hasMessages: false,
-      canCurrentUserSend: false,
-      applicantRepliesEnabled: false,
-      canCurrentUserManageApplicantReplies: false,
-      sendBlockReason: "LIFECYCLE_READ_ONLY",
-      unreadCount: 0,
-      lastMessage: null,
-      messages: [],
-      hasMore: false,
-      nextAfterSequence: null,
-    }),
-    sendConversationMessage: vi.fn(),
-    markConversationRead: vi.fn(),
-  };
-});
 
 const publishedObject: DashboardObject = {
   id: "object-1",
@@ -181,32 +159,6 @@ function RefreshRevisionProbe() {
 }
 
 describe("CandidatesSection", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.mocked(getApplicantWorkspace).mockResolvedValue(
-      createApplicantWorkspace(
-        "candidate-1",
-        "Anna Lehmann",
-        "Wir suchen eine ruhige Wohnung.",
-      ),
-    );
-    vi.mocked(getConversationHistory).mockResolvedValue({
-      applicationId: "candidate-1",
-      conversationId: null,
-      openedAt: null,
-      hasMessages: false,
-      canCurrentUserSend: false,
-      applicantRepliesEnabled: false,
-      canCurrentUserManageApplicantReplies: false,
-      sendBlockReason: "LIFECYCLE_READ_ONLY",
-      unreadCount: 0,
-      lastMessage: null,
-      messages: [],
-      hasMore: false,
-      nextAfterSequence: null,
-    });
-  });
-
   it("renders the compact active occupancy indicator in the section header", () => {
     render(
       <CandidatesSection
@@ -720,135 +672,28 @@ describe("CandidatesSection", () => {
     expect(container.getElementsByClassName("sk-circle").length).toBe(5);
     expect(container.getElementsByClassName("sk-text").length).toBe(10);
   });
-  it("opens the applicant workflow modal from an active applicant card", async () => {
-    const user = userEvent.setup();
+  it("links an active applicant card to the application page", () => {
     render(
       <CandidatesSection
         object={publishedObject}
-        candidates={[
-          {
-            ...candidates[0]!,
-            introduction: "Wir suchen eine ruhige Wohnung.",
-            activeAtLabel: "27.09.2026",
-          },
-        ]}
+        candidates={candidates}
         waitingCountState={{ status: "success", count: 3 }}
         isLoading={false}
         hasError={false}
       />,
     );
 
-    await user.click(
-      screen.getByRole("button", {
-        name: "Bewerbung von Anna Lehmann, 2 Personen, öffnen",
-      }),
-    );
-
-    const dialog = await screen.findByRole("dialog", { name: "Anna Lehmann" });
-    expect(within(dialog).getByText("Wohnung Mitte")).not.toBeNull();
-    expect(
-      within(dialog).getByText("2 Personen · aktiv seit 27.09.2026"),
-    ).not.toBeNull();
-    expect(
-      within(dialog).getByText("Wir suchen eine ruhige Wohnung."),
-    ).not.toBeNull();
-    expect(within(dialog).queryByText(/warte/i)).toBeNull();
-  });
-
-  it("closes the workflow modal and restores focus to the applicant card", async () => {
-    const user = userEvent.setup();
-    render(
-      <CandidatesSection
-        object={publishedObject}
-        candidates={candidates}
-        waitingCountState={{ status: "success", count: 0 }}
-        isLoading={false}
-        hasError={false}
-      />,
-    );
-    const card = screen.getByRole("button", {
-      name: "Bewerbung von Anna Lehmann, 2 Personen, öffnen",
-    });
-
-    await user.click(card);
-    await user.keyboard("{Escape}");
-
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(document.activeElement).toBe(card);
-  });
-
-  it("restores focus to the applicant card when cancelling rejection from the workflow", async () => {
-    const user = userEvent.setup();
-    render(
-      <CandidatesSection
-        object={publishedObject}
-        candidates={candidates}
-        waitingCountState={{ status: "success", count: 0 }}
-        isLoading={false}
-        hasError={false}
-      />,
-    );
-    const card = screen.getByRole("button", {
-      name: "Bewerbung von Anna Lehmann, 2 Personen, öffnen",
-    });
-    await user.click(card);
-    await user.click(
-      screen.getByRole("button", { name: "Bewerbung ablehnen" }),
-    );
-    const confirmation = screen.getByRole("dialog", {
-      name: "Bewerber ablehnen?",
-    });
-    expect(confirmation.contains(document.activeElement)).toBe(true);
-    await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(document.activeElement).toBe(card);
-    expect(rejectProviderApplication).not.toHaveBeenCalled();
-  });
-
-  it("rejects from the workflow modal through the existing confirmation", async () => {
-    const user = userEvent.setup();
-    vi.mocked(rejectProviderApplication).mockResolvedValue();
-    const { container } = render(
-      <CandidatesSection
-        object={publishedObject}
-        candidates={candidates}
-        waitingCountState={{ status: "success", count: 0 }}
-        isLoading={false}
-        hasError={false}
-      />,
-    );
-
-    await user.click(
-      screen.getByRole("button", {
-        name: "Bewerbung von Anna Lehmann, 2 Personen, öffnen",
-      }),
-    );
-    await user.click(
-      screen.getByRole("button", { name: "Bewerbung ablehnen" }),
-    );
-
-    expect(screen.queryByRole("dialog", { name: "Anna Lehmann" })).toBeNull();
-    expect(
-      screen.getByRole("dialog", { name: "Bewerber ablehnen?" }),
-    ).not.toBeNull();
     expect(
       screen
-        .getByRole("dialog", { name: "Bewerber ablehnen?" })
-        .contains(document.activeElement),
-    ).toBe(true);
-    await user.click(screen.getByRole("button", { name: "Ablehnen" }));
-
-    await waitFor(() => {
-      expect(rejectProviderApplication).toHaveBeenCalledWith("candidate-1");
-      expect(screen.queryByText("Anna Lehmann")).toBeNull();
-      expect(screen.queryByRole("dialog")).toBeNull();
-      expect(document.activeElement).toBe(
-        container.querySelector("#bewerbungen"),
-      );
-    });
+        .getByRole("link", {
+          name: "Bewerbung von Anna Lehmann, 2 Personen, öffnen",
+        })
+        .getAttribute("href"),
+    ).toBe("/provider/applications/candidate-1?listingId=object-1");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("does not open the workflow modal from the waiting queue indicator", async () => {
+  it("does not open a workspace from the waiting queue indicator", async () => {
     const user = userEvent.setup();
     const { container } = render(
       <CandidatesSection

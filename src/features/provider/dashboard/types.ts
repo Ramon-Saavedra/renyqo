@@ -2,6 +2,8 @@ import type {
   ApplicationAttentionSummary,
   AttentionTotals,
 } from "@/lib/attention/types";
+import type { ApplicantNoShowMarker } from "@/lib/viewing-workflow/consideration-schema";
+import type { CardViewingSummary } from "@/features/viewing-workflow/present/card-viewing";
 import type { ObjectTypeBackend } from "@/lib/api/listings";
 import type { ListingStatus } from "@/features/provider/listings-overview/types";
 
@@ -40,6 +42,8 @@ export interface Candidate {
   readonly introduction: string | null;
   readonly activeAtLabel: string | null;
   readonly attention: ApplicationAttentionSummary;
+  readonly viewingSummary?: CardViewingSummary | null;
+  readonly applicantNoShow?: ApplicantNoShowMarker | null;
 }
 
 export const MAX_ACTIVE_APPLICATIONS = 5;

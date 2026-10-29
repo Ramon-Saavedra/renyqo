@@ -23,8 +23,8 @@ describe("TopbarAttentionControl", () => {
     useGlobalAttention.mockReturnValue({
       loading: false,
       error: false,
-      count: 0,
-      groups: [],
+      attentionCount: 0,
+      attentionGroups: [],
     });
 
     render(<TopbarAttentionControl role="applicant" />);
@@ -36,23 +36,24 @@ describe("TopbarAttentionControl", () => {
     useGlobalAttention.mockReturnValue({
       loading: false,
       error: false,
-      count: 2,
-      groups: [
+      attentionCount: 2,
+      attentionGroups: [
         {
           applicationId: "app-1",
           listingId: "listing-1",
-          href: "/applicant/applications/app-1",
+          href: "/applicant/applications/app-1?section=viewing",
           listingTitle: "3-Zimmer-Wohnung",
           listingCity: "Freiburg",
           chips: [
             {
               id: "row-1",
+              href: "/applicant/applications/app-1?section=viewing",
               chip: {
-                kind: "messages",
-                label: attentionCopy.unreadMessages(1),
+                kind: "viewing",
+                label: attentionCopy.viewingAction(1),
                 icon: () => null,
                 count: 1,
-                emphasis: false,
+                emphasis: true,
               },
             },
           ],
@@ -62,9 +63,16 @@ describe("TopbarAttentionControl", () => {
 
     render(<TopbarAttentionControl role="applicant" />);
 
-    expect(screen.getByRole("button", { name: ariaTrigger })).toBeInstanceOf(
-      HTMLButtonElement,
-    );
+    const trigger = screen.getByRole("button", { name: ariaTrigger });
+    expect(trigger).toBeInstanceOf(HTMLButtonElement);
+    const icon = trigger.querySelector(".lucide-triangle-alert");
+    expect(icon).toBeInstanceOf(SVGElement);
+    expect(icon?.getAttribute("stroke-width")).toBe("2");
+    expect(icon?.getAttribute("width")).toBe("16");
+    expect(icon?.classList.contains("shrink-0")).toBe(true);
+    expect(trigger.querySelector(".lucide-bell")).toBeNull();
+    expect(trigger.querySelector(".lucide-message-square")).toBeNull();
+    expect(screen.queryByText(attentionCopy.unreadMessages(1))).toBeNull();
     expect(screen.getByText("2")).toBeTruthy();
     expect(screen.queryByText(/Bewerbungen mit offenen Punkten/i)).toBeNull();
 
@@ -76,9 +84,11 @@ describe("TopbarAttentionControl", () => {
     expect(screen.queryByText(/listing-1/i)).toBeNull();
 
     const link = screen.getByRole("link", {
-      name: new RegExp(attentionCopy.unreadMessages(1)),
+      name: new RegExp(attentionCopy.viewingAction(1)),
     });
-    expect(link.getAttribute("href")).toBe("/applicant/applications/app-1");
+    expect(link.getAttribute("href")).toBe(
+      "/applicant/applications/app-1?section=viewing",
+    );
     expect(screen.queryByText(attentionCopy.globalMenuEmpty)).toBeNull();
   });
 
@@ -87,17 +97,18 @@ describe("TopbarAttentionControl", () => {
     useGlobalAttention.mockReturnValue({
       loading: false,
       error: false,
-      count: 1,
-      groups: [
+      attentionCount: 1,
+      attentionGroups: [
         {
           applicationId: "app-p",
           listingId: "obj-1",
-          href: "/provider/dashboard?listingId=obj-1",
+          href: "/provider/applications/app-p?listingId=obj-1&section=viewing",
           listingTitle: "Objekt Süd",
           listingCity: null,
           chips: [
             {
               id: "row-p",
+              href: "/provider/applications/app-p?listingId=obj-1&section=viewing",
               chip: {
                 kind: "viewing",
                 label: attentionCopy.viewingAction(1),
@@ -123,7 +134,7 @@ describe("TopbarAttentionControl", () => {
           name: new RegExp(attentionCopy.viewingAction(1)),
         })
         .getAttribute("href"),
-    ).toBe("/provider/dashboard?listingId=obj-1");
+    ).toBe("/provider/applications/app-p?listingId=obj-1&section=viewing");
     expect(screen.queryByText(/obj-1/i)).toBeNull();
     await user.click(
       screen.getByRole("link", {
@@ -144,8 +155,8 @@ describe("TopbarAttentionControl", () => {
     useGlobalAttention.mockReturnValue({
       loading: false,
       error: true,
-      count: 0,
-      groups: [],
+      attentionCount: 0,
+      attentionGroups: [],
     });
 
     render(<TopbarAttentionControl role="applicant" />);
@@ -162,8 +173,8 @@ describe("TopbarAttentionControl", () => {
     useGlobalAttention.mockReturnValue({
       loading: true,
       error: false,
-      count: 0,
-      groups: [],
+      attentionCount: 0,
+      attentionGroups: [],
     });
 
     render(<TopbarAttentionControl role="applicant" />);
@@ -175,8 +186,8 @@ describe("TopbarAttentionControl", () => {
     useGlobalAttention.mockReturnValue({
       loading: false,
       error: false,
-      count: 1,
-      groups: [],
+      attentionCount: 1,
+      attentionGroups: [],
     });
 
     render(<TopbarAttentionControl role="applicant" />);

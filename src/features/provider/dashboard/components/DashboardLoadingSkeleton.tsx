@@ -10,7 +10,7 @@ import {
 
 function TopbarSkeleton() {
   return (
-    <div className="flex h-app-topbar shrink-0 items-center gap-3 border-b border-border px-3 lg:px-gutter">
+    <div className="flex h-app-topbar shrink-0 items-center gap-3 border-b border-border px-gutter">
       <RenyqoSkeleton width={100} height={22} className="rounded-sm" />
       <div className="ml-auto flex items-center gap-2">
         <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:min-w-16 sm:w-auto sm:rounded-md" />
@@ -159,7 +159,7 @@ function ApplicantsSkeleton() {
 
 function ContentSkeleton() {
   return (
-    <div className="@container flex w-full flex-col px-3 pt-7 pb-16 lg:px-gutter">
+    <div className="@container flex w-full flex-col px-gutter pt-7 pb-16">
       <div className="mb-section flex flex-col gap-2 rounded-md border border-border px-parent-x py-parent-y sm:flex-row sm:items-center">
         <RenyqoSkeleton
           height={38}

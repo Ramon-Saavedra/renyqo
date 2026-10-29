@@ -93,7 +93,7 @@ export function DecisionBar({
   canSelectForRental,
 }: DecisionActionsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3.5 border-t border-border bg-background-muted px-5 py-3">
+    <div className="flex flex-wrap items-center gap-3.5 border-t border-border pt-3">
       <Button
         type="button"
         variant="danger"

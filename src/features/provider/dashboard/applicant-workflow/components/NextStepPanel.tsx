@@ -18,17 +18,21 @@ interface NextStepPanelProps {
   readonly nextStep: WorkflowNextStep;
   readonly summaries: ApplicantWorkflowModel["summaries"];
   readonly density: Density;
+  readonly viewingValue?: string;
 }
 
 function SummaryStrip({
   summaries,
+  viewingValue,
 }: {
   readonly summaries: ApplicantWorkflowModel["summaries"];
+  readonly viewingValue: string;
 }) {
   return (
     <div className="grid grid-cols-3 border-t border-border bg-background-muted">
       {WORKFLOW_SECTION_ORDER.map((key) => {
         const summary = summaries[key];
+        const viewingOverride = key === "viewing" && viewingValue.length > 0;
         return (
           <div
             key={key}
@@ -38,9 +42,9 @@ function SummaryStrip({
               {summary.label}
             </span>
             <span className="truncate text-action font-medium text-foreground">
-              {summary.value}
+              {viewingOverride ? viewingValue : summary.value}
             </span>
-            {summary.state ? (
+            {summary.state && !viewingOverride ? (
               <span className="flex min-w-0 items-center gap-1.5 text-caption text-foreground-secondary">
                 <ToneDot tone={summary.tone} />
                 <span className="truncate">{summary.state}</span>
@@ -57,6 +61,7 @@ export function NextStepPanel({
   nextStep,
   summaries,
   density,
+  viewingValue = "",
 }: NextStepPanelProps) {
   const headingId = useId();
   const compact = density === "compact";
@@ -102,7 +107,9 @@ export function NextStepPanel({
           ) : null}
         </div>
       </div>
-      {compact ? null : <SummaryStrip summaries={summaries} />}
+      {compact ? null : (
+        <SummaryStrip summaries={summaries} viewingValue={viewingValue} />
+      )}
     </section>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
-import { ChevronRight, Clock, X } from "lucide-react";
-import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
+import { ChevronRight, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { applicantWorkflowCopy } from "../copy";
 import { useOptionalWorkflowSession } from "../workflow-session";
@@ -10,11 +10,18 @@ import { ActivityPanel } from "./ActivitySection";
 import { ApplicantIdentity } from "./ApplicantIdentity";
 import { DecisionPanel } from "./DecisionActions";
 import { DocumentsPanel } from "./DocumentsSection";
-import { MessageComposer, MessagesPanel } from "./MessagesSection";
+import {
+  DedicatedProviderChat,
+  MessageComposer,
+  MessagesPanel,
+} from "./MessagesSection";
 import { NextStepPanel } from "./NextStepPanel";
 import { ToneDot } from "./StatusTag";
-import { ViewingPanel } from "./ViewingSection";
+import { ViewingPanel, currentViewingLabel } from "./ViewingSection";
+import { useViewingSnapshot } from "@/features/viewing-workflow/snapshot/use-viewing-snapshot";
+import { workflowTabForDeepLink } from "../deep-link-tab";
 import type { WorkflowLayoutProps } from "./WideLayout";
+import { WorkspaceDismiss } from "./WorkspaceDismiss";
 import {
   WORKFLOW_TAB_ORDER,
   WorkflowTabs,
@@ -27,16 +34,31 @@ interface OverviewPanelProps {
   readonly model: ApplicantWorkflowModel;
   readonly onSelectTab: (tab: WorkflowTabKey) => void;
   readonly onReject: () => void;
+  readonly focusActivityId: string | null;
+  readonly activityExpanded?: boolean;
+  readonly onActivityExpandedChange?: (expanded: boolean) => void;
 }
 
-function OverviewPanel({ model, onSelectTab, onReject }: OverviewPanelProps) {
+function OverviewPanel({
+  model,
+  onSelectTab,
+  onReject,
+  focusActivityId,
+  activityExpanded,
+  onActivityExpandedChange,
+}: OverviewPanelProps) {
   const summaryId = useId();
+  const workflow = useViewingSnapshot(model.applicationId, "provider");
+  const currentViewing = currentViewingLabel(workflow.projection, "");
 
   return (
     <>
       <div className="flex flex-col overflow-hidden rounded-md border border-border bg-background-muted">
         {WORKFLOW_SECTION_ORDER.map((key) => {
           const summary = model.summaries[key];
+          const viewingOverride =
+            key === "viewing" && currentViewing.length > 0;
+          const showState = Boolean(summary.state) && !viewingOverride;
           const labelId = `${summaryId}-${key}-label`;
           const valueId = `${summaryId}-${key}-value`;
           const stateId = `${summaryId}-${key}-state`;
@@ -47,7 +69,7 @@ function OverviewPanel({ model, onSelectTab, onReject }: OverviewPanelProps) {
               type="button"
               onClick={() => onSelectTab(key)}
               aria-labelledby={
-                summary.state
+                showState
                   ? `${labelId} ${valueId} ${stateId} ${actionId}`
                   : `${labelId} ${valueId} ${actionId}`
               }
@@ -64,9 +86,9 @@ function OverviewPanel({ model, onSelectTab, onReject }: OverviewPanelProps) {
                   id={valueId}
                   className="text-action font-medium text-foreground"
                 >
-                  {summary.value}
+                  {viewingOverride ? currentViewing : summary.value}
                 </span>
-                {summary.state ? (
+                {showState ? (
                   <span
                     id={stateId}
                     className="flex items-center gap-1.5 text-caption text-foreground-secondary"
@@ -90,11 +112,18 @@ function OverviewPanel({ model, onSelectTab, onReject }: OverviewPanelProps) {
           );
         })}
       </div>
-      <ActivityPanel model={model} />
+      <ActivityPanel
+        model={model}
+        focusActivityId={focusActivityId}
+        {...(activityExpanded === undefined ? {} : { activityExpanded })}
+        {...(onActivityExpandedChange ? { onActivityExpandedChange } : {})}
+      />
       <DecisionPanel
         onReject={onReject}
         canReject={model.canReject}
-        canSelectForRental={model.canSelectForRental}
+        canSelectForRental={
+          model.canSelectForRental && model.listing.id.length > 0
+        }
       />
     </>
   );
@@ -103,6 +132,28 @@ function OverviewPanel({ model, onSelectTab, onReject }: OverviewPanelProps) {
 interface ActionBarProps {
   readonly tab: WorkflowTabKey;
   readonly model: ApplicantWorkflowModel;
+}
+
+function ViewingTabAction({
+  model,
+}: {
+  readonly model: ApplicantWorkflowModel;
+}) {
+  const workflow = useViewingSnapshot(model.applicationId, "provider");
+  const mode = workflow.projection?.mode;
+  if (mode === "CURRENT" || mode === "EMPTY" || model.canProposeViewing) {
+    return null;
+  }
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      disabled
+      className="w-full justify-center"
+    >
+      {applicantWorkflowCopy.viewing.propose}
+    </Button>
+  );
 }
 
 function ActionBar({ tab, model }: ActionBarProps) {
@@ -122,17 +173,7 @@ function ActionBar({ tab, model }: ActionBarProps) {
         </Button>
       );
     case "viewing":
-      if (model.canProposeViewing) return null;
-      return (
-        <Button
-          type="button"
-          variant="outline"
-          disabled
-          className="w-full justify-center"
-        >
-          {applicantWorkflowCopy.viewing.propose}
-        </Button>
-      );
+      return <ViewingTabAction model={model} />;
     case "overview":
       return (
         <p className="flex min-h-11.5 items-center gap-2.5 text-caption text-foreground-secondary">
@@ -150,13 +191,30 @@ export function CompactLayout({
   closeButtonRef,
   onClose,
   onReject,
+  returnHref,
+  focus = null,
+  activityExpanded,
+  onActivityExpandedChange,
 }: WorkflowLayoutProps) {
   const idPrefix = useId();
   function selectSection(tab: WorkflowTabKey) {
-    setActiveTab(tab);
+    selectTab(tab);
+    if (tab === "messages") return;
     document.getElementById(tabId(idPrefix, tab))?.focus();
   }
-  const [activeTab, setActiveTab] = useState<WorkflowTabKey>("overview");
+  const linkKey = `${focus?.section ?? ""}:${focus?.activityId ?? ""}:${focus?.requestId ?? ""}`;
+  const linkedTab = workflowTabForDeepLink({
+    section: focus?.section ?? null,
+    activityId: focus?.activityId ?? null,
+  });
+  const [chosenTab, setChosenTab] = useState<{
+    readonly key: string;
+    readonly tab: WorkflowTabKey;
+  } | null>(null);
+  const activeTab = chosenTab?.key === linkKey ? chosenTab.tab : linkedTab;
+  function selectTab(tab: WorkflowTabKey) {
+    setChosenTab({ key: linkKey, tab });
+  }
   const session = useOptionalWorkflowSession();
   const { applicant, listing } = model;
 
@@ -164,12 +222,34 @@ export function CompactLayout({
     if (activeTab === "messages") session?.ensureMessages();
   }, [activeTab, session]);
 
+  if (activeTab === "messages") {
+    return (
+      <>
+        <h2 id={titleId} className="sr-only">
+          {applicant.name}
+        </h2>
+        {applicant.introduction ? (
+          <p id={descriptionId} className="sr-only">
+            {applicant.introduction}
+          </p>
+        ) : null}
+        <DedicatedProviderChat
+          model={model}
+          onClose={() => selectTab("overview")}
+        />
+      </>
+    );
+  }
+
   const panels: Record<WorkflowTabKey, ReactNode> = {
     overview: (
       <OverviewPanel
         model={model}
         onSelectTab={selectSection}
         onReject={onReject}
+        focusActivityId={focus?.activityId ?? null}
+        {...(activityExpanded === undefined ? {} : { activityExpanded })}
+        {...(onActivityExpandedChange ? { onActivityExpandedChange } : {})}
       />
     ),
     messages: <MessagesPanel model={model} />,
@@ -178,73 +258,61 @@ export function CompactLayout({
   };
 
   return (
-    <>
-      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background-muted p-1">
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={onClose}
-          aria-label={applicantWorkflowCopy.close}
-          className={buttonClassWithSize("ghost", "icon-md")}
-        >
-          <AppIcon icon={X} size={20} strokeWidth={2} decorative />
-        </button>
-        <div className="flex min-w-0 flex-1 flex-col text-center">
-          <span className="text-caption font-medium text-primary">
+    <div className="flex flex-col gap-3 px-gutter">
+      <WorkspaceDismiss
+        compact
+        onClose={onClose}
+        closeButtonRef={closeButtonRef}
+        {...(returnHref ? { returnHref } : {})}
+      />
+      <div className="flex flex-col gap-3">
+        <p className="flex flex-col text-caption text-foreground-secondary">
+          <span className="font-medium text-primary">
             {applicantWorkflowCopy.context}
           </span>
-          <span className="truncate text-meta text-foreground-secondary normal-case tracking-normal">
-            {listing.title} · {listing.meta}
-          </span>
-        </div>
-        <span aria-hidden="true" className="h-11 w-11 shrink-0" />
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="flex flex-col gap-3 bg-background-muted px-4 pt-3 pb-3.5">
-          <ApplicantIdentity
-            applicant={applicant}
-            titleId={titleId}
-            descriptionId={descriptionId}
-            density="compact"
-          />
-          <NextStepPanel
-            nextStep={model.nextStep}
-            summaries={model.summaries}
-            density="compact"
-          />
-        </div>
-
-        <WorkflowTabs
-          idPrefix={idPrefix}
-          activeTab={activeTab}
-          onSelect={setActiveTab}
+          {listing.title || listing.meta ? (
+            <span className="text-meta normal-case tracking-normal">
+              {[listing.title, listing.meta].filter(Boolean).join(" · ")}
+            </span>
+          ) : null}
+        </p>
+        <ApplicantIdentity
+          applicant={applicant}
+          titleId={titleId}
+          descriptionId={descriptionId}
+          density="compact"
         />
-
-        {WORKFLOW_TAB_ORDER.map((tab) => (
-          <div
-            key={tab}
-            id={panelId(idPrefix, tab)}
-            role="tabpanel"
-            aria-labelledby={tabId(idPrefix, tab)}
-            hidden={tab !== activeTab}
-            tabIndex={0}
-            className="flex flex-col gap-3.5 px-4 pt-3.5 pb-4.5"
-          >
-            {panels[tab]}
-          </div>
-        ))}
+        <NextStepPanel
+          nextStep={model.nextStep}
+          summaries={model.summaries}
+          density="compact"
+        />
       </div>
 
-      <div
-        className={
-          activeTab === "messages"
-            ? "shrink-0"
-            : "shrink-0 border-t border-border bg-background-muted px-4 pt-2.5 pb-5.5"
-        }
-      >
+      <WorkflowTabs
+        idPrefix={idPrefix}
+        activeTab={activeTab}
+        onSelect={selectTab}
+      />
+
+      {WORKFLOW_TAB_ORDER.map((tab) => (
+        <div
+          key={tab}
+          id={panelId(idPrefix, tab)}
+          role="tabpanel"
+          aria-labelledby={tabId(idPrefix, tab)}
+          hidden={tab !== activeTab}
+          data-section={tab}
+          tabIndex={0}
+          className="flex scroll-mt-app-topbar flex-col gap-3.5"
+        >
+          {panels[tab]}
+        </div>
+      ))}
+
+      <div className="border-t border-border pt-3">
         <ActionBar tab={activeTab} model={model} />
       </div>
-    </>
+    </div>
   );
 }

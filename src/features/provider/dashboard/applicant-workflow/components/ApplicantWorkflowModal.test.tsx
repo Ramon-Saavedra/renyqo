@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import {
+  cleanup,
   fireEvent,
   render,
   screen,
@@ -8,11 +9,13 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { DeepLink } from "@/lib/navigation/deep-link";
 import { getActivityPage } from "../api/activity";
 import {
   getConversationHistory,
   markConversationRead,
   sendConversationMessage,
+  type ConversationHistory,
 } from "../api/conversation";
 import type * as conversationApi from "../api/conversation";
 import {
@@ -30,7 +33,7 @@ import { createApplicantWorkspace } from "../testing/workspace-fixture";
 import type { WorkflowListingContext } from "../workflow-model";
 import { useWorkflowSession, WorkflowSession } from "../workflow-session";
 import { ActivitySection } from "./ActivitySection";
-import { ApplicantWorkflowModal } from "./ApplicantWorkflowModal";
+import { ApplicantWorkspaceView } from "./ApplicantWorkspaceView";
 import { MessagesSection } from "./MessagesSection";
 
 vi.mock("../api/workspace", async (importOriginal) => {
@@ -81,6 +84,10 @@ vi.mock("../api/viewings", () => ({
   markViewingNoShow: vi.fn(),
 }));
 
+vi.mock("@/features/viewing-workflow/api/provider-workflow", () => ({
+  getProviderViewingWorkflow: vi.fn(() => new Promise(() => undefined)),
+}));
+
 vi.mock("../api/documents", () => ({
   listDocumentRequests: vi.fn().mockResolvedValue([]),
   cancelDocumentRequest: vi.fn(),
@@ -116,6 +123,10 @@ function mockViewport(compact: boolean) {
 async function renderModal(
   introduction: string | null = "Wir suchen langfristig eine ruhige Wohnung.",
   activeAt: string | null = "2026-09-27T08:00:00.000Z",
+  options?: {
+    readonly focus?: DeepLink;
+    readonly preserveHistory?: boolean;
+  },
 ) {
   vi.mocked(getApplicantWorkspace).mockResolvedValue(
     createApplicantWorkspace(
@@ -125,32 +136,35 @@ async function renderModal(
       activeAt,
     ),
   );
-  vi.mocked(getConversationHistory).mockResolvedValue({
-    applicationId: "application-1",
-    conversationId: null,
-    openedAt: null,
-    hasMessages: false,
-    canCurrentUserSend: false,
-    applicantRepliesEnabled: false,
-    canCurrentUserManageApplicantReplies: false,
-    sendBlockReason: "LIFECYCLE_READ_ONLY",
-    unreadCount: 0,
-    lastMessage: null,
-    messages: [],
-    hasMore: false,
-    nextAfterSequence: null,
-  });
+  if (!options?.preserveHistory) {
+    vi.mocked(getConversationHistory).mockResolvedValue({
+      applicationId: "application-1",
+      conversationId: null,
+      openedAt: null,
+      hasMessages: false,
+      canCurrentUserSend: false,
+      applicantRepliesEnabled: false,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: "LIFECYCLE_READ_ONLY",
+      unreadCount: 0,
+      lastMessage: null,
+      messages: [],
+      hasMore: false,
+      nextAfterSequence: null,
+    });
+  }
   const onClose = vi.fn();
   const onReject = vi.fn();
   render(
-    <ApplicantWorkflowModal
+    <ApplicantWorkspaceView
       applicationId="application-1"
       listing={listing}
       onClose={onClose}
       onReject={onReject}
+      {...(options?.focus ? { focus: options.focus } : {})}
     />,
   );
-  await screen.findByRole("dialog", { name: "Maria Schneider" });
+  await screen.findByRole("region", { name: "Maria Schneider" });
   return { onClose, onReject };
 }
 
@@ -178,12 +192,12 @@ afterEach(() => {
   document.body.style.overflow = "";
 });
 
-describe("ApplicantWorkflowModal on wide viewports", () => {
-  it("renders a labelled modal dialog with the compact applicant identity", async () => {
+describe("ApplicantWorkspaceView on wide viewports", () => {
+  it("renders a labelled workspace with the compact applicant identity", async () => {
     await renderModal();
 
-    const dialog = screen.getByRole("dialog", { name: "Maria Schneider" });
-    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    const dialog = screen.getByRole("region", { name: "Maria Schneider" });
+    expect(dialog.getAttribute("aria-modal")).toBeNull();
     const descriptionId = dialog.getAttribute("aria-describedby");
     expect(descriptionId).not.toBeNull();
     expect(document.getElementById(descriptionId ?? "")?.textContent).toBe(
@@ -202,7 +216,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
   it("omits the description link and active-since fact when data is missing", async () => {
     await renderModal(null, null);
 
-    const dialog = screen.getByRole("dialog", { name: "Maria Schneider" });
+    const dialog = screen.getByRole("region", { name: "Maria Schneider" });
     expect(dialog.getAttribute("aria-describedby")).toBeNull();
     expect(screen.getByText("2 Personen")).not.toBeNull();
     expect(screen.queryByText(/aktiv seit/)).toBeNull();
@@ -226,10 +240,22 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
   it("renders the connected workflow sections from an empty workspace", async () => {
     await renderModal();
 
-    expect(screen.getByRole("region", { name: "Nachrichten" })).not.toBeNull();
-    expect(screen.getByRole("region", { name: "Unterlagen" })).not.toBeNull();
-    expect(screen.getByRole("region", { name: "Besichtigung" })).not.toBeNull();
-    expect(screen.getByRole("region", { name: "Verlauf" })).not.toBeNull();
+    const documents = screen.getByRole("region", { name: "Unterlagen" });
+    const viewing = screen.getByRole("region", { name: "Besichtigung" });
+    const activity = screen.getByRole("region", { name: "Verlauf" });
+    const messages = screen.getByRole("region", { name: "Nachrichten" });
+    expect(
+      documents.compareDocumentPosition(viewing) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+    expect(
+      viewing.compareDocumentPosition(activity) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
+    expect(
+      activity.compareDocumentPosition(messages) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0);
     expect(await screen.findByText("Noch keine Nachrichten.")).not.toBeNull();
     expect(
       screen.getByRole("log", { name: "Nachrichtenverlauf" }),
@@ -237,11 +263,19 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     expect(screen.getByText("Keine Unterlagen angefordert.")).not.toBeNull();
     expect(screen.getByText("Kein Termin vorgeschlagen.")).not.toBeNull();
     expect(
+      within(screen.getByRole("region", { name: "Verlauf" })).queryByText(
+        "Kein Termin vorgeschlagen.",
+      ),
+    ).toBeNull();
+    expect(
       screen
-        .getByRole("button", { name: "Verlauf" })
+        .getByRole("button", { name: /Verlauf/ })
         .getAttribute("aria-expanded"),
     ).toBe("false");
-    expect(screen.queryByText("Noch kein Verlauf.")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: /Keine Einträge/ }),
+    ).not.toBeNull();
+    expect(screen.queryByText("Noch keine Einträge.")).toBeNull();
   });
 
   it("keeps send and tenant selection disabled until the workspace allows them", async () => {
@@ -327,14 +361,14 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
         }),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
         onReject={vi.fn()}
       />,
     );
-    await screen.findByRole("dialog", { name: "Maria Schneider" });
+    await screen.findByRole("region", { name: "Maria Schneider" });
     await user.type(
       screen.getByRole("textbox", { name: "Nachricht an Maria Schneider" }),
       "Hallo",
@@ -363,7 +397,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     });
     vi.mocked(sendConversationMessage).mockRejectedValue(new Error("failed"));
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -396,7 +430,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     });
     vi.mocked(createDocumentRequests).mockRejectedValue(new Error("failed"));
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -436,7 +470,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
       () => new Promise(() => undefined),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -470,7 +504,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     });
     vi.mocked(proposeViewing).mockRejectedValue(new Error("failed"));
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -504,7 +538,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     vi.mocked(proposeViewing).mockReset();
     vi.mocked(proposeViewing).mockRejectedValue(new Error("failed"));
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -598,7 +632,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
         nextAfterSequence: null,
       });
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -642,7 +676,7 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     });
     vi.mocked(markConversationRead).mockRejectedValue(new Error("failed"));
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -672,14 +706,14 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
         }),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
         onReject={vi.fn()}
       />,
     );
-    await screen.findByRole("dialog", { name: "Maria Schneider" });
+    await screen.findByRole("region", { name: "Maria Schneider" });
     const select = screen.getByRole("button", { name: "Als Mieter auswählen" });
     expect(isDisabled(select)).toBe(false);
     await user.click(select);
@@ -700,9 +734,9 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
 
     const activity = screen.getByRole("region", { name: "Verlauf" });
     expect(within(activity).queryByRole("listitem")).toBeNull();
-    expect(within(activity).queryByText("Noch kein Verlauf.")).toBeNull();
-    fireEvent.click(within(activity).getByRole("button", { name: "Verlauf" }));
-    expect(within(activity).getByText("Noch kein Verlauf.")).not.toBeNull();
+    expect(within(activity).queryByText("Noch keine Einträge.")).toBeNull();
+    fireEvent.click(within(activity).getByRole("button", { name: /Verlauf/ }));
+    expect(within(activity).getByText("Noch keine Einträge.")).not.toBeNull();
   });
 
   it("forwards the reject action to the existing rejection flow", async () => {
@@ -716,44 +750,29 @@ describe("ApplicantWorkflowModal on wide viewports", () => {
     expect(onReject).toHaveBeenCalledTimes(1);
   });
 
-  it("focuses the close button and closes with it", async () => {
-    const user = userEvent.setup();
-    const { onClose } = await renderModal();
-
-    const closeButton = screen.getByRole("button", { name: "Schließen" });
-    await waitFor(() => expect(document.activeElement).toBe(closeButton));
-    await user.click(closeButton);
-
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("closes on Escape and locks page scrolling while open", async () => {
-    const user = userEvent.setup();
-    const { onClose } = await renderModal();
-
-    expect(document.body.style.overflow).toBe("hidden");
-    await user.keyboard("{Escape}");
-
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("keeps keyboard focus inside the dialog", async () => {
-    const user = userEvent.setup();
+  it("keeps the page chat on wide viewports", async () => {
+    mockViewport(false);
     await renderModal();
 
-    await user.tab({ shift: true });
+    const messages = screen.getByRole("region", { name: "Nachrichten" });
+    expect(messages.className).toContain("rounded-md");
+    expect(messages.className).not.toContain("100dvh");
+    expect(messages.querySelector(".h-96")).toBeInstanceOf(HTMLElement);
+    expect(screen.queryByRole("button", { name: "Chat schließen" })).toBeNull();
+  });
 
-    expect(document.activeElement).toBe(
-      screen.getByRole("button", { name: "Bewerbung ablehnen" }),
-    );
-    await user.tab();
-    expect(document.activeElement).toBe(
-      screen.getByRole("button", { name: "Schließen" }),
-    );
+  it("closes from the close control without locking page scrolling", async () => {
+    const user = userEvent.setup();
+    const { onClose } = await renderModal();
+
+    expect(document.body.style.overflow).not.toBe("hidden");
+    await user.click(screen.getByRole("button", { name: "Schließen" }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 
-describe("ApplicantWorkflowModal on compact viewports", () => {
+describe("ApplicantWorkspaceView on compact viewports", () => {
   it("expands the complete introduction with accessible keyboard controls", async () => {
     const user = userEvent.setup();
     mockViewport(true);
@@ -796,7 +815,6 @@ describe("ApplicantWorkflowModal on compact viewports", () => {
   });
 
   it.each([
-    ["Nachrichten", "Chat"],
     ["Unterlagen", "Unterlagen"],
     ["Besichtigung", "Termin"],
   ])(
@@ -819,40 +837,21 @@ describe("ApplicantWorkflowModal on compact viewports", () => {
       expect(summaryButton.closest("[hidden]")).not.toBeNull();
       await user.tab();
       expect(document.activeElement).toBe(panel);
-      await user.tab();
-      if (tabName === "Chat") {
-        expect(
-          within(panel).getByRole("log", { name: "Nachrichtenverlauf" }),
-        ).not.toBeNull();
-        expect(document.activeElement).toBe(
-          screen.getByRole("checkbox", { name: "Antworten erlauben" }),
-        );
-        await user.tab();
-      }
-      expect(document.activeElement).toBe(
-        screen.getByRole("button", { name: "Schließen" }),
+      expect(screen.getByRole("button", { name: "Schließen" })).toBeInstanceOf(
+        HTMLElement,
       );
-      await user.tab({ shift: true });
-      if (tabName === "Chat") {
-        expect(document.activeElement).toBe(
-          screen.getByRole("checkbox", { name: "Antworten erlauben" }),
-        );
-        await user.tab({ shift: true });
-      }
-      expect(document.activeElement).toBe(panel);
+      expect(
+        panel.contains(screen.getByRole("button", { name: "Schließen" })),
+      ).toBe(false);
     },
   );
 
-  it("wraps focus in the overview without including inactive panels", async () => {
-    const user = userEvent.setup();
+  it("keeps the close control outside the selected panel", async () => {
     mockViewport(true);
     await renderModal();
     const close = screen.getByRole("button", { name: "Schließen" });
-    const reject = screen.getByRole("button", { name: "Bewerbung ablehnen" });
-    await user.tab({ shift: true });
-    expect(document.activeElement).toBe(reject);
-    await user.tab();
-    expect(document.activeElement).toBe(close);
+    const panel = screen.getByRole("tabpanel");
+    expect(panel.contains(close)).toBe(false);
   });
 
   it("renders the mobile tabs with the overview selected", async () => {
@@ -879,22 +878,177 @@ describe("ApplicantWorkflowModal on compact viewports", () => {
     mockViewport(true);
     await renderModal();
 
+    expect(
+      screen.getByRole("button", { name: overviewSummaryName("Nachrichten") }),
+    ).not.toBeNull();
     screen.getByRole("tab", { name: "Übersicht" }).focus();
     await user.keyboard("{ArrowRight}");
 
-    const chatTab = screen.getByRole("tab", { name: "Chat" });
-    expect(chatTab.getAttribute("aria-selected")).toBe("true");
-    expect(document.activeElement).toBe(chatTab);
+    const chat = screen.getByRole("region", { name: "Nachrichten" });
+    expect(chat.className).toContain("100dvh");
+    expect(screen.queryByRole("tab", { name: "Chat" })).toBeNull();
+    expect(screen.queryByText("Keine ungelesenen")).toBeNull();
+    const log = within(chat).getByRole("log", { name: "Nachrichtenverlauf" });
+    expect(log.className).toContain("overflow-y-auto");
+    expect(log.className).toContain("scrollbar-slim");
     expect(
-      within(screen.getByRole("tabpanel")).getByText("Keine ungelesenen"),
-    ).not.toBeNull();
+      within(chat).getByRole("checkbox", { name: "Antworten erlauben" }),
+    ).toBeInstanceOf(HTMLElement);
     expect(
       isDisabled(
-        screen.getByRole("textbox", { name: "Nachricht an Maria Schneider" }),
+        within(chat).getByRole("textbox", {
+          name: "Nachricht an Maria Schneider",
+        }),
       ),
     ).toBe(true);
-    expect(isDisabled(screen.getByRole("button", { name: "Senden" }))).toBe(
-      true,
+    expect(
+      isDisabled(within(chat).getByRole("button", { name: "Senden" })),
+    ).toBe(true);
+    expect(document.documentElement.style.overflow).toBe("hidden");
+
+    await user.click(screen.getByRole("button", { name: "Chat schließen" }));
+
+    expect(screen.queryByRole("button", { name: "Chat schließen" })).toBeNull();
+    expect(
+      screen
+        .getByRole("tab", { name: "Übersicht" })
+        .getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(screen.getByRole("button", { name: "Schließen" })).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(document.documentElement.style.overflow).toBe("");
+  });
+
+  it("opens the dedicated chat from the Nachrichten summary", async () => {
+    const user = userEvent.setup();
+    mockViewport(true);
+    await renderModal();
+
+    await user.click(
+      screen.getByRole("button", { name: overviewSummaryName("Nachrichten") }),
+    );
+
+    const chat = screen.getByRole("region", { name: "Nachrichten" });
+    expect(chat.className).toContain("100dvh");
+    expect(screen.queryByRole("tablist")).toBeNull();
+    expect(
+      within(chat).getByRole("checkbox", { name: "Antworten erlauben" }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getAllByRole("log")).toHaveLength(1);
+  });
+
+  it("opens a messages deep link on the latest message and restores it after refresh", async () => {
+    mockViewport(true);
+    const focus: DeepLink = {
+      listingId: null,
+      applicationId: "application-1",
+      section: "messages",
+      requestId: null,
+      documentId: null,
+      viewingId: null,
+      proposalId: null,
+      appointmentId: null,
+      activityId: null,
+    };
+    let resolveHistory: (page: ConversationHistory) => void = () => undefined;
+    vi.mocked(getConversationHistory).mockReturnValue(
+      new Promise((resolve) => {
+        resolveHistory = resolve;
+      }),
+    );
+    await renderModal(
+      "Wir suchen langfristig eine ruhige Wohnung.",
+      "2026-09-27T08:00:00.000Z",
+      { preserveHistory: true, focus },
+    );
+
+    const log = await screen.findByRole("log", { name: "Nachrichtenverlauf" });
+    Object.defineProperty(log, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(log, "clientHeight", {
+      configurable: true,
+      value: 300,
+    });
+    resolveHistory({
+      applicationId: "application-1",
+      conversationId: "conversation-1",
+      openedAt: "2026-10-01T08:00:00.000Z",
+      hasMessages: true,
+      canCurrentUserSend: true,
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: true,
+      sendBlockReason: null,
+      unreadCount: 0,
+      lastMessage: null,
+      hasMore: false,
+      nextAfterSequence: null,
+      messages: [
+        {
+          id: "message-1",
+          sequence: 1,
+          senderType: "APPLICANT",
+          body: "Erste Nachricht",
+          createdAt: "2026-10-01T08:00:00.000Z",
+          readAt: "2026-10-01T08:01:00.000Z",
+        },
+        {
+          id: "message-2",
+          sequence: 2,
+          senderType: "PROVIDER",
+          body: "Letzte Nachricht",
+          createdAt: "2026-10-01T09:00:00.000Z",
+          readAt: "2026-10-01T09:01:00.000Z",
+        },
+      ],
+    });
+
+    expect(await screen.findByText("Letzte Nachricht")).toBeInstanceOf(
+      HTMLElement,
+    );
+    expect(log.scrollTop).toBe(1000);
+    expect(
+      screen.getByRole("textbox", { name: "Nachricht an Maria Schneider" }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(screen.getAllByRole("log")).toHaveLength(1);
+
+    cleanup();
+    vi.mocked(getConversationHistory).mockResolvedValue({
+      applicationId: "application-1",
+      conversationId: "conversation-1",
+      openedAt: "2026-10-01T08:00:00.000Z",
+      hasMessages: true,
+      canCurrentUserSend: true,
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: true,
+      sendBlockReason: null,
+      unreadCount: 0,
+      lastMessage: null,
+      hasMore: false,
+      nextAfterSequence: null,
+      messages: [
+        {
+          id: "message-2",
+          sequence: 2,
+          senderType: "PROVIDER",
+          body: "Letzte Nachricht",
+          createdAt: "2026-10-01T09:00:00.000Z",
+          readAt: "2026-10-01T09:01:00.000Z",
+        },
+      ],
+    });
+    await renderModal(
+      "Wir suchen langfristig eine ruhige Wohnung.",
+      "2026-09-27T08:00:00.000Z",
+      { preserveHistory: true, focus },
+    );
+    expect(
+      screen.getByRole("button", { name: "Chat schließen" }),
+    ).toBeInstanceOf(HTMLElement);
+    expect(await screen.findByText("Letzte Nachricht")).toBeInstanceOf(
+      HTMLElement,
     );
   });
 
@@ -921,19 +1075,16 @@ describe("ApplicantWorkflowModal on compact viewports", () => {
     const user = userEvent.setup();
     mockViewport(true);
     const { onReject } = await renderModal();
-    const dialog = screen.getByRole("dialog", { name: "Maria Schneider" });
-    const scroller = dialog.querySelector(":scope > .overflow-y-auto");
+    const dialog = screen.getByRole("region", { name: "Maria Schneider" });
     const reject = screen.getByRole("button", { name: "Bewerbung ablehnen" });
+    const panel = screen.getByRole("tabpanel");
 
-    expect(scroller).not.toBeNull();
-    expect(scroller?.contains(reject)).toBe(true);
+    expect(dialog.contains(reject)).toBe(true);
     expect(
-      scroller?.contains(
-        screen.getByRole("heading", { name: "Maria Schneider" }),
-      ),
+      dialog.contains(screen.getByRole("heading", { name: "Maria Schneider" })),
     ).toBe(true);
     expect(
-      scroller?.contains(screen.getByRole("button", { name: "Schließen" })),
+      panel.contains(screen.getByRole("button", { name: "Schließen" })),
     ).toBe(false);
 
     await user.click(reject);
@@ -982,7 +1133,7 @@ describe("document request cancellation", () => {
       }),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -1019,7 +1170,7 @@ describe("document request cancellation", () => {
       }),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -1059,7 +1210,7 @@ describe("document request cancellation", () => {
         }),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -1104,7 +1255,7 @@ describe("document request cancellation", () => {
     );
     vi.mocked(cancelDocumentRequest).mockRejectedValue(new Error("failed"));
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -1139,7 +1290,7 @@ describe("document request cancellation", () => {
       }),
     );
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -1169,7 +1320,7 @@ describe("document request cancellation", () => {
       screen.queryByRole("dialog", { name: "Anfrage entfernen?" }),
     ).toBeNull();
     expect(
-      screen.getByRole("dialog", { name: "Maria Schneider" }),
+      screen.getByRole("region", { name: "Maria Schneider" }),
     ).not.toBeNull();
     expect(cancelDocumentRequest).not.toHaveBeenCalled();
     expect(
@@ -1190,14 +1341,14 @@ describe("document request cancellation", () => {
       },
     });
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
         onReject={vi.fn()}
       />,
     );
-    await screen.findByRole("dialog", { name: "Maria Schneider" });
+    await screen.findByRole("region", { name: "Maria Schneider" });
     await user.click(
       screen.getByRole("button", { name: "Unterlagen anfordern" }),
     );
@@ -1236,7 +1387,7 @@ describe("activity list collapse", () => {
     mockViewport(false);
   });
 
-  it("returns to the short preview with Weniger anzeigen", async () => {
+  it("expands the timeline and collapses it back to the latest summary", async () => {
     const user = userEvent.setup();
     const workspace = createApplicantWorkspace();
     vi.mocked(getApplicantWorkspace).mockResolvedValue({
@@ -1276,7 +1427,7 @@ describe("activity list collapse", () => {
       totalCount: 2,
     });
     render(
-      <ApplicantWorkflowModal
+      <ApplicantWorkspaceView
         applicationId="application-1"
         listing={listing}
         onClose={vi.fn()}
@@ -1284,27 +1435,34 @@ describe("activity list collapse", () => {
       />,
     );
     const activity = await screen.findByRole("region", { name: "Verlauf" });
-    await user.click(within(activity).getByRole("button", { name: "Verlauf" }));
+    const toggle = within(activity).getByRole("button", {
+      name: /Letzter Eintrag/,
+    });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.textContent).toContain("Du · SCHUFA-Auskunft angefordert");
+    expect(within(activity).queryByRole("listitem")).toBeNull();
+    await user.click(toggle);
+    expect(activity.querySelector(".overflow-y-auto")).toBeNull();
     await user.click(
-      within(activity).getByRole("button", { name: "Alle anzeigen" }),
+      within(activity).getByRole("button", { name: "Weitere laden" }),
     );
     expect(
       await within(activity).findByText(
         "Maria Schneider · Bewerbung eingereicht",
       ),
     ).not.toBeNull();
-    await user.click(
-      within(activity).getByRole("button", { name: "Weniger anzeigen" }),
-    );
+    expect(
+      within(activity).queryByText(/\b(PROVIDER|APPLICANT|SYSTEM)\b/),
+    ).toBeNull();
+    await user.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(
       within(activity).queryByText("Maria Schneider · Bewerbung eingereicht"),
     ).toBeNull();
+    expect(toggle.textContent).toContain("Du · SCHUFA-Auskunft angefordert");
     expect(
-      within(activity).getByText("Du · SCHUFA-Auskunft angefordert"),
-    ).not.toBeNull();
-    expect(
-      within(activity).getByRole("button", { name: "Weitere anzeigen" }),
-    ).not.toBeNull();
+      within(activity).queryByRole("button", { name: "Weitere laden" }),
+    ).toBeNull();
   });
 
   it("reloads the open activity list when the workspace changes", async () => {
@@ -1355,9 +1513,12 @@ describe("activity list collapse", () => {
     });
     const { rerender } = render(<ActivityHarness workspace={workspace} />);
     const activity = await screen.findByRole("region", { name: "Verlauf" });
-    await user.click(within(activity).getByRole("button", { name: "Verlauf" }));
+    const toggle = within(activity).getByRole("button", {
+      name: /Letzter Eintrag/,
+    });
+    await user.click(toggle);
     await user.click(
-      within(activity).getByRole("button", { name: "Alle anzeigen" }),
+      within(activity).getByRole("button", { name: "Weitere laden" }),
     );
     expect(
       await within(activity).findByText("Du · SCHUFA-Auskunft angefordert"),
@@ -1370,9 +1531,152 @@ describe("activity list collapse", () => {
     expect(
       await within(activity).findByText("Du · Nachricht gesendet"),
     ).not.toBeNull();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(vi.mocked(getActivityPage).mock.calls.length).toBeGreaterThanOrEqual(
       2,
     );
+  });
+
+  it("updates the collapsed summary when the workspace preview changes", async () => {
+    const workspace = {
+      ...createApplicantWorkspace(),
+      activityPreview: {
+        hasMore: false,
+        items: [
+          {
+            id: "activity-1",
+            type: "DOCUMENT_REQUESTED" as const,
+            actorType: "PROVIDER" as const,
+            occurredAt: "2026-10-04T11:58:44.072Z",
+            payload: {
+              documentType: "SCHUFA" as const,
+              requestId: "request-1",
+            },
+          },
+        ],
+      },
+    };
+    const { rerender } = render(<ActivityHarness workspace={workspace} />);
+    const activity = await screen.findByRole("region", { name: "Verlauf" });
+    const toggle = within(activity).getByRole("button", {
+      name: /Letzter Eintrag/,
+    });
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.textContent).toContain("Du · SCHUFA-Auskunft angefordert");
+
+    rerender(
+      <ActivityHarness
+        workspace={{
+          ...workspace,
+          activityPreview: {
+            hasMore: false,
+            items: [
+              {
+                id: "activity-2",
+                type: "VIEWING_PROPOSAL_WITHDRAWN",
+                actorType: "PROVIDER",
+                occurredAt: "2026-10-27T12:20:00.000Z",
+                payload: null,
+              },
+            ],
+          },
+        }}
+      />,
+    );
+
+    const updated = within(activity).getByRole("button", {
+      name: /Letzter Eintrag/,
+    });
+    expect(updated.getAttribute("aria-expanded")).toBe("false");
+    expect(updated.textContent).toContain(
+      "Letzter Eintrag: Du · Terminvorschlag zurückgezogen",
+    );
+    expect(within(activity).queryByRole("listitem")).toBeNull();
+  });
+
+  it("pages until a linked activity is visible and stops when the cursor ends", async () => {
+    const first = {
+      id: "activity-1",
+      type: "DOCUMENT_REQUESTED" as const,
+      actorType: "PROVIDER" as const,
+      occurredAt: "2026-10-04T11:58:44.072Z",
+      payload: { documentType: "SCHUFA" as const, requestId: "request-1" },
+    };
+    const second = {
+      id: "activity-2",
+      type: "APPLICATION_SUBMITTED" as const,
+      actorType: "APPLICANT" as const,
+      occurredAt: "2026-10-04T11:00:00.000Z",
+      payload: null,
+    };
+    vi.mocked(getActivityPage)
+      .mockResolvedValueOnce({
+        asOf: "2026-10-04T12:00:00.000Z",
+        items: [first],
+        pagination: { hasMore: true, limit: 20, nextCursor: "cursor-2" },
+        totalCount: 2,
+      })
+      .mockResolvedValueOnce({
+        asOf: "2026-10-04T12:00:00.000Z",
+        items: [second],
+        pagination: { hasMore: false, limit: 20, nextCursor: null },
+        totalCount: 2,
+      });
+    render(
+      <WorkflowSession
+        workspace={{
+          ...createApplicantWorkspace(),
+          activityPreview: { hasMore: true, items: [first] },
+        }}
+        listing={listing}
+        reloadWorkspace={() => undefined}
+      >
+        <FocusedActivity activityId="activity-2" />
+      </WorkflowSession>,
+    );
+
+    const row = await screen.findByText(
+      "Maria Schneider · Bewerbung eingereicht",
+    );
+    expect(
+      screen
+        .getByRole("button", { name: /Letzter Eintrag/ })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(row.closest("li")?.getAttribute("data-activity-id")).toBe(
+      "activity-2",
+    );
+    await waitFor(() => {
+      expect(row.closest("li")?.className).toContain("ring-primary");
+    });
+
+    cleanup();
+    vi.mocked(getActivityPage).mockResolvedValue({
+      asOf: "2026-10-04T12:00:00.000Z",
+      items: [first],
+      pagination: { hasMore: false, limit: 20, nextCursor: null },
+      totalCount: 1,
+    });
+    render(
+      <WorkflowSession
+        workspace={{
+          ...createApplicantWorkspace(),
+          activityPreview: { hasMore: true, items: [first] },
+        }}
+        listing={listing}
+        reloadWorkspace={() => undefined}
+      >
+        <FocusedActivity activityId="missing" />
+      </WorkflowSession>,
+    );
+    const open = await screen.findByRole("button", { name: /Letzter Eintrag/ });
+    await waitFor(() => {
+      expect(open.getAttribute("aria-expanded")).toBe("true");
+    });
+    expect(screen.queryByText("missing")).toBeNull();
+    await waitFor(() => {
+      expect(getActivityPage).toHaveBeenCalled();
+    });
   });
 
   it("reloads messages when the workspace asOf changes", async () => {
@@ -1406,11 +1710,80 @@ describe("activity list collapse", () => {
       expect(getConversationHistory).toHaveBeenCalledTimes(2);
     });
   });
+
+  it("keeps loaded messages in place when the workspace snapshot changes", async () => {
+    const message = {
+      id: "message-1",
+      sequence: 1,
+      senderType: "APPLICANT" as const,
+      body: "Bestehende Nachricht",
+      createdAt: "2026-10-04T11:00:00.000Z",
+      readAt: "2026-10-04T11:01:00.000Z",
+    };
+    const history = {
+      applicationId: "application-1",
+      conversationId: "conversation-1",
+      openedAt: "2026-10-04T11:00:00.000Z",
+      hasMessages: true,
+      canCurrentUserSend: true,
+      applicantRepliesEnabled: true,
+      canCurrentUserManageApplicantReplies: false,
+      sendBlockReason: null,
+      unreadCount: 0,
+      lastMessage: message,
+      messages: [message],
+      hasMore: false,
+      nextAfterSequence: null,
+    };
+    let resolveRefresh: (value: typeof history) => void = () => undefined;
+    const refresh = new Promise<typeof history>((resolve) => {
+      resolveRefresh = resolve;
+    });
+    vi.mocked(getConversationHistory).mockReset();
+    vi.mocked(getConversationHistory)
+      .mockResolvedValueOnce(history)
+      .mockImplementationOnce(() => refresh);
+    const workspace = createApplicantWorkspace();
+    const { rerender } = render(<MessageHarness workspace={workspace} />);
+    expect(await screen.findByText("Bestehende Nachricht")).not.toBeNull();
+    expect(screen.queryByText("Keine ungelesenen")).toBeNull();
+    const log = screen.getByRole("log", { name: "Nachrichtenverlauf" });
+    Object.defineProperty(log, "scrollHeight", {
+      configurable: true,
+      value: 1000,
+    });
+    Object.defineProperty(log, "clientHeight", {
+      configurable: true,
+      value: 300,
+    });
+    log.scrollTop = 200;
+    fireEvent.scroll(log);
+
+    rerender(
+      <MessageHarness
+        workspace={{ ...workspace, asOf: "2026-10-04T12:30:00.000Z" }}
+      />,
+    );
+    expect(screen.getByText("Bestehende Nachricht")).not.toBeNull();
+    expect(log.scrollTop).toBe(200);
+
+    resolveRefresh(history);
+    await waitFor(() => {
+      expect(getConversationHistory).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.getByText("Bestehende Nachricht")).not.toBeNull();
+    expect(log.scrollTop).toBe(200);
+  });
 });
 
 function ActivityFromSession() {
   const session = useWorkflowSession();
   return <ActivitySection model={session.model} />;
+}
+
+function FocusedActivity({ activityId }: { readonly activityId: string }) {
+  const session = useWorkflowSession();
+  return <ActivitySection model={session.model} focusActivityId={activityId} />;
 }
 
 function MessagesFromSession() {

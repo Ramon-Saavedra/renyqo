@@ -11,7 +11,7 @@ const ICON_SIZE = 15;
 const ICON_STROKE = 1.7;
 
 const BAR_CLASS =
-  "sticky top-0 z-40 flex h-app-topbar shrink-0 items-center gap-x-3 border-b border-border bg-background px-3 sm:gap-x-6 lg:px-gutter";
+  "sticky top-0 z-40 flex h-app-topbar shrink-0 items-center gap-x-3 border-b border-border bg-background px-gutter sm:gap-x-6";
 
 const ACTIONS_CLASS = "ml-auto flex items-center gap-2";
 const TOPBAR_ICON_ACTION_CLASS =

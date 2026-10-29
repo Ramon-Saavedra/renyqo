@@ -1,7 +1,11 @@
-import { buildApplicationAttentionChips } from "@/lib/attention/chips";
 import type { AttentionChipModel } from "@/lib/attention/chips";
 import { hasApplicationAttentionSurface } from "@/lib/attention/visibility";
 import { formatEUR } from "@/features/applicant/listings/utils/format";
+import {
+  attentionChipsForViewingCard,
+  presentCurrentCardViewing,
+  type CardViewingSummary,
+} from "@/features/viewing-workflow/present/card-viewing";
 import type { ApplicantApplicationCard } from "../api/overview";
 import { applicationsCopy } from "../copy";
 import { formatDate } from "./format-date";
@@ -17,6 +21,7 @@ export interface OverviewCardModel {
   readonly imageUrl: string | null;
   readonly status: StatusPresentation;
   readonly dates: string;
+  readonly viewingSummary: CardViewingSummary | null;
   readonly attentionChips: readonly AttentionChipModel[];
   readonly ariaLabel: string;
   readonly needsAttention: boolean;
@@ -55,13 +60,19 @@ export function toOverviewCardModel(
   const title = card.listing.title?.trim() || copy.untitledListing;
   const location = locationLine(card);
   const dates = datesLine(card);
-  const attentionChips = buildApplicationAttentionChips(card.attention);
+  const viewingSummary = presentCurrentCardViewing(card.viewing);
+  const attentionChips = attentionChipsForViewingCard(
+    card.attention,
+    viewingSummary,
+  );
   const needsAttention = hasApplicationAttentionSurface(card.attention);
   const ariaLabel = [
     title,
     location,
     `${copy.statusPrefix}: ${status.label}`,
     dates,
+    viewingSummary?.primary,
+    viewingSummary?.secondary,
     ...attentionChips.map((chip) => chip.label),
   ]
     .filter((part): part is string => Boolean(part))
@@ -75,6 +86,7 @@ export function toOverviewCardModel(
     imageUrl: card.listing.imageUrl,
     status,
     dates,
+    viewingSummary,
     attentionChips,
     ariaLabel,
     needsAttention,

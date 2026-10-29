@@ -21,4 +21,7 @@ export const attentionCopy = {
   listingTitleFallback: "Inserat ohne Titel",
   globalMenuAriaLabel: (count: number) =>
     count === 1 ? "1 offener Punkt" : `${count} offene Punkte`,
+  messagesMenuTitle: "Nachrichten",
+  messagesMenuEmpty: "Keine ungelesenen Nachrichten",
+  messagesMenuError: "Nachrichten konnten nicht geladen werden",
 } as const;

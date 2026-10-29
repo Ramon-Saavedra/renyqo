@@ -4,6 +4,7 @@ import {
   REALTIME_COALESCE_MS,
   resetRealtimeSchedules,
   scheduleConversationMessage,
+  scheduleLifecycleChanged,
 } from "@/lib/realtime/attention";
 import type { ApplicantApplicationsPage } from "../api/overview";
 import type * as overviewApi from "../api/overview";
@@ -49,6 +50,17 @@ describe("applicant overview realtime refresh", () => {
     vi.useFakeTimers();
     scheduleConversationMessage("applicant", "application-1");
     scheduleConversationMessage("applicant", "application-2");
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(REALTIME_COALESCE_MS);
+    });
+    expect(getApplicantApplicationsOverview).toHaveBeenCalledTimes(2);
+  });
+
+  it("reloads application cards after a lifecycle hint", async () => {
+    const { result } = renderHook(() => useApplicationsOverview("ALL"));
+    await waitFor(() => expect(result.current.state.status).toBe("ready"));
+    vi.useFakeTimers();
+    scheduleLifecycleChanged("applicant", "application-1", "listing-1");
     await act(async () => {
       await vi.advanceTimersByTimeAsync(REALTIME_COALESCE_MS);
     });

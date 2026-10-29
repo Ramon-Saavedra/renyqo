@@ -2,6 +2,7 @@ import { z } from "zod";
 import { applicationAttentionSummarySchema } from "@/lib/attention/schemas";
 import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import { ApplicantApplicationContractError } from "./errors";
+import { cardViewingSchema } from "@/features/viewing-workflow/present/card-viewing";
 import {
   applicationStatusSchema,
   compactConversationSchema,
@@ -9,7 +10,6 @@ import {
   dateTimeSchema,
   documentCountsSchema,
   readModelPaginationSchema,
-  viewingSummarySchema,
 } from "./shared-schemas";
 
 const OVERVIEW_PAGE_SIZE = 20;
@@ -34,7 +34,7 @@ const applicationCardSchema = z.object({
   attention: applicationAttentionSummarySchema,
   conversation: compactConversationSchema,
   documents: documentCountsSchema,
-  viewing: viewingSummarySchema,
+  viewing: cardViewingSchema,
 });
 
 const overviewCountsSchema = z.object({

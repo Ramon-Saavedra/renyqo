@@ -1,3 +1,4 @@
+import { presentCurrentCardViewing } from "@/features/viewing-workflow/present/card-viewing";
 import {
   buildInitials,
   formatActiveAtLabel,
@@ -19,6 +20,8 @@ export function mapActiveApplicationToCandidate(
     introduction: application.applicant.introduction,
     activeAtLabel: formatActiveAtLabel(application.activeAt),
     attention: application.attention,
+    viewingSummary: presentCurrentCardViewing(application.viewing),
+    applicantNoShow: application.consideration?.applicantNoShow ?? null,
   };
 }
 

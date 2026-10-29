@@ -10,7 +10,6 @@ import { useCandidateRejection } from "../hooks/useCandidateRejection";
 import { useRequestTabRefresh } from "../hooks/TabRefreshProvider";
 import { MAX_ACTIVE_APPLICATIONS } from "../types";
 import type { Candidate, DashboardObject, WaitingCountState } from "../types";
-import { ApplicantWorkflowModal } from "../applicant-workflow/components/ApplicantWorkflowModal";
 import { CandidateLane } from "./CandidateLane";
 import { DASHBOARD_BLOCK_CLASS } from "./dashboard-layout";
 
@@ -69,9 +68,6 @@ function CandidatesSectionContent({
   const [candidateToReject, setCandidateToReject] = useState<Candidate | null>(
     null,
   );
-  const [workflowCandidate, setWorkflowCandidate] = useState<Candidate | null>(
-    null,
-  );
   const [rejectedApplications, setRejectedApplications] =
     useState<RejectedApplicationsState>({
       candidates,
@@ -100,11 +96,6 @@ function CandidatesSectionContent({
     if (isRejecting) return;
     reset();
     setCandidateToReject(null);
-  }
-
-  function rejectFromWorkflow(candidate: Candidate) {
-    setWorkflowCandidate(null);
-    openRejectConfirmation(candidate);
   }
 
   async function confirmRejection() {
@@ -204,7 +195,6 @@ function CandidatesSectionContent({
               }
               announceWaitingStatus={waitingCountState.status !== "error"}
               capacity={MAX_ACTIVE_APPLICATIONS}
-              onOpenPreview={setWorkflowCandidate}
               onRejectCandidate={openRejectConfirmation}
               rejectingApplicationId={
                 state.status === "submitting" ? state.applicationId : null
@@ -230,26 +220,6 @@ function CandidatesSectionContent({
         icon={UserRoundX}
         focusFallbackRef={candidateLaneRef}
       />
-      {workflowCandidate && object ? (
-        <ApplicantWorkflowModal
-          applicationId={workflowCandidate.id}
-          listing={{
-            id: object.id,
-            title: object.title,
-            city: object.district,
-            coldRent: object.coldRent,
-            status: object.status,
-            rooms: object.rooms,
-            livingArea: object.livingArea,
-          }}
-          onClose={() => setWorkflowCandidate(null)}
-          onReject={() => rejectFromWorkflow(workflowCandidate)}
-          onSelected={() => {
-            setWorkflowCandidate(null);
-            requestRefresh();
-          }}
-        />
-      ) : null}
     </>
   );
 }

@@ -12,6 +12,21 @@ vi.mock("@/components/shared/attention/TopbarAttentionControl", () => ({
   TopbarAttentionControl: () => null,
 }));
 
+vi.mock("@/components/shared/attention/TopbarMessagesControl", () => ({
+  TopbarMessagesControl: () => null,
+}));
+
+vi.mock("@/features/notifications/api/notifications", () => ({
+  getNotificationUnreadCount: vi.fn().mockResolvedValue({
+    asOf: "2026-10-26T08:00:00.000Z",
+    unreadCount: 0,
+    nextRevalidateAt: null,
+  }),
+  listNotifications: vi.fn(),
+  markNotificationRead: vi.fn(),
+  markAllNotificationsRead: vi.fn(),
+}));
+
 vi.mock("@/components/layout/account-menu/AccountMenu", () => ({
   AccountMenu: ({ variant }: { variant: string }) => (
     <div>Account menu {variant}</div>

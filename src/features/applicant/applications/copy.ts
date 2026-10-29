@@ -165,6 +165,8 @@ export const applicationsCopy = {
   },
   messages: {
     title: "Nachrichten",
+    open: "Nachrichten öffnen",
+    closeChat: "Chat schließen",
     readOnly: "Nur lesbar",
     logLabel: "Nachrichtenverlauf mit dem Anbieter",
     provider: "Anbieter",
@@ -266,6 +268,7 @@ export const applicationsCopy = {
       "Der Termin hat sich geändert. Bitte prüfe den aktuellen Stand, bevor du erneut antwortest.",
     title: "Besichtigung",
     states: {
+      OUTCOME_PENDING: "Ergebnis ausstehend",
       PROPOSED: "Vorgeschlagen",
       ACCEPTED: "Bestätigt",
       CHANGE_REQUESTED: "Andere Zeit angefragt",
@@ -276,6 +279,7 @@ export const applicationsCopy = {
       SUPERSEDED: "Ersetzt",
     },
     texts: {
+      OUTCOME_PENDING: "Der Anbieter trägt das Ergebnis der Besichtigung ein.",
       PROPOSED:
         "Der Anbieter hat diesen Termin vorgeschlagen. Bitte gib ihm eine Rückmeldung.",
       PROPOSED_CLOSED: "Der Anbieter hatte diesen Termin vorgeschlagen.",
@@ -332,7 +336,7 @@ export const applicationsCopy = {
       `${count} ${plural(count, "Ereignis", "Ereignisse")}`,
     showAll: "Gesamten Verlauf anzeigen",
     showLess: "Weniger anzeigen",
-    loadMore: "Weitere Ereignisse laden",
+    loadMore: "Weitere laden",
     loading: "Verlauf wird geladen …",
     loadError: "Der Verlauf konnte nicht geladen werden.",
     retry: "Erneut versuchen",

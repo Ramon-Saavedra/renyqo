@@ -8,7 +8,11 @@ import { normalizeRole } from "@/lib/normalize-role";
 import {
   scheduleConversationMessage,
   scheduleConversationSummary,
+  scheduleLifecycleChanged,
+  scheduleListingApplicationsChanged,
+  scheduleNotificationsChanged,
   scheduleRealtimeResync,
+  scheduleViewingChanged,
   resetRealtimeSchedules,
 } from "@/lib/realtime/attention";
 import {
@@ -39,9 +43,11 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     userId !== null &&
     role !== null;
   const roleRef = useRef<GlobalAttentionRole | null>(role);
+  const userIdRef = useRef<string | null>(userId);
   useEffect(() => {
     roleRef.current = role;
-  }, [role]);
+    userIdRef.current = userId;
+  }, [role, userId]);
 
   useEffect(() => {
     if (!enabled) {
@@ -59,6 +65,17 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
             scheduleConversationMessage(role, applicationId),
           summary: (applicationId) =>
             scheduleConversationSummary(role, applicationId),
+          viewing: (applicationId, listingId) =>
+            scheduleViewingChanged(role, applicationId, listingId),
+          lifecycle: (applicationId, listingId) =>
+            scheduleLifecycleChanged(role, applicationId, listingId),
+          listing: (listingId) =>
+            scheduleListingApplicationsChanged(role, listingId),
+          notifications: (eventUserId) => {
+            const currentUserId = userIdRef.current;
+            if (currentUserId && currentUserId !== eventUserId) return;
+            scheduleNotificationsChanged(role);
+          },
         });
       },
       onConnected: () => {

@@ -45,6 +45,59 @@ describe("parseDomainEvent", () => {
     expect(read?.type).toBe("conversation.read.advanced");
   });
 
+  it("accepts application, listing, and notification events without a conversation id", () => {
+    expect(
+      parseDomainEvent({
+        eventId: "event-viewing",
+        type: "application.viewing.changed",
+        schemaVersion: 1,
+        occurredAt,
+        applicationId: "application-1",
+        payload: {
+          listingId: "listing-1",
+          workflowId: "workflow-1",
+          workflowRevision: 4,
+        },
+      })?.type,
+    ).toBe("application.viewing.changed");
+    expect(
+      parseDomainEvent({
+        eventId: "event-lifecycle",
+        type: "application.lifecycle.changed",
+        schemaVersion: 1,
+        occurredAt,
+        applicationId: "application-1",
+        payload: { listingId: "listing-1" },
+      })?.type,
+    ).toBe("application.lifecycle.changed");
+    expect(
+      parseDomainEvent({
+        eventId: "event-listing",
+        type: "listing.applications.changed",
+        schemaVersion: 1,
+        occurredAt,
+        listingId: "listing-1",
+        payload: {},
+      })?.type,
+    ).toBe("listing.applications.changed");
+    expect(
+      parseDomainEvent({
+        eventId: "event-notifications",
+        type: "notifications.changed",
+        schemaVersion: 1,
+        occurredAt,
+        userId: "user-1",
+        payload: {},
+      })?.type,
+    ).toBe("notifications.changed");
+  });
+
+  it("still requires conversationId on conversation events", () => {
+    const { conversationId, ...withoutConversation } = messageEvent();
+    expect(conversationId).toBe("conversation-1");
+    expect(parseDomainEvent(withoutConversation)).toBeNull();
+  });
+
   it("rejects unsupported versions, types, and malformed payloads", () => {
     expect(parseDomainEvent(messageEvent({ schemaVersion: 2 }))).toBeNull();
     expect(

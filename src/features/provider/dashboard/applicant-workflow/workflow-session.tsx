@@ -93,6 +93,7 @@ interface WorkflowSessionValue {
   readonly expandActivity: () => void;
   readonly collapseActivity: () => void;
   readonly confirmSelectTenant: () => Promise<"done" | "busy" | "failed">;
+  readonly reloadWorkspace: () => void;
 }
 
 const WorkflowSessionContext = createContext<WorkflowSessionValue | null>(null);
@@ -117,6 +118,17 @@ function actionMessage(error: unknown): string {
     return applicantWorkflowCopy.loadError;
   }
   return applicantWorkflowCopy.loadError;
+}
+
+function mergeMessages(
+  current: readonly ConversationMessage[],
+  next: readonly ConversationMessage[],
+): readonly ConversationMessage[] {
+  const merged = new Map(current.map((message) => [message.id, message]));
+  for (const message of next) merged.set(message.id, message);
+  return [...merged.values()].sort(
+    (left, right) => left.sequence - right.sequence,
+  );
 }
 
 interface WorkflowSessionProps {
@@ -169,7 +181,7 @@ export function WorkflowSession({
     requestRef: messagesRequest,
     getMessages: () => messages,
     applyMessages: (loaded) => {
-      setMessages(loaded);
+      setMessages((current) => mergeMessages(current, loaded));
       setMessagesStatus("ready");
     },
     onError: () => {
@@ -184,7 +196,6 @@ export function WorkflowSession({
 
   if (workspace.asOf !== trackedAsOf) {
     setTrackedAsOf(workspace.asOf);
-    setMessages([]);
     setMessagesStatus("idle");
     setActivityItems([]);
     setActivityCursor(null);
@@ -251,7 +262,7 @@ export function WorkflowSession({
       )
         .then(async (loaded) => {
           if (messagesRequest.current !== request) return;
-          setMessages(loaded);
+          setMessages((current) => mergeMessages(current, loaded));
           const through = loaded
             .filter(
               (message) =>
@@ -502,7 +513,9 @@ export function WorkflowSession({
       collapseActivity: () => {
         setActivityExpanded(false);
       },
+      reloadWorkspace,
       confirmSelectTenant: async () => {
+        if (!model.listing.id) return "failed";
         if (!model.canSelectForRental || actionLock.current) return "busy";
         actionLock.current = true;
         setSelecting(true);

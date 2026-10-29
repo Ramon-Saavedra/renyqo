@@ -54,6 +54,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  viewportFit: "cover",
   themeColor: [
     {
       media: "(prefers-color-scheme: light)",
@@ -76,7 +77,7 @@ export default function RootLayout({
   return (
     <html
       lang="de"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} scrollbar-slim scroll-pt-app-topbar h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

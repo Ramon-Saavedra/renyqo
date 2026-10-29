@@ -18,6 +18,7 @@ import {
   Undo2,
   Upload,
 } from "lucide-react";
+import { SHARED_ACTIVITY_EVENT_LABEL } from "@/lib/activity/event-labels";
 import type { ActivityItem, ActivityType } from "../api/activity-schema";
 import { documentLabel } from "./document-labels";
 import { formatDateTime } from "./format-date";
@@ -41,7 +42,7 @@ const FIXED: Record<
   ActivityPresentation
 > = {
   APPLICATION_SUBMITTED: {
-    label: "Bewerbung eingereicht",
+    label: SHARED_ACTIVITY_EVENT_LABEL.APPLICATION_SUBMITTED,
     icon: FileCheck,
     tone: "neutral",
   },
@@ -66,27 +67,27 @@ const FIXED: Record<
     tone: "neutral",
   },
   APPLICATION_WITHDRAWN: {
-    label: "Bewerbung zurückgezogen",
+    label: SHARED_ACTIVITY_EVENT_LABEL.APPLICATION_WITHDRAWN,
     icon: Undo2,
     tone: "neutral",
   },
   APPLICANT_REPLIES_ENABLED: {
-    label: "Antworten freigegeben",
+    label: SHARED_ACTIVITY_EVENT_LABEL.APPLICANT_REPLIES_ENABLED,
     icon: MessageSquare,
     tone: "neutral",
   },
   APPLICANT_REPLIES_DISABLED: {
-    label: "Antworten gesperrt",
+    label: SHARED_ACTIVITY_EVENT_LABEL.APPLICANT_REPLIES_DISABLED,
     icon: MessageSquare,
     tone: "neutral",
   },
   CONVERSATION_OPENED: {
-    label: "Unterhaltung begonnen",
+    label: SHARED_ACTIVITY_EVENT_LABEL.CONVERSATION_OPENED,
     icon: MessageSquare,
     tone: "neutral",
   },
   VIEWING_PROPOSED: {
-    label: "Besichtigung vorgeschlagen",
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_PROPOSED,
     icon: Calendar,
     tone: "neutral",
   },
@@ -96,12 +97,12 @@ const FIXED: Record<
     tone: "neutral",
   },
   VIEWING_ACCEPTED: {
-    label: "Besichtigung angenommen",
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_ACCEPTED,
     icon: CalendarCheck,
     tone: "neutral",
   },
   VIEWING_DECLINED: {
-    label: "Besichtigung abgelehnt",
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_DECLINED,
     icon: CalendarX,
     tone: "neutral",
   },
@@ -111,7 +112,7 @@ const FIXED: Record<
     tone: "neutral",
   },
   VIEWING_CANCELLED: {
-    label: "Besichtigung abgesagt",
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_CANCELLED,
     icon: CalendarX,
     tone: "neutral",
   },
@@ -138,6 +139,36 @@ const FIXED: Record<
   VIEWING_INTEREST_DECLINED: {
     label: "Kein weiteres Interesse mitgeteilt",
     icon: ThumbsDown,
+    tone: "neutral",
+  },
+  VIEWING_REPLACEMENT_PROPOSED: {
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_REPLACEMENT_PROPOSED,
+    icon: CalendarClock,
+    tone: "neutral",
+  },
+  VIEWING_PROPOSAL_WITHDRAWN: {
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_PROPOSAL_WITHDRAWN,
+    icon: Undo2,
+    tone: "neutral",
+  },
+  VIEWING_PROPOSAL_EXPIRED: {
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_PROPOSAL_EXPIRED,
+    icon: CalendarX,
+    tone: "neutral",
+  },
+  VIEWING_INTEREST_EXPIRED: {
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_INTEREST_EXPIRED,
+    icon: CircleMinus,
+    tone: "neutral",
+  },
+  VIEWING_CONSIDERATION_CHANGED: {
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_CONSIDERATION_CHANGED,
+    icon: CircleDot,
+    tone: "neutral",
+  },
+  VIEWING_WORKFLOW_CLOSED: {
+    label: SHARED_ACTIVITY_EVENT_LABEL.VIEWING_WORKFLOW_CLOSED,
+    icon: CalendarX,
     tone: "neutral",
   },
 };

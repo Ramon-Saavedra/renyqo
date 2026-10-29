@@ -166,6 +166,8 @@ function DocumentRows({
         {model.documents.map((document) => (
           <li
             key={document.requestId}
+            data-request-id={document.requestId}
+            data-document-id={document.documentId ?? undefined}
             className="flex items-start gap-2 text-caption"
           >
             <span className="flex min-w-0 flex-1 flex-col gap-1">
@@ -452,6 +454,7 @@ export function DocumentsSection({
     <WorkflowSection
       icon={FileText}
       title={copy.title}
+      sectionKey="documents"
       aside={
         <span className="text-caption text-foreground-secondary">
           {model.summaries.documents.value}

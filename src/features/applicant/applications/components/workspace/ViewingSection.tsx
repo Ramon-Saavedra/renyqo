@@ -312,7 +312,7 @@ function ViewingDetails({
   );
 }
 
-interface ViewingSectionProps {
+export interface ViewingSectionProps {
   readonly viewing: ViewingSnapshot | null;
   readonly detail: AuxiliaryLoad<ViewingDetail | null>;
   readonly status: ApplicationStatus;
@@ -337,6 +337,8 @@ export function ViewingSection({
     <WorkspaceSection
       icon={Calendar}
       title={copy.title}
+      sectionKey="viewing"
+      viewingId={viewing?.viewingId}
       highlighted={highlighted}
       sectionRef={sectionRef}
       className={className}

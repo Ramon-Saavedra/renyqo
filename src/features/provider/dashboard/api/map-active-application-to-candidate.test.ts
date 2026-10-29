@@ -47,6 +47,8 @@ describe("mapActiveApplicationToCandidate", () => {
       introduction: null,
       activeAtLabel: null,
       attention: emptyApplicationAttentionSummary(),
+      viewingSummary: null,
+      applicantNoShow: null,
     });
   });
 
@@ -82,6 +84,50 @@ describe("mapActiveApplicationToCandidate", () => {
       "pets_by_arrangement",
       "smoking_by_arrangement",
     ]);
+  });
+
+  it("keeps the viewing summary and no-show marker without the consideration position", () => {
+    const candidate = mapActiveApplicationToCandidate(
+      buildApplication({
+        viewing: {
+          mode: "CURRENT",
+          confirmedAppointment: {
+            startsAt: "2026-11-12T13:00:00.000Z",
+            endsAt: "2026-11-12T13:30:00.000Z",
+            timeZone: "Europe/Berlin",
+          },
+          pendingProposal: {
+            startsAt: "2026-11-20T15:00:00.000Z",
+            endsAt: "2026-11-20T15:30:00.000Z",
+            timeZone: "Europe/Berlin",
+            baseAppointmentId: "appointment-1",
+            responderSide: "APPLICANT",
+            responseDeadlineAt: "2026-11-13T12:00:00.000Z",
+          },
+          nextObligation: null,
+        },
+        consideration: {
+          position: "18",
+          revision: 2,
+          applicantNoShow: {
+            code: "APPLICANT_NO_SHOW",
+            appointmentId: "appointment-1",
+            recordedAt: "2026-10-20T10:00:00.000Z",
+            startsAt: "2026-10-20T08:00:00.000Z",
+            endsAt: "2026-10-20T08:30:00.000Z",
+            timeZone: "Europe/Berlin",
+          },
+        },
+      }),
+    );
+
+    expect(candidate.viewingSummary).toEqual({
+      primary: "Termin 12. Nov., 14:00",
+      secondary: "Ersatzvorschlag offen",
+    });
+    expect(candidate.applicantNoShow?.code).toBe("APPLICANT_NO_SHOW");
+    expect(candidate).not.toHaveProperty("consideration");
+    expect(candidate).not.toHaveProperty("position");
   });
 });
 

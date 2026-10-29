@@ -6,6 +6,7 @@ interface WorkflowSectionProps {
   readonly icon: LucideIcon;
   readonly title: string;
   readonly aside?: ReactNode;
+  readonly sectionKey?: string;
   readonly children: ReactNode;
 }
 
@@ -13,14 +14,16 @@ export function WorkflowSection({
   icon,
   title,
   aside,
+  sectionKey,
   children,
 }: WorkflowSectionProps) {
   const titleId = useId();
 
   return (
     <section
+      data-section={sectionKey}
       aria-labelledby={titleId}
-      className="min-w-0 overflow-hidden rounded-md border border-border bg-background-muted"
+      className="min-w-0 scroll-mt-app-topbar overflow-hidden rounded-md border border-border bg-background-muted"
     >
       <div className="flex items-center gap-2.5 border-b border-border px-3.5 py-2.5">
         <AppIcon

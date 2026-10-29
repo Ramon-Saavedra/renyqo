@@ -24,6 +24,7 @@ import {
   type ApplicantWorkspace,
 } from "../../api/workspace";
 import type * as workspaceApi from "../../api/workspace";
+import { formatCardSchedule } from "../../model/format-date";
 import {
   APPLICATION_ID,
   createWorkspace,
@@ -34,6 +35,10 @@ import { ApplicationWorkspace } from "./ApplicationWorkspace";
 vi.mock("../../api/workspace", async (importOriginal) => ({
   ...(await importOriginal<typeof workspaceApi>()),
   getApplicantWorkspace: vi.fn(),
+}));
+
+vi.mock("@/features/viewing-workflow/api/applicant-workflow", () => ({
+  getApplicantViewingWorkflow: vi.fn(() => new Promise(() => undefined)),
 }));
 
 vi.mock("../../api/conversation", async (importOriginal) => ({
@@ -132,6 +137,11 @@ function viewingRegion() {
 }
 
 beforeEach(() => {
+  window.history.replaceState(
+    window.history.state,
+    "",
+    "/applicant/applications/test",
+  );
   vi.clearAllMocks();
   vi.mocked(getViewingDetail).mockResolvedValue({
     viewingId: "viewing-1",
@@ -413,23 +423,30 @@ describe("ApplicationWorkspace history", () => {
     activity("a-1", "APPLICATION_SUBMITTED"),
   ];
 
-  it("shows the compact preview with readable labels and dates", async () => {
+  it("keeps Verlauf collapsed on the latest activity", async () => {
     getWorkspace.mockResolvedValue(
       createWorkspace({ activityPreview: { items: preview, hasMore: false } }),
     );
 
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
     const region = await screen.findByRole("region", { name: "Verlauf" });
+    const toggle = within(region).getByRole("button", {
+      name: /Letzter Eintrag/,
+    });
 
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle.textContent).toContain(
+      "Letzter Eintrag: Nachricht vom Anbieter erhalten",
+    );
+    expect(toggle.textContent).toContain(
+      formatCardSchedule("2026-09-29T08:12:00.000Z"),
+    );
     expect(
-      within(region).getByText("Nachricht vom Anbieter erhalten"),
-    ).toBeTruthy();
-    expect(
-      within(region).getByText("In den aktiven Prozess aufgenommen"),
-    ).toBeTruthy();
-    expect(within(region).getAllByText("29.09.2026 · 10:12")).toHaveLength(5);
+      within(region).queryByText("In den aktiven Prozess aufgenommen"),
+    ).toBeNull();
+    expect(within(region).queryByText(/PROVIDER|APPLICANT|SYSTEM/)).toBeNull();
     expect(within(region).queryByText(/2026-09-29T/)).toBeNull();
-    expect(within(region).queryByRole("button")).toBeNull();
+    expect(region.querySelector(".overflow-y-auto")).toBeNull();
   });
 
   it("loads the full history with cursor pagination", async () => {
@@ -452,7 +469,7 @@ describe("ApplicationWorkspace history", () => {
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
     const region = await screen.findByRole("region", { name: "Verlauf" });
     const toggle = within(region).getByRole("button", {
-      name: "Gesamten Verlauf anzeigen",
+      name: /Letzter Eintrag/,
     });
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     await user.click(toggle);
@@ -460,9 +477,11 @@ describe("ApplicationWorkspace history", () => {
     expect(
       await within(region).findByText("Unterhaltung begonnen"),
     ).toBeTruthy();
-    expect(within(region).getByText("7 Ereignisse")).toBeTruthy();
+    expect(
+      within(region).getAllByText("29.09.2026 · 10:12").length,
+    ).toBeGreaterThan(0);
     await user.click(
-      within(region).getByRole("button", { name: "Weitere Ereignisse laden" }),
+      within(region).getByRole("button", { name: "Weitere laden" }),
     );
 
     expect(await within(region).findByText("Unterlage geprüft")).toBeTruthy();
@@ -472,9 +491,12 @@ describe("ApplicationWorkspace history", () => {
     );
     expect(
       within(region).queryByRole("button", {
-        name: "Weitere Ereignisse laden",
+        name: "Weitere laden",
       }),
     ).toBeNull();
+    await user.click(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    expect(within(region).queryByText("Unterlage geprüft")).toBeNull();
   });
 
   it("drops an activity page that belongs to an outdated workspace snapshot", async () => {
@@ -508,7 +530,7 @@ describe("ApplicationWorkspace history", () => {
     render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
     const region = await screen.findByRole("region", { name: "Verlauf" });
     await user.click(
-      within(region).getByRole("button", { name: "Gesamten Verlauf anzeigen" }),
+      within(region).getByRole("button", { name: /Letzter Eintrag/ }),
     );
     await user.click(
       within(await viewingRegion()).getByRole("button", {
@@ -527,6 +549,96 @@ describe("ApplicationWorkspace history", () => {
 
     expect(within(region).queryByText("Besichtigung abgelehnt")).toBeNull();
     expect(within(region).getByText("Besichtigung angenommen")).toBeTruthy();
+    expect(
+      within(region)
+        .getByRole("button", { name: /Letzter Eintrag/ })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(
+      within(region).queryByRole("button", { name: "Termin annehmen" }),
+    ).toBeNull();
+  });
+
+  it("opens an empty Verlauf without inventing entries", async () => {
+    const user = userEvent.setup();
+    getWorkspace.mockResolvedValue(createWorkspace());
+    vi.mocked(getApplicantActivityPage).mockResolvedValue(
+      activityPage([], null, 0),
+    );
+
+    render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
+    const region = await screen.findByRole("region", { name: "Verlauf" });
+    const toggle = within(region).getByRole("button", { name: /Verlauf/ });
+
+    expect(toggle.textContent).toContain("Keine Einträge");
+    expect(within(region).queryByText("Noch keine Einträge.")).toBeNull();
+    await user.click(toggle);
+    expect(within(region).getByText("Noch keine Einträge.")).toBeTruthy();
+    expect(within(region).queryByRole("listitem")).toBeNull();
+  });
+
+  it("auto-expands and pages until a linked activity is shown", async () => {
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `/applicant/applications/${APPLICATION_ID}?section=activity&activityId=a-00`,
+    );
+    getWorkspace.mockResolvedValue(
+      createWorkspace({ activityPreview: { items: preview, hasMore: true } }),
+    );
+    vi.mocked(getApplicantActivityPage)
+      .mockResolvedValueOnce(activityPage(preview, "cursor-2", 7))
+      .mockResolvedValueOnce(
+        activityPage([activity("a-00", "DOCUMENT_REVIEWED")], null, 7),
+      );
+
+    render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
+    const region = await screen.findByRole("region", { name: "Verlauf" });
+    const row = await within(region).findByText("Unterlage geprüft");
+
+    expect(
+      within(region)
+        .getByRole("button", { name: /Letzter Eintrag/ })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(row.closest("li")?.getAttribute("data-activity-id")).toBe("a-00");
+    await waitFor(() => {
+      expect(row.closest("li")?.className).toContain("ring-primary");
+    });
+    expect(getApplicantActivityPage).toHaveBeenLastCalledWith(
+      APPLICATION_ID,
+      "cursor-2",
+    );
+  });
+
+  it("leaves Verlauf open when the linked activity is not in the loaded pages", async () => {
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `/applicant/applications/${APPLICATION_ID}?section=activity&activityId=missing`,
+    );
+    getWorkspace.mockResolvedValue(
+      createWorkspace({ activityPreview: { items: preview, hasMore: true } }),
+    );
+    vi.mocked(getApplicantActivityPage).mockResolvedValue(
+      activityPage(preview, null, preview.length),
+    );
+
+    render(<ApplicationWorkspace applicationId={APPLICATION_ID} />);
+    const region = await screen.findByRole("region", { name: "Verlauf" });
+
+    await waitFor(() => {
+      expect(within(region).getAllByRole("listitem").length).toBeGreaterThan(0);
+    });
+    expect(
+      within(region)
+        .getByRole("button", { name: /Letzter Eintrag/ })
+        .getAttribute("aria-expanded"),
+    ).toBe("true");
+    expect(within(region).queryByText("missing")).toBeNull();
+    expect(
+      within(region).queryByRole("button", { name: "Weitere laden" }),
+    ).toBeNull();
   });
 });
 

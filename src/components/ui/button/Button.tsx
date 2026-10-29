@@ -28,11 +28,6 @@ const SIZE_CLASS: Record<ButtonSize, string> = {
   "icon-md": "h-11 w-11 justify-center rounded-md p-0",
 };
 
-/**
- * Default size applied when `buttonClass` is called without an explicit size.
- * Ghost defaults to sm to preserve the original compact appearance used in
- * toolbars, auth-page links and inline actions.
- */
 const DEFAULT_SIZE: Record<ButtonVariant, ButtonSize> = {
   primary: "md",
   outline: "md",
@@ -78,10 +73,6 @@ export function buttonClass(variant: ButtonVariant, extra?: string): string {
     .join(" ");
 }
 
-/**
- * Composes a button class string with an explicit size. Prefer this over
- * `buttonClass` when the size is known at compile time.
- */
 export function buttonClassWithSize(
   variant: ButtonVariant,
   size: ButtonSize,
