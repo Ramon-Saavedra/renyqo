@@ -665,6 +665,12 @@ describe("provider current viewing", () => {
     expect(setProviderViewingConsideration.mock.calls[0]?.[2]).toMatchObject({
       consideration: "DO_NOT_CONTINUE",
     });
+    await waitFor(() =>
+      expect(screen.queryByText("Bewerbung ablehnen?")).toBeNull(),
+    );
+    expect(
+      screen.getByRole("button", { name: "Nicht weitermachen" }),
+    ).toBeInstanceOf(HTMLElement);
   });
 
   it("reloads after a stale revision and does not retry the command", async () => {

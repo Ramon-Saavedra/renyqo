@@ -49,12 +49,18 @@ export function ProviderConsiderationBlock({
 
   const send = (value: ProviderConsideration) => {
     if (!appointmentId) return;
-    void commands.run("consideration", (input) =>
-      setProviderViewingConsideration(applicationId, appointmentId, {
-        ...input,
-        consideration: value,
-      }),
-    );
+    void commands
+      .run("consideration", (input) =>
+        setProviderViewingConsideration(applicationId, appointmentId, {
+          ...input,
+          consideration: value,
+        }),
+      )
+      .then((status) => {
+        if (status === "success" && value === "DO_NOT_CONTINUE") {
+          setConfirmStop(false);
+        }
+      });
   };
 
   return (
