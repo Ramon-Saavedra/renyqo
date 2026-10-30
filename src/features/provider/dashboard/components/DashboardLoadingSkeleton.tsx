@@ -10,13 +10,19 @@ import {
 
 function TopbarSkeleton() {
   return (
-    <div className="flex h-app-topbar shrink-0 items-center gap-3 border-b border-border px-gutter">
+    <div className="flex h-app-topbar shrink-0 items-center gap-x-3 border-b border-border px-gutter sm:gap-x-6">
       <RenyqoSkeleton width={100} height={22} className="rounded-sm" />
       <div className="ml-auto flex items-center gap-2">
-        <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:min-w-16 sm:w-auto sm:rounded-md" />
-        <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:min-w-14 sm:w-auto sm:rounded-md" />
-        <RenyqoSkeleton width={32} height={32} className="ml-1 rounded-md" />
-        <RenyqoSkeleton width={36} height={36} className="rounded-md" />
+        <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:w-14 sm:rounded-md lg:w-40" />
+        <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:w-48 sm:rounded-md" />
+        <div className="ml-1 flex items-center gap-2 border-l border-border pl-3 sm:pl-4">
+          <RenyqoSkeleton className="h-9 w-9 rounded-md" />
+          <RenyqoSkeleton variant="circle" className="h-7 w-7 sm:h-8 sm:w-8" />
+          <RenyqoSkeleton
+            variant="text"
+            className="hidden h-3.5 w-24 md:block"
+          />
+        </div>
       </div>
     </div>
   );

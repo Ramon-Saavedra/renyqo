@@ -34,7 +34,7 @@ export function TopbarMessagesControl({ role }: TopbarMessagesControlProps) {
     ? `${attentionCopy.messagesMenuTitle}: ${attentionCopy.unreadMessages(messageCount)}`
     : attentionCopy.messagesMenuTitle;
 
-  if (!loading && !error && messageCount === 0) {
+  if (loading || (!error && messageCount === 0)) {
     return null;
   }
 

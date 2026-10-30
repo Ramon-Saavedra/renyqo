@@ -8,6 +8,12 @@ describe("DashboardLoadingSkeleton", () => {
     const { container } = render(<DashboardLoadingSkeleton />);
 
     expect(container.getElementsByClassName("sk").length).toBeGreaterThan(0);
+    const actions = container.querySelector(".ml-auto");
+    const blocks = actions?.querySelectorAll(":scope > .sk");
+    expect(blocks?.[0]?.className).toContain("lg:w-40");
+    expect(blocks?.[0]?.className).not.toContain("sm:min-w-16");
+    expect(blocks?.[1]?.className).toContain("sm:w-48");
+    expect(actions?.querySelector(".border-l .sk-circle")).not.toBeNull();
   });
 
   it("uses text skeletons for backend content and keeps the loading ring", () => {
