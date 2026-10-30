@@ -8,7 +8,7 @@ import { currentUserSessionCopy } from "@/components/auth/current-user-session-c
 import { Avatar } from "@/components/ui/avatar/Avatar";
 import { FormAlert } from "@/components/ui/form/FormAlert";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
-import { SessionPendingTopbarActions } from "@/components/layout/app-topbar/SessionPendingTopbarActions";
+import { AccountIdentitySkeleton } from "@/components/layout/app-topbar/SessionPendingTopbarActions";
 import { PopoverPanel } from "@/components/ui/popover/PopoverPanel";
 import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { cn } from "@/lib/utils/cn";
@@ -79,7 +79,7 @@ export function AccountMenu({ className }: AccountMenuProps) {
   }
 
   if (loading) {
-    return <SessionPendingTopbarActions />;
+    return <AccountIdentitySkeleton />;
   }
 
   if (error) {

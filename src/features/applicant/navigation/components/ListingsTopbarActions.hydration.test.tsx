@@ -58,7 +58,8 @@ describe("ListingsTopbarActions hydration", () => {
   it("hydrates the loading shell when the client session cache already has a user", async () => {
     setCurrentUser(applicant);
     const html = renderToString(<ListingsTopbarActions />);
-    expect(html).toContain("sk-pill");
+    expect(html).toContain("sk-circle");
+    expect(html).not.toContain("sk-pill");
 
     const container = document.createElement("div");
     document.body.appendChild(container);

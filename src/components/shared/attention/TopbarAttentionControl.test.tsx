@@ -169,7 +169,7 @@ describe("TopbarAttentionControl", () => {
     expect(screen.getByText(attentionCopy.globalMenuError)).toBeTruthy();
   });
 
-  it("hides numeric badge when count is zero but loading", () => {
+  it("renders nothing while the first attention fetch has no count yet", () => {
     useGlobalAttention.mockReturnValue({
       loading: true,
       error: false,
@@ -178,8 +178,19 @@ describe("TopbarAttentionControl", () => {
     });
 
     render(<TopbarAttentionControl role="applicant" />);
+    expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("keeps the trigger mounted while a later refresh is loading", () => {
+    useGlobalAttention.mockReturnValue({
+      loading: true,
+      error: false,
+      attentionCount: 2,
+      attentionGroups: [],
+    });
+
+    render(<TopbarAttentionControl role="applicant" />);
     expect(screen.getByRole("button")).toBeTruthy();
-    expect(screen.queryByText("0")).toBeNull();
   });
 
   it("keeps applicant and provider hooks role-scoped via prop", () => {

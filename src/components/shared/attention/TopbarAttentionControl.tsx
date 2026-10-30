@@ -34,7 +34,7 @@ export function TopbarAttentionControl({ role }: TopbarAttentionControlProps) {
     ? `${attentionCopy.globalMenuTitle}: ${attentionCopy.globalMenuAriaLabel(attentionCount)}`
     : attentionCopy.globalMenuTitle;
 
-  if (!loading && !error && attentionCount === 0) {
+  if (!error && attentionCount === 0) {
     return null;
   }
 
