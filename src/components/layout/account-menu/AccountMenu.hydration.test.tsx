@@ -47,7 +47,7 @@ describe("AccountMenu hydration", () => {
 
   it("hydrates the loading trigger when the client session cache already has a user", async () => {
     setCurrentUser(applicant);
-    const html = renderToString(<AccountMenu variant="full" />);
+    const html = renderToString(<AccountMenu />);
     expect(html).toContain("sk-circle");
 
     const container = document.createElement("div");
@@ -57,7 +57,7 @@ describe("AccountMenu hydration", () => {
 
     const recoverableErrors: unknown[] = [];
     await act(async () => {
-      hydrationRoot = hydrateRoot(container, <AccountMenu variant="full" />, {
+      hydrationRoot = hydrateRoot(container, <AccountMenu />, {
         onRecoverableError: (error) => {
           recoverableErrors.push(error);
         },

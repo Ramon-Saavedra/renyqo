@@ -56,12 +56,7 @@ export function ListingsTopbarActions() {
   }
 
   if (isApplicantRole(user.role)) {
-    return (
-      <TopbarAccountSection
-        role="applicant"
-        accountMenu={{ variant: "full", nameVisibility: "tablet" }}
-      />
-    );
+    return <TopbarAccountSection role="applicant" />;
   }
 
   if (isProviderRole(user.role)) {

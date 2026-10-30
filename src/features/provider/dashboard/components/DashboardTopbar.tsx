@@ -59,10 +59,7 @@ export function DashboardTopbar() {
         </Link>
 
         <div className={PROFILE_CLASS}>
-          <TopbarAccountSection
-            role="provider"
-            accountMenu={{ variant: "full" }}
-          />
+          <TopbarAccountSection role="provider" />
         </div>
       </div>
     </header>

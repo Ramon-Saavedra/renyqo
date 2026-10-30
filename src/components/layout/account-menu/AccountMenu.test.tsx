@@ -62,21 +62,27 @@ describe("AccountMenu", () => {
     vi.mocked(useApplicantProfileStatus).mockReturnValue("exists");
   });
 
-  it("highlights the second name and renders company in the full variant", async () => {
+  it("highlights the second name and hides it below the shared breakpoint", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(COMPANY_USER);
 
-    render(<AccountMenu variant="full" />);
+    render(<AccountMenu />);
 
     const secondName = await screen.findByText("Lehmann");
     expect(secondName.className).toContain("text-primary");
     expect(secondName.className).toContain("font-semibold");
+    expect(secondName.parentElement?.parentElement?.className).toContain(
+      "hidden",
+    );
+    expect(secondName.parentElement?.parentElement?.className).toContain(
+      "md:flex",
+    );
     expect(screen.getByText("Lehmann Wohnen")).not.toBeNull();
   });
 
   it("does not render a company line for private providers", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(PRIVATE_USER);
 
-    render(<AccountMenu variant="full" />);
+    render(<AccountMenu />);
 
     expect(await screen.findByText("Keller")).not.toBeNull();
     expect(screen.queryByText("Lehmann Wohnen")).toBeNull();
@@ -85,7 +91,7 @@ describe("AccountMenu", () => {
   it("uses the profile control as the menu trigger", async () => {
     vi.mocked(getCurrentUser).mockResolvedValue(COMPANY_USER);
 
-    render(<AccountMenu variant="full" />);
+    render(<AccountMenu />);
 
     const trigger = await screen.findByRole("button", {
       name: "Konto & Profil",
@@ -138,7 +144,7 @@ describe("AccountMenu", () => {
       new ApiError(500, "fail", "http"),
     );
 
-    render(<AccountMenu variant="full" />);
+    render(<AccountMenu />);
 
     expect(
       await screen.findByRole("button", {

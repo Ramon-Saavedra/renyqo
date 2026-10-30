@@ -33,17 +33,7 @@ vi.mock("@/features/notifications/api/notifications", () => ({
 }));
 
 vi.mock("@/components/layout/account-menu/AccountMenu", () => ({
-  AccountMenu: ({
-    variant,
-    nameVisibility,
-  }: {
-    variant?: string;
-    nameVisibility?: string;
-  }) => (
-    <div data-variant={variant} data-name-visibility={nameVisibility}>
-      account menu
-    </div>
-  ),
+  AccountMenu: () => <div>account menu</div>,
 }));
 
 const currentUser = vi.mocked(useCurrentUser);
@@ -86,9 +76,7 @@ describe("ListingsTopbarActions", () => {
 
     render(<ListingsTopbarActions />);
 
-    const accountMenu = screen.getByText("account menu");
-    expect(accountMenu.getAttribute("data-variant")).toBe("full");
-    expect(accountMenu.getAttribute("data-name-visibility")).toBe("tablet");
+    expect(screen.getByText("account menu")).toBeInstanceOf(HTMLElement);
   });
 
   it("does not show login or register while the session lookup is in error", () => {

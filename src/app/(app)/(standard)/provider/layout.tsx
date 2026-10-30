@@ -1,6 +1,6 @@
 import { AppTopbar } from "@/components/layout/app-topbar/AppTopbar";
+import { TopbarAccountSection } from "@/components/layout/app-topbar/TopbarAccountSection";
 import { APP_TOPBAR_CLASS } from "@/components/layout/app-topbar/topbar-classes";
-import { ProviderAccountMenu } from "./ProviderAccountMenu";
 
 export default function ProviderLayout({
   children,
@@ -14,7 +14,7 @@ export default function ProviderLayout({
         className={`${APP_TOPBAR_CLASS} mb-section bg-background`}
       >
         <div id="provider-topbar-actions" className="contents" />
-        <ProviderAccountMenu />
+        <TopbarAccountSection role="provider" />
       </AppTopbar>
       {children}
     </>

@@ -28,18 +28,13 @@ import { isApplicantRole } from "@/features/auth/utils/role";
 import { userMenuCopy } from "./copy/user-menu";
 
 interface AccountMenuProps {
-  variant?: "compact" | "full";
-  nameVisibility?: "wide" | "tablet";
   className?: string;
 }
 
-const TRIGGER_COMPACT_CLASS =
-  "flex cursor-pointer items-center rounded-md border-0 bg-transparent p-0 hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus";
-const TRIGGER_FULL_CLASS =
+const TRIGGER_CLASS =
   "flex h-6.5 max-w-48 cursor-pointer items-center gap-2.5 rounded-md border-0 bg-transparent p-0 text-left hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus sm:h-11 sm:max-w-64 sm:gap-3";
-const AVATAR_FULL_CLASS = "h-7 w-7 sm:h-8 sm:w-8";
-const META_WIDE_CLASS = "hidden max-w-36 flex-col leading-tight 2xl:flex";
-const META_TABLET_CLASS = "hidden max-w-36 flex-col leading-tight md:flex";
+const AVATAR_CLASS = "h-7 w-7 sm:h-8 sm:w-8";
+const META_CLASS = "hidden max-w-36 flex-col leading-tight md:flex";
 const NAME_CLASS = "truncate text-caption font-medium text-foreground";
 const COMPANY_CLASS = "truncate text-caption text-foreground-tertiary";
 const PANEL_CLASS = "w-72 p-3";
@@ -59,11 +54,7 @@ const LOGOUT_BUTTON_CLASS = cn(
   "mt-3 w-full text-left",
 );
 
-export function AccountMenu({
-  variant = "compact",
-  nameVisibility = "wide",
-  className,
-}: AccountMenuProps) {
+export function AccountMenu({ className }: AccountMenuProps) {
   const router = useRouter();
   const { user, loading, error } = useCurrentUser();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -108,10 +99,6 @@ export function AccountMenu({
   const initials = getInitials(name);
   const company = user?.companyName ?? null;
   const isApplicant = isApplicantRole(user?.role);
-  const isFull = variant === "full";
-  const metaClass =
-    nameVisibility === "tablet" ? META_TABLET_CLASS : META_WIDE_CLASS;
-  const avatarClass = isFull ? AVATAR_FULL_CLASS : undefined;
 
   return (
     <PopoverPanel
@@ -120,18 +107,14 @@ export function AccountMenu({
       panelClassName={PANEL_CLASS}
       closeOnLinkClick={isApplicant}
       trigger={({ triggerProps, triggerRef }) => (
-        <button
-          {...triggerProps}
-          ref={triggerRef}
-          className={isFull ? TRIGGER_FULL_CLASS : TRIGGER_COMPACT_CLASS}
-        >
+        <button {...triggerProps} ref={triggerRef} className={TRIGGER_CLASS}>
           <Avatar
             initials={initials}
             label={name || userMenuCopy.fallbackLabel}
-            {...(avatarClass ? { className: avatarClass } : {})}
+            className={AVATAR_CLASS}
           />
-          {isFull && name && (
-            <span className={metaClass}>
+          {name ? (
+            <span className={META_CLASS}>
               <span className={NAME_CLASS}>
                 {nameParts.length > 1 ? (
                   <>
@@ -147,7 +130,7 @@ export function AccountMenu({
               </span>
               {company && <span className={COMPANY_CLASS}>{company}</span>}
             </span>
-          )}
+          ) : null}
         </button>
       )}
     >
