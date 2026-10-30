@@ -14,6 +14,7 @@ describe("DashboardLoadingSkeleton", () => {
     expect(blocks?.[0]?.className).not.toContain("sm:min-w-16");
     expect(blocks?.[1]?.className).toContain("sm:w-48");
     expect(actions?.querySelector(".border-l .sk-circle")).not.toBeNull();
+    expect(actions?.querySelector(".border-l .gap-2\\.5")).not.toBeNull();
   });
 
   it("uses text skeletons for backend content and keeps the loading ring", () => {

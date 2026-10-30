@@ -1,3 +1,4 @@
+import { SessionPendingTopbarActions } from "@/components/layout/app-topbar/SessionPendingTopbarActions";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { RenyqoLoadingDots } from "@/components/ui/loading/RenyqoLoadingDots";
 import { RenyqoReveal } from "@/components/ui/loading/RenyqoReveal";
@@ -15,13 +16,8 @@ function TopbarSkeleton() {
       <div className="ml-auto flex items-center gap-2">
         <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:w-14 sm:rounded-md lg:w-40" />
         <RenyqoSkeleton className="h-8 w-8 rounded-sm sm:h-11 sm:w-48 sm:rounded-md" />
-        <div className="ml-1 flex items-center gap-2 border-l border-border pl-3 sm:pl-4">
-          <RenyqoSkeleton className="h-9 w-9 rounded-md" />
-          <RenyqoSkeleton variant="circle" className="h-7 w-7 sm:h-8 sm:w-8" />
-          <RenyqoSkeleton
-            variant="text"
-            className="hidden h-3.5 w-24 md:block"
-          />
+        <div className="ml-1 border-l border-border pl-3 sm:pl-4">
+          <SessionPendingTopbarActions />
         </div>
       </div>
     </div>

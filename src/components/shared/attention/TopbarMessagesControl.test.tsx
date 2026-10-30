@@ -13,7 +13,7 @@ describe("TopbarMessagesControl", () => {
     vi.clearAllMocks();
   });
 
-  it("renders nothing while the message count is still loading", () => {
+  it("renders nothing while the first message fetch has no count yet", () => {
     useGlobalAttention.mockReturnValue({
       loading: true,
       error: false,
@@ -23,6 +23,18 @@ describe("TopbarMessagesControl", () => {
 
     render(<TopbarMessagesControl role="applicant" />);
     expect(screen.queryByRole("button")).toBeNull();
+  });
+
+  it("keeps the trigger mounted while a later refresh is loading", () => {
+    useGlobalAttention.mockReturnValue({
+      loading: true,
+      error: false,
+      messageCount: 2,
+      messageGroups: [],
+    });
+
+    render(<TopbarMessagesControl role="applicant" />);
+    expect(screen.getByRole("button")).toBeTruthy();
   });
 
   it("renders nothing when there are no messages", () => {
