@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useRef, useState } from "react";
 import type {
@@ -22,6 +23,7 @@ export function useViewingCommands(
   workflowRevision: number,
   onChanged: () => void,
 ) {
+  const viewingOwner = useOptionalProviderWorkspace()?.viewingOwner;
   const [pending, setPending] = useState<string | null>(null);
   const [notice, setNotice] = useState<"stale" | "error" | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -42,8 +44,11 @@ export function useViewingCommands(
           requestKey: crypto.randomUUID(),
           expectedWorkflowRevision: workflowRevision,
         };
-        const outcome = await commitViewingCommand(applicationId, side, () =>
-          command(input),
+        const outcome = await commitViewingCommand(
+          applicationId,
+          side,
+          () => command(input),
+          side === "provider" ? viewingOwner : undefined,
         );
         if (outcome.status === "success") {
           onChanged();
@@ -70,7 +75,7 @@ export function useViewingCommands(
         setPending(null);
       }
     },
-    [applicationId, onChanged, side, workflowRevision],
+    [applicationId, onChanged, side, workflowRevision, viewingOwner],
   );
 
   return { pending, notice, errorMessage, run };

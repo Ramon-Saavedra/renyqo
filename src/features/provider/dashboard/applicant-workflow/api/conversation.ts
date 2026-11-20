@@ -103,10 +103,12 @@ export async function getConversationHistory(
 export async function sendConversationMessage(
   applicationId: string,
   body: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<ConversationMessage> {
   const response = await apiPost<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/conversation/messages`,
     { body },
+    providerOptions,
   );
   const parsed = conversationMessageSchema.safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
@@ -116,10 +118,12 @@ export async function sendConversationMessage(
 export async function markConversationRead(
   applicationId: string,
   throughSequence: number,
+  providerOptions?: ApiRequestOptions,
 ): Promise<number> {
   const response = await apiPatch<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/conversation/read`,
     { throughSequence },
+    providerOptions,
   );
   const parsed = markReadSchema.safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
@@ -129,10 +133,12 @@ export async function markConversationRead(
 export async function setApplicantReplies(
   applicationId: string,
   applicantRepliesEnabled: boolean,
+  providerOptions?: ApiRequestOptions,
 ) {
   const response = await apiPatch<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/conversation/applicant-replies`,
     { applicantRepliesEnabled },
+    providerOptions,
   );
   const parsed = conversationCapabilitiesSchema.safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();

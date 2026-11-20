@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { setStoredSelectedObjectId } from "@/features/provider/dashboard/selected-object-storage";
 import type {
   GlobalAttentionMenuGroup,

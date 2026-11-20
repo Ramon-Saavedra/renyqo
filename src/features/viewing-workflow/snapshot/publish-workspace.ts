@@ -1,5 +1,9 @@
 import { viewingWorkflowProjectionSchema } from "@/lib/viewing-workflow/snapshot-schema";
-import { publishViewingSnapshot, type ViewingSide } from "./owner";
+import {
+  defaultViewingSnapshotOwner,
+  type ViewingSide,
+  type ViewingSnapshotOwner,
+} from "./owner";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -16,13 +20,14 @@ export function publishEmbeddedViewingProjection(
   applicationId: string,
   workspace: unknown,
   side: ViewingSide,
+  owner: ViewingSnapshotOwner = defaultViewingSnapshotOwner,
 ): void {
   if (!isRecord(workspace)) return;
   const parsed = viewingWorkflowProjectionSchema.safeParse(
     workspace.viewingSummary,
   );
   if (!parsed.success || parsed.data.applicationId !== applicationId) return;
-  publishViewingSnapshot(parsed.data, {
+  owner.publishViewingSnapshot(parsed.data, {
     side,
     source: "workspace",
     listingId: listingIdOf(workspace),

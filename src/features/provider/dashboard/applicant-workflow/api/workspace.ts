@@ -3,7 +3,6 @@ import { z } from "zod";
 import { ApiError, apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import { considerationSummarySchema } from "@/lib/viewing-workflow/consideration-schema";
 import { workflowTargetSchema } from "@/lib/viewing-workflow/target-schema";
-import { publishEmbeddedViewingProjection } from "@/features/viewing-workflow/snapshot/publish-workspace";
 
 const providerPendingActionSchema = z.discriminatedUnion("source", [
   z.object({
@@ -182,15 +181,17 @@ export const applicantWorkspaceSchema = z.object({
     }),
     currentRequests: z.array(documentRequestSchema),
   }),
-  viewingSummary: z.object({
-    current: viewingSchema.nullable(),
-    latest: viewingSchema.nullable(),
-    latestCompleted: viewingSchema.nullable(),
-    pendingInterest: viewingSchema.nullable(),
-    changeRequested: viewingSchema.nullable(),
-    canPropose: z.boolean(),
-    nextAction: z.string().min(1),
-  }),
+  viewingSummary: z
+    .object({
+      current: viewingSchema.nullable(),
+      latest: viewingSchema.nullable(),
+      latestCompleted: viewingSchema.nullable(),
+      pendingInterest: viewingSchema.nullable(),
+      changeRequested: viewingSchema.nullable(),
+      canPropose: z.boolean(),
+      nextAction: z.string().min(1),
+    })
+    .passthrough(),
   activityPreview: z.object({
     items: z.array(activityItemSchema).max(5),
     hasMore: z.boolean(),
@@ -243,7 +244,7 @@ export async function getApplicantWorkspace(
       options,
     );
     const workspace = parseApplicantWorkspace(response, applicationId);
-    publishEmbeddedViewingProjection(applicationId, response, "provider");
+
     return workspace;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {

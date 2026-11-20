@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { z } from "zod";
 import { apiGet, apiGetBlob, apiPatchVoid, apiPost } from "@/lib/api/client";
 import {
@@ -65,10 +66,12 @@ export function documentRequestPayload(
 export async function createDocumentRequests(
   applicationId: string,
   inputs: readonly DocumentRequestInput[],
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const response = await apiPost<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/document-requests`,
     documentRequestPayload(inputs),
+    providerOptions,
   );
   const parsed = z.array(documentRequestResponseSchema).safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
@@ -77,10 +80,12 @@ export async function createDocumentRequests(
 export async function requestDocumentReplacement(
   applicationId: string,
   requestId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const response = await apiPost<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/document-requests/${encodeURIComponent(requestId)}/replacements`,
     {},
+    providerOptions,
   );
   const parsed = documentRequestResponseSchema.safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
@@ -88,9 +93,11 @@ export async function requestDocumentReplacement(
 
 export async function listDocumentRequests(
   applicationId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<readonly { readonly id: string; readonly round: number }[]> {
   const response = await apiGet<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/document-requests`,
+    providerOptions,
   );
   const parsed = z.array(documentRequestResponseSchema).safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
@@ -103,19 +110,23 @@ export async function listDocumentRequests(
 export async function cancelDocumentRequest(
   applicationId: string,
   requestId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   await apiPatchVoid(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/document-requests/${encodeURIComponent(requestId)}/cancel`,
+    providerOptions,
   );
 }
 
 export async function reviewDocument(
   applicationId: string,
   documentId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const response = await apiPost<unknown>(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/review`,
     { status: "REVIEWED" },
+    providerOptions,
   );
   const parsed = documentFileSchema.safeParse(response);
   if (!parsed.success) throw new WorkspaceContractError();
@@ -124,10 +135,13 @@ export async function reviewDocument(
 export async function openDocumentContent(
   applicationId: string,
   documentId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const blob = await apiGetBlob(
     `/api/v1/provider/applications/${encodeURIComponent(applicationId)}/documents/${encodeURIComponent(documentId)}/content`,
+    providerOptions,
   );
+  if (providerOptions?.signal?.aborted) return;
   const url = URL.createObjectURL(
     new Blob([blob], { type: "application/octet-stream" }),
   );

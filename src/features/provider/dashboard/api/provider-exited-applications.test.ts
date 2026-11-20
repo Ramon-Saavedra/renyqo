@@ -53,6 +53,7 @@ describe("getProviderExitedApplications", () => {
     });
     expect(apiGet).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/exited-applications",
+      undefined,
     );
   });
 

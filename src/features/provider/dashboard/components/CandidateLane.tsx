@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { ArrowRight, UserRoundX } from "lucide-react";
 import type { CSSProperties } from "react";
 import { Avatar } from "@/components/ui/avatar/Avatar";

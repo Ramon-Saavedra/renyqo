@@ -165,10 +165,11 @@ describe("ListingEditView", () => {
 
     await user.click(moveNext);
 
-    expect(reorderListingImages).toHaveBeenCalledWith("listing-1", [
-      "image-2",
-      "image-1",
-    ]);
+    expect(reorderListingImages).toHaveBeenCalledWith(
+      "listing-1",
+      ["image-2", "image-1"],
+      undefined,
+    );
     expect(document.activeElement).toBe(
       screen.getByRole("button", {
         name: "Bild 2 nach vorne verschieben",
@@ -194,10 +195,11 @@ describe("ListingEditView", () => {
 
     await user.keyboard("{Enter}");
 
-    expect(reorderListingImages).toHaveBeenCalledWith("listing-1", [
-      "image-2",
-      "image-1",
-    ]);
+    expect(reorderListingImages).toHaveBeenCalledWith(
+      "listing-1",
+      ["image-2", "image-1"],
+      undefined,
+    );
   });
 
   it("keeps the successfully reordered cover in the saved listing", async () => {
@@ -218,10 +220,11 @@ describe("ListingEditView", () => {
     });
     fireEvent.drop(second!, { dataTransfer: { dropEffect: "" } });
     await waitFor(() => expect(reorderListingImages).toHaveBeenCalledTimes(1));
-    expect(reorderListingImages).toHaveBeenLastCalledWith("listing-1", [
-      "image-2",
-      "image-1",
-    ]);
+    expect(reorderListingImages).toHaveBeenLastCalledWith(
+      "listing-1",
+      ["image-2", "image-1"],
+      undefined,
+    );
     await user.click(
       screen.getByRole("button", { name: listingEditCopy.save }),
     );
@@ -247,7 +250,11 @@ describe("ListingEditView", () => {
     const photo = new File(["image"], "third.jpg", { type: "image/jpeg" });
     fireEvent.change(fileInput, { target: { files: [photo] } });
     await waitFor(() =>
-      expect(uploadListingImage).toHaveBeenCalledWith("listing-1", photo),
+      expect(uploadListingImage).toHaveBeenCalledWith(
+        "listing-1",
+        photo,
+        undefined,
+      ),
     );
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Bild 3" })).toBeInstanceOf(
@@ -259,7 +266,11 @@ describe("ListingEditView", () => {
     );
     await user.click(screen.getByRole("button", { name: "Bild 2 entfernen" }));
     await waitFor(() =>
-      expect(deleteListingImage).toHaveBeenCalledWith("listing-1", "image-2"),
+      expect(deleteListingImage).toHaveBeenCalledWith(
+        "listing-1",
+        "image-2",
+        undefined,
+      ),
     );
     await user.click(
       screen.getByRole("button", { name: listingEditCopy.save }),
@@ -355,9 +366,13 @@ describe("ListingEditView", () => {
       screen.getByRole("button", { name: listingEditCopy.save }),
     );
 
-    expect(updateListing).toHaveBeenCalledWith("listing-1", {
-      title: "Renovierte Wohnung",
-    });
+    expect(updateListing).toHaveBeenCalledWith(
+      "listing-1",
+      {
+        title: "Renovierte Wohnung",
+      },
+      undefined,
+    );
     expect(await screen.findByText(listingEditCopy.savedNotice)).toBeInstanceOf(
       HTMLElement,
     );

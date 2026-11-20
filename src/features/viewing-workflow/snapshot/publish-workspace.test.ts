@@ -1,3 +1,5 @@
+import { publishEmbeddedViewingProjection } from "./publish-workspace";
+import { createViewingSnapshotOwner } from "./owner";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getApplicantWorkspace } from "@/features/applicant/applications/api/workspace";
 import {
@@ -106,11 +108,19 @@ describe("embedded viewing snapshot publication", () => {
       },
     });
 
-    await getProviderWorkspace("application-1");
-
-    expect(getViewingSnapshotState("application-1").projection?.mode).toBe(
-      "LEGACY",
+    const workspace = await getProviderWorkspace("application-1");
+    const owner = createViewingSnapshotOwner();
+    publishEmbeddedViewingProjection(
+      "application-1",
+      workspace,
+      "provider",
+      owner,
     );
+
+    expect(getViewingSnapshotState("application-1").projection).toBeNull();
+    expect(
+      owner.getViewingSnapshotState("application-1").projection?.mode,
+    ).toBe("LEGACY");
     expect(apiGetMock).toHaveBeenCalledTimes(1);
     invalidateViewingSnapshotsForListing("listing-1");
     await Promise.resolve();

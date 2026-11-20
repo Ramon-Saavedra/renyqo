@@ -5,7 +5,8 @@ export class InvalidDisplayOrderError extends Error {
   }
 }
 
-export function parseDisplayOrder(value: unknown): number {
+export function parseDisplayOrder(value: unknown): number | null {
+  if (value === null) return null;
   if (value === undefined) {
     throw new InvalidDisplayOrderError("displayOrder is required");
   }

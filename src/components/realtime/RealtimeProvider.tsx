@@ -41,7 +41,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     !error &&
     user !== null &&
     userId !== null &&
-    role !== null;
+    role === "applicant";
   const roleRef = useRef<GlobalAttentionRole | null>(role);
   const userIdRef = useRef<string | null>(userId);
   useEffect(() => {

@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useRef, useState } from "react";
 import { mapActiveApplicationsToCandidates } from "../api/map-active-application-to-candidate";
@@ -73,6 +74,7 @@ function samePreviews(
 }
 
 export function useListingApplicantNames() {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const statesRef = useRef(new Map<string, ListingApplicantNamesState>());
   const pendingRef = useRef(new Map<string, Promise<void>>());
   const generationRef = useRef(new Map<string, number>());
@@ -124,7 +126,7 @@ export function useListingApplicantNames() {
         status: "loading",
         previews: [],
       });
-      const request = getProviderActiveApplications(listingId)
+      const request = getProviderActiveApplications(listingId, providerOptions)
         .then((applications) => {
           if ((generationRef.current.get(listingId) ?? 0) !== generation) {
             return;
@@ -150,7 +152,7 @@ export function useListingApplicantNames() {
 
       pendingRef.current.set(listingId, request);
     },
-    [updateState],
+    [updateState, providerOptions],
   );
 
   const holdListing = useCallback((listingId: string) => {

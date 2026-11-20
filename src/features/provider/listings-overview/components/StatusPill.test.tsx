@@ -9,7 +9,7 @@ describe("StatusPill", () => {
       { status: "published", label: "Veröffentlicht" },
       { status: "draft", label: "Entwurf" },
       { status: "paused", label: "Pausiert" },
-      { status: "archived", label: "Archiviert" },
+      { status: "retired", label: "Archiviert" },
     ] as const;
 
     for (const { status, label } of cases) {

@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback } from "react";
 import { mapActiveApplicationsToCandidates } from "../api/map-active-application-to-candidate";
@@ -30,31 +31,40 @@ export function useSelectedListingApplications(
   listingId: string | null,
   listingStatus: DashboardObjectStatus | null,
 ): SelectedListingApplicationsResult {
-  const loadApplications = useCallback(async (currentListingId: string) => {
-    try {
-      const applications =
-        await getProviderActiveApplications(currentListingId);
-      return {
-        data: mapActiveApplicationsToCandidates(applications),
-        hasError: false,
-      };
-    } catch {
-      return { data: IDLE_CANDIDATES, hasError: true };
-    }
-  }, []);
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
+  const loadApplications = useCallback(
+    async (currentListingId: string) => {
+      try {
+        const applications = await getProviderActiveApplications(
+          currentListingId,
+          providerOptions,
+        );
+        return {
+          data: mapActiveApplicationsToCandidates(applications),
+          hasError: false,
+        };
+      } catch {
+        return { data: IDLE_CANDIDATES, hasError: true };
+      }
+    },
+    [providerOptions],
+  );
 
   const loadWaitingCount = useCallback(
     async (
       currentListingId: string,
     ): Promise<{ data: WaitingCountState; hasError: boolean }> => {
       try {
-        const count = await getProviderWaitingCount(currentListingId);
+        const count = await getProviderWaitingCount(
+          currentListingId,
+          providerOptions,
+        );
         return { data: { status: "success", count }, hasError: false };
       } catch {
         return { data: { status: "error" }, hasError: false };
       }
     },
-    [],
+    [providerOptions],
   );
 
   const candidatesResult = useListingData(

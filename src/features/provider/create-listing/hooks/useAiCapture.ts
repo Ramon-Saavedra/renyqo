@@ -1,4 +1,6 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
+import { withProviderOptions } from "@/features/provider/workspaces/request-scope";
 
 import {
   useCallback,
@@ -153,6 +155,7 @@ function formatVoiceDuration(seconds: number): string {
 }
 
 export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setModeState] = useState<AiCaptureMode>("pdf");
   const [stage, setStage] = useState<AiCaptureStage>("input");
@@ -422,7 +425,11 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     if (mode === "pdf" && pdf.file) {
       const file = pdf.file;
       runExtraction(
-        (signal) => extractListingFromPdf(file, { signal }),
+        (signal) =>
+          extractListingFromPdf(
+            file,
+            withProviderOptions(providerOptions, { signal }),
+          ),
         snapshot,
       );
       return;
@@ -430,7 +437,11 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     if (mode === "text" && text.trim().length >= TEXT_MIN_LENGTH) {
       const value = text.trim();
       runExtraction(
-        (signal) => extractListingFromText(value, { signal }),
+        (signal) =>
+          extractListingFromText(
+            value,
+            withProviderOptions(providerOptions, { signal }),
+          ),
         snapshot,
       );
       return;
@@ -441,7 +452,11 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
         type: mimeType,
       });
       runExtraction(
-        (signal) => extractListingFromAudio(file, { signal }),
+        (signal) =>
+          extractListingFromAudio(
+            file,
+            withProviderOptions(providerOptions, { signal }),
+          ),
         snapshot,
       );
     }
@@ -452,6 +467,7 @@ export function useAiCapture(setField: SetDraftField): UseAiCaptureResult {
     runExtraction,
     text,
     voice.blob,
+    providerOptions,
   ]);
 
   const submit = useCallback(() => {

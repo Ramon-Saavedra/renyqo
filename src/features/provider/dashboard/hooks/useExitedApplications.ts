@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback } from "react";
 import { mapExitedApplicationsToExits } from "../api/map-exited-application-to-exit";
@@ -32,21 +33,28 @@ export function useExitedApplications(
   listingId: string | null,
   listingStatus: DashboardObjectStatus | null,
 ): UseExitedApplicationsResult {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const requestRefresh = useRequestTabRefresh();
   const {
     state: restorationState,
     restoreCandidate: submitRestoration,
     reset: resetRestoration,
   } = useCandidateRestoration();
-  const load = useCallback(async (currentListingId: string) => {
-    const response = await getProviderExitedApplications(currentListingId);
-    return {
-      data: {
-        exits: mapExitedApplicationsToExits(response.items),
-      },
-      hasError: false,
-    };
-  }, []);
+  const load = useCallback(
+    async (currentListingId: string) => {
+      const response = await getProviderExitedApplications(
+        currentListingId,
+        providerOptions,
+      );
+      return {
+        data: {
+          exits: mapExitedApplicationsToExits(response.items),
+        },
+        hasError: false,
+      };
+    },
+    [providerOptions],
+  );
 
   const { data, isLoading, hasError, updateData } = useListingData(
     listingId,

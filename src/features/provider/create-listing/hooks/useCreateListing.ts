@@ -1,7 +1,9 @@
 "use client";
+import type { ApiRequestOptions } from "@/lib/api/client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useProviderRouter as useRouter } from "@/features/provider/workspaces/use-provider-router";
 import { ApiError } from "@/lib/api/client";
 import {
   createListingDraft,
@@ -55,27 +57,38 @@ const EMPTY_DRAFT_MESSAGE = "Es gibt noch nichts zu speichern.";
 function createDraftFromListingDraft(
   draft: ListingDraft,
   title: string,
-  file?: File,
-): Promise<{ readonly id: string }> {
-  const payload = mapDraftToCreateListingDto(draft, title);
-  return file ? createListingDraft(payload, file) : createListingDraft(payload);
+  commandId: string,
+  providerOptions?: ApiRequestOptions,
+) {
+  return createListingDraft(
+    { ...mapDraftToCreateListingDto(draft, title), commandId },
+    providerOptions,
+  );
 }
-
 function savePartialDraftFromListingDraft(
   draft: ListingDraft,
   title: string,
-  file?: File,
-): Promise<{ readonly id: string }> {
-  const payload = mapDraftToPartialCreateListingDto(draft, title);
-  return file ? createListingDraft(payload, file) : createListingDraft(payload);
+  commandId: string,
+  providerOptions?: ApiRequestOptions,
+) {
+  return createListingDraft(
+    { ...mapDraftToPartialCreateListingDto(draft, title), commandId },
+    providerOptions,
+  );
 }
 
 export function useCreateListing(): UseCreateListingResult {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const router = useRouter();
   const [submitStatus, setSubmitStatus] = useState<SubmitStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<ListingDraftErrors>({});
   const draftIdRef = useRef<string | null>(null);
+  const commandIdRef = useRef<string | null>(null);
+  const createCommandId = useCallback(
+    () => commandIdRef.current ?? (commandIdRef.current = crypto.randomUUID()),
+    [],
+  );
   const uploadedPhotoIdsRef = useRef<Set<string>>(new Set());
 
   const clearFieldError = useCallback((key: keyof ListingDraftErrors) => {
@@ -109,11 +122,13 @@ export function useCreateListing(): UseCreateListingResult {
             mapCreateListingPayloadToUpdatePayload(
               mapDraftToPartialCreateListingDto(draft, title),
             ),
+            providerOptions,
           );
           await uploadPendingListingImages(
             draftIdRef.current,
             getListingPhotoFiles(draft),
             uploadedPhotoIdsRef.current,
+            providerOptions,
           );
           if (redirectTo) router.push(redirectTo);
           return "saved";
@@ -146,18 +161,18 @@ export function useCreateListing(): UseCreateListingResult {
       setSubmitStatus("saving");
       try {
         const photoFiles = getListingPhotoFiles(draft);
-        const firstPhoto = photoFiles[0];
         const created = await savePartialDraftFromListingDraft(
           draft,
           title,
-          firstPhoto?.file,
+          createCommandId(),
+          providerOptions,
         );
         draftIdRef.current = created.id;
-        if (firstPhoto) uploadedPhotoIdsRef.current.add(firstPhoto.id);
         await uploadPendingListingImages(
           created.id,
           photoFiles,
           uploadedPhotoIdsRef.current,
+          providerOptions,
         );
         if (redirectTo) router.push(redirectTo);
         return "saved";
@@ -179,7 +194,7 @@ export function useCreateListing(): UseCreateListingResult {
         setSubmitStatus("idle");
       }
     },
-    [router],
+    [router, providerOptions, createCommandId],
   );
 
   const publish = useCallback(
@@ -195,30 +210,31 @@ export function useCreateListing(): UseCreateListingResult {
       try {
         let id = draftIdRef.current;
         const photoFiles = getListingPhotoFiles(draft);
-        const firstPhoto = photoFiles[0];
         if (!id) {
           const created = await createDraftFromListingDraft(
             draft,
             title,
-            firstPhoto?.file,
+            createCommandId(),
+            providerOptions,
           );
           id = created.id;
           draftIdRef.current = id;
-          if (firstPhoto) uploadedPhotoIdsRef.current.add(firstPhoto.id);
         } else {
           await updateListing(
             id,
             mapCreateListingPayloadToUpdatePayload(
               mapDraftToCreateListingDto(draft, title),
             ),
+            providerOptions,
           );
         }
         await uploadPendingListingImages(
           id,
           photoFiles,
           uploadedPhotoIdsRef.current,
+          providerOptions,
         );
-        await publishListing(id);
+        await publishListing(id, providerOptions);
         router.push("/provider/listings");
       } catch (err) {
         if (err instanceof ApiError && err.status === 400) {
@@ -238,7 +254,7 @@ export function useCreateListing(): UseCreateListingResult {
         setSubmitStatus("idle");
       }
     },
-    [router],
+    [router, providerOptions, createCommandId],
   );
 
   return {

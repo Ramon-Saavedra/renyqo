@@ -1,7 +1,10 @@
 "use client";
+import { publishEmbeddedViewingProjection } from "@/features/viewing-workflow/snapshot/publish-workspace";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
+import { withProviderOptions } from "@/features/provider/workspaces/request-scope";
 
 import { useCallback, useEffect, useState } from "react";
-import { cachedViewingListingId } from "@/features/viewing-workflow/snapshot/owner";
+
 import {
   noticeRefreshesApplication,
   subscribeConversationAttention,
@@ -24,6 +27,9 @@ export function useApplicantWorkspace(applicationId: string): {
   readonly state: WorkspaceLoadState;
   readonly reload: () => void;
 } {
+  const scope = useOptionalProviderWorkspace();
+  const providerOptions = scope?.requestOptions;
+  const viewingOwner = scope?.viewingOwner;
   const [reloadKey, setReloadKey] = useState(0);
   const [state, setState] = useState<WorkspaceLoadState>({ status: "loading" });
   const [trackedApplicationId, setTrackedApplicationId] =
@@ -47,22 +53,34 @@ export function useApplicantWorkspace(applicationId: string): {
         !noticeRefreshesApplication(
           notice,
           applicationId,
-          cachedViewingListingId(applicationId),
+          viewingOwner?.cachedViewingListingId(applicationId) ?? null,
         )
       ) {
         return;
       }
       reload();
     });
-  }, [applicationId, reload]);
+  }, [applicationId, reload, viewingOwner]);
 
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
 
-    void getApplicantWorkspace(applicationId, { signal: controller.signal })
+    void getApplicantWorkspace(
+      applicationId,
+      withProviderOptions(providerOptions, { signal: controller.signal }),
+    )
       .then((workspace) => {
-        if (active) setState({ status: "ready", workspace });
+        if (active) {
+          if (viewingOwner)
+            publishEmbeddedViewingProjection(
+              applicationId,
+              workspace,
+              "provider",
+              viewingOwner,
+            );
+          setState({ status: "ready", workspace });
+        }
       })
       .catch((error: unknown) => {
         if (!active) return;
@@ -82,7 +100,7 @@ export function useApplicantWorkspace(applicationId: string): {
       active = false;
       controller.abort();
     };
-  }, [applicationId, reloadKey]);
+  }, [applicationId, reloadKey, providerOptions, viewingOwner]);
 
   return { state, reload };
 }

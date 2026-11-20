@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { z } from "zod";
 import { apiGet } from "@/lib/api/client";
 import { attentionTotalsSchema } from "@/lib/attention/schemas";
@@ -56,9 +57,9 @@ function normalizeStatus(value: string): ListingStatus {
   if (normalized === "published") return "published";
   if (normalized === "draft") return "draft";
   if (normalized === "paused") return "paused";
-  if (normalized === "archived") return "archived";
+  if (normalized === "retired") return "retired";
   if (normalized === "rented") return "rented";
-  return "draft";
+  throw new ProviderListingsOverviewContractError();
 }
 
 function mapOverviewItem(
@@ -116,11 +117,14 @@ function buildDisplayAddress(details: ApiRecord): string {
 
 async function fetchOverviewPage(
   cursor: string | null,
+  providerOptions?: ApiRequestOptions,
 ): Promise<z.infer<typeof overviewPageSchema>> {
   const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
   if (cursor) params.set("cursor", cursor);
   const path = `/api/v1/provider/listings/overview?${params.toString()}`;
-  const parsed = overviewPageSchema.safeParse(await apiGet<unknown>(path));
+  const parsed = overviewPageSchema.safeParse(
+    await apiGet<unknown>(path, providerOptions),
+  );
   if (!parsed.success) throw new ProviderListingsOverviewContractError();
   if (parsed.data.pagination.hasMore && !parsed.data.pagination.nextCursor) {
     throw new ProviderListingsOverviewContractError();
@@ -128,16 +132,16 @@ async function fetchOverviewPage(
   return parsed.data;
 }
 
-export async function getProviderListingsOverview(): Promise<
-  readonly ListingOverviewItem[]
-> {
+export async function getProviderListingsOverview(
+  providerOptions?: ApiRequestOptions,
+): Promise<readonly ListingOverviewItem[]> {
   const items: ListingOverviewItem[] = [];
   // The compact attention projection omits property facts and display order.
   // Fetch the full list once, rather than one detail request per property.
   const details = new Map<string, ApiRecord>();
   const [detailsResponse, firstPage] = await Promise.all([
-    apiGet<unknown>("/api/v1/provider/listings"),
-    fetchOverviewPage(null),
+    apiGet<unknown>("/api/v1/provider/listings", providerOptions),
+    fetchOverviewPage(null, providerOptions),
   ]);
   for (const record of readItems(detailsResponse)) {
     if (!isRecord(record)) continue;
@@ -161,7 +165,7 @@ export async function getProviderListingsOverview(): Promise<
       if (seenCursors.has(cursor))
         throw new ProviderListingsOverviewContractError();
       seenCursors.add(cursor);
-      page = await fetchOverviewPage(cursor);
+      page = await fetchOverviewPage(cursor, providerOptions);
     }
   } while (cursor);
   return items;

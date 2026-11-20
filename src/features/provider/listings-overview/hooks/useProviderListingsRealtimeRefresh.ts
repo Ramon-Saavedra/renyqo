@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/client";
@@ -10,6 +11,7 @@ export function useProviderListingsRealtimeRefresh(
   enabled: boolean,
   apply: (listings: readonly ListingOverviewItem[]) => void,
 ) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [state, setState] = useState<{
     status: "loading" | "idle" | "error";
     error: string | null;
@@ -31,7 +33,7 @@ export function useProviderListingsRealtimeRefresh(
       const current = ++request;
       if (!hasLoaded)
         setState({ status: "loading", error: null, refreshError: null });
-      void getProviderListings()
+      void getProviderListings(providerOptions)
         .then((listings) => {
           if (!active || current !== request) return;
           hasLoaded = true;
@@ -67,6 +69,6 @@ export function useProviderListingsRealtimeRefresh(
       retryRef.current = () => undefined;
       unsubscribe();
     };
-  }, [enabled]);
+  }, [enabled, providerOptions]);
   return { ...state, retry };
 }

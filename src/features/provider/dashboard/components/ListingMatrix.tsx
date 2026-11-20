@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import {
   useCallback,
@@ -11,7 +12,7 @@ import {
 import type { DragEvent } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { GripVertical, Home, Maximize2, X } from "lucide-react";
 import { Button, buttonClassWithSize } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -64,13 +65,13 @@ const STATUS_DOT_CLASS: Record<DashboardObjectStatus, string> = {
   published: "bg-success",
   draft: "bg-foreground-tertiary",
   paused: "bg-warning",
-  archived: "bg-border-strong",
+  retired: "bg-border-strong",
   rented: "bg-foreground-tertiary",
 };
 
 const DIMMED_STATUS: readonly DashboardObjectStatus[] = [
   "draft",
-  "archived",
+  "retired",
   "rented",
 ];
 
@@ -298,7 +299,12 @@ export function ListingMatrix({
     invalidateLoaded,
     getState: getApplicantNamesState,
   } = useListingApplicantNames();
-  const authorityObjects = orderObjects ?? objects;
+  const canReorder =
+    useOptionalProviderWorkspace()?.current.actions.reorderListings.allowed ??
+    false;
+  const authorityObjects = (orderObjects ?? objects).filter(
+    (object) => object.status !== "retired" && object.displayOrder !== null,
+  );
 
   useEffect(() => {
     invalidateLoaded();
@@ -432,8 +438,11 @@ export function ListingMatrix({
     [objects],
   );
   const orderedVisibleObjects = useMemo(
-    () => orderedObjects.filter((object) => visibleIds.has(object.id)),
-    [orderedObjects, visibleIds],
+    () => [
+      ...orderedObjects.filter((object) => visibleIds.has(object.id)),
+      ...objects.filter((object) => object.status === "retired"),
+    ],
+    [orderedObjects, visibleIds, objects],
   );
 
   const positionObject =
@@ -686,34 +695,38 @@ export function ListingMatrix({
                   </div>
                 </div>
                 <div className="flex shrink-0 flex-col items-center gap-1">
-                  <button
-                    type="button"
-                    draggable
-                    disabled={reorderPendingId !== null}
-                    aria-label={`Position von ${object.title} per Drag-and-drop ändern`}
-                    title={copy.dragHandleTitle}
-                    onDragStart={(event) => {
-                      event.stopPropagation();
-                      handleDragStart(event, object.id);
-                    }}
-                    className="inline-flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded-sm bg-transparent p-0 text-foreground-secondary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <AppIcon
-                      icon={GripVertical}
-                      size={14}
-                      strokeWidth={1.8}
-                      decorative
-                    />
-                  </button>
-                  <ListingPositionControl
-                    object={object}
-                    pending={reorderPendingId !== null}
-                    open={positionObjectId === object.id}
-                    dialogId={`listing-position-${object.id}`}
-                    onToggle={(trigger) =>
-                      togglePositionDialog(object.id, trigger)
-                    }
-                  />
+                  {canReorder && object.status !== "retired" ? (
+                    <>
+                      <button
+                        type="button"
+                        draggable
+                        disabled={reorderPendingId !== null}
+                        aria-label={`Position von ${object.title} per Drag-and-drop ändern`}
+                        title={copy.dragHandleTitle}
+                        onDragStart={(event) => {
+                          event.stopPropagation();
+                          handleDragStart(event, object.id);
+                        }}
+                        className="inline-flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded-sm bg-transparent p-0 text-foreground-secondary hover:bg-background-muted hover:text-foreground focus-visible:outline-none focus-visible:shadow-focus active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <AppIcon
+                          icon={GripVertical}
+                          size={14}
+                          strokeWidth={1.8}
+                          decorative
+                        />
+                      </button>
+                      <ListingPositionControl
+                        object={object}
+                        pending={reorderPendingId !== null}
+                        open={positionObjectId === object.id}
+                        dialogId={`listing-position-${object.id}`}
+                        onToggle={(trigger) =>
+                          togglePositionDialog(object.id, trigger)
+                        }
+                      />
+                    </>
+                  ) : null}
                   <Button
                     type="button"
                     variant="ghost"

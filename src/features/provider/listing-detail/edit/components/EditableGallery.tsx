@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import {
   useCallback,
@@ -82,6 +83,7 @@ export function EditableGallery({
   onMutationPendingChange,
   className,
 }: EditableGalleryProps) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [photos, setPhotos] = useState<ListingImage[]>(() => [...images]);
   const [active, setActive] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -170,7 +172,7 @@ export function EditableGallery({
     async (photo: ListingImage) => {
       setDeletingIds((prev) => new Set(prev).add(photo.id));
       try {
-        await deleteListingImage(listingId, photo.id);
+        await deleteListingImage(listingId, photo.id, providerOptions);
       } catch {
         setDeletingIds((prev) => {
           const next = new Set(prev);
@@ -196,7 +198,7 @@ export function EditableGallery({
       }
       showFeedback("Bild entfernt", "success");
     },
-    [listingId, active, showFeedback, onImagesChange],
+    [listingId, active, showFeedback, onImagesChange, providerOptions],
   );
 
   const handleFiles = useCallback(
@@ -236,7 +238,11 @@ export function EditableGallery({
 
       for (const p of provisionals) {
         try {
-          const result = await uploadListingImage(listingId, p.file);
+          const result = await uploadListingImage(
+            listingId,
+            p.file,
+            providerOptions,
+          );
           const idx = updated.findIndex((img) => img.id === p.id);
           if (idx !== -1) {
             updated[idx] = result;
@@ -280,7 +286,13 @@ export function EditableGallery({
         failureCount > 0 ? "error" : skippedCount > 0 ? "neutral" : "success",
       );
     },
-    [listingId, showFeedback, onImagesChange, revokePreviewUrl],
+    [
+      listingId,
+      showFeedback,
+      onImagesChange,
+      revokePreviewUrl,
+      providerOptions,
+    ],
   );
 
   const handleDragStart = useCallback(
@@ -330,6 +342,7 @@ export function EditableGallery({
         await reorderListingImages(
           listingId,
           next.map((photo) => photo.id),
+          providerOptions,
         );
         showFeedback(
           `Bild wurde auf Position ${toIndex + 1} verschoben.`,
@@ -347,7 +360,14 @@ export function EditableGallery({
         setReordering(false);
       }
     },
-    [active, listingId, mutationPending, onImagesChange, showFeedback],
+    [
+      active,
+      listingId,
+      mutationPending,
+      onImagesChange,
+      showFeedback,
+      providerOptions,
+    ],
   );
 
   const handleDrop = useCallback(

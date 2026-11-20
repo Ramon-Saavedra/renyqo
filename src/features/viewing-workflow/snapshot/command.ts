@@ -4,7 +4,11 @@ import {
   parseViewingCommandFailure,
   type ViewingCommandFailure,
 } from "@/lib/viewing-workflow/errors";
-import { refetchViewingSnapshot, type ViewingSide } from "./owner";
+import {
+  refetchViewingSnapshot,
+  type ViewingSide,
+  type ViewingSnapshotOwner,
+} from "./owner";
 
 export type ViewingCommandCommit =
   | { readonly status: "success"; readonly result: WorkflowCommandResult }
@@ -36,17 +40,22 @@ export async function commitViewingCommand(
   applicationId: string,
   side: ViewingSide,
   command: () => Promise<WorkflowCommandResult>,
+  owner?: ViewingSnapshotOwner,
 ): Promise<ViewingCommandCommit> {
   try {
     const result = await command();
-    await refetchViewingSnapshot(applicationId, side);
+    await (owner
+      ? owner.refetchViewingSnapshot(applicationId, side)
+      : refetchViewingSnapshot(applicationId, side));
     return { status: "success", result };
   } catch (error) {
     const failure = parseViewingCommandFailure(error);
     if (!isConflict(error, failure)) {
       return { status: "error", failure, error };
     }
-    await refetchViewingSnapshot(applicationId, side);
+    await (owner
+      ? owner.refetchViewingSnapshot(applicationId, side)
+      : refetchViewingSnapshot(applicationId, side));
     return { status: "conflict", failure, error };
   }
 }

@@ -1,10 +1,11 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import type { MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { Sparkles } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useProviderRouter as useRouter } from "@/features/provider/workspaces/use-provider-router";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { SectionStepper } from "@/components/ui/section-stepper/SectionStepper";
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
@@ -93,6 +94,7 @@ function getServerTopbarActionsTarget(): null {
 }
 
 export function CreateListingForm() {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const router = useRouter();
   const topbarActionsTarget = useSyncExternalStore(
     subscribeToProviderTopbarActions,
@@ -286,7 +288,7 @@ export function CreateListingForm() {
   useEffect(() => {
     let active = true;
 
-    getProviderListings()
+    getProviderListings(providerOptions)
       .then((listings) => {
         if (active) setHasProviderListings(listings.length > 0);
       })
@@ -297,7 +299,7 @@ export function CreateListingForm() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [providerOptions]);
 
   return (
     <>

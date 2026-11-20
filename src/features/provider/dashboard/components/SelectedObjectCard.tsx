@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import Image from "next/image";
 import { Eye, Home, Pencil, Share2, type LucideIcon } from "lucide-react";
 import { buttonVariantClass } from "@/components/ui/button/Button";
@@ -26,7 +26,7 @@ const STATUS_DOT_CLASS: Record<DashboardObject["status"], string> = {
   published: "bg-success",
   draft: "bg-foreground-tertiary",
   paused: "bg-warning",
-  archived: "bg-border-strong",
+  retired: "bg-border-strong",
   rented: "bg-foreground-tertiary",
 };
 
@@ -34,7 +34,7 @@ const STATUS_TEXT_CLASS: Record<DashboardObject["status"], string> = {
   published: "text-success",
   draft: "text-foreground-tertiary",
   paused: "text-warning",
-  archived: "text-foreground-tertiary",
+  retired: "text-foreground-tertiary",
   rented: "text-foreground-secondary",
 };
 
@@ -52,8 +52,7 @@ function ActionIcon({ icon: Icon }: { icon: LucideIcon }) {
 export function SelectedObjectCard({ object }: SelectedObjectCardProps) {
   const { object: copy } = dashboardCopy;
   const isDraft = object.status === "draft";
-  const shareClosed =
-    object.status === "archived" || object.status === "rented";
+  const shareClosed = object.status === "retired" || object.status === "rented";
   const shareUrl = `${siteConfig.url}/objekt/${object.id}`;
   const listingsHref = `/provider/listings?selected=${encodeURIComponent(
     object.id,

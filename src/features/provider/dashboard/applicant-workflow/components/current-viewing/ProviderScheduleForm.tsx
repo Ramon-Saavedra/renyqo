@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button/Button";
@@ -66,6 +67,7 @@ export function ProviderScheduleForm({
   readonly capabilities: readonly WorkflowCapability[];
   readonly commands: Commands;
 }) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const target = scheduleKind(capabilities);
   const [open, setOpen] = useState(target?.kind === "invite");
   const draft = useScheduleDraft();
@@ -90,6 +92,7 @@ export function ProviderScheduleForm({
           applicationId,
           target.proposalId,
           input,
+          providerOptions,
         );
       }
       if (target.kind === "replacement") {
@@ -97,9 +100,10 @@ export function ProviderScheduleForm({
           applicationId,
           target.appointmentId,
           input,
+          providerOptions,
         );
       }
-      return inviteToProviderViewing(applicationId, input);
+      return inviteToProviderViewing(applicationId, input, providerOptions);
     };
     void commands
       .run("schedule", (input) => send({ ...input, ...schedule }))

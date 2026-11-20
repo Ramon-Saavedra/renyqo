@@ -1,3 +1,17 @@
+const legacyWorkspaceScope = vi.hoisted(() => ({
+  current: {
+    workspace: { id: "11111111-1111-4111-8111-111111111111" },
+    actions: {
+      createListing: { allowed: true, reason: null },
+      reorderListings: { allowed: true },
+    },
+  },
+  requestOptions: undefined,
+  workspaces: [],
+}));
+vi.mock("@/features/provider/workspaces/scope-context", () => ({
+  useOptionalProviderWorkspace: () => legacyWorkspaceScope,
+}));
 import {
   fireEvent,
   render,

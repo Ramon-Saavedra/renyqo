@@ -1,4 +1,7 @@
 "use client";
+import type { ApiRequestOptions } from "@/lib/api/client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
+import { withProviderOptions } from "@/features/provider/workspaces/request-scope";
 
 import { invalidateGlobalAttention } from "@/lib/attention/hooks/use-global-attention";
 import { useRealtimeConversation } from "@/components/shared/conversation/use-realtime-conversation";
@@ -26,6 +29,7 @@ export function useProviderConversationRealtime({
   applyMessages,
   onError,
 }: ProviderConversationRealtimeOptions): void {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   useRealtimeConversation({
     applicationId,
     active,
@@ -36,12 +40,20 @@ export function useProviderConversationRealtime({
     },
     loadFromStart: (signal) =>
       collectConversationMessages((afterSequence) =>
-        getConversationHistory(applicationId, afterSequence, { signal }),
+        getConversationHistory(
+          applicationId,
+          afterSequence,
+          withProviderOptions(providerOptions, { signal }),
+        ),
       ),
     loadPage: async (afterSequence, signal) => {
-      const page = await getConversationHistory(applicationId, afterSequence, {
-        signal,
-      });
+      const page = await getConversationHistory(
+        applicationId,
+        afterSequence,
+        withProviderOptions(providerOptions, {
+          signal,
+        }),
+      );
       return {
         messages: page.messages,
         hasMore: page.hasMore,
@@ -50,7 +62,11 @@ export function useProviderConversationRealtime({
     },
     applyMessages: (messages) => {
       applyMessages(messages);
-      void acknowledgeApplicantMessages(applicationId, messages);
+      void acknowledgeApplicantMessages(
+        applicationId,
+        messages,
+        providerOptions,
+      );
     },
     onError,
   });
@@ -59,6 +75,7 @@ export function useProviderConversationRealtime({
 async function acknowledgeApplicantMessages(
   applicationId: string,
   messages: readonly ConversationMessage[],
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const through = messages
     .filter(
@@ -68,7 +85,7 @@ async function acknowledgeApplicantMessages(
     .at(-1)?.sequence;
   if (through === undefined) return;
   try {
-    await markConversationRead(applicationId, through);
+    await markConversationRead(applicationId, through, providerOptions);
     invalidateGlobalAttention("provider");
   } catch {
     // Attention stays authoritative when the read request fails.

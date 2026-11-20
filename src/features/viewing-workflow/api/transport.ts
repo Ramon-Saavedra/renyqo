@@ -32,12 +32,17 @@ export async function postWorkflowCommand(
   path: string,
   bodySchema: ZodType,
   body: unknown,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   const parsedBody = bodySchema.safeParse(body);
   if (!parsedBody.success) {
     throw new ViewingWorkflowContractError("Invalid viewing workflow command");
   }
-  const response = await apiPost<unknown>(path, parsedBody.data);
+  const response = await apiPost<unknown>(
+    path,
+    parsedBody.data,
+    providerOptions,
+  );
   const parsed = workflowCommandResultSchema.safeParse(response);
   if (!parsed.success) throw new ViewingWorkflowContractError();
   return parsed.data;

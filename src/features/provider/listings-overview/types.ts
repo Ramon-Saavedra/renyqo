@@ -5,7 +5,7 @@ export const LISTING_STATUS = [
   "published",
   "draft",
   "paused",
-  "archived",
+  "retired",
   "rented",
 ] as const;
 
@@ -15,7 +15,7 @@ export const MAX_ACTIVE_APPLICATIONS = 5;
 
 export interface ListingOverviewItem {
   readonly id: string;
-  readonly displayOrder?: number;
+  readonly displayOrder?: number | null;
   readonly title: string;
   readonly objectType: ObjectTypeBackend | null;
   readonly displayAddress: string;
@@ -49,7 +49,7 @@ export const STATUS_FILTER_KEYS = [
   "published",
   "draft",
   "paused",
-  "archived",
+  "retired",
   "attention",
 ] as const;
 

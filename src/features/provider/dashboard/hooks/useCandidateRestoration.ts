@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useRef, useState } from "react";
 import { restoreProviderApplication } from "../api/provider-application-restore";
@@ -9,6 +10,7 @@ export type CandidateRestorationState =
   | { readonly status: "error"; readonly applicationId: string };
 
 export function useCandidateRestoration() {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [state, setState] = useState<CandidateRestorationState>({
     status: "idle",
   });
@@ -22,7 +24,7 @@ export function useCandidateRestoration() {
       setState({ status: "submitting", applicationId });
 
       try {
-        await restoreProviderApplication(applicationId);
+        await restoreProviderApplication(applicationId, providerOptions);
         setState({ status: "idle" });
         return true;
       } catch {
@@ -32,7 +34,7 @@ export function useCandidateRestoration() {
         isSubmittingRef.current = false;
       }
     },
-    [],
+    [providerOptions],
   );
 
   const reset = useCallback(() => {

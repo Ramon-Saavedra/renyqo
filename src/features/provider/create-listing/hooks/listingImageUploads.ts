@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { uploadListingImage } from "@/lib/api/listings";
 import type { ListingDraft } from "./useListingDraft";
 
@@ -18,10 +19,11 @@ export async function uploadPendingListingImages(
   listingId: string,
   photoFiles: readonly ListingPhotoFile[],
   uploadedPhotoIds: Set<string>,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   for (const photo of photoFiles) {
     if (!uploadedPhotoIds.has(photo.id)) {
-      await uploadListingImage(listingId, photo.file);
+      await uploadListingImage(listingId, photo.file, providerOptions);
       uploadedPhotoIds.add(photo.id);
     }
   }

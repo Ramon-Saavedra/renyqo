@@ -139,6 +139,7 @@ describe("applicant reply permission contract", () => {
     expect(apiPatch).toHaveBeenLastCalledWith(
       "/api/v1/provider/applications/application-1/conversation/applicant-replies",
       { applicantRepliesEnabled: false },
+      undefined,
     );
   });
   it("rejects an incomplete capability response", async () => {

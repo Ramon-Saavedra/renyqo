@@ -84,7 +84,7 @@ export function ListingRow({
   selected = false,
   selectedRowRef,
 }: ListingRowProps) {
-  const isInactive = listing.status === "archived";
+  const isInactive = listing.status === "retired";
   const activeCount = listing.activeApplicationsCount;
   const actionPending = Boolean(actionStatus);
   const timestamp = listing.publishedAt ?? listing.updatedAt;

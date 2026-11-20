@@ -1,3 +1,17 @@
+const legacyWorkspaceScope = vi.hoisted(() => ({
+  current: {
+    workspace: { id: "11111111-1111-4111-8111-111111111111" },
+    actions: {
+      createListing: { allowed: true, reason: null },
+      reorderListings: { allowed: true },
+    },
+  },
+  requestOptions: undefined,
+  workspaces: [],
+}));
+vi.mock("@/features/provider/workspaces/scope-context", () => ({
+  useOptionalProviderWorkspace: () => legacyWorkspaceScope,
+}));
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -303,7 +317,7 @@ describe("DashboardView", () => {
     expect(await screen.findByText("Zweite Wohnung in Hamburg")).not.toBeNull();
     expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
     expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBe(
-      "second-object",
+      "first-object",
     );
   });
 
@@ -323,7 +337,7 @@ describe("DashboardView", () => {
     expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBeNull();
   });
 
-  it("falls back to the stored listing when the URL id is unknown", async () => {
+  it("ignores the global stored listing when the URL id is unknown", async () => {
     window.history.replaceState(
       null,
       "",
@@ -334,21 +348,21 @@ describe("DashboardView", () => {
 
     render(<DashboardView objects={objects} />);
 
-    expect(await screen.findByText("Zweite Wohnung in Hamburg")).not.toBeNull();
+    expect(await screen.findByText("Erste Wohnung in Berlin")).not.toBeNull();
     expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBe(
       "second-object",
     );
   });
 
-  it("restores the previously selected object", async () => {
+  it("ignores a globally stored object without workspace authority", async () => {
     window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, "second-object");
     mockApplicationsState({ candidates: [] });
 
     render(<DashboardView objects={objects} />);
 
     expect(await screen.findByText("Saavedra")).not.toBeNull();
-    expect(screen.getByText("Zweite Wohnung in Hamburg")).not.toBeNull();
-    expect(screen.queryByText("Erste Wohnung in Berlin")).toBeNull();
+    expect(screen.getByText("Erste Wohnung in Berlin")).not.toBeNull();
+    expect(screen.queryByText("Zweite Wohnung in Hamburg")).toBeNull();
   });
 
   it("shows empty object selectors when the search has no matches", async () => {
@@ -609,7 +623,11 @@ describe("DashboardView", () => {
     );
 
     await waitFor(() => {
-      expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
+      expect(moveProviderListingToPosition).toHaveBeenCalledWith(
+        "alpha",
+        3,
+        undefined,
+      );
       expect(listingCellOrder()).toEqual(["beta", "gamma", "alpha"]);
     });
     expect(getProviderDashboardObjects).not.toHaveBeenCalled();
@@ -654,7 +672,11 @@ describe("DashboardView", () => {
         "konnte nicht gespeichert werden",
       );
     });
-    expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
+    expect(moveProviderListingToPosition).toHaveBeenCalledWith(
+      "alpha",
+      3,
+      undefined,
+    );
     expect(getProviderDashboardObjects).not.toHaveBeenCalled();
     expect(listingCellOrder()).toEqual(["alpha", "beta", "gamma"]);
   });
@@ -688,7 +710,11 @@ describe("DashboardView", () => {
     });
     expect(calls).toEqual(["patch", "get"]);
     expect(moveProviderListingToPosition).toHaveBeenCalledTimes(1);
-    expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 3);
+    expect(moveProviderListingToPosition).toHaveBeenCalledWith(
+      "alpha",
+      3,
+      undefined,
+    );
     expect(listingCellOrder()).toEqual(["beta", "gamma", "alpha"]);
   });
 
@@ -723,7 +749,11 @@ describe("DashboardView", () => {
     );
 
     await waitFor(() => {
-      expect(moveProviderListingToPosition).toHaveBeenCalledWith("alpha", 2);
+      expect(moveProviderListingToPosition).toHaveBeenCalledWith(
+        "alpha",
+        2,
+        undefined,
+      );
       expect(getProviderDashboardObjects).toHaveBeenCalledTimes(3);
     });
 
@@ -750,7 +780,7 @@ describe("DashboardView", () => {
     render(<DashboardView objects={objects} />);
     await waitFor(() => {
       expect(routerReplace).toHaveBeenCalledWith(
-        "/provider/applications/candidate-first?listingId=first-object&section=activity&activityId=activity-1",
+        "/provider/applications/candidate-first?listingId=first-object&section=activity&activityId=activity-1&workspaceId=11111111-1111-4111-8111-111111111111",
       );
     });
     expect(screen.queryByRole("dialog", { name: "Anna A." })).toBeNull();

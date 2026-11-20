@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useApplicantReplyPermission } from "./hooks/useApplicantReplyPermission";
 import { useProviderConversationRealtime } from "./hooks/useProviderConversationRealtime";
@@ -146,6 +147,7 @@ export function WorkflowSession({
   onSelected,
   children,
 }: WorkflowSessionProps) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const model = useMemo(
     () => buildApplicantWorkflowModel(workspace, listing),
     [workspace, listing],
@@ -216,7 +218,7 @@ export function WorkflowSession({
 
   useEffect(() => {
     let cancelled = false;
-    void listDocumentRequests(workspace.application.id)
+    void listDocumentRequests(workspace.application.id, providerOptions)
       .then((requests) => {
         if (cancelled) return;
         setDocumentRounds(
@@ -229,14 +231,14 @@ export function WorkflowSession({
     return () => {
       cancelled = true;
     };
-  }, [workspace.application.id, workspace.asOf]);
+  }, [workspace.application.id, workspace.asOf, providerOptions]);
 
   useEffect(() => {
     if (activityGeneration === 0) return;
     const request = activityRequest.current + 1;
     activityRequest.current = request;
     const applicationId = model.applicationId;
-    void getActivityPage(applicationId, null)
+    void getActivityPage(applicationId, null, undefined, providerOptions)
       .then((page) => {
         if (activityRequest.current !== request) return;
         setActivityItems(page.items);
@@ -247,7 +249,7 @@ export function WorkflowSession({
         if (activityRequest.current !== request) return;
         setActivityStatus("error");
       });
-  }, [activityGeneration, model.applicationId]);
+  }, [activityGeneration, model.applicationId, providerOptions]);
 
   const ensureMessages = useCallback(
     (retry = false) => {
@@ -258,7 +260,11 @@ export function WorkflowSession({
       setMessagesStatus("loading");
       setActionError(null);
       void collectConversationMessages((afterSequence) =>
-        getConversationHistory(model.applicationId, afterSequence),
+        getConversationHistory(
+          model.applicationId,
+          afterSequence,
+          providerOptions,
+        ),
       )
         .then(async (loaded) => {
           if (messagesRequest.current !== request) return;
@@ -271,7 +277,11 @@ export function WorkflowSession({
             .at(-1)?.sequence;
           if (through !== undefined) {
             try {
-              await markConversationRead(model.applicationId, through);
+              await markConversationRead(
+                model.applicationId,
+                through,
+                providerOptions,
+              );
               if (messagesRequest.current !== request) return;
               reloadWorkspace();
             } catch {
@@ -290,7 +300,7 @@ export function WorkflowSession({
           setActionError(actionMessage(error));
         });
     },
-    [messagesStatus, model.applicationId, reloadWorkspace],
+    [messagesStatus, model.applicationId, reloadWorkspace, providerOptions],
   );
 
   const runAction = useCallback(
@@ -330,7 +340,11 @@ export function WorkflowSession({
       setActionError(null);
       setActionArea("messages");
       try {
-        await sendConversationMessage(model.applicationId, trimmed);
+        await sendConversationMessage(
+          model.applicationId,
+          trimmed,
+          providerOptions,
+        );
         messagesRequest.current += 1;
         setMessagesStatus("idle");
         setActionArea(null);
@@ -347,7 +361,7 @@ export function WorkflowSession({
         setActing(false);
       }
     },
-    [model.applicationId, model.canSend, reloadWorkspace],
+    [model.applicationId, model.canSend, reloadWorkspace, providerOptions],
   );
 
   const requestDocuments = useCallback(
@@ -356,10 +370,11 @@ export function WorkflowSession({
       return runAction(
         "documents",
         applicantWorkflowCopy.documents.requestError,
-        () => createDocumentRequests(model.applicationId, inputs),
+        () =>
+          createDocumentRequests(model.applicationId, inputs, providerOptions),
       );
     },
-    [model.applicationId, runAction],
+    [model.applicationId, runAction, providerOptions],
   );
 
   const value = useMemo<WorkflowSessionValue>(
@@ -383,19 +398,25 @@ export function WorkflowSession({
       requestDocuments,
       openDocument: (documentId) =>
         runAction("documents", applicantWorkflowCopy.documents.openError, () =>
-          openDocumentContent(model.applicationId, documentId),
+          openDocumentContent(model.applicationId, documentId, providerOptions),
         ),
       review: (documentId) =>
         runAction(
           "documents",
           applicantWorkflowCopy.documents.reviewError,
-          () => reviewDocument(model.applicationId, documentId),
+          () =>
+            reviewDocument(model.applicationId, documentId, providerOptions),
         ),
       replaceRequest: (requestId) =>
         runAction(
           "documents",
           applicantWorkflowCopy.documents.replaceError,
-          () => requestDocumentReplacement(model.applicationId, requestId),
+          () =>
+            requestDocumentReplacement(
+              model.applicationId,
+              requestId,
+              providerOptions,
+            ),
         ),
       cancelRequest: async (requestId: string) => {
         if (actionLock.current) return "busy";
@@ -405,7 +426,11 @@ export function WorkflowSession({
         setActionError(null);
         setActionArea(null);
         try {
-          await cancelDocumentRequest(model.applicationId, requestId);
+          await cancelDocumentRequest(
+            model.applicationId,
+            requestId,
+            providerOptions,
+          );
           reloadWorkspace();
           return "done";
         } catch {
@@ -427,7 +452,12 @@ export function WorkflowSession({
           "viewing",
           applicantWorkflowCopy.viewing.proposeError,
           () =>
-            proposeViewing(model.applicationId, { date, time }, attempt.key),
+            proposeViewing(
+              model.applicationId,
+              { date, time },
+              attempt.key,
+              providerOptions,
+            ),
         );
         if (result === "done") proposalAttempt.current = null;
         return result;
@@ -450,6 +480,7 @@ export function WorkflowSession({
               viewingId,
               { date, time },
               attempt.key,
+              providerOptions,
             ),
         );
         if (result === "done") rescheduleAttempt.current = null;
@@ -461,7 +492,7 @@ export function WorkflowSession({
         return runAction(
           "viewing",
           applicantWorkflowCopy.viewing.cancelError,
-          () => cancelViewing(model.applicationId, viewingId),
+          () => cancelViewing(model.applicationId, viewingId, providerOptions),
         );
       },
       completeCurrentViewing: () => {
@@ -470,7 +501,8 @@ export function WorkflowSession({
         return runAction(
           "viewing",
           applicantWorkflowCopy.viewing.completeError,
-          () => completeViewing(model.applicationId, viewingId),
+          () =>
+            completeViewing(model.applicationId, viewingId, providerOptions),
         );
       },
       markCurrentNoShow: () => {
@@ -479,7 +511,8 @@ export function WorkflowSession({
         return runAction(
           "viewing",
           applicantWorkflowCopy.viewing.noShowError,
-          () => markViewingNoShow(model.applicationId, viewingId),
+          () =>
+            markViewingNoShow(model.applicationId, viewingId, providerOptions),
         );
       },
       showMoreActivity: async () => {
@@ -491,7 +524,12 @@ export function WorkflowSession({
         setActivityStatus("loading");
         setActionError(null);
         try {
-          const page = await getActivityPage(model.applicationId, cursor);
+          const page = await getActivityPage(
+            model.applicationId,
+            cursor,
+            undefined,
+            providerOptions,
+          );
           if (activityRequest.current !== request) return;
           setActivityItems((current) => {
             const seen = new Set(current.map((item) => item.id));
@@ -526,6 +564,7 @@ export function WorkflowSession({
           await selectApplicationForRental(
             model.listing.id,
             model.applicationId,
+            providerOptions,
           );
           reloadWorkspace();
           onSelected?.();
@@ -560,6 +599,7 @@ export function WorkflowSession({
       selecting,
       sendMessage,
       sending,
+      providerOptions,
     ],
   );
 

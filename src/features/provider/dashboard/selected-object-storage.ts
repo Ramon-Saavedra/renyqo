@@ -1,5 +1,4 @@
 import { subscribeUrlSearch } from "@/lib/navigation/url-search";
-import { SELECTED_OBJECT_STORAGE_KEY } from "./copy/dashboard";
 
 const selectedObjectListeners = new Set<() => void>();
 
@@ -17,7 +16,7 @@ export function subscribeSelectedObject(onChange: () => void): () => void {
 }
 
 export function getStoredSelectedObjectId(): string | null {
-  return window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY);
+  return null;
 }
 
 export function getServerSelectedObjectId(): null {
@@ -25,7 +24,7 @@ export function getServerSelectedObjectId(): null {
 }
 
 export function setStoredSelectedObjectId(id: string): void {
-  window.localStorage.setItem(SELECTED_OBJECT_STORAGE_KEY, id);
+  void id;
   emitSelectedObjectChange();
 }
 

@@ -1,4 +1,4 @@
-import { apiGet } from "@/lib/api/client";
+import { apiGet, type ApiRequestOptions } from "@/lib/api/client";
 import { attentionAggregateResponseSchema } from "../schemas";
 import type { AttentionAggregateResponse } from "../types";
 import type { GlobalAttentionRole } from "../global-attention";
@@ -19,6 +19,7 @@ function attentionPath(role: GlobalAttentionRole): string {
 export async function getAttentionAggregate(
   role: GlobalAttentionRole,
   options?: { limit?: number; offset?: number; filter?: "all" | "actionable" },
+  requestOptions?: ApiRequestOptions,
 ): Promise<AttentionAggregateResponse> {
   const params = new URLSearchParams();
   if (options?.filter !== undefined) {
@@ -32,7 +33,7 @@ export async function getAttentionAggregate(
   }
   const query = params.toString();
   const path = query ? `${attentionPath(role)}?${query}` : attentionPath(role);
-  const response = await apiGet<unknown>(path);
+  const response = await apiGet<unknown>(path, requestOptions);
   const parsed = attentionAggregateResponseSchema.safeParse(response);
   if (!parsed.success) {
     throw new AttentionAggregateContractError();

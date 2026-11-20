@@ -87,7 +87,7 @@ const SAMPLE: readonly ListingOverviewItem[] = [
     livingArea: 168,
     rooms: 5,
     activeApplicationsCount: 5,
-    status: "archived",
+    status: "retired",
     createdAt: "2026-01-15",
     updatedAt: "2026-05-08T12:00:00",
     publishedAt: "2026-01-16T10:00:00",
@@ -284,10 +284,10 @@ describe("ListingsView", () => {
     );
   });
 
-  it("shows the archived-only empty state when filter Aktiv yields zero but archive exists", async () => {
+  it("shows the retired-only empty state when filter Aktiv yields zero but archive exists", async () => {
     const user = userEvent.setup();
     const onlyInactive: readonly ListingOverviewItem[] = SAMPLE.filter(
-      (l) => l.status === "paused" || l.status === "archived",
+      (l) => l.status === "paused" || l.status === "retired",
     );
 
     renderView(onlyInactive);

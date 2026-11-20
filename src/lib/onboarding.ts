@@ -3,6 +3,7 @@ export const ONBOARDING_NEXT_STEPS = [
   "browse_listings",
   "create_first_listing",
   "dashboard",
+  "select_workspace",
 ] as const;
 
 export type OnboardingNextStep = (typeof ONBOARDING_NEXT_STEPS)[number];
@@ -23,6 +24,7 @@ export function resolveOnboardingPath(nextStep: OnboardingNextStep): string {
       return "/listings";
     case "create_first_listing":
       return "/provider/get-started";
+    case "select_workspace":
     case "dashboard":
       return "/provider/dashboard";
   }

@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { apiPatchVoid, apiPostJsonVoid } from "@/lib/api/client";
 
 const VIEWING_TIME_ZONE = "Europe/Berlin";
@@ -121,13 +122,18 @@ export async function proposeViewing(
   applicationId: string,
   proposal: ViewingProposal,
   requestKey: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const interval = viewingInterval(proposal);
   if (!interval) throw new Error("Invalid viewing proposal");
-  await apiPostJsonVoid(viewingCollectionPath(applicationId), {
-    requestKey,
-    ...interval,
-  });
+  await apiPostJsonVoid(
+    viewingCollectionPath(applicationId),
+    {
+      requestKey,
+      ...interval,
+    },
+    providerOptions,
+  );
 }
 
 export async function rescheduleViewing(
@@ -135,38 +141,46 @@ export async function rescheduleViewing(
   viewingId: string,
   proposal: ViewingProposal,
   requestKey: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   const interval = viewingInterval(proposal);
   if (!interval) throw new Error("Invalid viewing proposal");
   await apiPostJsonVoid(
     `${viewingCollectionPath(applicationId, viewingId)}/reschedule`,
     { requestKey, ...interval },
+    providerOptions,
   );
 }
 
 export async function cancelViewing(
   applicationId: string,
   viewingId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   await apiPatchVoid(
     `${viewingCollectionPath(applicationId, viewingId)}/cancel`,
+    providerOptions,
   );
 }
 
 export async function completeViewing(
   applicationId: string,
   viewingId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   await apiPatchVoid(
     `${viewingCollectionPath(applicationId, viewingId)}/complete`,
+    providerOptions,
   );
 }
 
 export async function markViewingNoShow(
   applicationId: string,
   viewingId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
   await apiPatchVoid(
     `${viewingCollectionPath(applicationId, viewingId)}/no-show`,
+    providerOptions,
   );
 }

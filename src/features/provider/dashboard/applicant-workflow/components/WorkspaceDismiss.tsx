@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { ArrowLeft, X } from "lucide-react";
 import type { RefObject } from "react";
 import {

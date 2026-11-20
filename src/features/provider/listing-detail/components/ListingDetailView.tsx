@@ -1,8 +1,10 @@
 "use client";
+import type { ApiRequestOptions } from "@/lib/api/client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
+import { useProviderRouter as useRouter } from "@/features/provider/workspaces/use-provider-router";
 import { ChevronLeft, Pencil } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { ApiError } from "@/lib/api/client";
@@ -60,12 +62,13 @@ const ACTION_HANDLERS: Record<DetailAction, (id: string) => Promise<void>> = {
 const NEXT_STATUS: Record<DetailAction, ListingDetail["status"]> = {
   publish: "published",
   draft: "draft",
-  archive: "archived",
+  archive: "retired",
   pause: "paused",
   resume: "published",
 };
 
 export function ListingDetailView({ listingId }: ListingDetailViewProps) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const router = useRouter();
   const [listing, setListing] = useState<ListingDetail | null>(null);
   const [fetchStatus, setFetchStatus] = useState<FetchStatus>("loading");
@@ -80,10 +83,10 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
   useEffect(() => {
     let active = true;
 
-    async function load() {
+    async function load(providerOptions?: ApiRequestOptions) {
       setFetchStatus("loading");
       try {
-        const data = await getProviderListing(listingId);
+        const data = await getProviderListing(listingId, providerOptions);
         if (!active) return;
         setListing(data);
         setFetchStatus("loaded");
@@ -93,11 +96,11 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
       }
     }
 
-    void load();
+    void load(providerOptions);
     return () => {
       active = false;
     };
-  }, [listingId, reloadKey]);
+  }, [listingId, reloadKey, providerOptions]);
 
   const handleAction = useCallback(
     async (action: DetailAction) => {
@@ -296,7 +299,7 @@ export function ListingDetailView({ listingId }: ListingDetailViewProps) {
                   <Button
                     variant={
                       listing.status === "published" ||
-                      listing.status === "archived" ||
+                      listing.status === "retired" ||
                       listing.status === "rented"
                         ? "primary"
                         : "outline"

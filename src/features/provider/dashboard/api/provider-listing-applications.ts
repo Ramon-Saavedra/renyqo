@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { z } from "zod";
 import { applicationAttentionSummarySchema } from "@/lib/attention/schemas";
 import { apiGet } from "@/lib/api/client";
@@ -47,9 +48,11 @@ export class ProviderListingApplicationsContractError extends Error {
 
 export async function getProviderActiveApplications(
   listingId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<readonly ProviderActiveApplication[]> {
   const response = await apiGet<unknown>(
     `/api/v1/provider/listings/${encodeURIComponent(listingId)}/active-applications`,
+    providerOptions,
   );
   const parsed = providerActiveApplicationsResponseSchema.safeParse(response);
   if (!parsed.success) {
@@ -65,9 +68,11 @@ export async function getProviderActiveApplications(
 
 export async function getProviderWaitingCount(
   listingId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<number> {
   const response = await apiGet<unknown>(
     `/api/v1/provider/listings/${encodeURIComponent(listingId)}/waiting-count`,
+    providerOptions,
   );
   const parsed = providerWaitingCountResponseSchema.safeParse(response);
   if (!parsed.success) {

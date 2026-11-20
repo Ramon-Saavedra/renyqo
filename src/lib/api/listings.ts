@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import {
   apiDeleteVoid,
   apiPatch,
@@ -73,88 +74,21 @@ export interface CreatedListing {
   readonly id: string;
 }
 
-function appendCreateListingField(
-  formData: FormData,
-  key: string,
-  value: boolean | number | string | null | undefined,
-): void {
-  if (value === undefined || value === null) return;
-  formData.append(key, String(value));
-}
-
-function buildCreateListingFormData(
-  payload: CreateListingPayload,
-  file: File,
-): FormData {
-  const formData = new FormData();
-
-  appendCreateListingField(formData, "city", payload.city);
-  appendCreateListingField(formData, "zip", payload.zip);
-  appendCreateListingField(formData, "street", payload.street);
-  appendCreateListingField(
-    formData,
-    "showExactAddress",
-    payload.showExactAddress,
-  );
-  appendCreateListingField(formData, "objectType", payload.objectType);
-  appendCreateListingField(formData, "livingArea", payload.livingArea);
-  appendCreateListingField(formData, "rooms", payload.rooms);
-  appendCreateListingField(formData, "bedrooms", payload.bedrooms);
-  appendCreateListingField(formData, "coldRent", payload.coldRent);
-  appendCreateListingField(
-    formData,
-    "additionalCosts",
-    payload.additionalCosts,
-  );
-  appendCreateListingField(formData, "depositMonths", payload.depositMonths);
-  appendCreateListingField(formData, "deposit", payload.deposit);
-  appendCreateListingField(formData, "availableFrom", payload.availableFrom);
-  appendCreateListingField(formData, "title", payload.title);
-  appendCreateListingField(
-    formData,
-    "shortDescription",
-    payload.shortDescription,
-  );
-  appendCreateListingField(
-    formData,
-    "minimumHouseholdNetIncome",
-    payload.minimumHouseholdNetIncome,
-  );
-  appendCreateListingField(formData, "schufaRequired", payload.schufaRequired);
-  appendCreateListingField(
-    formData,
-    "incomeProofRequired",
-    payload.incomeProofRequired,
-  );
-  appendCreateListingField(
-    formData,
-    "suitableForPeopleCount",
-    payload.suitableForPeopleCount,
-  );
-  appendCreateListingField(formData, "petsPolicy", payload.petsPolicy);
-  appendCreateListingField(formData, "smokingPolicy", payload.smokingPolicy);
-  formData.append("file", file);
-
-  return formData;
-}
-
 export async function createListingDraft(
-  payload: CreateListingPayload,
-  file?: File,
+  payload: CreateListingPayload & { readonly commandId: string },
+  providerOptions?: ApiRequestOptions,
 ): Promise<CreatedListing> {
-  if (file) {
-    return apiPostFormData<CreatedListing>(
-      "/api/v1/provider/listings",
-      buildCreateListingFormData(payload, file),
-    );
-  }
-
-  return apiPost<CreatedListing>("/api/v1/provider/listings", payload);
+  return apiPost<CreatedListing>(
+    "/api/v1/provider/listings",
+    payload,
+    providerOptions,
+  );
 }
 
 export async function uploadListingImage(
   id: string,
   file: File,
+  providerOptions?: ApiRequestOptions,
 ): Promise<ListingImage> {
   const formData = new FormData();
   formData.append("file", file);
@@ -162,27 +96,43 @@ export async function uploadListingImage(
   return apiPostFormData<ListingImage>(
     `/api/v1/provider/listings/${id}/images`,
     formData,
+    providerOptions,
   );
 }
 
 export async function deleteListingImage(
   id: string,
   imageId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
-  return apiDeleteVoid(`/api/v1/provider/listings/${id}/images/${imageId}`);
+  return apiDeleteVoid(
+    `/api/v1/provider/listings/${id}/images/${imageId}`,
+    providerOptions,
+  );
 }
 
 export async function reorderListingImages(
   listingId: string,
   imageIds: readonly string[],
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
-  return apiPatch<void>(`/api/v1/provider/listings/${listingId}/images/order`, {
-    imageIds,
-  });
+  return apiPatch<void>(
+    `/api/v1/provider/listings/${listingId}/images/order`,
+    {
+      imageIds,
+    },
+    providerOptions,
+  );
 }
 
-export async function publishListing(id: string): Promise<void> {
-  return apiPatchVoid(`/api/v1/provider/listings/${id}/publish`);
+export async function publishListing(
+  id: string,
+  providerOptions?: ApiRequestOptions,
+): Promise<void> {
+  return apiPatchVoid(
+    `/api/v1/provider/listings/${id}/publish`,
+    providerOptions,
+  );
 }
 
 export type UpdateListingPayload = Partial<{
@@ -212,6 +162,11 @@ export type UpdateListingPayload = Partial<{
 export async function updateListing(
   id: string,
   payload: UpdateListingPayload,
+  providerOptions?: ApiRequestOptions,
 ): Promise<void> {
-  return apiPatch<void>(`/api/v1/provider/listings/${id}`, payload);
+  return apiPatch<void>(
+    `/api/v1/provider/listings/${id}`,
+    payload,
+    providerOptions,
+  );
 }

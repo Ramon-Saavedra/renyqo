@@ -4,6 +4,7 @@ import { clearCsrfToken, csrfTokenPath, getCsrfToken } from "./csrf";
 export type ApiErrorKind = "http" | "network" | "timeout" | "cancelled";
 
 export interface ApiRequestOptions {
+  readonly headers?: HeadersInit;
   readonly signal?: AbortSignal;
   readonly timeoutMs?: number;
 }
@@ -114,6 +115,9 @@ async function apiRequest<T>(
       throw new ApiError(0, "Anfrage abgebrochen", "cancelled");
     }
     const headers = new Headers(init.headers);
+    new Headers(options?.headers).forEach((value, key) =>
+      headers.set(key, value),
+    );
     if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
     let res: Response;
     try {

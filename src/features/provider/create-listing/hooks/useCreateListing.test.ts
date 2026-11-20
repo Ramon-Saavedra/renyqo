@@ -59,6 +59,13 @@ describe("useCreateListing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(updateListing).mockResolvedValue(undefined);
+    vi.mocked(uploadListingImage).mockReset();
+    vi.mocked(uploadListingImage).mockResolvedValue({
+      id: "image",
+      secureUrl: "https://example.com/photo.jpg",
+      position: 1,
+      isCover: true,
+    });
   });
 
   describe("initial state", () => {
@@ -145,6 +152,7 @@ describe("useCreateListing", () => {
           city: "Berlin",
           title: "Wohnung in Berlin",
         }),
+        undefined,
       );
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
     });
@@ -192,6 +200,7 @@ describe("useCreateListing", () => {
         expect.objectContaining({
           availableFrom: "2026-07-01T00:00:00.000Z",
         }),
+        undefined,
       );
     });
   });
@@ -260,12 +269,12 @@ describe("useCreateListing", () => {
           deposit: 2200,
           title: "Mein Titel",
         }),
-        PHOTO_FILE,
+        undefined,
       );
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
     });
 
-    it("passes the first photo to createListingDraft and uploads remaining photos", async () => {
+    it("creates JSON first and uploads all photos afterwards", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const secondFile = new File(["second"], "second.jpg", {
         type: "image/jpeg",
@@ -284,12 +293,16 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.any(Object),
-        PHOTO_FILE,
+        undefined,
       );
-      expect(uploadListingImage).toHaveBeenCalledWith("draft-1", secondFile);
+      expect(uploadListingImage).toHaveBeenCalledWith(
+        "draft-1",
+        secondFile,
+        undefined,
+      );
     });
 
-    it("does not upload additional images when only one photo exists", async () => {
+    it("uploads the first photo after the listing exists", async () => {
       vi.mocked(createListingDraft).mockResolvedValue({ id: "draft-1" });
       const { result } = renderHook(() => useCreateListing());
 
@@ -297,7 +310,11 @@ describe("useCreateListing", () => {
         await result.current.saveDraft(VALID_DRAFT, "Mein Titel");
       });
 
-      expect(uploadListingImage).not.toHaveBeenCalled();
+      expect(uploadListingImage).toHaveBeenCalledWith(
+        "draft-1",
+        PHOTO_FILE,
+        undefined,
+      );
     });
 
     it("does not call createListingDraft a second time when draftId is already set", async () => {
@@ -333,6 +350,7 @@ describe("useCreateListing", () => {
       expect(updateListing).toHaveBeenCalledWith(
         "draft-1",
         expect.objectContaining({ city: "Hamburg" }),
+        undefined,
       );
     });
 
@@ -519,9 +537,9 @@ describe("useCreateListing", () => {
         expect.objectContaining({
           availableFrom: "2026-07-01T00:00:00.000Z",
         }),
-        PHOTO_FILE,
+        undefined,
       );
-      expect(publishListing).toHaveBeenCalledWith("draft-1");
+      expect(publishListing).toHaveBeenCalledWith("draft-1", undefined);
     });
 
     it("blocks publish when bedrooms exceeds rooms", async () => {
@@ -570,14 +588,20 @@ describe("useCreateListing", () => {
         1,
         "listing-1",
         expect.objectContaining({ city: "Hamburg" }),
+        undefined,
       );
       expect(updateListing).toHaveBeenNthCalledWith(
         2,
         "listing-1",
         expect.objectContaining({ city: "Hamburg" }),
+        undefined,
       );
-      expect(uploadListingImage).toHaveBeenCalledWith("listing-1", PHOTO_FILE);
-      expect(publishListing).toHaveBeenCalledWith("listing-1");
+      expect(uploadListingImage).toHaveBeenCalledWith(
+        "listing-1",
+        PHOTO_FILE,
+        undefined,
+      );
+      expect(publishListing).toHaveBeenCalledWith("listing-1", undefined);
 
       const createOrder =
         vi.mocked(createListingDraft).mock.invocationCallOrder[0];
@@ -611,7 +635,7 @@ describe("useCreateListing", () => {
       });
 
       expect(createListingDraft).toHaveBeenCalledTimes(1);
-      expect(publishListing).toHaveBeenCalledWith("new-draft");
+      expect(publishListing).toHaveBeenCalledWith("new-draft", undefined);
       expect(mockPush).toHaveBeenCalledWith("/provider/listings");
     });
 
@@ -635,9 +659,13 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.any(Object),
-        PHOTO_FILE,
+        undefined,
       );
-      expect(uploadListingImage).toHaveBeenCalledWith("new-draft", secondFile);
+      expect(uploadListingImage).toHaveBeenCalledWith(
+        "new-draft",
+        secondFile,
+        undefined,
+      );
       const uploadOrder =
         vi.mocked(uploadListingImage).mock.invocationCallOrder[0];
       const publishOrder =
@@ -663,8 +691,9 @@ describe("useCreateListing", () => {
       expect(updateListing).toHaveBeenCalledWith(
         "existing-draft",
         expect.objectContaining({ city: "Berlin" }),
+        undefined,
       );
-      expect(publishListing).toHaveBeenCalledWith("existing-draft");
+      expect(publishListing).toHaveBeenCalledWith("existing-draft", undefined);
       const updateOrder = vi.mocked(updateListing).mock.invocationCallOrder[0];
       const publishOrder =
         vi.mocked(publishListing).mock.invocationCallOrder[0];
@@ -708,6 +737,7 @@ describe("useCreateListing", () => {
       expect(updateListing).toHaveBeenCalledWith(
         "existing-draft",
         expect.objectContaining({ city: "Berlin" }),
+        undefined,
       );
       expect(publishListing).not.toHaveBeenCalled();
       expect(result.current.error).toMatch(/Veröffentlichen/);
@@ -788,6 +818,7 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ objectType: expected }),
+        undefined,
       );
     });
 
@@ -804,6 +835,7 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ rooms: 25 }),
+        undefined,
       );
     });
 
@@ -820,6 +852,7 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ schufaRequired: true }),
+        undefined,
       );
     });
 
@@ -842,6 +875,7 @@ describe("useCreateListing", () => {
 
         expect(createListingDraft).toHaveBeenCalledWith(
           expect.objectContaining({ petsPolicy: expected }),
+          undefined,
         );
       },
     );
@@ -880,6 +914,7 @@ describe("useCreateListing", () => {
 
         expect(createListingDraft).toHaveBeenCalledWith(
           expect.objectContaining({ smokingPolicy: expected }),
+          undefined,
         );
       },
     );
@@ -912,6 +947,7 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ suitableForPeopleCount: 3 }),
+        undefined,
       );
     });
 
@@ -928,6 +964,7 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ suitableForPeopleCount: 1 }),
+        undefined,
       );
     });
 
@@ -944,6 +981,7 @@ describe("useCreateListing", () => {
 
       expect(createListingDraft).toHaveBeenCalledWith(
         expect.objectContaining({ minimumHouseholdNetIncome: 0 }),
+        undefined,
       );
     });
 
@@ -964,6 +1002,7 @@ describe("useCreateListing", () => {
           depositMonths: 3,
           deposit: 2850,
         }),
+        undefined,
       );
     });
 

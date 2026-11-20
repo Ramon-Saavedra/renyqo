@@ -183,9 +183,7 @@ describe("ProviderApplicationWorkspace", () => {
         .getByRole("link", { name: "Zurück zum Dashboard" })
         .getAttribute("href"),
     ).toBe("/provider/dashboard?listingId=listing-9");
-    expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBe(
-      "listing-9",
-    );
+    expect(window.localStorage.getItem(SELECTED_OBJECT_STORAGE_KEY)).toBeNull();
     expect(useApplicantWorkspace).toHaveBeenCalledWith("application-1");
 
     await user.click(
@@ -197,6 +195,7 @@ describe("ProviderApplicationWorkspace", () => {
       expect(selectApplicationForRental).toHaveBeenCalledWith(
         "listing-9",
         "application-1",
+        undefined,
       );
       expect(routerPush).toHaveBeenCalledWith(
         "/provider/dashboard?listingId=listing-9",
@@ -271,7 +270,10 @@ describe("ProviderApplicationWorkspace", () => {
     await user.click(screen.getByRole("button", { name: "Ablehnen" }));
 
     await waitFor(() => {
-      expect(rejectProviderApplication).toHaveBeenCalledWith("application-1");
+      expect(rejectProviderApplication).toHaveBeenCalledWith(
+        "application-1",
+        undefined,
+      );
       expect(routerPush).toHaveBeenCalledWith(
         "/provider/dashboard?listingId=listing-9",
       );

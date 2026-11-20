@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import type { MouseEventHandler } from "react";
 import { Logo } from "@/components/ui/logo/Logo";
 import { useCurrentUser } from "@/lib/api/use-current-user";

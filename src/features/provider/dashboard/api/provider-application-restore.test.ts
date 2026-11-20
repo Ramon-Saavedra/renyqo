@@ -18,6 +18,7 @@ describe("restoreProviderApplication", () => {
 
     expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/applications/application%2F1/restore",
+      undefined,
     );
   });
 });

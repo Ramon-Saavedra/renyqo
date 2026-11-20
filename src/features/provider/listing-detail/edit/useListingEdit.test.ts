@@ -81,9 +81,13 @@ describe("useListingEdit", () => {
         await result.current.save();
       });
 
-      expect(updateListing).toHaveBeenCalledWith("listing-1", {
-        coldRent: 1350,
-      });
+      expect(updateListing).toHaveBeenCalledWith(
+        "listing-1",
+        {
+          coldRent: 1350,
+        },
+        undefined,
+      );
 
       expect(onSaved).not.toHaveBeenCalled();
       expect(result.current.status).toBe("saved");

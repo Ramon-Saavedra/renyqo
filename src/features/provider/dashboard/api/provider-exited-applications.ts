@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { z } from "zod";
 import { apiGet } from "@/lib/api/client";
 import { APPLICANT_INTRODUCTION_MAX_LENGTH } from "../types";
@@ -51,9 +52,11 @@ export class ProviderExitedApplicationsContractError extends Error {
 
 export async function getProviderExitedApplications(
   listingId: string,
+  providerOptions?: ApiRequestOptions,
 ): Promise<ProviderExitedApplicationsResponse> {
   const response = await apiGet<unknown>(
     `/api/v1/provider/listings/${encodeURIComponent(listingId)}/exited-applications`,
+    providerOptions,
   );
   const parsed = providerExitedApplicationsResponseSchema.safeParse(response);
   if (!parsed.success) {
