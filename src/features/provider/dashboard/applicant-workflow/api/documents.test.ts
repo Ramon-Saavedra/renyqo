@@ -155,9 +155,16 @@ describe("openDocumentContent", () => {
   });
   it("does not hand a late document response to the browser after workspace disposal", async () => {
     let finish!: (blob: Blob) => void;
-    vi.mocked(apiGetBlob).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    vi.mocked(apiGetBlob).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
     const controller = new AbortController();
-    const pending = openDocumentContent("application", "document", { signal: controller.signal });
+    const pending = openDocumentContent("application", "document", {
+      signal: controller.signal,
+    });
     controller.abort();
     finish(new Blob(["document"]));
     await pending;

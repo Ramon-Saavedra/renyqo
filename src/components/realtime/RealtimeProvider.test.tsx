@@ -161,7 +161,9 @@ describe("RealtimeProvider", () => {
     expect(sockets.length).toBe(io.mock.calls.length);
 
     act(() => setCurrentUser(provider));
-    expect(sockets.every(socket => socket.disconnect.mock.calls.length > 0)).toBe(true);
+    expect(
+      sockets.every((socket) => socket.disconnect.mock.calls.length > 0),
+    ).toBe(true);
     const count = io.mock.calls.length;
     act(() => setCurrentUser({ ...applicant, id: "applicant-2" }));
     expect(io.mock.calls.length).toBe(count + 1);
