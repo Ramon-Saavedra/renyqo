@@ -1,7 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { Building2, LayoutGrid } from "lucide-react";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { createListingCopy } from "../copy/create-listing";

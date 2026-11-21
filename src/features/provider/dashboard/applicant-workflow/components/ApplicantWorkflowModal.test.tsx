@@ -642,7 +642,11 @@ describe("ApplicantWorkspaceView on wide viewports", () => {
     expect(await screen.findByText("Zweite Nachricht")).not.toBeNull();
     expect(screen.getByText("Erste Nachricht")).not.toBeNull();
     await waitFor(() => {
-      expect(markConversationRead).toHaveBeenCalledWith("application-1", 2);
+      expect(markConversationRead).toHaveBeenCalledWith(
+        "application-1",
+        2,
+        undefined,
+      );
     });
   });
 
@@ -725,6 +729,7 @@ describe("ApplicantWorkspaceView on wide viewports", () => {
     expect(selectApplicationForRental).toHaveBeenCalledWith(
       "object-1",
       "application-1",
+      undefined,
     );
     releaseSelect?.();
   });
@@ -1231,6 +1236,7 @@ describe("document request cancellation", () => {
     expect(cancelDocumentRequest).toHaveBeenCalledWith(
       "application-1",
       "request-1",
+      undefined,
     );
     expect(screen.getByText("Personalausweis")).not.toBeNull();
     release?.();

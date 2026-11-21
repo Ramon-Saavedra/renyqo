@@ -1,3 +1,4 @@
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { setApplicantReplies } from "../api/conversation";
 interface RequestState {
@@ -9,6 +10,7 @@ export function useApplicantReplyPermission(
   applicationId: string,
   refresh: () => void,
 ) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [state, setState] = useState<RequestState>({
     applicationId,
     pending: false,
@@ -30,7 +32,7 @@ export function useApplicantReplyPermission(
       setState({ applicationId, pending: true, error: null });
       let error: string | null = null;
       try {
-        await setApplicantReplies(applicationId, enabled);
+        await setApplicantReplies(applicationId, enabled, providerOptions);
       } catch {
         error =
           "Die Freigabe konnte nicht aktualisiert werden. Bitte prüfe den aktuellen Stand.";
@@ -42,7 +44,7 @@ export function useApplicantReplyPermission(
         }
       }
     },
-    [applicationId, refresh],
+    [applicationId, refresh, providerOptions],
   );
   return {
     pending: state.applicationId === applicationId && state.pending,

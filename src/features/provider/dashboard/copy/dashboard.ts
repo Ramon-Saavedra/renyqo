@@ -28,7 +28,7 @@ export const OBJECT_STATUS_LABEL: Record<DashboardObjectStatus, string> = {
   published: STATUS_META.published.label,
   draft: STATUS_META.draft.label,
   paused: STATUS_META.paused.label,
-  archived: STATUS_META.archived.label,
+  retired: STATUS_META.retired.label,
   rented: STATUS_META.rented.label,
 };
 
@@ -37,7 +37,7 @@ export const OBJECT_STATUS_SHORT_LABEL: Record<DashboardObjectStatus, string> =
     published: "Aktiv",
     draft: "Entwurf",
     paused: "Pausiert",
-    archived: "Archiv",
+    retired: "Archiv",
     rented: "Vermietet",
   };
 

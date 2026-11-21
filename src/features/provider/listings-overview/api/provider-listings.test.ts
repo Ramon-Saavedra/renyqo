@@ -47,6 +47,7 @@ describe("provider listing mutations", () => {
 
     expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/publish",
+      undefined,
     );
   });
 
@@ -58,6 +59,7 @@ describe("provider listing mutations", () => {
     expect(apiPatch).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/position",
       { position: 3 },
+      undefined,
     );
   });
 
@@ -68,16 +70,18 @@ describe("provider listing mutations", () => {
 
     expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/draft",
+      undefined,
     );
   });
 
-  it("archives a provider listing", async () => {
+  it("retires a provider listing", async () => {
     vi.mocked(apiPatchVoid).mockResolvedValue(undefined);
 
     await archiveProviderListing("listing-1");
 
     expect(apiPatchVoid).toHaveBeenCalledWith(
-      "/api/v1/provider/listings/listing-1/archive",
+      "/api/v1/provider/listings/listing-1/retire",
+      undefined,
     );
   });
 });

@@ -81,7 +81,7 @@ export function buildActions(listing: ListingDetail): ActionConfig[] {
       return [PAUSE_ACTION, DRAFT_ACTION, ARCHIVE_ACTION];
     case "paused":
       return [RESUME_ACTION, DRAFT_ACTION, ARCHIVE_ACTION];
-    case "archived":
+    case "retired":
     case "rented":
       return [];
   }

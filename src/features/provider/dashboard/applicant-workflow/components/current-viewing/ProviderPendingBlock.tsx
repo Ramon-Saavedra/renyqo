@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button/Button";
@@ -29,6 +30,7 @@ export function ProviderPendingBlock({
   readonly capabilities: readonly WorkflowCapability[];
   readonly commands: Commands;
 }) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [rejecting, setRejecting] = useState(false);
   const accept = allowedCapability(capabilities, "ACCEPT_PROPOSAL");
   const reject = allowedCapability(capabilities, "REJECT_PROPOSAL");
@@ -93,7 +95,12 @@ export function ProviderPendingBlock({
                 const proposalId = reject?.target.proposalId;
                 if (!proposalId) return;
                 void commands.run("reject", (input) =>
-                  rejectProviderProposal(applicationId, proposalId, input),
+                  rejectProviderProposal(
+                    applicationId,
+                    proposalId,
+                    input,
+                    providerOptions,
+                  ),
                 );
               }}
             >
@@ -112,7 +119,12 @@ export function ProviderPendingBlock({
                 const proposalId = accept.target.proposalId;
                 if (!proposalId) return;
                 void commands.run("accept", (input) =>
-                  acceptProviderProposal(applicationId, proposalId, input),
+                  acceptProviderProposal(
+                    applicationId,
+                    proposalId,
+                    input,
+                    providerOptions,
+                  ),
                 );
               }}
             >

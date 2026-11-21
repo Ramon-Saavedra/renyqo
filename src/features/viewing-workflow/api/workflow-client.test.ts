@@ -38,6 +38,7 @@ describe("viewing workflow clients", () => {
     expect(apiPost).toHaveBeenCalledWith(
       "/api/v1/applicant/applications/application-1/viewing-workflow/proposals/proposal-1/accept",
       command,
+      undefined,
     );
   });
 
@@ -72,11 +73,13 @@ describe("viewing workflow clients", () => {
       1,
       "/api/v1/provider/applications/application-1/viewing-workflow/workflow-1/close",
       close,
+      undefined,
     );
     expect(apiPost).toHaveBeenNthCalledWith(
       2,
       "/api/v1/provider/applications/application-1/viewing-workflow/appointments/appointment-1/outcome",
       { ...command, outcome: "NO_SHOW", absenceSide: "BOTH" },
+      undefined,
     );
   });
 

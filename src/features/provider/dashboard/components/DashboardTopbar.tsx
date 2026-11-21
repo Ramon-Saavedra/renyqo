@@ -1,5 +1,7 @@
-import Link from "next/link";
-import { LayoutGrid, Plus } from "lucide-react";
+import { CreateListingAction } from "@/features/provider/workspaces/CreateListingAction";
+import { WorkspaceSwitcher } from "@/features/provider/workspaces/WorkspaceSwitcher";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
+import { LayoutGrid } from "lucide-react";
 import { buttonClassWithSize } from "@/components/ui/button/Button";
 import { DASHBOARD_PRIMARY_COLOR_CLASS } from "../dashboard-button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -31,6 +33,7 @@ export function DashboardTopbar() {
       </Link>
 
       <div className={ACTIONS_CLASS}>
+        <WorkspaceSwitcher />
         <Link
           href={topbar.objectsHref}
           aria-label={topbar.objects}
@@ -44,19 +47,7 @@ export function DashboardTopbar() {
           />
           <span className="hidden lg:inline">{topbar.objects}</span>
         </Link>
-        <Link
-          href={topbar.newListingHref}
-          aria-label={topbar.newListing}
-          className={PRIMARY_LINK_CLASS}
-        >
-          <AppIcon
-            icon={Plus}
-            size={ICON_SIZE}
-            strokeWidth={ICON_STROKE}
-            decorative
-          />
-          <span className="hidden sm:inline">{topbar.newListing}</span>
-        </Link>
+        <CreateListingAction className={PRIMARY_LINK_CLASS} />
 
         <div className={PROFILE_CLASS}>
           <TopbarAccountSection role="provider" />

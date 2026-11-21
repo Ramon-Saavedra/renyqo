@@ -29,7 +29,7 @@ export const STATUS_META: Record<ListingStatus, StatusMeta> = {
     label: "Pausiert",
     pillClass: "bg-background-muted text-foreground-secondary",
   },
-  archived: {
+  retired: {
     label: "Archiviert",
     pillClass: "bg-background-muted text-foreground-tertiary",
   },
@@ -44,7 +44,7 @@ export const STATUS_FILTERS: readonly StatusFilterEntry[] = [
   { id: "published", label: "Veröffentlicht" },
   { id: "draft", label: "Entwürfe" },
   { id: "paused", label: "Pausiert" },
-  { id: "archived", label: "Archiviert" },
+  { id: "retired", label: "Archiviert" },
   { id: "attention", label: "Klärung nötig" },
 ];
 

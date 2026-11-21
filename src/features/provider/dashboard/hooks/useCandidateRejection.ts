@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useRef, useState } from "react";
 import { rejectProviderApplication } from "../api/provider-application-rejection";
@@ -9,6 +10,7 @@ type CandidateRejectionState =
   | { readonly status: "error"; readonly applicationId: string };
 
 export function useCandidateRejection() {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const [state, setState] = useState<CandidateRejectionState>({
     status: "idle",
   });
@@ -22,7 +24,7 @@ export function useCandidateRejection() {
       setState({ status: "submitting", applicationId });
 
       try {
-        await rejectProviderApplication(applicationId);
+        await rejectProviderApplication(applicationId, providerOptions);
         setState({ status: "idle" });
         return true;
       } catch {
@@ -32,7 +34,7 @@ export function useCandidateRejection() {
         isSubmittingRef.current = false;
       }
     },
-    [],
+    [providerOptions],
   );
 
   const reset = useCallback(() => {

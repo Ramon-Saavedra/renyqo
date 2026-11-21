@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button/Button";
@@ -31,6 +32,7 @@ export function ProviderCloseFlow({
   readonly capabilities: readonly WorkflowCapability[];
   readonly commands: Commands;
 }) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const close = allowedCapability(capabilities, "CLOSE_FLOW");
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ProviderCloseReason | null>(null);
@@ -55,13 +57,18 @@ export function ProviderCloseFlow({
     if (!reason) return;
     const trimmed = message.trim();
     void commands.run("close", (input) =>
-      closeProviderViewingWorkflow(applicationId, workflowId, {
-        ...input,
-        reason,
-        proposalId: close.target.proposalId,
-        appointmentId: close.target.appointmentId,
-        ...(trimmed ? { message: trimmed } : {}),
-      }),
+      closeProviderViewingWorkflow(
+        applicationId,
+        workflowId,
+        {
+          ...input,
+          reason,
+          proposalId: close.target.proposalId,
+          appointmentId: close.target.appointmentId,
+          ...(trimmed ? { message: trimmed } : {}),
+        },
+        providerOptions,
+      ),
     );
   };
 

@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ApiError } from "@/lib/api/client";
@@ -44,6 +45,7 @@ export function useListingEdit(
   listing: ListingDetail,
   { onSaved }: UseListingEditOptions,
 ): UseListingEditResult {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const initialForm = useMemo(() => mapListingToEditForm(listing), [listing]);
   const [form, setForm] = useState<ListingEditForm>(initialForm);
   const [errors, setErrors] = useState<ListingEditErrors>({});
@@ -101,7 +103,7 @@ export function useListingEdit(
 
     setStatus("saving");
     try {
-      await updateListing(listing.id, payload);
+      await updateListing(listing.id, payload, providerOptions);
     } catch (err) {
       setStatus("idle");
       setError(
@@ -119,7 +121,7 @@ export function useListingEdit(
       handoffRef.current = null;
       onSaved(updated);
     }, SAVED_HIGHLIGHT_MS);
-  }, [flash, form, initialForm, listing, onSaved, status]);
+  }, [flash, form, initialForm, listing, onSaved, status, providerOptions]);
 
   useEffect(() => {
     if (!isDirty) return;

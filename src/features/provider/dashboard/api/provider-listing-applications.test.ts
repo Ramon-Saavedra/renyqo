@@ -47,6 +47,7 @@ describe("getProviderActiveApplications", () => {
     ]);
     expect(apiGet).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/active-applications",
+      undefined,
     );
   });
 
@@ -153,6 +154,7 @@ describe("getProviderWaitingCount", () => {
     await expect(getProviderWaitingCount("listing-1")).resolves.toBe(3);
     expect(apiGet).toHaveBeenCalledWith(
       "/api/v1/provider/listings/listing-1/waiting-count",
+      undefined,
     );
   });
 

@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import {
   useCallback,
@@ -8,7 +9,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useProviderRouter as useRouter } from "@/features/provider/workspaces/use-provider-router";
 import { APP_TOPBAR_STICKY_OFFSET_CLASS } from "@/components/layout/app-topbar/topbar-classes";
 import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button/Button";
@@ -51,7 +52,7 @@ function buildCounts(listings: readonly ListingOverviewItem[]): StatusCounts {
     published: listings.filter((l) => l.status === "published").length,
     draft: listings.filter((l) => l.status === "draft").length,
     paused: listings.filter((l) => l.status === "paused").length,
-    archived: listings.filter((l) => l.status === "archived").length,
+    retired: listings.filter((l) => l.status === "retired").length,
     attention: listings.filter((l) => l.needsAttention).length,
   };
 }
@@ -99,6 +100,7 @@ export function ListingsView({
   now,
   selectedListingId = null,
 }: ListingsViewProps) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const router = useRouter();
   const [listings, setListings] = useState<readonly ListingOverviewItem[]>(
     initialListings ?? [],
@@ -185,7 +187,7 @@ export function ListingsView({
           ? "published"
           : action === "draft"
             ? "draft"
-            : "archived";
+            : "retired";
       const pendingStatus =
         action === "publish"
           ? "publishing"
@@ -201,11 +203,11 @@ export function ListingsView({
 
       try {
         if (action === "publish") {
-          await publishProviderListing(listing.id);
+          await publishProviderListing(listing.id, providerOptions);
         } else if (action === "draft") {
-          await moveProviderListingToDraft(listing.id);
+          await moveProviderListingToDraft(listing.id, providerOptions);
         } else {
-          await archiveProviderListing(listing.id);
+          await archiveProviderListing(listing.id, providerOptions);
         }
 
         setListings((current) =>
@@ -251,7 +253,7 @@ export function ListingsView({
         });
       }
     },
-    [router],
+    [router, providerOptions],
   );
 
   const resetFilters = useCallback(() => {
@@ -260,14 +262,14 @@ export function ListingsView({
   }, []);
 
   const hasArchive = listings.some(
-    (l) => l.status === "paused" || l.status === "archived",
+    (l) => l.status === "paused" || l.status === "retired",
   );
 
-  const emptyVariant: "fresh" | "archived-only" | "filtered" | null = (() => {
+  const emptyVariant: "fresh" | "retired-only" | "filtered" | null = (() => {
     if (filtered.length > 0) return null;
     if (listings.length === 0) return "fresh";
     if (statusFilter !== "alle" && search.length === 0 && hasArchive) {
-      return "archived-only";
+      return "retired-only";
     }
     return "filtered";
   })();

@@ -1,5 +1,10 @@
+import { ProviderWorkspaceBoundary } from "@/features/provider/workspaces/ProviderWorkspaceBoundary";
 import { RealtimeProvider } from "@/components/realtime/RealtimeProvider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <RealtimeProvider>{children}</RealtimeProvider>;
+  return (
+    <RealtimeProvider>
+      <ProviderWorkspaceBoundary>{children}</ProviderWorkspaceBoundary>
+    </RealtimeProvider>
+  );
 }

@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { apiGet } from "@/lib/api/client";
 import {
   normalizeObjectType,
@@ -58,12 +59,14 @@ function normalizeStatus(value: string | null): ListingStatus {
       return "published";
     case "paused":
       return "paused";
-    case "archived":
-      return "archived";
+    case "retired":
+      return "retired";
     case "rented":
       return "rented";
-    default:
+    case "draft":
       return "draft";
+    default:
+      throw new Error("Invalid listing status");
   }
 }
 
@@ -206,8 +209,14 @@ export function mapProviderListingDetail(value: unknown): ListingDetail | null {
   };
 }
 
-export async function getProviderListing(id: string): Promise<ListingDetail> {
-  const response = await apiGet<unknown>(`/api/v1/provider/listings/${id}`);
+export async function getProviderListing(
+  id: string,
+  providerOptions?: ApiRequestOptions,
+): Promise<ListingDetail> {
+  const response = await apiGet<unknown>(
+    `/api/v1/provider/listings/${id}`,
+    providerOptions,
+  );
   const listing = mapProviderListingDetail(response);
   if (!listing) {
     throw new Error("Listing detail response could not be parsed");

@@ -143,7 +143,7 @@ describe("RealtimeProvider", () => {
     expect(io).not.toHaveBeenCalled();
   });
 
-  it("keeps one socket, disconnects on logout, and reconnects for a new user", () => {
+  it("keeps one applicant socket and disconnects when switching to dormant provider delivery", () => {
     act(() => setCurrentUser(applicant));
     render(
       <StrictMode>
@@ -161,8 +161,13 @@ describe("RealtimeProvider", () => {
     expect(sockets.length).toBe(io.mock.calls.length);
 
     act(() => setCurrentUser(provider));
+    expect(
+      sockets.every((socket) => socket.disconnect.mock.calls.length > 0),
+    ).toBe(true);
+    const count = io.mock.calls.length;
+    act(() => setCurrentUser({ ...applicant, id: "applicant-2" }));
+    expect(io.mock.calls.length).toBe(count + 1);
     expect(sockets.at(-1)?.disconnect).not.toHaveBeenCalled();
-    expect(sockets.at(-2)?.disconnect).toHaveBeenCalled();
 
     act(() => invalidateCurrentUser());
     expect(sockets.at(-1)?.disconnect).toHaveBeenCalled();

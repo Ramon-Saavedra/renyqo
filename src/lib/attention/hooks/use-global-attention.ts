@@ -1,4 +1,6 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
+import type { ApiRequestOptions } from "@/lib/api/client";
 
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { getAttentionAggregate } from "../api/get-attention-aggregate";
@@ -27,8 +29,10 @@ const emptySnapshot: GlobalAttentionSnapshot = {
 };
 
 const stores = new Map<
-  GlobalAttentionRole,
+  string,
   {
+    role: GlobalAttentionRole;
+    options: ApiRequestOptions | undefined;
     snapshot: GlobalAttentionSnapshot;
     listeners: Set<() => void>;
     load: Promise<void> | null;
@@ -38,10 +42,12 @@ const stores = new Map<
   }
 >();
 
-function getStore(role: GlobalAttentionRole) {
+function getStore(role: string, options?: ApiRequestOptions) {
   let store = stores.get(role);
   if (!store) {
     store = {
+      role: role === "applicant" ? "applicant" : "provider",
+      options,
       snapshot: emptySnapshot,
       listeners: new Set(),
       load: null,
@@ -54,24 +60,18 @@ function getStore(role: GlobalAttentionRole) {
   return store;
 }
 
-function notify(role: GlobalAttentionRole): void {
+function notify(role: string): void {
   const store = getStore(role);
   for (const listener of store.listeners) listener();
 }
 
-function publish(
-  role: GlobalAttentionRole,
-  snapshot: GlobalAttentionSnapshot,
-): void {
+function publish(role: string, snapshot: GlobalAttentionSnapshot): void {
   const store = getStore(role);
   store.snapshot = snapshot;
   notify(role);
 }
 
-async function loadAttention(
-  role: GlobalAttentionRole,
-  append = false,
-): Promise<void> {
+async function loadAttention(role: string, append = false): Promise<void> {
   const store = getStore(role);
   if (store.load) return store.load;
   const previous = append ? store.snapshot.data : null;
@@ -87,13 +87,17 @@ async function loadAttention(
   });
   store.load = (async () => {
     try {
-      const page = await getAttentionAggregate(role, {
-        filter: "actionable",
-        limit: 20,
-        offset: previous
-          ? previous.pagination.offset + previous.pagination.limit
-          : 0,
-      });
+      const page = await getAttentionAggregate(
+        store.role,
+        {
+          filter: "actionable",
+          limit: 20,
+          offset: previous
+            ? previous.pagination.offset + previous.pagination.limit
+            : 0,
+        },
+        store.options,
+      );
       if (store.fetchGeneration !== generation) return;
       const data = previous
         ? {
@@ -135,17 +139,16 @@ async function loadAttention(
 }
 
 export function invalidateGlobalAttention(role?: GlobalAttentionRole): void {
-  const roles = role ? [role] : (["applicant", "provider"] as const);
-  for (const entry of roles) {
-    const store = getStore(entry);
+  for (const [key, store] of stores) {
+    if (role && store.role !== role) continue;
     if (store.listeners.size === 0) {
       store.fetchGeneration += 1;
       store.load = null;
-      publish(entry, emptySnapshot);
+      publish(key, emptySnapshot);
       continue;
     }
     store.load = null;
-    void loadAttention(entry);
+    void loadAttention(key);
   }
 }
 
@@ -158,8 +161,18 @@ export function clearGlobalAttention(): void {
   }
 }
 
+function refreshAttention(key: string): void {
+  getStore(key).load = null;
+  void loadAttention(key);
+}
+
 export function useGlobalAttention(role: GlobalAttentionRole) {
-  const store = getStore(role);
+  const scope = useOptionalProviderWorkspace();
+  const key = role === "provider" && scope ? "provider:" + scope.key : role;
+  const store = getStore(
+    key,
+    role === "provider" ? scope?.requestOptions : undefined,
+  );
 
   const snapshot = useSyncExternalStore(
     (listener) => {
@@ -171,17 +184,17 @@ export function useGlobalAttention(role: GlobalAttentionRole) {
   );
 
   const refetch = useCallback(() => {
-    invalidateGlobalAttention(role);
-  }, [role]);
+    refreshAttention(key);
+  }, [key]);
 
   useEffect(() => {
-    const current = getStore(role);
+    const current = getStore(key);
     current.subscribers += 1;
     if (current.subscribers === 1) {
-      void loadAttention(role);
+      void loadAttention(key);
       // Quiet applications can acquire time-based actions outside the filtered result.
       current.poll = window.setInterval(() => {
-        invalidateGlobalAttention(role);
+        refreshAttention(key);
       }, 60_000);
     }
     return () => {
@@ -190,12 +203,21 @@ export function useGlobalAttention(role: GlobalAttentionRole) {
         window.clearInterval(current.poll);
         current.poll = null;
       }
+      if (current.subscribers === 0 && key.startsWith("provider:")) {
+        current.fetchGeneration += 1;
+        current.load = null;
+        current.snapshot = emptySnapshot;
+        queueMicrotask(() => {
+          if (current.subscribers === 0 && stores.get(key) === current)
+            stores.delete(key);
+        });
+      }
     };
-  }, [role]);
+  }, [key]);
 
   const loadMore = useCallback(() => {
-    void loadAttention(role, true);
-  }, [role]);
+    void loadAttention(key, true);
+  }, [key]);
 
   useAttentionRevalidate(
     snapshot.data?.totals.nextRevalidateAt ?? null,

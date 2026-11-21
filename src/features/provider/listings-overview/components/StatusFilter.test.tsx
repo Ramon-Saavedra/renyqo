@@ -10,7 +10,7 @@ const COUNTS: StatusCounts = {
   published: 4,
   draft: 2,
   paused: 1,
-  archived: 1,
+  retired: 1,
   attention: 3,
 };
 

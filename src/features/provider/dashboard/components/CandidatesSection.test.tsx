@@ -239,7 +239,10 @@ describe("CandidatesSection", () => {
     await user.click(screen.getByRole("button", { name: "Ablehnen" }));
 
     await waitFor(() => {
-      expect(rejectProviderApplication).toHaveBeenCalledWith("candidate-1");
+      expect(rejectProviderApplication).toHaveBeenCalledWith(
+        "candidate-1",
+        undefined,
+      );
       expect(screen.queryByText("Anna Lehmann")).toBeNull();
       expect(screen.getByTestId("refresh-revision").textContent).toBe("1");
     });

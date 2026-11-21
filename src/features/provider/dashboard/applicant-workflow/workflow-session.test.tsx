@@ -204,6 +204,8 @@ describe("WorkflowSession snapshot invalidation", () => {
       expect(vi.mocked(getActivityPage).mock.calls[1]).toEqual([
         "application-1",
         null,
+        undefined,
+        undefined,
       ]);
       await act(async () => {
         current.resolve(page("current", nextAsOf, "current-cursor"));

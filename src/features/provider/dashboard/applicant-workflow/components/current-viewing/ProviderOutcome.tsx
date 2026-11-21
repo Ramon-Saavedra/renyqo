@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button/Button";
@@ -39,6 +40,7 @@ export function ProviderOutcome({
   readonly capabilities: readonly WorkflowCapability[];
   readonly commands: Commands;
 }) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const correct = allowedCapability(capabilities, "CORRECT_OUTCOME");
   const record = allowedCapability(capabilities, "RECORD_OUTCOME");
   const action = correct?.target.appointmentId
@@ -71,12 +73,17 @@ export function ProviderOutcome({
             ? "BOTH"
             : null;
     void commands.run("outcome", (input) =>
-      recordProviderViewingOutcome(applicationId, appointmentId, {
-        ...input,
-        outcome: outcomeValue,
-        ...(absenceSide ? { absenceSide } : {}),
-        ...(correcting ? { correctionReason: trimmed } : {}),
-      }),
+      recordProviderViewingOutcome(
+        applicationId,
+        appointmentId,
+        {
+          ...input,
+          outcome: outcomeValue,
+          ...(absenceSide ? { absenceSide } : {}),
+          ...(correcting ? { correctionReason: trimmed } : {}),
+        },
+        providerOptions,
+      ),
     );
   };
 

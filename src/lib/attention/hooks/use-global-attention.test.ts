@@ -100,11 +100,15 @@ describe("useGlobalAttention", () => {
       await waitFor(() =>
         expect(result.current.messageGroups).toHaveLength(20),
       );
-      expect(getAttentionAggregate).toHaveBeenCalledWith(role, {
-        filter: "actionable",
-        limit: 20,
-        offset: 0,
-      });
+      expect(getAttentionAggregate).toHaveBeenCalledWith(
+        role,
+        {
+          filter: "actionable",
+          limit: 20,
+          offset: 0,
+        },
+        undefined,
+      );
       expect(result.current.messageCount).toBe(63);
       expect(result.current.attentionCount).toBe(0);
       expect(result.current.attentionGroups).toHaveLength(0);
@@ -114,11 +118,15 @@ describe("useGlobalAttention", () => {
         expect(result.current.messageGroups).toHaveLength(21),
       );
       expect(result.current.messageCount).toBe(63);
-      expect(getAttentionAggregate).toHaveBeenLastCalledWith(role, {
-        filter: "actionable",
-        limit: 20,
-        offset: 20,
-      });
+      expect(getAttentionAggregate).toHaveBeenLastCalledWith(
+        role,
+        {
+          filter: "actionable",
+          limit: 20,
+          offset: 20,
+        },
+        undefined,
+      );
       expect(result.current.hasMore).toBe(false);
       unmount();
     },

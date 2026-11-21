@@ -23,10 +23,10 @@ describe("applicant reply permission requests", () => {
         await result.current.setEnabled(enabled);
       });
     expect(setReplies.mock.calls).toEqual([
-      ["application", true],
-      ["application", false],
-      ["application", true],
-      ["application", false],
+      ["application", true, undefined],
+      ["application", false, undefined],
+      ["application", true, undefined],
+      ["application", false, undefined],
     ]);
     expect(refresh).toHaveBeenCalledTimes(4);
     expect(result.current.error).toBeNull();
@@ -93,6 +93,6 @@ describe("applicant reply permission requests", () => {
       finish(capabilities);
     });
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
-    expect(setReplies).toHaveBeenLastCalledWith("new", false);
+    expect(setReplies).toHaveBeenLastCalledWith("new", false, undefined);
   });
 });

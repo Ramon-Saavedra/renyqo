@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { ArrowRight, Lock } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";

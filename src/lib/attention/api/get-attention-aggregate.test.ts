@@ -34,7 +34,10 @@ describe("getAttentionAggregate", () => {
 
     await getAttentionAggregate("applicant");
 
-    expect(apiGet).toHaveBeenCalledWith("/api/v1/applicant/attention");
+    expect(apiGet).toHaveBeenCalledWith(
+      "/api/v1/applicant/attention",
+      undefined,
+    );
   });
 
   it("calls the provider attention endpoint", async () => {
@@ -42,7 +45,10 @@ describe("getAttentionAggregate", () => {
 
     await getAttentionAggregate("provider");
 
-    expect(apiGet).toHaveBeenCalledWith("/api/v1/provider/attention");
+    expect(apiGet).toHaveBeenCalledWith(
+      "/api/v1/provider/attention",
+      undefined,
+    );
   });
 
   it("passes pagination query params", async () => {
@@ -52,6 +58,7 @@ describe("getAttentionAggregate", () => {
 
     expect(apiGet).toHaveBeenCalledWith(
       "/api/v1/applicant/attention?limit=10&offset=5",
+      undefined,
     );
   });
 
@@ -74,6 +81,7 @@ describe("getAttentionAggregate", () => {
       });
       expect(apiGet).toHaveBeenCalledWith(
         `/api/v1/${role}/attention?filter=actionable&limit=20&offset=20`,
+        undefined,
       );
     },
   );

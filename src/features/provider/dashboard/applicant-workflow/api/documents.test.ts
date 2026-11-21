@@ -55,6 +55,7 @@ describe("cancelDocumentRequest", () => {
     expect(apiPatchVoid).toHaveBeenCalledTimes(1);
     expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/applications/application-1/document-requests/request-1/cancel",
+      undefined,
     );
     const [path] = vi.mocked(apiPatchVoid).mock.calls[0] ?? [];
     expect(String(path)).not.toContain("/applicant/");
@@ -117,6 +118,7 @@ describe("openDocumentContent", () => {
       expect(open).not.toHaveBeenCalled();
       expect(apiGetBlob).toHaveBeenCalledWith(
         "/api/v1/provider/applications/application-1/documents/document-1/content",
+        undefined,
       );
       expect(download).toBeUndefined();
       resolveBlob?.(
@@ -150,5 +152,24 @@ describe("openDocumentContent", () => {
     ).rejects.toThrow("failed");
     expect(open).not.toHaveBeenCalled();
     expect(createObjectURL).not.toHaveBeenCalled();
+  });
+  it("does not hand a late document response to the browser after workspace disposal", async () => {
+    let finish!: (blob: Blob) => void;
+    vi.mocked(apiGetBlob).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const controller = new AbortController();
+    const pending = openDocumentContent("application", "document", {
+      signal: controller.signal,
+    });
+    controller.abort();
+    finish(new Blob(["document"]));
+    await pending;
+    expect(createObjectURL).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+    expect(document.querySelector("a[download]")).toBeNull();
   });
 });

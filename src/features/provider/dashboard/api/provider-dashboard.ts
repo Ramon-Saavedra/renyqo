@@ -1,3 +1,4 @@
+import type { ApiRequestOptions } from "@/lib/api/client";
 import { getProviderListings } from "@/features/provider/listings-overview/api/provider-listings";
 import type { ListingOverviewItem } from "@/features/provider/listings-overview/types";
 import type { DashboardObject } from "../types";
@@ -56,9 +57,9 @@ function mapDashboardObject(listing: ListingOverviewItem): DashboardObject {
   };
 }
 
-export async function getProviderDashboardObjects(): Promise<
-  readonly DashboardObject[]
-> {
-  const listings = await getProviderListings();
+export async function getProviderDashboardObjects(
+  providerOptions?: ApiRequestOptions,
+): Promise<readonly DashboardObject[]> {
+  const listings = await getProviderListings(providerOptions);
   return listings.map(mapDashboardObject);
 }

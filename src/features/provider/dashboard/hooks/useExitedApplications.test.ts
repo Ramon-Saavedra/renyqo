@@ -326,7 +326,10 @@ describe("useExitedApplications", () => {
       expect(result.current.hasError).toBe(true);
     });
 
-    expect(restoreProviderApplication).toHaveBeenCalledWith("exit-1");
+    expect(restoreProviderApplication).toHaveBeenCalledWith(
+      "exit-1",
+      undefined,
+    );
     expect(result.current.exits.map((exit) => exit.id)).toEqual(["exit-2"]);
   });
 

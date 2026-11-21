@@ -1,10 +1,10 @@
-import Link from "next/link";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
 import { DoorOpen, Plus } from "lucide-react";
 import { buttonClass } from "@/components/ui/button/Button";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
 import { listingsCopy } from "../copy/listings";
 
-export type EmptyStateVariant = "fresh" | "archived-only" | "filtered";
+export type EmptyStateVariant = "fresh" | "retired-only" | "filtered";
 
 interface ListingsEmptyStateProps {
   variant: EmptyStateVariant;
@@ -75,7 +75,7 @@ export function ListingsEmptyState({
               <AppIcon icon={Plus} size={15} strokeWidth={1.8} decorative />
               {copy.ctaNew}
             </Link>
-            {variant === "archived-only" && onShowAll && (
+            {variant === "retired-only" && onShowAll && (
               <button
                 type="button"
                 className={buttonClass("ghost")}

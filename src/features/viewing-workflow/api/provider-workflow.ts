@@ -73,22 +73,26 @@ export function getProviderProposal(
 export function reconcileProviderViewingWorkflow(
   applicationId: string,
   body: WorkflowCommandInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/reconcile`,
     workflowCommandSchema,
     body,
+    providerOptions,
   );
 }
 
 export function inviteToProviderViewing(
   applicationId: string,
   body: WorkflowScheduleInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/invitations`,
     workflowScheduleSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -96,11 +100,13 @@ export function acceptProviderProposal(
   applicationId: string,
   proposalId: string,
   body: WorkflowCommandInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/proposals/${encodeURIComponent(proposalId)}/accept`,
     workflowCommandSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -108,11 +114,13 @@ export function rejectProviderProposal(
   applicationId: string,
   proposalId: string,
   body: WorkflowCommandInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/proposals/${encodeURIComponent(proposalId)}/reject`,
     workflowCommandSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -120,11 +128,13 @@ export function counterproposeProviderViewing(
   applicationId: string,
   proposalId: string,
   body: WorkflowScheduleInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/proposals/${encodeURIComponent(proposalId)}/counterproposal`,
     workflowScheduleSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -132,11 +142,13 @@ export function proposeProviderReplacement(
   applicationId: string,
   appointmentId: string,
   body: WorkflowScheduleInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/appointments/${encodeURIComponent(appointmentId)}/replacement`,
     workflowScheduleSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -144,11 +156,13 @@ export function closeProviderViewingWorkflow(
   applicationId: string,
   workflowId: string,
   body: WorkflowCloseInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/${encodeURIComponent(workflowId)}/close`,
     workflowCloseSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -156,11 +170,13 @@ export function recordProviderViewingOutcome(
   applicationId: string,
   appointmentId: string,
   body: WorkflowOutcomeInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/appointments/${encodeURIComponent(appointmentId)}/outcome`,
     workflowOutcomeSchema,
     body,
+    providerOptions,
   );
 }
 
@@ -168,10 +184,12 @@ export function setProviderViewingConsideration(
   applicationId: string,
   appointmentId: string,
   body: WorkflowConsiderationInput,
+  providerOptions?: ApiRequestOptions,
 ): Promise<WorkflowCommandResult> {
   return postWorkflowCommand(
     `${base(applicationId)}/appointments/${encodeURIComponent(appointmentId)}/consideration`,
     workflowConsiderationSchema,
     body,
+    providerOptions,
   );
 }

@@ -18,6 +18,7 @@ describe("rejectProviderApplication", () => {
 
     expect(apiPatchVoid).toHaveBeenCalledWith(
       "/api/v1/provider/applications/application%2F1/reject",
+      undefined,
     );
   });
 });

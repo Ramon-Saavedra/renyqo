@@ -16,13 +16,11 @@ describe("ListingsEmptyState", () => {
     ).toBeInstanceOf(HTMLElement);
   });
 
-  it("calls onShowAll from the archived-only variant", async () => {
+  it("calls onShowAll from the retired-only variant", async () => {
     const user = userEvent.setup();
     const onShowAll = vi.fn();
 
-    render(
-      <ListingsEmptyState variant="archived-only" onShowAll={onShowAll} />,
-    );
+    render(<ListingsEmptyState variant="retired-only" onShowAll={onShowAll} />);
 
     await user.click(
       screen.getByRole("button", { name: "Alle Objekte anzeigen" }),

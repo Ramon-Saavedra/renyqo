@@ -69,6 +69,7 @@ describe("getProviderListingsOverview", () => {
     const listings = await getProviderListingsOverview();
     expect(apiGet).toHaveBeenCalledWith(
       "/api/v1/provider/listings/overview?limit=100",
+      undefined,
     );
     expect(listings).toHaveLength(1);
     expect(listings[0]?.needsAttention).toBe(true);
@@ -162,6 +163,7 @@ describe("getProviderListingsOverview", () => {
     );
     expect(apiGet).toHaveBeenCalledWith(
       "/api/v1/provider/listings/overview?limit=100&cursor=same-cursor",
+      undefined,
     );
   });
 });

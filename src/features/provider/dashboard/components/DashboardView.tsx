@@ -1,4 +1,6 @@
 "use client";
+import { CreateListingAction } from "@/features/provider/workspaces/CreateListingAction";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import {
   useEffect,
@@ -8,8 +10,8 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/features/provider/workspaces/WorkspaceLink";
+import { useProviderRouter as useRouter } from "@/features/provider/workspaces/use-provider-router";
 import { ArrowUpRight } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell/PageShell";
 import { AppIcon } from "@/components/ui/icon/AppIcon";
@@ -83,6 +85,7 @@ export function DashboardView({ objects }: DashboardViewProps) {
 function DashboardViewContent({
   objects: initialObjects,
 }: DashboardViewContentProps) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const shouldLoadObjects = initialObjects === undefined;
   const refreshRevision = useTabRefreshRevision();
   const hasLoadedObjectsRef = useRef(false);
@@ -118,10 +121,10 @@ function DashboardViewContent({
 
   const handleReorder = useCallback(
     async (listingId: string, position: number) => {
-      await moveProviderListingToPosition(listingId, position);
+      await moveProviderListingToPosition(listingId, position, providerOptions);
       const generation = beginObjectsRequest();
       try {
-        const nextObjects = await getProviderDashboardObjects();
+        const nextObjects = await getProviderDashboardObjects(providerOptions);
         if (generation !== objectsRequestGenerationRef.current) {
           return undefined;
         }
@@ -141,7 +144,7 @@ function DashboardViewContent({
       }
       return undefined;
     },
-    [beginObjectsRequest, initialObjects],
+    [beginObjectsRequest, initialObjects, providerOptions],
   );
 
   useEffect(() => {
@@ -153,7 +156,7 @@ function DashboardViewContent({
     const isCurrent = () =>
       active && generation === objectsRequestGenerationRef.current;
 
-    getProviderDashboardObjects()
+    getProviderDashboardObjects(providerOptions)
       .then((nextObjects) => {
         if (!isCurrent()) return;
         hasLoadedObjectsRef.current = true;
@@ -173,7 +176,12 @@ function DashboardViewContent({
     return () => {
       active = false;
     };
-  }, [beginObjectsRequest, refreshRevision, shouldLoadObjects]);
+  }, [
+    beginObjectsRequest,
+    refreshRevision,
+    shouldLoadObjects,
+    providerOptions,
+  ]);
 
   const orderedObjects = useMemo(
     () =>
@@ -322,12 +330,7 @@ function DashboardViewContent({
             <p className="mt-2.5 max-w-md text-body text-foreground-secondary">
               {dashboardCopy.object.emptyAddress}
             </p>
-            <Link
-              href={dashboardCopy.topbar.newListingHref}
-              className={dashboardPrimaryClass("mt-6")}
-            >
-              {dashboardCopy.topbar.newListing}
-            </Link>
+            <CreateListingAction className={dashboardPrimaryClass("mt-6")} />
           </div>
         </div>
       </PageShell>

@@ -94,13 +94,13 @@ describe("mapProviderListingDetail", () => {
         data: {
           id: "listing-2",
           displayAddress: "Direkte Adresse",
-          status: "ARCHIVED",
+          status: "RETIRED",
         },
       }),
     ).toMatchObject({
       id: "listing-2",
       title: "Unbenanntes Objekt",
-      status: "archived",
+      status: "retired",
       headerAddress: "Direkte Adresse",
     });
 
@@ -117,6 +117,7 @@ describe("getProviderListing", () => {
     vi.mocked(apiGet).mockResolvedValue({
       id: "listing-1",
       title: "Wohnung",
+      status: "DRAFT",
     });
 
     await expect(getProviderListing("listing-1")).resolves.toMatchObject({
@@ -124,7 +125,10 @@ describe("getProviderListing", () => {
       title: "Wohnung",
     });
 
-    expect(apiGet).toHaveBeenCalledWith("/api/v1/provider/listings/listing-1");
+    expect(apiGet).toHaveBeenCalledWith(
+      "/api/v1/provider/listings/listing-1",
+      undefined,
+    );
   });
 
   it("throws when the backend detail response cannot be parsed", async () => {

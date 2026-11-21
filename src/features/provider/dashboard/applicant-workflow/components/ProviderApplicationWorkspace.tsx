@@ -1,7 +1,8 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useProviderRouter as useRouter } from "@/features/provider/workspaces/use-provider-router";
 import { UserRoundX } from "lucide-react";
 import { ConfirmationModal } from "@/components/ui/confirmation-modal/ConfirmationModal";
 import { getProviderListing } from "@/features/provider/listing-detail/api/provider-listing-detail";
@@ -19,6 +20,7 @@ export function ProviderApplicationWorkspace({
 }: {
   readonly applicationId: string;
 }) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const router = useRouter();
   const locationSearch = useUrlSearch();
   const link = useMemo(
@@ -44,7 +46,7 @@ export function ProviderApplicationWorkspace({
     if (!listingId) return;
     selectDashboardListing(listingId);
     let active = true;
-    getProviderListing(listingId)
+    getProviderListing(listingId, providerOptions)
       .then((next) => {
         if (active) setDetail(next);
       })
@@ -54,7 +56,7 @@ export function ProviderApplicationWorkspace({
     return () => {
       active = false;
     };
-  }, [listingId]);
+  }, [listingId, providerOptions]);
 
   function leave() {
     router.push(returnHref);

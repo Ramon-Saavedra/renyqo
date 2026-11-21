@@ -1,4 +1,5 @@
 "use client";
+import { useOptionalProviderWorkspace } from "@/features/provider/workspaces/scope-context";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button/Button";
@@ -40,6 +41,7 @@ export function ProviderConsiderationBlock({
   readonly capabilities: readonly WorkflowCapability[];
   readonly commands: Commands;
 }) {
+  const providerOptions = useOptionalProviderWorkspace()?.requestOptions;
   const action = allowedCapability(capabilities, "SET_CONSIDERATION");
   const appointmentId = action?.target.appointmentId ?? null;
   const [confirmStop, setConfirmStop] = useState(false);
@@ -51,10 +53,15 @@ export function ProviderConsiderationBlock({
     if (!appointmentId) return;
     void commands
       .run("consideration", (input) =>
-        setProviderViewingConsideration(applicationId, appointmentId, {
-          ...input,
-          consideration: value,
-        }),
+        setProviderViewingConsideration(
+          applicationId,
+          appointmentId,
+          {
+            ...input,
+            consideration: value,
+          },
+          providerOptions,
+        ),
       )
       .then((status) => {
         if (status === "success" && value === "DO_NOT_CONTINUE") {

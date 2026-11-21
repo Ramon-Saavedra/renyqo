@@ -20,7 +20,7 @@ const VISIBILITY_NOTE: Record<Exclude<ListingStatus, "published">, string> = {
   paused:
     "Dieses Objekt ist pausiert. Bewerbende sehen es aktuell nicht in der Suche.",
   draft: "Als Entwurf ist dieses Objekt für niemanden außer dir sichtbar.",
-  archived: "Archivierte Objekte sind für Bewerbende nicht sichtbar.",
+  retired: "Archivierte Objekte sind für Bewerbende nicht sichtbar.",
   rented:
     "Dieses Objekt ist vermietet. Bewerbende sehen es nicht mehr in der Suche.",
 };
